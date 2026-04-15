@@ -1,0 +1,289 @@
+2026-04-13 06:20:06 PM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-13 06:20:06 PM | ERROR | alert_system | Watchdog Error: no such column: text
+2026-04-13 06:21:06 PM | ERROR | alert_system | Watchdog Error: no such column: text
+2026-04-13 06:22:06 PM | ERROR | alert_system | Watchdog Error: no such column: text
+2026-04-13 06:23:06 PM | ERROR | alert_system | Watchdog Error: no such column: text
+2026-04-13 06:24:06 PM | ERROR | alert_system | Watchdog Error: no such column: text
+2026-04-13 06:25:06 PM | ERROR | alert_system | Watchdog Error: no such column: text
+2026-04-13 06:25:17 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 06:25:18 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 06:25:18 PM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-13 06:25:18 PM | ERROR | alert_system | Watchdog Error: no such column: text
+2026-04-13 06:26:18 PM | ERROR | alert_system | Watchdog Error: no such column: text
+2026-04-13 06:27:31 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 06:27:32 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 06:27:32 PM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-13 06:29:16 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 06:29:17 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 06:29:17 PM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-13 06:42:46 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 06:42:47 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 06:42:47 PM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-13 06:50:26 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 06:50:27 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 06:50:27 PM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-13 06:59:17 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 06:59:18 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 06:59:18 PM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-13 07:00:43 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:00:44 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:00:44 PM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-13 07:04:41 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:04:42 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:04:42 PM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-13 07:14:01 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:14:01 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:14:01 PM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-13 07:14:09 PM | ERROR | main_bot | ❌ OSList Logic Error: no such column: chat_id
+2026-04-13 07:15:44 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:15:45 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:15:45 PM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-13 07:16:09 PM | INFO | main_bot | Manager 8353570874 viewed oslist
+2026-04-13 07:18:59 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:19:00 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:19:00 PM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-13 07:20:40 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:20:41 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:20:41 PM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-13 07:20:46 PM | ERROR | import_csv | CSV Import Failed: 'utf-8' codec can't decode byte 0xef in position 322: invalid continuation byte
+2026-04-13 07:22:29 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:22:30 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:22:30 PM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-13 07:24:13 PM | INFO | import_csv | CSV Import Success: 338 groups from carryman_group_database.csv
+2026-04-13 07:24:24 PM | ERROR | main_bot | ❌ OSList Logic Error: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message is too long
+2026-04-13 07:24:50 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:24:50 PM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-13 07:24:50 PM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-13 07:24:55 PM | ERROR | main_bot | ❌ OSList Logic Error: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message is too long
+2026-04-14 02:00:54 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 02:00:55 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 02:00:55 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-14 02:01:11 AM | INFO | main_bot | Manager 8353570874 viewed oslist
+2026-04-14 02:34:28 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 02:34:29 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 02:34:29 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-14 02:50:51 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 02:50:52 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 02:50:52 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-14 02:52:53 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 02:52:54 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 02:52:54 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-14 02:58:50 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 02:58:51 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 02:58:51 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-14 03:00:01 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 03:00:02 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 03:00:02 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-14 03:21:04 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 03:21:05 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 03:21:05 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-14 03:23:55 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 03:23:55 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 03:23:55 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-14 03:31:56 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 03:31:57 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 03:31:57 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-14 03:32:26 AM | ERROR | alert_system | ❌ Instant Alert Send Error: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: chat not found
+2026-04-14 03:32:53 AM | ERROR | alert_system | ❌ Instant Alert Send Error: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: chat not found
+2026-04-14 03:35:58 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 03:35:58 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 03:35:58 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine is starting...
+2026-04-14 03:36:16 AM | INFO | alert_system | ✅ Instant Alert sent successfully to -1003601049225 (Thread: None)
+2026-04-14 03:38:31 AM | INFO | alert_system | ✅ Instant Alert sent successfully to -1003601049225 (Thread: None)
+2026-04-14 04:30:59 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 04:30:59 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 04:30:59 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine (V3.8) is starting...
+2026-04-14 04:37:16 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 04:37:16 AM | INFO | db_manager | ✅ Database (Version 3.4) Initialized Successfully.
+2026-04-14 04:37:16 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine (V4.0) is starting...
+2026-04-14 05:53:24 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:53:29 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:53:35 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:53:41 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:53:47 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:53:52 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:53:58 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:54:04 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:54:10 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:54:16 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:54:21 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:54:27 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:54:33 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:54:39 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:54:44 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:54:50 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:54:56 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:55:02 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:55:08 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:55:14 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:55:19 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:55:25 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:55:31 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:55:37 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:55:43 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:55:49 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:55:55 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:56:00 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:56:06 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:56:12 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:56:18 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:56:24 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:56:30 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:56:35 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:56:41 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:56:47 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:56:53 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:56:59 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:57:05 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:57:10 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:57:16 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:57:22 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:57:28 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:57:33 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:57:39 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:57:45 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:57:51 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:57:57 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:58:03 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:58:09 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:58:14 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:58:20 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:58:26 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:58:32 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:58:38 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:58:44 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:58:49 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:58:55 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:59:01 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:59:07 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:59:13 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:59:19 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:59:25 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:59:30 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:59:36 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:59:42 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:59:48 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 05:59:54 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:00:00 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:00:06 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:00:11 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:00:17 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:00:23 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:00:29 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:00:35 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:00:41 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:00:47 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:00:53 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:00:59 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:01:05 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:01:10 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:01:16 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:01:22 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:01:28 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:01:34 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:01:40 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:01:46 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:01:52 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:01:58 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:02:04 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:02:10 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:02:16 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:02:22 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:02:28 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:02:34 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:02:40 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:02:46 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:02:52 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:02:58 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:03:03 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:03:09 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:03:15 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:03:21 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:03:27 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:03:33 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:03:39 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:03:45 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:03:50 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:03:56 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:04:02 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:04:08 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:04:14 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:04:20 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:04:26 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:04:32 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:04:38 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:04:44 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:04:50 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:04:56 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:05:02 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:05:08 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:05:14 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:05:20 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:05:26 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:05:32 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:05:38 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:05:44 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:05:50 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:05:56 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:06:02 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:06:08 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:06:14 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:06:20 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:06:26 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:06:31 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:06:37 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:06:43 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:06:49 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:06:55 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:07:01 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:07:07 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:07:13 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:07:19 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:07:24 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:07:30 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:07:36 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:07:42 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:07:48 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:07:54 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:08:00 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:08:06 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:08:12 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:08:18 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:08:24 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:08:30 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:08:30 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:08:30 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine (V4.2) is starting...
+2026-04-14 06:08:30 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778
+2026-04-14 06:08:30 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778
+2026-04-14 06:08:30 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778
+2026-04-14 06:08:30 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778
+2026-04-14 06:08:31 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778
+2026-04-14 06:08:31 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778
+2026-04-14 06:08:37 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:08:38 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:08:38 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine (V4.2) is starting...
+2026-04-14 06:08:46 AM | ERROR | alert_system | Alert Send Error: database is locked
+2026-04-14 06:08:51 AM | ERROR | alert_system | Alert Send Error: database is locked
+2026-04-14 06:11:47 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778
+2026-04-14 06:11:47 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778
+2026-04-14 06:11:47 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778
+2026-04-14 06:11:47 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778
+2026-04-14 06:11:47 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778
+2026-04-14 06:11:47 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778
+2026-04-14 06:11:47 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778
+2026-04-14 06:11:47 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778
+2026-04-14 06:11:47 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778
+2026-04-14 06:27:00 AM | ERROR | alert_system | Alert Send Error: database is locked
+2026-04-14 06:27:05 AM | ERROR | alert_system | Alert Send Error: database is locked
+2026-04-14 06:27:10 AM | ERROR | alert_system | Alert Send Error: database is locked
+2026-04-14 06:27:15 AM | ERROR | alert_system | Alert Send Error: database is locked
+2026-04-14 06:28:23 AM | ERROR | alert_system | Alert Send Error: database is locked
+2026-04-14 06:28:28 AM | ERROR | alert_system | Alert Send Error: database is locked
+2026-04-14 06:28:33 AM | ERROR | alert_system | Alert Send Error: database is locked
+2026-04-14 06:29:41 AM | ERROR | alert_system | Alert Send Error: database is locked
+2026-04-14 06:38:31 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:38:32 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-14 06:38:32 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine (V4.2) is starting...
+2026-04-15 03:00:01 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-15 03:00:02 AM | INFO | db_manager | ✅ Database (Version 3.7) Initialized & Migrated Successfully.
+2026-04-15 03:00:02 AM | INFO | main_bot | 🚀 CarryMan Bot Master Engine (V4.2) is starting...
