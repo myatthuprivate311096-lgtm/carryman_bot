@@ -33,9 +33,9 @@ def block_strangers(message):
 # ==========================================
 # 🧠 ၅။ Core Logic (SLA Engine & Smart Filtering)
 # ==========================================
-@bot.message_reaction_handler()
+@bot.message_reaction_handler(func=lambda reaction: reaction.emoji in ['👍', '✅'])
 def handle_reaction(reaction):
-    """ ဝန်ထမ်းမှ Reaction ပေးလျှင် Alert ကို ပိတ်သိမ်းခြင်း """
+    """ ဝန်ထမ်းမှ Reaction (👍 သို့မဟုတ် ✅) ပေးလျှင် Alert ကို ပိတ်သိမ်းခြင်း """
     user_id = reaction.user.id
     chat_id = reaction.chat.id
     
@@ -45,8 +45,8 @@ def handle_reaction(reaction):
             staff_data = db_manager.get_staff_info(user_id)
             staff_name = staff_data[1] if staff_data else reaction.user.first_name
             
-            db_manager.resolve_message(reaction.message_id, chat_id, f"{staff_name} (Emoji)")
-            alert_system.update_resolved_alerts(bot, reaction.message_id, chat_id, f"{staff_name} (Emoji)")
+            db_manager.resolve_message(reaction.message_id, chat_id, staff_name, method='Reaction')
+            alert_system.update_resolved_alerts(bot, reaction.message_id, chat_id, f"{staff_name} (Reaction)")
 
 
 @bot.message_handler(func=lambda m: True, content_types=['text', 'photo', 'voice', 'video', 'document'])
@@ -75,14 +75,14 @@ def handle_all_messages(message):
 
     # (က) ဝန်ထမ်း သို့မဟုတ် Manager ၏ လုပ်ဆောင်ချက်
     if (is_staff or is_manager) and is_os_group:
-        if message.reply_to_message:
-            # 💡 Reply ဆွဲမှသာ Ticket ကို ပိတ်မည် (Accidental Clear ကို တားဆီးရန်)
+        # 💡 Topic ကြီးကို Reply ပြန်တာမဟုတ်ဘဲ၊ တကယ့် သီးသန့်စာကို Reply ပြန်မှသာ Resolve လုပ်မည်
+        if message.reply_to_message and message.reply_to_message.message_id != message.message_thread_id:
             original_id = message.reply_to_message.message_id
             
             staff_data = db_manager.get_staff_info(user_id)
             staff_name = staff_data[1] if staff_data else message.from_user.first_name
             
-            db_manager.resolve_message(original_id, chat_id, staff_name)
+            db_manager.resolve_message(original_id, chat_id, staff_name, method='Reply')
             alert_system.update_resolved_alerts(bot, original_id, chat_id, f"{staff_name} (Reply)")
         return # ဝန်ထမ်းပို့သောစာကို Pending အဖြစ် မမှတ်ပါ
 

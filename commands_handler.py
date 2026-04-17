@@ -18,10 +18,9 @@ DEPARTMENTS = [
 ]
 
 staff_reg_data = {}
+register_group_data = {}
 
 # ... (အပေါ်က စာကြောင်းတွေက အရင်အတိုင်းထားပါ) ...
-
-staff_reg_data = {}
 
 def register_handlers(bot):
     """ Bot Command အားလုံးကို ဤနေရာတွင် စုစည်းမှတ်ပုံတင်ပေးသည် """
@@ -31,7 +30,6 @@ def register_handlers(bot):
     def handle_bot_off(message):
         """ Bot ကို ခေတ္တ အိပ်ပျော်စေခြင်း (Database ထဲတွင် သိမ်းမည်) """
         if message.from_user.id == MANAGER_ID:
-            import db_manager
             db_manager.set_setting('bot_active', 'False')
             bot.reply_to(message, "💤 **Bot Maintenance Mode: ON**\n\nစနစ်ကို ပိတ်ထားလိုက်ပါပြီ။ ဝန်ထမ်းများ Command ရိုက်လျှင်လည်း အသိပေးစာ ပြန်ပါလိမ့်မည်။")
 
@@ -39,24 +37,9 @@ def register_handlers(bot):
     def handle_bot_on(message):
         """ Bot ကို ပြန်လည် နိုးထစေခြင်း """
         if message.from_user.id == MANAGER_ID:
-            import db_manager
             db_manager.set_setting('bot_active', 'True')
             bot.reply_to(message, "🚀 **Bot Maintenance Mode: OFF**\n\nစနစ်ကို ပုံမှန်အတိုင်း ပြန်လည်ဖွင့်လှစ်လိုက်ပါပြီ။")
 
-    @bot.message_handler(commands=['start'])
-    def send_welcome(message):
-        if message.from_user.id == MANAGER_ID or db_manager.check_if_staff(message.from_user.id):
-            bot.reply_to(message, "🤖 CarryMan AI Agent စနစ်မှ ကြိုဆိုပါတယ်။\nအကူအညီလိုပါက Manager ကို ဆက်သွယ်ပါ။")
-
-    # ... (အောက်က /status တွေ, /restart တွေကတော့ အရင်အတိုင်း ဆက်ရှိနေမှာပါ) ...
-    @bot.message_handler(commands=['on'])
-    def handle_bot_on(message):
-        """ Bot ကို ပြန်လည် နိုးထစေခြင်း """
-        if message.from_user.id == MANAGER_ID:
-            import db_manager
-            db_manager.set_setting('bot_active', 'True')
-            bot.reply_to(message, "🚀 **Bot Maintenance Mode: OFF**\n\nစနစ်ကို ပုံမှန်အတိုင်း ပြန်လည်ဖွင့်လှစ်လိုက်ပါပြီ။")
-   
     @bot.message_handler(commands=['start'])
     def send_welcome(message):
         if message.from_user.id == MANAGER_ID or db_manager.check_if_staff(message.from_user.id):
@@ -192,24 +175,36 @@ def register_handlers(bot):
                 
                 original_text = ""
                 msg_link = ""
-                # Customer စာကို Reply ဆွဲထားလျှင် ဖမ်းယူမည်
+                original_msg_id = 0
+                
+                # ၁။ Reply ရှိပါက ထိုစာ၏ Text ကို issue_text အဖြစ်ယူမည်
                 if message.reply_to_message:
+                    original_msg_id = message.reply_to_message.message_id
                     original_text = message.reply_to_message.text or message.reply_to_message.caption or "[Media / Sticker]"
+                    issue_text = original_text
+                    
                     link_chat_id = str(chat_id).replace("-100", "")
-                    msg_link = f"https://t.me/c/{link_chat_id}/{message.reply_to_message.message_id}"
+                    msg_link = f"https://t.me/c/{link_chat_id}/{original_msg_id}"
                     if message.reply_to_message.is_topic_message:
                         msg_link += f"?thread={message.reply_to_message.message_thread_id}"
                 
+                # ၂။ /alert နောက်တွင် စာသားပါပါက ၎င်းကို issue_text အဖြစ် ဦးစားပေးယူမည်
+                cmd_text = message.text.replace('/alert', '').strip()
+                if cmd_text:
+                    issue_text = cmd_text
+                elif not message.reply_to_message:
+                    # ၃။ နှစ်ခုလုံးမရှိမှသာ Default သုံးမည်
+                    issue_text = "အရေးပေါ် အကူအညီလိုပါသည် (Manual Alert)"
+
                 try: bot.delete_message(chat_id, message.message_id)
                 except: pass
                 
                 topic_id = message.message_thread_id if message.is_topic_message else 0
-                issue_text = message.text.replace('/alert', '').strip() or "အရေးပေါ် အကူအညီလိုပါသည် (Manual Alert)"
                 
-                try: 
-                    # 💡 kwargs ဖြင့် original_text နှင့် msg_link ကို ထည့်ပို့သည်
-                    alert_system.handle_instant_alert(bot, chat_id, topic_id, message.from_user.first_name, issue_text, original_text=original_text, msg_link=msg_link)
-                except Exception as e: 
+                try:
+                    # 💡 original_msg_id ကိုပါ ထည့်သွင်းပေးပို့သည်
+                    alert_system.handle_instant_alert(bot, chat_id, topic_id, message.from_user.first_name, issue_text, original_text=original_text, msg_link=msg_link, original_msg_id=original_msg_id)
+                except Exception as e:
                     log.error(f"Alert System ခေါ်ယူရာတွင် Error: {e}")
 
     # --- [ Section ၇: OS Group စာရင်းနှင့် Register စနစ် ] ---
@@ -218,11 +213,7 @@ def register_handlers(bot):
         user_id = message.from_user.id
         if user_id == MANAGER_ID or db_manager.check_if_staff(user_id):
             try:
-                conn = db_manager.get_connection()
-                c = conn.cursor()
-                c.execute("SELECT shop_name FROM os_groups")
-                groups = c.fetchall()
-                conn.close()
+                groups = db_manager.get_os_group_names()
 
                 if not groups:
                     bot.reply_to(message, "⚠️ OS Group စာရင်း မရှိသေးပါ။")
@@ -230,8 +221,7 @@ def register_handlers(bot):
 
                 msg = "🏪 **OS Group စာရင်း:**\n\n"
                 for idx, (shop_name,) in enumerate(groups, 1):
-                    clean_name = str(shop_name).split('🤝')[0].strip()
-                    clean_name = clean_name.replace('CarryMan', '').strip()
+                    clean_name = db_manager.clean_shop_name(shop_name)
                     msg += f"{idx}။ {clean_name}\n"
                     if len(msg) > 3500:
                         bot.send_message(message.chat.id, msg)
@@ -246,16 +236,92 @@ def register_handlers(bot):
     def handle_register_group(message):
         user_id = message.from_user.id
         if user_id == MANAGER_ID:
-            if message.chat.type in ['group', 'supergroup']:
-                text_parts = message.text.split(' ', 1)
-                shop_name = text_parts[1].strip() if len(text_parts) > 1 else message.chat.title
-                try:
-                    db_manager.add_os_group(message.chat.id, shop_name)
-                    bot.reply_to(message, f"✅ **{shop_name}** အား OS Group စာရင်းသို့ သွင်းလိုက်ပါပြီ။")
-                except Exception as e:
-                    bot.reply_to(message, f"⚠️ Error: {e}")
-            else:
+            if message.chat.type not in ['group', 'supergroup']:
                 bot.reply_to(message, "⚠️ ဤ Command ကို OS Group ထဲမှာပဲ ရိုက်ပေးပါ။")
+                return
+
+            chat_id = message.chat.id
+            register_group_data[chat_id] = {
+                "shop_name": db_manager.clean_shop_name(message.chat.title or "Unknown Shop"),
+                "chat_id": chat_id
+            }
+            msg = bot.reply_to(message, "၁။ 🎧 Pick Up Topic ရဲ့ ID ကို ရိုက်ထည့်ပါ (မရှိလျှင် 0 ဟုရိုက်ပါ):")
+            bot.register_next_step_handler(msg, process_reg_pickup)
+
+    def process_reg_pickup(message):
+        chat_id = message.chat.id
+        if chat_id not in register_group_data:
+            return
+        try:
+            register_group_data[chat_id]["pickup_topic_id"] = int(message.text.strip())
+            msg = bot.reply_to(message, "၂။ ⚠️ Error Topic ရဲ့ ID ကို ရိုက်ထည့်ပါ (မရှိလျှင် 0 ဟုရိုက်ပါ):")
+            bot.register_next_step_handler(msg, process_reg_error)
+        except ValueError:
+            bot.reply_to(message, "⚠️ Topic ID သည် ဂဏန်းဖြစ်ရပါမည်။ /register ကို ပြန်ရိုက်ပါ။")
+            register_group_data.pop(chat_id, None)
+
+    def process_reg_error(message):
+        chat_id = message.chat.id
+        if chat_id not in register_group_data:
+            return
+        try:
+            register_group_data[chat_id]["error_topic_id"] = int(message.text.strip())
+            msg = bot.reply_to(message, "၃။ 💰 Fin & Voc Topic ရဲ့ ID ကို ရိုက်ထည့်ပါ (မရှိလျှင် 0 ဟုရိုက်ပါ):")
+            bot.register_next_step_handler(msg, process_reg_finance)
+        except ValueError:
+            bot.reply_to(message, "⚠️ Topic ID သည် ဂဏန်းဖြစ်ရပါမည်။ /register ကို ပြန်ရိုက်ပါ။")
+            register_group_data.pop(chat_id, None)
+
+    def process_reg_finance(message):
+        chat_id = message.chat.id
+        if chat_id not in register_group_data:
+            return
+        try:
+            register_group_data[chat_id]["finance_topic_id"] = int(message.text.strip())
+        except ValueError:
+            bot.reply_to(message, "⚠️ Topic ID သည် ဂဏန်းဖြစ်ရပါမည်။ /register ကို ပြန်ရိုက်ပါ။")
+            register_group_data.pop(chat_id, None)
+            return
+
+        data = register_group_data.get(chat_id, {})
+        shop_name = db_manager.clean_shop_name(data.get("shop_name", "Unknown Shop"))
+
+        topic_payload = []
+        if data.get("pickup_topic_id", 0) != 0:
+            topic_payload.append({
+                "topic_name": "Pick Up/Urgent/စုံစမ်းရန်",
+                "topic_id": data["pickup_topic_id"],
+                "route_topic_id": 1,
+                "department_name": "Pick Up"
+            })
+        if data.get("error_topic_id", 0) != 0:
+            topic_payload.append({
+                "topic_name": "Error",
+                "topic_id": data["error_topic_id"],
+                "route_topic_id": 37,
+                "department_name": "Error"
+            })
+        if data.get("finance_topic_id", 0) != 0:
+            topic_payload.append({
+                "topic_name": "Fin & Voc",
+                "topic_id": data["finance_topic_id"],
+                "route_topic_id": 35,
+                "department_name": "Fin & Voc"
+            })
+
+        if not topic_payload:
+            bot.reply_to(message, "⚠️ Topic ID အားလုံး 0 ဖြစ်နေပါသည်။ သိမ်းဆည်းစရာ မရှိပါ။")
+            register_group_data.pop(chat_id, None)
+            return
+
+        try:
+            db_manager.save_manual_register_with_routes(chat_id, shop_name, topic_payload, -1003601049225)
+            bot.reply_to(message, f"✅ {shop_name} အား မှတ်ပုံတင်ပြီး Topic များကို Alert System နှင့် အလိုအလျောက် ချိတ်ဆက်ပြီးပါပြီ။")
+        except Exception as e:
+            log.error(f"Manual register failed: {e}")
+            bot.reply_to(message, f"❌ Register Error: {e}")
+        finally:
+            register_group_data.pop(chat_id, None)
 
     # ==========================================
     # 🔥 အသစ်ထပ်တိုး Command များ (New Features)
@@ -276,10 +342,7 @@ def register_handlers(bot):
                     return
 
             try:
-                conn = db_manager.get_connection()
-                conn.execute("DELETE FROM os_groups WHERE chat_id=?", (chat_id,))
-                conn.commit()
-                conn.close()
+                db_manager.delete_os_group_by_chat_id(chat_id)
                 bot.reply_to(message, "✅ ထို OS Group ကို စာရင်းမှ အောင်မြင်စွာ ပယ်ဖျက်လိုက်ပါပြီ။")
             except Exception as e:
                 log.error(f"DelOS Error: {e}")
@@ -289,18 +352,7 @@ def register_handlers(bot):
     def handle_pending(message):
         if message.from_user.id == MANAGER_ID or db_manager.check_if_staff(message.from_user.id):
             try:
-                conn = db_manager.get_connection()
-                c = conn.cursor()
-                # Pending ဖြစ်နေတဲ့ Ticket အရေအတွက်ကို ဆိုင်အလိုက် ဆွဲထုတ်မည်
-                c.execute("""
-                    SELECT o.shop_name, COUNT(m.msg_id) 
-                    FROM message_logs m 
-                    JOIN os_groups o ON m.chat_id = o.chat_id 
-                    WHERE m.status='pending' 
-                    GROUP BY m.chat_id
-                """)
-                rows = c.fetchall()
-                conn.close()
+                rows = db_manager.get_pending_counts_by_shop()
 
                 if not rows:
                     bot.reply_to(message, "✅ လက်ရှိတွင် Pending ဖြစ်နေသော Ticket လုံးဝမရှိပါ။ ဝန်ထမ်းများ အလုပ်ကြိုးစားကြပါသည်။")
@@ -362,12 +414,7 @@ def register_handlers(bot):
                 return
             
             try:
-                conn = db_manager.get_connection()
-                c = conn.cursor()
-                # LIKE %keyword% ကိုသုံးပြီး ဆင်တူရာတွေ အကုန်ရှာမည်
-                c.execute("SELECT chat_id, shop_name FROM os_groups WHERE shop_name LIKE ?", (f'%{keyword}%',))
-                rows = c.fetchall()
-                conn.close()
+                rows = db_manager.find_os_groups_by_keyword(keyword)
 
                 if rows:
                     msg = f"🔍 **'{keyword}' ဖြင့် ရှာဖွေတွေ့ရှိမှုများ:**\n\n"
