@@ -1,10 +1,18 @@
-# Version: 3.7 (Master DB - 100% Functionally Complete & Synced)
+# Version: 4.0 (2-Worker Architecture Ready)
 import sqlite3
 import time
+import os
 from datetime import datetime
+from dotenv import load_dotenv
 from logger import log
 
-DB_FILE = 'carryman.db'
+# 💡 Absolute Path Fix - Locked to script directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_FILE = os.path.join(BASE_DIR, 'carryman.db')
+ENV_FILE = os.path.join(BASE_DIR, '.env')
+
+# Load environment variables using absolute path
+load_dotenv(ENV_FILE)
 
 def clean_shop_name(raw_name):
     """Shop name မှ emoji/non-ascii noise များကိုဖြတ်၍ base name ပြန်ပေးမည်"""
@@ -35,11 +43,12 @@ def init_db():
                  group_name TEXT,
                  invite_link TEXT,
                  topic_name TEXT,
-                 topic_id INTEGER
+                 topic_id INTEGER,
+                 last_read_message_id INTEGER DEFAULT 0
                )''')
-    c.execute('''CREATE TABLE IF NOT EXISTS message_logs 
-                 (msg_id INTEGER, chat_id INTEGER, topic_id INTEGER, user_id INTEGER, 
-                  text TEXT, timestamp INTEGER, status TEXT, resolved_by TEXT, resolve_time INTEGER,
+    c.execute('''CREATE TABLE IF NOT EXISTS message_logs
+                 (msg_id INTEGER, chat_id INTEGER, topic_id INTEGER, user_id INTEGER,
+                  text TEXT, timestamp INTEGER, status TEXT DEFAULT 'PENDING', resolved_by TEXT, resolve_time INTEGER,
                   PRIMARY KEY (msg_id, chat_id))''')
     c.execute('''CREATE TABLE IF NOT EXISTS alert_tracking (
                  original_msg_id INTEGER,
@@ -99,7 +108,8 @@ def init_db():
     # ၃။ 🚨 Migration Engine (Column အသစ်များ အလိုအလျောက် စစ်ဆေးထည့်သွင်းခြင်း)
     migrations = {
         "staff": ["branch TEXT", "dept TEXT"],
-        "message_logs": ["text TEXT", "resolved_by TEXT", "resolve_time INTEGER", "topic_id INTEGER"]
+        "message_logs": ["text TEXT", "resolved_by TEXT", "resolve_time INTEGER", "topic_id INTEGER"],
+        "os_groups": ["last_read_message_id INTEGER DEFAULT 0"]
     }
     
     for table, columns in migrations.items():
@@ -108,6 +118,12 @@ def init_db():
                 c.execute(f"ALTER TABLE {table} ADD COLUMN {col}")
             except sqlite3.OperationalError: # Column ရှိနှင့်ပြီးသားဆိုလျှင် ကျော်သွားမည်
                 pass
+
+    # Status များကို Uppercase သို့ Migration လုပ်ခြင်း
+    c.execute("UPDATE message_logs SET status = 'PENDING' WHERE status = 'pending'")
+    c.execute("UPDATE message_logs SET status = 'RESOLVED' WHERE status = 'resolved'")
+    c.execute("UPDATE message_logs SET status = 'ALERTED' WHERE status = 'alerted'")
+    c.execute("UPDATE message_logs SET status = 'ESCALATED' WHERE status = 'escalated'")
     
     # 'message' column အဟောင်းအား 'text' သို့ နာမည်ပြောင်းရန် (Legacy Support)
     try: c.execute("ALTER TABLE message_logs RENAME COLUMN message TO text")
@@ -127,7 +143,19 @@ def init_db():
 
     conn.commit()
     conn.close()
-    log.info("✅ Database (Version 3.7) Initialized & Migrated Successfully.")
+    log.info("✅ Database (Version 4.0 - 2-Worker Ready) Initialized & Migrated Successfully.")
+
+def update_last_read_id(chat_id, topic_id, last_id):
+    """ Smart Polling အတွက် နောက်ဆုံးဖတ်ပြီးသား Message ID ကို မှတ်သားရန် """
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE os_groups SET last_read_message_id = ? WHERE chat_id = ? AND topic_id = ?",
+            (last_id, chat_id, topic_id)
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
 # --- [ Settings Helpers ] ---
 def set_setting(key, value):
@@ -179,9 +207,20 @@ def log_message(msg_id, chat_id, topic_id, user_id, text, timestamp=None):
     if timestamp is None: timestamp = int(time.time())
     conn = get_connection()
     try:
-        conn.execute("INSERT OR IGNORE INTO message_logs (msg_id, chat_id, topic_id, user_id, text, timestamp, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')", 
+        conn.execute("INSERT OR IGNORE INTO message_logs (msg_id, chat_id, topic_id, user_id, text, timestamp, status) VALUES (?, ?, ?, ?, ?, ?, 'PENDING')",
                      (msg_id, chat_id, topic_id, user_id, text, timestamp))
+        rows_affected = conn.total_changes
         conn.commit()
+        
+        # Debug: စာမှတ်တမ်းတင်ခြင်း ရှိ/မရှိ စစ်ဆေး
+        if rows_affected > 0:
+            log.info(f"✓ Message {msg_id} in {chat_id} saved as PENDING")
+        else:
+            log.warning(f"⚠ Message {msg_id} in {chat_id} already exists or failed to save")
+            # အကယ်။ message_logs ထဲမှာ ရှိနှင့်ပြီးသား status စစ်ဆေးပါမည်
+            status_res = conn.execute("SELECT status FROM message_logs WHERE msg_id=? AND chat_id=?", (msg_id, chat_id)).fetchone()
+            if status_res:
+                log.info(f"  → Current status: {status_res[0]}")
     finally: conn.close()
 
 def resolve_message(msg_id, chat_id, staff_name, method='Reply'):
@@ -190,20 +229,62 @@ def resolve_message(msg_id, chat_id, staff_name, method='Reply'):
     full_staff_info = f"{staff_name} ({method})"
     try:
         if msg_id != 0:
-            conn.execute("UPDATE message_logs SET status='resolved', resolved_by=?, resolve_time=? WHERE msg_id=? AND chat_id=?",
+            conn.execute("UPDATE message_logs SET status='RESOLVED', resolved_by=?, resolve_time=? WHERE msg_id=? AND chat_id=?",
                          (full_staff_info, now, msg_id, chat_id))
         else:
-            conn.execute("UPDATE message_logs SET status='resolved', resolved_by=?, resolve_time=? WHERE chat_id=? AND status IN ('pending', 'alerted', 'escalated')",
+            conn.execute("UPDATE message_logs SET status='RESOLVED', resolved_by=?, resolve_time=? WHERE chat_id=? AND status IN ('PENDING', 'ALERTED', 'ESCALATED')",
                          (full_staff_info, now, chat_id))
         conn.commit()
     finally: conn.close()
 
 # --- [ Watchdog & Context Helpers ] ---
+def get_pending_messages(minutes=15):
+    """ ၁၅ မိနစ်ထက်ကျော်နေသော Pending စာများကို ဆွဲထုတ်ပေးသည် """
+    conn = get_connection()
+    threshold = int(time.time()) - (minutes * 60)
+    res = conn.execute(
+        "SELECT msg_id, chat_id, topic_id, text, timestamp FROM message_logs WHERE status='PENDING' AND timestamp < ? ORDER BY timestamp ASC",
+        (threshold,)
+    ).fetchall()
+    conn.close()
+    return res
+
+def get_active_alerts_for_group(chat_id, topic_id):
+    """ လက်ရှိ group/topic မှာ တက်နေဆဲဖြစ်သော Alert များကို ရှာပေးသည် """
+    conn = get_connection()
+    res = conn.execute(
+        """SELECT a.alert_msg_id, a.alert_chat_id, m.text
+           FROM alert_tracking a
+           JOIN message_logs m ON a.original_msg_id = m.msg_id AND a.chat_id = m.chat_id
+           WHERE a.chat_id = ? AND m.topic_id = ? AND m.status IN ('ALERTED', 'ESCALATED')
+           LIMIT 5""",
+        (chat_id, topic_id)
+    ).fetchall()
+    conn.close()
+    return res
+
+def get_messages_after(chat_id, topic_id, msg_id):
+    """ သတ်မှတ်ထားသော message နောက်ပိုင်းဝင်လာသည့် စာများကို ဆွဲထုတ်ပေးသည် (ဝန်ထမ်းစာများအပါအဝင်) """
+    conn = get_connection()
+    res = conn.execute(
+        "SELECT text, user_id, timestamp FROM message_logs WHERE chat_id = ? AND topic_id = ? AND msg_id > ? ORDER BY msg_id ASC LIMIT 10",
+        (chat_id, topic_id, msg_id)
+    ).fetchall()
+    conn.close()
+    return res
+
+def update_message_status(msg_id, chat_id, status):
+    """ Message တစ်ခုချင်းစီ၏ Status ကို Update လုပ်ရန် """
+    conn = get_connection()
+    conn.execute("UPDATE message_logs SET status = ? WHERE msg_id = ? AND chat_id = ?", (status, msg_id, chat_id))
+    conn.commit()
+    conn.close()
+
 def get_pending_baskets(minutes=15):
     """ Alert မတက်ရသေးသော Pending စာများအား chat_id အလိုက် ဆွဲထုတ်ပေးသည် """
     conn = get_connection()
     threshold = int(time.time()) - (minutes * 60)
-    res = conn.execute("SELECT DISTINCT chat_id, topic_id FROM message_logs WHERE status='pending' AND timestamp < ?", (threshold,)).fetchall()
+    res = conn.execute("SELECT DISTINCT chat_id, topic_id FROM message_logs WHERE status='PENDING' AND timestamp < ?", (threshold,)).fetchall()
     conn.close()
     return res
 
@@ -211,9 +292,9 @@ def get_topic_context(chat_id, topic_id):
     """ AI Analysis အတွက် မဖြေရသေးသောစာများနှင့် နောက်ဆုံးဖြေထားသောစာ ၅ ကြောင်းကို ယူသည် """
     conn = get_connection()
     c = conn.cursor()
-    c.execute("SELECT msg_id, text, timestamp FROM message_logs WHERE chat_id=? AND topic_id=? AND status='pending' ORDER BY timestamp ASC", (chat_id, topic_id))
+    c.execute("SELECT msg_id, text, timestamp FROM message_logs WHERE chat_id=? AND topic_id=? AND status='PENDING' ORDER BY timestamp ASC", (chat_id, topic_id))
     pending = c.fetchall()
-    c.execute("SELECT text FROM message_logs WHERE chat_id=? AND topic_id=? AND status='resolved' ORDER BY timestamp DESC LIMIT 5", (chat_id, topic_id))
+    c.execute("SELECT text FROM message_logs WHERE chat_id=? AND topic_id=? AND status='RESOLVED' ORDER BY timestamp DESC LIMIT 5", (chat_id, topic_id))
     resolved = [r[0] for r in c.fetchall()]
     c.execute("SELECT shop_name FROM os_groups WHERE chat_id=? LIMIT 1", (chat_id,))
     g_res = c.fetchone()
@@ -325,9 +406,9 @@ def get_pending_counts_by_shop():
         return conn.execute(
             """
             SELECT o.shop_name, COUNT(m.msg_id) 
-            FROM message_logs m 
-            JOIN os_groups o ON m.chat_id = o.chat_id 
-            WHERE m.status='pending' 
+            FROM message_logs m
+            JOIN os_groups o ON m.chat_id = o.chat_id
+            WHERE m.status='PENDING'
             GROUP BY m.chat_id
             """
         ).fetchall()
@@ -347,7 +428,7 @@ def find_os_groups_by_keyword(keyword):
 
 def get_staff_stats(period="all"):
     conn = get_connection()
-    query = "SELECT resolved_by, COUNT(*), AVG((resolve_time - timestamp)/60.0) FROM message_logs WHERE status = 'resolved' AND resolved_by IS NOT NULL "
+    query = "SELECT resolved_by, COUNT(*), AVG((resolve_time - timestamp)/60.0) FROM message_logs WHERE status = 'RESOLVED' AND resolved_by IS NOT NULL "
     if period == "today":
         start_day = int(datetime.now().replace(hour=0, minute=0, second=0).timestamp())
         query += f"AND resolve_time >= {start_day} "

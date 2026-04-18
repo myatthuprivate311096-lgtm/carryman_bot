@@ -60,10 +60,14 @@ def register_handlers(bot):
 
     @bot.message_handler(commands=['restart'])
     def handle_restart(message):
-        if message.from_user.id == MANAGER_ID:
-            bot.reply_to(message, "🔄 Bot ကို Restart ချနေပါပြီ... စက္ကန့်အနည်းငယ် စောင့်ပေးပါဗျ။")
-            time.sleep(1)
+        user_id = message.from_user.id
+        if user_id == MANAGER_ID:
+            bot.reply_to(message, "🔄 **Bot Hard Restart:**\nစနစ်တစ်ခုလုံးကို အမြစ်ပြတ်သတ်ပြီး အသစ်ပြန်နှိုးနေပါပြီ။ ၁၀ စက္ကန့်ခန့် စောင့်ပေးပါဗျ။")
+            log.warning(f"⚠️ Restart command issued by {user_id}. Killing process...")
+            # Systemd က အလိုအလျောက် ပြန်နှိုးပေးမှာဖြစ်လို့ process ကို သတ်လိုက်ရုံပါပဲ
             os._exit(0)
+        elif db_manager.check_if_staff(user_id):
+            bot.reply_to(message, "⚠️ စနစ်ကို Restart ချခွင့်မှာ Manager သီးသန့်သာ ရှိပါသည်။")
 
     @bot.message_handler(commands=['stafflist'])
     def handle_staff_list(message):
