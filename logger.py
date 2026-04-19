@@ -19,7 +19,7 @@ file_handler = RotatingFileHandler(
     backupCount=5, 
     encoding='utf-8'
 )
-# ဖိုင်ထဲတွင် ရေးမှတ်မည့် ပုံစံ (ဥပမာ - 2026-04-14 10:30:00 | ERROR | alert_system | Connection timeout)
+# ဖိုင်ထဲတွင် ရေးမှတ်မည့် ပုံစံ (ဥပမာ - 2026-04-14 10:30:00 | ERROR | main_bot | Connection timeout)
 file_formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(module)s | %(message)s', datefmt='%Y-%m-%d %I:%M:%S %p')
 file_handler.setFormatter(file_formatter)
 

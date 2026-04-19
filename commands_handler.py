@@ -4,7 +4,6 @@ from telebot import types
 from logger import log
 import db_manager
 import group_creator
-import alert_system
 
 # Environment Variable
 MANAGER_ID = int(os.getenv('MANAGER_ID'))
@@ -62,10 +61,20 @@ def register_handlers(bot):
     def handle_restart(message):
         user_id = message.from_user.id
         if user_id == MANAGER_ID:
-            bot.reply_to(message, "🔄 **Bot Hard Restart:**\nစနစ်တစ်ခုလုံးကို အမြစ်ပြတ်သတ်ပြီး အသစ်ပြန်နှိုးနေပါပြီ။ ၁၀ စက္ကန့်ခန့် စောင့်ပေးပါဗျ။")
-            log.warning(f"⚠️ Restart command issued by {user_id}. Killing process...")
-            # Systemd က အလိုအလျောက် ပြန်နှိုးပေးမှာဖြစ်လို့ process ကို သတ်လိုက်ရုံပါပဲ
-            os._exit(0)
+            try:
+                bot.reply_to(message, "🔄 **Bot Hard Restart:**\nစနစ်တစ်ခုလုံးကို အမြစ်ပြတ်သတ်ပြီး အသစ်ပြန်နှိုးနေပါပြီ။ ၁၀ စက္ကန့်ခန့် စောင့်ပေးပါဗျ။")
+                log.warning(f"⚠️ Restart command issued by {user_id}. Cleaning up...")
+                
+                # 💡 Graceful Shutdown: Polling ကို အရင်ရပ်ပြီး Connection သေချာဖြတ်မည်
+                bot.stop_polling()
+                time.sleep(5) # Telegram Server ဘက်မှာ Connection ပြတ်တောက်ရန် အချိန်ပေးခြင်း
+                
+                log.info("🚀 Process exiting for restart...")
+                # PM2 က အလိုအလျောက် ပြန်နှိုးပေးမည်
+                os._exit(0)
+            except Exception as e:
+                log.error(f"❌ Restart Error: {e}")
+                os._exit(1)
         elif db_manager.check_if_staff(user_id):
             bot.reply_to(message, "⚠️ စနစ်ကို Restart ချခွင့်မှာ Manager သီးသန့်သာ ရှိပါသည်။")
 
@@ -169,47 +178,39 @@ def register_handlers(bot):
         if message.from_user.id == MANAGER_ID:
             group_creator.create_new_group(bot, message)
 
-    # --- [ Section ၆: Instant Alert (Reply Support ဖြင့် အဆင့်မြှင့်ထားသည်) ] ---
+    # --- [ Section ၆: Instant Alert ] ---
     @bot.message_handler(commands=['alert'])
     def handle_manual_alert(message):
+        """ Reply ဆွဲပြီး /alert ရိုက်ပါက Office Hours မကြည့်ဘဲ ချက်ချင်း Alert ထုတ်ပေးခြင်း """
         user_id = message.from_user.id
-        chat_id = message.chat.id
-        if db_manager.check_if_staff(user_id) or user_id == MANAGER_ID:
-            if db_manager.check_if_os_group(chat_id):
-                
-                original_text = ""
-                msg_link = ""
-                original_msg_id = 0
-                
-                # ၁။ Reply ရှိပါက ထိုစာ၏ Text ကို issue_text အဖြစ်ယူမည်
-                if message.reply_to_message:
-                    original_msg_id = message.reply_to_message.message_id
-                    original_text = message.reply_to_message.text or message.reply_to_message.caption or "[Media / Sticker]"
-                    issue_text = original_text
-                    
-                    link_chat_id = str(chat_id).replace("-100", "")
-                    msg_link = f"https://t.me/c/{link_chat_id}/{original_msg_id}"
-                    if message.reply_to_message.is_topic_message:
-                        msg_link += f"?thread={message.reply_to_message.message_thread_id}"
-                
-                # ၂။ /alert နောက်တွင် စာသားပါပါက ၎င်းကို issue_text အဖြစ် ဦးစားပေးယူမည်
-                cmd_text = message.text.replace('/alert', '').strip()
-                if cmd_text:
-                    issue_text = cmd_text
-                elif not message.reply_to_message:
-                    # ၃။ နှစ်ခုလုံးမရှိမှသာ Default သုံးမည်
-                    issue_text = "အရေးပေါ် အကူအညီလိုပါသည် (Manual Alert)"
+        if user_id == MANAGER_ID or db_manager.check_if_staff(user_id):
+            if not message.reply_to_message:
+                bot.reply_to(message, "⚠️ Alert ထုတ်လိုသော စာကို Reply ဆွဲပြီးမှ `/alert` ဟု ရိုက်ပေးပါဗျာ။")
+                return
 
-                try: bot.delete_message(chat_id, message.message_id)
-                except: pass
-                
-                topic_id = message.message_thread_id if message.is_topic_message else 0
-                
-                try:
-                    # 💡 original_msg_id ကိုပါ ထည့်သွင်းပေးပို့သည်
-                    alert_system.handle_instant_alert(bot, chat_id, topic_id, message.from_user.first_name, issue_text, original_text=original_text, msg_link=msg_link, original_msg_id=original_msg_id)
-                except Exception as e:
-                    log.error(f"Alert System ခေါ်ယူရာတွင် Error: {e}")
+            orig_msg = message.reply_to_message
+            chat_id = message.chat.id
+            topic_id = orig_msg.message_thread_id if orig_msg.is_topic_message else 0
+            
+            # OS Group ဟုတ်မဟုတ် စစ်ဆေးခြင်း
+            if not db_manager.check_if_os_group(chat_id):
+                bot.reply_to(message, "⚠️ ဤ Command ကို OS Group များအတွင်းသာ အသုံးပြုနိုင်ပါသည်။")
+                return
+
+            import auditor
+            _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
+            text = orig_msg.text or orig_msg.caption or "[Media Content]"
+            
+            # ချက်ချင်း Alert ပို့ခြင်း
+            alert_id = auditor.send_new_alert(
+                chat_id, topic_id, orig_msg.message_id,
+                text, "Manual Alert", shop_name, orig_msg.date
+            )
+            
+            if alert_id:
+                bot.reply_to(message, f"🚀 **Manual Alert Sent!**\nဗဟိုဌာနဆီသို့ Alert ပို့ဆောင်ပြီးပါပြီ။")
+            else:
+                bot.reply_to(message, "❌ Alert ပို့ဆောင်မှု မအောင်မြင်ပါ။")
 
     # --- [ Section ၇: OS Group စာရင်းနှင့် Register စနစ် ] ---
     @bot.message_handler(commands=['oslist'])
@@ -294,23 +295,17 @@ def register_handlers(bot):
         if data.get("pickup_topic_id", 0) != 0:
             topic_payload.append({
                 "topic_name": "Pick Up/Urgent/စုံစမ်းရန်",
-                "topic_id": data["pickup_topic_id"],
-                "route_topic_id": 1,
-                "department_name": "Pick Up"
+                "topic_id": data["pickup_topic_id"]
             })
         if data.get("error_topic_id", 0) != 0:
             topic_payload.append({
                 "topic_name": "Error",
-                "topic_id": data["error_topic_id"],
-                "route_topic_id": 37,
-                "department_name": "Error"
+                "topic_id": data["error_topic_id"]
             })
         if data.get("finance_topic_id", 0) != 0:
             topic_payload.append({
                 "topic_name": "Fin & Voc",
-                "topic_id": data["finance_topic_id"],
-                "route_topic_id": 35,
-                "department_name": "Fin & Voc"
+                "topic_id": data["finance_topic_id"]
             })
 
         if not topic_payload:
@@ -319,8 +314,8 @@ def register_handlers(bot):
             return
 
         try:
-            db_manager.save_manual_register_with_routes(chat_id, shop_name, topic_payload, -1003601049225)
-            bot.reply_to(message, f"✅ {shop_name} အား မှတ်ပုံတင်ပြီး Topic များကို Alert System နှင့် အလိုအလျောက် ချိတ်ဆက်ပြီးပါပြီ။")
+            db_manager.save_manual_register(chat_id, shop_name, topic_payload)
+            bot.reply_to(message, f"✅ {shop_name} အား မှတ်ပုံတင်ပြီးပါပြီ။")
         except Exception as e:
             log.error(f"Manual register failed: {e}")
             bot.reply_to(message, f"❌ Register Error: {e}")

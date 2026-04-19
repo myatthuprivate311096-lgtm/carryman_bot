@@ -6748,3 +6748,438 @@
 2026-04-18 05:13:19 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=479.2
 2026-04-18 05:13:19 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
 2026-04-18 05:13:19 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:14:19 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:14:19
+2026-04-18 05:14:19 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:14:19 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:14:19 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=480.2
+2026-04-18 05:14:19 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:14:19 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:15:19 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:15:19
+2026-04-18 05:15:19 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:15:19 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:15:19 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=481.2
+2026-04-18 05:15:19 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:15:19 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:16:19 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:16:19
+2026-04-18 05:16:19 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:16:19 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:16:19 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=482.2
+2026-04-18 05:16:19 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:16:19 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:17:19 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:17:19
+2026-04-18 05:17:19 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:17:19 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:17:19 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=483.2
+2026-04-18 05:17:19 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:17:19 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:18:20 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:18:20
+2026-04-18 05:18:20 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:18:20 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:18:20 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=484.22
+2026-04-18 05:18:20 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:18:20 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:19:20 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:19:20
+2026-04-18 05:19:20 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:19:20 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:19:20 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=485.22
+2026-04-18 05:19:20 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:19:20 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:20:20 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:20:20
+2026-04-18 05:20:20 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:20:20 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:20:20 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=486.22
+2026-04-18 05:20:20 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:20:20 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:21:20 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:21:20
+2026-04-18 05:21:20 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:21:20 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:21:20 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=487.22
+2026-04-18 05:21:20 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:21:20 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:22:20 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:22:20
+2026-04-18 05:22:20 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:22:20 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:22:20 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=488.22
+2026-04-18 05:22:20 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:22:20 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:23:20 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:23:20
+2026-04-18 05:23:20 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:23:20 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:23:20 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=489.22
+2026-04-18 05:23:20 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:23:20 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:24:20 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:24:20
+2026-04-18 05:24:20 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:24:20 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:24:20 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=490.22
+2026-04-18 05:24:20 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:24:20 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:25:21 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:25:21
+2026-04-18 05:25:21 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:25:21 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:25:21 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=491.23
+2026-04-18 05:25:23 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:25:23 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:26:24 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:26:24
+2026-04-18 05:26:24 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:26:24 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:26:24 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=492.28
+2026-04-18 05:26:24 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:26:24 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:27:24 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:27:24
+2026-04-18 05:27:24 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:27:24 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:27:24 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=493.28
+2026-04-18 05:27:24 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:27:24 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:28:24 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:28:24
+2026-04-18 05:28:24 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:28:24 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:28:24 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=494.28
+2026-04-18 05:28:24 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:28:24 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:29:24 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:29:24
+2026-04-18 05:29:24 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:29:24 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:29:24 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=495.28
+2026-04-18 05:29:24 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:29:24 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:30:24 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:30:24
+2026-04-18 05:30:24 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:30:24 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:30:24 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=496.28
+2026-04-18 05:30:24 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:30:24 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:31:24 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:31:24
+2026-04-18 05:31:24 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:31:24 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:31:24 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=497.28
+2026-04-18 05:31:25 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:31:25 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:32:25 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:32:25
+2026-04-18 05:32:25 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:32:25 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:32:25 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=498.3
+2026-04-18 05:32:25 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:32:25 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:33:25 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:33:25
+2026-04-18 05:33:25 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:33:25 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:33:25 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=499.3
+2026-04-18 05:33:25 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:33:25 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:34:25 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:34:25
+2026-04-18 05:34:25 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:34:25 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:34:25 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=500.3
+2026-04-18 05:34:25 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:34:25 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:35:25 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:35:25
+2026-04-18 05:35:25 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:35:25 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:35:25 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=501.3
+2026-04-18 05:35:26 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:35:26 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:36:26 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:36:26
+2026-04-18 05:36:26 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:36:26 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:36:26 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=502.32
+2026-04-18 05:36:26 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:36:26 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:37:26 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:37:26
+2026-04-18 05:37:26 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:37:26 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:37:26 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=503.32
+2026-04-18 05:37:26 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:37:26 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:38:26 PM | INFO | alert_system | 
+>> Watchdog checking at 2026-04-18 17:38:26
+2026-04-18 05:38:26 PM | INFO | alert_system | Total pending messages: 2
+2026-04-18 05:38:26 PM | INFO | alert_system | Watchdog eligible baskets (>15m): 1
+2026-04-18 05:38:26 PM | INFO | alert_system | Basket age check chat_id=-1003539520778, topic_id=0, oldest_age_mins=504.32
+2026-04-18 05:38:26 PM | ERROR | ai_engine | ❌ AI Engine Error v6.0 (Gemini): Error code: 400 - {'error': {'message': 'google/gemini-3.1-flash-lite is not a valid model ID', 'code': 400}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-18 05:38:26 PM | WARNING | alert_system | ⚠️ AI Engine returned empty for AI Testing OS Gp. Keeping messages as pending.
+2026-04-18 05:39:12 PM | WARNING | commands_handler | ⚠️ Restart command issued by 8353570874. Killing process...
+2026-04-18 05:39:17 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 05:39:17 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 05:43:47 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 05:43:47 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 05:53:21 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 05:53:21 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 05:55:48 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 05:55:48 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 05:56:39 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 05:56:39 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 05:57:23 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 05:57:23 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 05:57:50 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 05:57:50 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 05:57:52 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 05:58:03 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 05:58:03 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 05:58:04 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 06:03:28 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:03:28 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:03:28 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 06:03:51 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:03:51 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:03:52 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 06:07:11 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:07:11 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:07:12 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 06:07:16 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:07:16 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:07:21 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:07:21 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:07:22 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 06:12:50 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:12:50 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:12:51 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 06:12:55 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:12:55 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:17:06 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:17:06 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:30:43 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 06:43:43 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:43:43 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:44:36 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:44:36 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:44:40 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:44:40 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:44:53 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:44:53 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:45:07 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:45:07 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:45:22 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:45:22 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:45:36 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:45:36 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:45:54 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:45:54 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:46:20 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:46:20 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:52:29 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:52:29 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:52:35 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:52:35 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:52:35 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:52:35 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:52:36 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 06:52:45 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:52:45 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:52:55 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:52:55 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:53:05 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:53:05 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:53:15 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:53:15 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:53:25 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:53:25 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:53:35 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:53:35 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:53:38 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:53:38 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:53:39 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 06:53:43 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:53:43 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:53:43 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:53:43 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:53:53 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:53:53 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:54:03 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:54:03 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:54:13 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:54:13 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:54:23 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:54:23 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:54:33 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:54:33 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:54:43 PM | ERROR | main_bot | ⚠️ Bot Polling Error: A request to the Telegram API was unsuccessful. Error code: 409. Description: Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-04-18 06:54:43 PM | WARNING | main_bot | 🔄 Conflict detected, waiting 10 seconds before retry...
+2026-04-18 06:54:50 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:54:50 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:54:51 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 06:55:01 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:55:01 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:55:01 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 06:58:33 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 06:58:33 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 06:58:33 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 07:00:07 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 07:00:07 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 07:00:07 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 07:00:34 PM | WARNING | commands_handler | ⚠️ Restart command issued by 8353570874. Cleaning up...
+2026-04-18 07:00:36 PM | INFO | commands_handler | 🚀 Process exiting for restart...
+2026-04-18 07:00:37 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 07:00:37 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 07:13:26 PM | WARNING | commands_handler | ⚠️ Restart command issued by 8353570874. Cleaning up...
+2026-04-18 07:13:28 PM | INFO | commands_handler | 🚀 Process exiting for restart...
+2026-04-18 07:13:28 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 07:13:28 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 07:20:35 PM | WARNING | commands_handler | ⚠️ Restart command issued by 8353570874. Cleaning up...
+2026-04-18 07:20:37 PM | INFO | commands_handler | 🚀 Process exiting for restart...
+2026-04-18 07:20:37 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 07:20:37 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 07:22:16 PM | INFO | test_auditor | 🧪 Starting Auditor Logic Test...
+2026-04-18 07:22:16 PM | INFO | test_auditor | ✅ Inserted test message 999999
+2026-04-18 07:22:16 PM | INFO | test_auditor | 🧠 Running Auditor Evaluation...
+2026-04-18 07:22:16 PM | INFO | test_auditor | 🎯 Auditor found the test message! Proceeding with AI evaluation...
+2026-04-18 07:22:17 PM | INFO | test_auditor | 🤖 AI Decision: NEW_ALERT
+2026-04-18 07:22:17 PM | INFO | test_auditor | 📝 AI Summary: Order 123 delay
+2026-04-18 07:22:17 PM | INFO | auditor | 📢 Alert sent for 999999 in AI Testing OS Gp
+2026-04-18 07:22:17 PM | INFO | test_auditor | 🚀 SUCCESS: Alert sent to Telegram! Alert ID: 194
+2026-04-18 07:23:17 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 07:23:17 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 07:23:17 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 07:37:41 PM | INFO | test_central_mapping | 🧪 Starting Central Mapping Test...
+2026-04-18 07:37:41 PM | INFO | test_central_mapping | ✅ Setup test topics in os_groups
+2026-04-18 07:37:41 PM | INFO | test_central_mapping | 🔍 Testing Error Topic (ID: 101) -> Routed to Chat: -1003601049225, Topic: 37
+2026-04-18 07:37:41 PM | INFO | test_central_mapping | ✅ Error Routing is CORRECT
+2026-04-18 07:37:41 PM | INFO | test_central_mapping | 🔍 Testing Pick Up Topic (ID: 102) -> Routed to Chat: -1003601049225, Topic: 1
+2026-04-18 07:37:41 PM | INFO | test_central_mapping | ✅ Pick Up Routing is CORRECT
+2026-04-18 07:37:41 PM | INFO | test_central_mapping | 🔍 Testing Finance Topic (ID: 103) -> Routed to Chat: -1003601049225, Topic: 35
+2026-04-18 07:37:41 PM | INFO | test_central_mapping | ✅ Finance Routing is CORRECT
+2026-04-18 07:37:41 PM | INFO | test_central_mapping | 🚀 Testing Alert Sending with View Message Button...
+2026-04-18 07:37:42 PM | INFO | auditor | 📢 Alert sent for 888888 in AI Testing OS Gp to Central Group
+2026-04-18 07:37:42 PM | INFO | test_central_mapping | ✅ SUCCESS: Central Alert sent! Alert ID: 88
+2026-04-18 07:53:39 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 07:53:39 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 07:53:39 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 08:01:40 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 08:01:40 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 08:01:40 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 08:04:13 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 08:04:13 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-18 08:04:13 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-18 08:04:51 PM | WARNING | commands_handler | ⚠️ Restart command issued by 8353570874. Cleaning up...
+2026-04-18 08:04:53 PM | INFO | commands_handler | 🚀 Process exiting for restart...
+2026-04-18 08:04:54 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-18 08:04:54 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-19 02:40:14 AM | WARNING | auditor | 🚨 Escalated 999999 to Manager
+2026-04-19 04:23:12 AM | INFO | db_manager | ✓ Message 196 in -1003539520778 saved as PENDING
+2026-04-19 04:23:12 AM | INFO | main_bot | 📩 New Pending Message from 1679942873 in -1003539520778 (Topic: 0)
+2026-04-19 04:24:59 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-19 04:24:59 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-19 04:25:00 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-19 04:38:31 AM | INFO | auditor | 📢 Alert sent for 196 in AI Testing OS Gp to Central Group
+2026-04-19 04:50:13 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-19 04:50:13 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-19 04:50:14 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-19 04:52:00 AM | WARNING | commands_handler | ⚠️ Restart command issued by 8353570874. Cleaning up...
+2026-04-19 04:52:05 AM | INFO | commands_handler | 🚀 Process exiting for restart...
+2026-04-19 04:52:06 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-19 04:52:06 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-19 04:52:43 AM | INFO | db_manager | ✅ Message 196 in -1003539520778 resolved by Myat Thu
+2026-04-19 04:52:44 AM | WARNING | auditor | ⚠️ Could not delete alert 366: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: chat not found
+2026-04-19 04:52:45 AM | INFO | main_bot | ✅ Message 196 resolved via Done Button by Myat Thu
+2026-04-19 04:53:43 AM | INFO | db_manager | ✅ Message 194 in -1003539520778 resolved by Myat Thu
+2026-04-19 04:53:43 AM | INFO | main_bot | ✅ Message 194 marked as RESOLVED via Reply by Myat Thu
+2026-04-19 04:56:01 AM | INFO | db_manager | ✓ Message 372 in -1003883905797 saved as PENDING
+2026-04-19 04:56:01 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 0)
+2026-04-19 05:01:02 AM | INFO | db_manager | ✓ Message 1836 in -1003798739565 saved as PENDING
+2026-04-19 05:01:02 AM | INFO | main_bot | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 6)
+2026-04-19 05:01:39 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-19 05:01:39 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-19 05:01:40 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-19 05:01:43 AM | INFO | db_manager | ✓ Message 1837 in -1003798739565 saved as PENDING
+2026-04-19 05:01:43 AM | INFO | main_bot | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 6)
+2026-04-19 05:02:37 AM | WARNING | commands_handler | ⚠️ Restart command issued by 8353570874. Cleaning up...
+2026-04-19 05:02:42 AM | INFO | commands_handler | 🚀 Process exiting for restart...
+2026-04-19 05:02:42 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-19 05:02:42 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-19 05:05:05 AM | INFO | db_manager | ✓ Message 1839 in -1003798739565 saved as PENDING
+2026-04-19 05:05:05 AM | INFO | main_bot | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 4)
+2026-04-19 05:06:01 AM | INFO | db_manager | ✅ Message 1837 in -1003798739565 resolved by Data Entry
+2026-04-19 05:06:02 AM | INFO | main_bot | ✅ Message 1837 marked as RESOLVED via Reply by Data Entry
+2026-04-19 05:07:53 AM | INFO | db_manager | ✅ Message 1839 in -1003798739565 resolved by Yoon Waddy
+2026-04-19 05:07:53 AM | INFO | main_bot | ✅ Message 1839 marked as RESOLVED via Reply by Yoon Waddy
+2026-04-19 05:08:09 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-19 05:08:09 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-19 05:08:10 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-19 05:08:41 AM | INFO | db_manager | ✅ Message 1660 in -1003798739565 resolved by CS 2
+2026-04-19 05:08:42 AM | INFO | main_bot | ✅ Message 1660 marked as RESOLVED via Reply by CS 2
+2026-04-19 05:09:55 AM | INFO | db_manager | ✅ Message 1660 in -1003798739565 resolved by CS 2
+2026-04-19 05:09:56 AM | INFO | main_bot | ✅ Message 1660 marked as RESOLVED via Reply by CS 2
+2026-04-19 05:10:07 AM | INFO | db_manager | ✓ Message 1846 in -1003798739565 saved as PENDING
+2026-04-19 05:10:07 AM | INFO | main_bot | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 6)
+2026-04-19 05:10:51 AM | INFO | db_manager | ✓ Message 1847 in -1003798739565 saved as PENDING
+2026-04-19 05:10:51 AM | INFO | main_bot | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 6)
+2026-04-19 05:11:11 AM | ERROR | auditor | ❌ Failed to send alert: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message thread not found
+2026-04-19 05:11:49 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-19 05:11:49 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-19 05:11:50 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-19 05:11:50 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-19 05:14:27 AM | INFO | db_manager | ✓ Message 184 in -1003552853303 saved as PENDING
+2026-04-19 05:14:27 AM | INFO | main_bot | 📩 New Pending Message from 1621732326 in -1003552853303 (Topic: 0)
+2026-04-19 05:14:47 AM | INFO | db_manager | ✓ Message 185 in -1003552853303 saved as PENDING
+2026-04-19 05:14:47 AM | INFO | main_bot | 📩 New Pending Message from 1621732326 in -1003552853303 (Topic: 0)
+2026-04-19 05:16:05 AM | INFO | db_manager | ✅ Message 1815 in -1003798739565 resolved by Data Entry
+2026-04-19 05:16:06 AM | INFO | main_bot | ✅ Message 1815 marked as RESOLVED via Reply by Data Entry
+2026-04-19 05:16:21 AM | INFO | auditor | 📢 Alert sent for 1836 in Tina Fashion to Central Group
+2026-04-19 05:16:53 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-19 05:17:07 AM | INFO | db_manager | ✓ Message 1850 in -1003798739565 saved as PENDING
+2026-04-19 05:17:07 AM | INFO | main_bot | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 0)
+2026-04-19 05:21:53 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-19 05:25:24 AM | INFO | auditor | ➕ Appended message 1846 to alert 373
+2026-04-19 05:25:57 AM | INFO | auditor | 📢 Alert sent for 1847 in Tina Fashion to Central Group
+2026-04-19 05:26:59 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-19 05:27:51 AM | INFO | db_manager | ✓ Message 377 in -1003883905797 saved as PENDING
+2026-04-19 05:27:51 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 6)
+2026-04-19 05:29:30 AM | ERROR | auditor | ❌ Failed to send alert: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message thread not found
+2026-04-19 05:30:03 AM | ERROR | auditor | ❌ Failed to send alert: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message thread not found
+2026-04-19 05:32:05 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-19 05:32:36 AM | ERROR | auditor | ❌ Failed to send alert: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message thread not found
+2026-04-19 05:33:59 AM | INFO | db_manager | ✓ Message 302 in -1003868121514 saved as PENDING
+2026-04-19 05:33:59 AM | INFO | main_bot | 📩 New Pending Message from 1828417786 in -1003868121514 (Topic: 0)
+2026-04-19 05:34:35 AM | INFO | db_manager | ✓ Message 30 in -1003650157592 saved as PENDING
+2026-04-19 05:34:35 AM | INFO | main_bot | 📩 New Pending Message from 1653454117 in -1003650157592 (Topic: 0)
+2026-04-19 05:34:38 AM | INFO | db_manager | ✓ Message 120 in -1003345675653 saved as PENDING
+2026-04-19 05:34:38 AM | INFO | main_bot | 📩 New Pending Message from 5759882120 in -1003345675653 (Topic: 6)
+2026-04-19 05:36:12 AM | INFO | db_manager | ✓ Message 268 in -1003768124152 saved as PENDING
+2026-04-19 05:36:12 AM | INFO | main_bot | 📩 New Pending Message from 8445190818 in -1003768124152 (Topic: 6)
+2026-04-19 05:37:08 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-19 05:40:04 AM | INFO | db_manager | ✓ Message 118 in -1003837547495 saved as PENDING
+2026-04-19 05:40:04 AM | INFO | main_bot | 📩 New Pending Message from 7832992762 in -1003837547495 (Topic: 0)
+2026-04-19 05:40:27 AM | INFO | db_manager | ✓ Message 119 in -1003837547495 saved as PENDING
+2026-04-19 05:40:27 AM | INFO | main_bot | 📩 New Pending Message from 7832992762 in -1003837547495 (Topic: 0)
+2026-04-19 05:42:08 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-19 05:42:51 AM | INFO | db_manager | ✓ Message 14 in -1003847598260 saved as PENDING
+2026-04-19 05:42:51 AM | INFO | main_bot | 📩 New Pending Message from 1455375799 in -1003847598260 (Topic: 6)
+2026-04-19 05:43:09 AM | INFO | auditor | 📢 Alert sent for 377 in KSJB to Central Group
+2026-04-19 05:43:36 AM | INFO | db_manager | ✓ Message 199 in -1003823820784 saved as PENDING
+2026-04-19 05:43:36 AM | INFO | main_bot | 📩 New Pending Message from 5082912204 in -1003823820784 (Topic: 6)
+2026-04-19 05:43:41 AM | INFO | db_manager | ✅ Message 14 in -1003847598260 resolved by Thida Hlaing
+2026-04-19 05:43:41 AM | INFO | main_bot | ✅ Message 14 marked as RESOLVED via Reply by Thida Hlaing
+2026-04-19 05:44:26 AM | INFO | db_manager | ✓ Message 378 in -1003883905797 saved as PENDING
+2026-04-19 05:44:26 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 0)
+2026-04-19 05:45:17 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-19 05:45:17 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-19 05:45:17 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-19 05:45:17 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-19 05:46:35 AM | INFO | db_manager | ✅ Message 268 in -1003768124152 resolved by (60501)
+2026-04-19 05:46:36 AM | INFO | main_bot | ✅ Message 268 marked as RESOLVED via Reply by (60501)
+2026-04-19 05:46:48 AM | WARNING | auditor | 🚨 Escalated 1836 to Manager

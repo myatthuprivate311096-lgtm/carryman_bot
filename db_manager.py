@@ -15,135 +15,100 @@ ENV_FILE = os.path.join(BASE_DIR, '.env')
 load_dotenv(ENV_FILE)
 
 def clean_shop_name(raw_name):
-    """Shop name မှ emoji/non-ascii noise များကိုဖြတ်၍ base name ပြန်ပေးမည်"""
+    """
+    Shop name မှ emoji/non-ascii noise များကိုဖြတ်၍ base name ပြန်ပေးမည်။
+    🤝 ပါဝင်ပါက ၎င်း၏ ရှေ့က အမည်ကိုသာ ယူမည်။
+    """
     if raw_name is None:
         return "Unknown Shop"
-    base = str(raw_name).split('🤝')[0]
+    
+    # 🤝 ဖြင့် ခွဲထုတ်ခြင်း
+    raw_str = str(raw_name)
+    if '🤝' in raw_str:
+        base = raw_str.split('🤝')[0]
+    else:
+        base = raw_str
+        
+    # Emoji နှင့် Non-ASCII များကို ဖယ်ရှားခြင်း
     ascii_only = base.encode('ascii', 'ignore').decode('utf-8')
+    
+    # ပိုနေသော space များကို ရှင်းလင်းခြင်း
     cleaned = " ".join(ascii_only.split()).strip()
+    
     return cleaned or "Unknown Shop"
 
 def get_connection():
-    """ Database ချိတ်ဆက်မှုအား Multithreading နှင့် မြန်နှုန်းမြင့် WAL Mode သတ်မှတ်ခြင်း """
-    conn = sqlite3.connect(DB_FILE, check_same_thread=False)
-    conn.execute('PRAGMA journal_mode=WAL;') 
+    """ Database ချိတ်ဆက်မှုအား Multithreading နှင့် မြန်နှုန်းမြင့် WAL Mode သတ်မှတ်ခြင်း (Timeout 30s ထည့်ထားသည်) """
+    conn = sqlite3.connect(DB_FILE, check_same_thread=False, timeout=30)
+    conn.execute('PRAGMA journal_mode=WAL;')
     return conn
 
 def init_db():
+    """ Database initialization နှင့် migration များကို safe ဖြစ်အောင် လုပ်ဆောင်ပေးသည် (Version 5.0) """
     conn = get_connection()
-    c = conn.cursor()
-    
-    # ၁။ Table များ တည်ဆောက်ခြင်း
-    c.execute('CREATE TABLE IF NOT EXISTS staff (user_id INTEGER PRIMARY KEY, name TEXT, branch TEXT, dept TEXT)')
-    c.execute('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)')
-    c.execute('''CREATE TABLE IF NOT EXISTS os_groups (
-                 chat_id INTEGER,
-                 shop_name TEXT,
-                 group_id INTEGER,
-                 group_name TEXT,
-                 invite_link TEXT,
-                 topic_name TEXT,
-                 topic_id INTEGER,
-                 last_read_message_id INTEGER DEFAULT 0
-               )''')
-    c.execute('''CREATE TABLE IF NOT EXISTS message_logs
-                 (msg_id INTEGER, chat_id INTEGER, topic_id INTEGER, user_id INTEGER,
-                  text TEXT, timestamp INTEGER, status TEXT DEFAULT 'PENDING', resolved_by TEXT, resolve_time INTEGER,
-                  PRIMARY KEY (msg_id, chat_id))''')
-    c.execute('''CREATE TABLE IF NOT EXISTS alert_tracking (
-                 original_msg_id INTEGER,
-                 chat_id INTEGER,
-                 alert_msg_id INTEGER,
-                 alert_chat_id INTEGER,
-                 created_at INTEGER
-               )''')
-    c.execute('''CREATE TABLE IF NOT EXISTS routing_table (
-                 os_chat_id INTEGER,
-                 os_topic_id INTEGER,
-                 alert_chat_id INTEGER,
-                 alert_topic_id INTEGER,
-                 department_name TEXT,
-                 PRIMARY KEY (os_chat_id, os_topic_id)
-               )''')
-    
-    # os_groups schema ကို multi-topic support အတွက် migration လုပ်ခြင်း
-    c.execute("PRAGMA table_info(os_groups)")
-    os_cols = c.fetchall()
-    os_col_names = [col[1] for col in os_cols]
-    chat_id_is_pk = any(col[1] == "chat_id" and col[5] == 1 for col in os_cols)
-
-    if chat_id_is_pk:
-        c.execute('''CREATE TABLE IF NOT EXISTS os_groups_new (
+    try:
+        c = conn.cursor()
+        c.execute("BEGIN IMMEDIATE")
+        
+        # ၁။ Core Tables
+        c.execute('CREATE TABLE IF NOT EXISTS staff (user_id INTEGER PRIMARY KEY, name TEXT, branch TEXT, dept TEXT)')
+        c.execute('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)')
+        c.execute('''CREATE TABLE IF NOT EXISTS os_groups (
                      chat_id INTEGER,
                      shop_name TEXT,
                      group_id INTEGER,
                      group_name TEXT,
                      invite_link TEXT,
                      topic_name TEXT,
-                     topic_id INTEGER
+                     topic_id INTEGER,
+                     last_read_message_id INTEGER DEFAULT 0
                    )''')
-        c.execute('''INSERT INTO os_groups_new
-                     (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id)
-                     SELECT chat_id, shop_name, chat_id, shop_name, 'Legacy', 'Legacy', 0 FROM os_groups''')
-        c.execute("DROP TABLE os_groups")
-        c.execute("ALTER TABLE os_groups_new RENAME TO os_groups")
-    else:
-        os_group_migrations = {
-            "group_id": "INTEGER",
-            "group_name": "TEXT",
-            "invite_link": "TEXT",
-            "topic_name": "TEXT",
-            "topic_id": "INTEGER"
+        c.execute('''CREATE TABLE IF NOT EXISTS message_logs
+                     (msg_id INTEGER, chat_id INTEGER, topic_id INTEGER, user_id INTEGER,
+                      text TEXT, timestamp INTEGER, status TEXT DEFAULT 'PENDING', resolved_by TEXT, resolve_time INTEGER,
+                      PRIMARY KEY (msg_id, chat_id))''')
+        
+        c.execute('''CREATE TABLE IF NOT EXISTS alert_tracking (
+                     original_msg_id INTEGER,
+                     chat_id INTEGER,
+                     alert_msg_id INTEGER,
+                     alert_chat_id INTEGER,
+                     created_at INTEGER,
+                     PRIMARY KEY (original_msg_id, chat_id)
+                   )''')
+
+        # ၂။ Migration Engine (Column အသစ်များ အလိုအလျောက် စစ်ဆေးထည့်သွင်းခြင်း)
+        migrations = {
+            "staff": ["branch TEXT", "dept TEXT"],
+            "message_logs": ["text TEXT", "resolved_by TEXT", "resolve_time INTEGER", "topic_id INTEGER"],
+            "os_groups": ["last_read_message_id INTEGER DEFAULT 0"],
+            "alert_tracking": ["created_at INTEGER"]
         }
-        for col_name, col_type in os_group_migrations.items():
-            if col_name not in os_col_names:
+        
+        for table, columns in migrations.items():
+            for col in columns:
                 try:
-                    c.execute(f"ALTER TABLE os_groups ADD COLUMN {col_name} {col_type}")
+                    c.execute(f"ALTER TABLE {table} ADD COLUMN {col}")
                 except sqlite3.OperationalError:
                     pass
 
-    # ၂။ Default Settings ထည့်သွင်းခြင်း
-    c.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('bot_active', 'True')")
+        # ၃။ Default Settings
+        c.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('bot_active', 'True')")
 
-    # ၃။ 🚨 Migration Engine (Column အသစ်များ အလိုအလျောက် စစ်ဆေးထည့်သွင်းခြင်း)
-    migrations = {
-        "staff": ["branch TEXT", "dept TEXT"],
-        "message_logs": ["text TEXT", "resolved_by TEXT", "resolve_time INTEGER", "topic_id INTEGER"],
-        "os_groups": ["last_read_message_id INTEGER DEFAULT 0"]
-    }
-    
-    for table, columns in migrations.items():
-        for col in columns:
-            try:
-                c.execute(f"ALTER TABLE {table} ADD COLUMN {col}")
-            except sqlite3.OperationalError: # Column ရှိနှင့်ပြီးသားဆိုလျှင် ကျော်သွားမည်
-                pass
+        # ၄။ Performance Indexes
+        c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_status_time ON message_logs(status, timestamp)")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_chat_topic_status ON message_logs(chat_id, topic_id, status)")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_os_groups_chat_topic ON os_groups(chat_id, topic_id)")
 
-    # Status များကို Uppercase သို့ Migration လုပ်ခြင်း
-    c.execute("UPDATE message_logs SET status = 'PENDING' WHERE status = 'pending'")
-    c.execute("UPDATE message_logs SET status = 'RESOLVED' WHERE status = 'resolved'")
-    c.execute("UPDATE message_logs SET status = 'ALERTED' WHERE status = 'alerted'")
-    c.execute("UPDATE message_logs SET status = 'ESCALATED' WHERE status = 'escalated'")
-    
-    # 'message' column အဟောင်းအား 'text' သို့ နာမည်ပြောင်းရန် (Legacy Support)
-    try: c.execute("ALTER TABLE message_logs RENAME COLUMN message TO text")
-    except: pass
-
-    # alert_tracking created_at migration
-    try:
-        c.execute("ALTER TABLE alert_tracking ADD COLUMN created_at INTEGER")
-    except sqlite3.OperationalError:
-        pass
-
-    # ၄။ Performance Indexes (Read Speed Optimization)
-    c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_status_time ON message_logs(status, timestamp)")
-    c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_chat_topic_status ON message_logs(chat_id, topic_id, status)")
-    c.execute("CREATE INDEX IF NOT EXISTS idx_alert_tracking_chat_time ON alert_tracking(chat_id, created_at)")
-    c.execute("CREATE INDEX IF NOT EXISTS idx_os_groups_chat_topic ON os_groups(chat_id, topic_id)")
-
-    conn.commit()
-    conn.close()
-    log.info("✅ Database (Version 4.0 - 2-Worker Ready) Initialized & Migrated Successfully.")
+        conn.commit()
+        log.info("✅ Database (Version 5.0) Initialized Successfully.")
+    except sqlite3.OperationalError as e:
+        if "database is locked" in str(e):
+            log.warning("⚠️ Database is locked. Skipping migration.")
+        else:
+            log.error(f"❌ Database Init Error: {e}")
+    finally:
+        conn.close()
 
 def update_last_read_id(chat_id, topic_id, last_id):
     """ Smart Polling အတွက် နောက်ဆုံးဖတ်ပြီးသား Message ID ကို မှတ်သားရန် """
@@ -207,8 +172,11 @@ def log_message(msg_id, chat_id, topic_id, user_id, text, timestamp=None):
     if timestamp is None: timestamp = int(time.time())
     conn = get_connection()
     try:
-        conn.execute("INSERT OR IGNORE INTO message_logs (msg_id, chat_id, topic_id, user_id, text, timestamp, status) VALUES (?, ?, ?, ?, ?, ?, 'PENDING')",
-                     (msg_id, chat_id, topic_id, user_id, text, timestamp))
+        # 💡 Parameter ၆ ခု + 'PENDING' (စုစုပေါင်း ၇ ခု) ကို သေချာစွာ ထည့်သွင်းခြင်း
+        conn.execute(
+            "INSERT OR IGNORE INTO message_logs (msg_id, chat_id, topic_id, user_id, text, timestamp, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (msg_id, chat_id, topic_id, user_id, text, timestamp, 'PENDING')
+        )
         rows_affected = conn.total_changes
         conn.commit()
         
@@ -223,7 +191,11 @@ def log_message(msg_id, chat_id, topic_id, user_id, text, timestamp=None):
                 log.info(f"  → Current status: {status_res[0]}")
     finally: conn.close()
 
-def resolve_message(msg_id, chat_id, staff_name, method='Reply'):
+def resolve_message(msg_id, chat_id, staff_name, method='Reply', topic_id=None):
+    """
+    Message တစ်ခု သို့မဟုတ် Topic တစ်ခုလုံးကို Resolved အဖြစ် သတ်မှတ်ခြင်း။
+    topic_id ပါလာလျှင် ထို topic ထဲက pending များကိုသာ resolve လုပ်မည်။
+    """
     conn = get_connection()
     now = int(time.time())
     full_staff_info = f"{staff_name} ({method})"
@@ -231,20 +203,37 @@ def resolve_message(msg_id, chat_id, staff_name, method='Reply'):
         if msg_id != 0:
             conn.execute("UPDATE message_logs SET status='RESOLVED', resolved_by=?, resolve_time=? WHERE msg_id=? AND chat_id=?",
                          (full_staff_info, now, msg_id, chat_id))
+            log.info(f"✅ Message {msg_id} in {chat_id} resolved by {staff_name}")
         else:
-            conn.execute("UPDATE message_logs SET status='RESOLVED', resolved_by=?, resolve_time=? WHERE chat_id=? AND status IN ('PENDING', 'ALERTED', 'ESCALATED')",
-                         (full_staff_info, now, chat_id))
+            # msg_id 0 ဖြစ်လျှင် chat_id (နှင့် topic_id ပါလျှင် topic_id) အလိုက် resolve လုပ်မည်
+            query = "UPDATE message_logs SET status='RESOLVED', resolved_by=?, resolve_time=? WHERE chat_id=? AND status IN ('PENDING', 'ALERTED', 'ESCALATED')"
+            params = [full_staff_info, now, chat_id]
+            if topic_id is not None:
+                query += " AND topic_id=?"
+                params.append(topic_id)
+            
+            conn.execute(query, tuple(params))
+            log.warning(f"⚠️ Pending messages in {chat_id} (Topic: {topic_id}) resolved by {staff_name}")
+            
         conn.commit()
     finally: conn.close()
 
 # --- [ Watchdog & Context Helpers ] ---
-def get_pending_messages(minutes=15):
-    """ ၁၅ မိနစ်ထက်ကျော်နေသော Pending စာများကို ဆွဲထုတ်ပေးသည် """
+def get_pending_messages(minutes=15, limit=5, max_hours=48):
+    """
+    ၁၅ မိနစ်ထက်ကျော်နေသော Pending စာများကို ဆွဲထုတ်ပေးသည် (Safe Recovery အတွက် limit နှင့် max_hours ထည့်ထားသည်)
+    """
     conn = get_connection()
-    threshold = int(time.time()) - (minutes * 60)
+    now = int(time.time())
+    threshold = now - (minutes * 60)
+    lookback_limit = now - (max_hours * 3600)
+    
     res = conn.execute(
-        "SELECT msg_id, chat_id, topic_id, text, timestamp FROM message_logs WHERE status='PENDING' AND timestamp < ? ORDER BY timestamp ASC",
-        (threshold,)
+        """SELECT msg_id, chat_id, topic_id, text, timestamp
+           FROM message_logs
+           WHERE status='PENDING' AND timestamp < ? AND timestamp > ?
+           ORDER BY timestamp ASC LIMIT ?""",
+        (threshold, lookback_limit, limit)
     ).fetchall()
     conn.close()
     return res
@@ -267,7 +256,7 @@ def get_messages_after(chat_id, topic_id, msg_id):
     """ သတ်မှတ်ထားသော message နောက်ပိုင်းဝင်လာသည့် စာများကို ဆွဲထုတ်ပေးသည် (ဝန်ထမ်းစာများအပါအဝင်) """
     conn = get_connection()
     res = conn.execute(
-        "SELECT text, user_id, timestamp FROM message_logs WHERE chat_id = ? AND topic_id = ? AND msg_id > ? ORDER BY msg_id ASC LIMIT 10",
+        "SELECT text, user_id, timestamp, status FROM message_logs WHERE chat_id = ? AND topic_id = ? AND msg_id > ? ORDER BY msg_id ASC LIMIT 10",
         (chat_id, topic_id, msg_id)
     ).fetchall()
     conn.close()
@@ -279,14 +268,6 @@ def update_message_status(msg_id, chat_id, status):
     conn.execute("UPDATE message_logs SET status = ? WHERE msg_id = ? AND chat_id = ?", (status, msg_id, chat_id))
     conn.commit()
     conn.close()
-
-def get_pending_baskets(minutes=15):
-    """ Alert မတက်ရသေးသော Pending စာများအား chat_id အလိုက် ဆွဲထုတ်ပေးသည် """
-    conn = get_connection()
-    threshold = int(time.time()) - (minutes * 60)
-    res = conn.execute("SELECT DISTINCT chat_id, topic_id FROM message_logs WHERE status='PENDING' AND timestamp < ?", (threshold,)).fetchall()
-    conn.close()
-    return res
 
 def get_topic_context(chat_id, topic_id):
     """ AI Analysis အတွက် မဖြေရသေးသောစာများနှင့် နောက်ဆုံးဖြေထားသောစာ ၅ ကြောင်းကို ယူသည် """
@@ -302,36 +283,47 @@ def get_topic_context(chat_id, topic_id):
     conn.close()
     return pending, resolved, shop_name
 
-# --- [ Alert Tracking ] ---
-def save_alert_id(original_msg_ids, chat_id, alert_msg_id, alert_chat_id):
+# --- [ Alert Tracking Helpers ] ---
+def save_alert_tracking(original_msg_id, chat_id, alert_msg_id, alert_chat_id):
     conn = get_connection()
     try:
-        created_at = int(time.time())
-        for o_id in original_msg_ids:
-            conn.execute(
-                "INSERT INTO alert_tracking (original_msg_id, chat_id, alert_msg_id, alert_chat_id, created_at) VALUES (?, ?, ?, ?, ?)",
-                (o_id, chat_id, alert_msg_id, alert_chat_id, created_at)
-            )
+        conn.execute(
+            "INSERT OR REPLACE INTO alert_tracking (original_msg_id, chat_id, alert_msg_id, alert_chat_id, created_at) VALUES (?, ?, ?, ?, ?)",
+            (original_msg_id, chat_id, alert_msg_id, alert_chat_id, int(time.time()))
+        )
         conn.commit()
-    finally: conn.close()
+    finally:
+        conn.close()
 
-def get_linked_alerts(msg_id, chat_id):
+def get_alert_tracking(original_msg_id, chat_id):
     conn = get_connection()
-    res = conn.execute("SELECT alert_msg_id, alert_chat_id FROM alert_tracking WHERE (original_msg_id=? OR original_msg_id=0) AND chat_id=?", (msg_id, chat_id)).fetchall()
+    res = conn.execute(
+        "SELECT alert_msg_id, alert_chat_id, created_at FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ?",
+        (original_msg_id, chat_id)
+    ).fetchone()
     conn.close()
     return res
 
-def get_routing_entry(chat_id, topic_id):
-    """routing_table ထဲမှ os_chat/topic နှင့် ကိုက်ညီသော route ကို ပြန်ပေးမည်"""
+def delete_alert_tracking(original_msg_id, chat_id):
     conn = get_connection()
     try:
-        res = conn.execute(
-            "SELECT alert_chat_id, alert_topic_id FROM routing_table WHERE os_chat_id=? AND os_topic_id=? LIMIT 1",
-            (chat_id, topic_id)
-        ).fetchone()
-        return res
+        conn.execute("DELETE FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ?", (original_msg_id, chat_id))
+        conn.commit()
     finally:
         conn.close()
+
+def get_routing_entry(chat_id, topic_id):
+    """
+    OS Group ၏ topic အလိုက် alert ပို့ရမည့် group ကို ရှာဖွေခြင်း။
+    လက်ရှိတွင် os_groups table ထဲမှ group_id ကို သုံးထားသည်။
+    """
+    conn = get_connection()
+    res = conn.execute(
+        "SELECT group_id, topic_id FROM os_groups WHERE chat_id = ? AND topic_id = ?",
+        (chat_id, topic_id)
+    ).fetchone()
+    conn.close()
+    return res
 
 # --- [ OS Group & Analytics ] ---
 def check_if_os_group(chat_id):
@@ -350,10 +342,11 @@ def add_os_group(chat_id, shop_name):
     conn.commit()
     conn.close()
 
-def save_manual_register_with_routes(chat_id, shop_name, topic_entries, alert_chat_id):
+def save_manual_register(chat_id, shop_name, topic_entries):
     """
+    OS Group များကို Topic အလိုက် မှတ်ပုံတင်ခြင်း (Routing Table မပါတော့ပါ)
     topic_entries = [
-      {"topic_name": "...", "topic_id": 12, "route_topic_id": 1, "department_name": "..."},
+      {"topic_name": "...", "topic_id": 12},
       ...
     ]
     """
@@ -364,21 +357,12 @@ def save_manual_register_with_routes(chat_id, shop_name, topic_entries, alert_ch
         for item in topic_entries:
             t_name = item["topic_name"]
             t_id = int(item["topic_id"])
-            route_topic_id = int(item["route_topic_id"])
-            dept_name = item["department_name"]
 
             c.execute(
                 """INSERT INTO os_groups
                    (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id)
                    VALUES (?, ?, ?, ?, ?, ?, ?)""",
                 (chat_id, clean_name, chat_id, clean_name, "Manual Register", t_name, t_id)
-            )
-
-            c.execute(
-                """INSERT OR REPLACE INTO routing_table
-                   (os_chat_id, os_topic_id, alert_chat_id, alert_topic_id, department_name)
-                   VALUES (?, ?, ?, ?, ?)""",
-                (chat_id, t_id, alert_chat_id, route_topic_id, dept_name)
             )
         conn.commit()
     finally:
@@ -429,16 +413,25 @@ def find_os_groups_by_keyword(keyword):
 def get_staff_stats(period="all"):
     conn = get_connection()
     query = "SELECT resolved_by, COUNT(*), AVG((resolve_time - timestamp)/60.0) FROM message_logs WHERE status = 'RESOLVED' AND resolved_by IS NOT NULL "
+    
+    now = datetime.now()
     if period == "today":
-        start_day = int(datetime.now().replace(hour=0, minute=0, second=0).timestamp())
-        query += f"AND resolve_time >= {start_day} "
+        start_ts = int(now.replace(hour=0, minute=0, second=0).timestamp())
+        query += f"AND resolve_time >= {start_ts} "
+    elif period == "weekly":
+        # လွန်ခဲ့သော ၇ ရက်
+        start_ts = int((now - timedelta(days=7)).timestamp())
+        query += f"AND resolve_time >= {start_ts} "
     elif period == "month":
-        start_month = int(datetime.now().replace(day=1, hour=0, minute=0, second=0).timestamp())
-        query += f"AND resolve_time >= {start_month} "
-    query += "GROUP BY resolved_by"
+        start_ts = int(now.replace(day=1, hour=0, minute=0, second=0).timestamp())
+        query += f"AND resolve_time >= {start_ts} "
+        
+    query += "GROUP BY resolved_by ORDER BY COUNT(*) DESC"
     res = conn.execute(query).fetchall()
     conn.close()
     return res
 
-# Initialize
-init_db()
+# Initialize (Only if run directly)
+# 💡 Worker များ၏ main script မှသာ init_db() ကို ခေါ်ရန် အကြံပြုသည်
+if __name__ == "__main__":
+    init_db()
