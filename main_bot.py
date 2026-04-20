@@ -53,6 +53,7 @@ def handle_done_button(call):
             conn.close()
             orig_text = msg_data[0] if msg_data else "[Unknown]"
             
+            # 💡 Alert ရှိမှသာ Cleanup လုပ်ရန် (auditor.resolve_and_cleanup ထဲတွင် tracking စစ်ဆေးပြီးသားဖြစ်သည်)
             auditor.resolve_and_cleanup(original_msg_id, chat_id, shop_name, orig_text, f"{staff_name} (Done Button)")
             
             # ၃။ Button နှိပ်သူကို အကြောင်းပြန်ခြင်း
@@ -63,30 +64,44 @@ def handle_done_button(call):
     except Exception as e:
         log.error(f"❌ Done Button Error: {e}")
 
-@bot.message_reaction_handler(func=lambda reaction: reaction.emoji in ['👍', '✅'])
-def handle_reaction(reaction):
-    """ ဝန်ထမ်းမှ Reaction (👍 သို့မဟုတ် ✅) ပေးလျှင် Alert ကို ပိတ်သိမ်းခြင်း """
+@bot.message_reaction_handler(func=lambda message: True)
+def handle_reaction(message):
+    """ ဝန်ထမ်းမှ Reaction ပေးလျှင် Alert ကို ပိတ်သိမ်းခြင်း """
     try:
+        # 💡 Reaction handler မှာ reaction object ကနေ message_id နဲ့ chat.id ကို ယူရမယ်
+        # message_reaction_handler မှာ reaction object က message parameter ဖြစ်လာတယ်
+        reaction = message
         user_id = reaction.user.id
         chat_id = reaction.chat.id
+        message_id = reaction.message_id
         
+        # 💡 Reaction အသစ်တွေပဲ စစ်ဆေးမယ် (အဟောင်းတွေ မဟုတ်)
+        if not reaction.new_reaction:
+            return
+
         if db_manager.check_if_staff(user_id) or user_id == MANAGER_ID:
-            if db_manager.check_if_os_group(chat_id):
+            # 💡 Alert Tracking ထဲမှာ ရှိမရှိ စစ်ဆေးခြင်း
+            tracking = db_manager.get_alert_tracking(message_id, chat_id)
+            if tracking:
                 staff_data = db_manager.get_staff_info(user_id)
                 staff_name = staff_data[1] if staff_data else reaction.user.first_name
                 
-                db_manager.resolve_message(reaction.message_id, chat_id, staff_name, method='Reaction')
-                # Auditor logic ကို ခေါ်ရန် (Alert Cleanup အတွက်)
+                # ၁။ DB တွင် Resolve လုပ်ခြင်း
+                db_manager.resolve_message(message_id, chat_id, staff_name, method='Reaction')
+                
+                # ၂။ Auditor logic ကို ခေါ်ရန် (Alert Cleanup အတွက်)
                 import auditor
-                _, _, shop_name = db_manager.get_topic_context(chat_id, 0) # topic_id 0 for reaction
+                _, _, shop_name = db_manager.get_topic_context(chat_id, 0)
+                
                 # မူရင်းစာသားကို db ကနေ ပြန်ယူရန်
                 conn = db_manager.get_connection()
-                msg_data = conn.execute("SELECT text FROM message_logs WHERE msg_id = ? AND chat_id = ?", (reaction.message_id, chat_id)).fetchone()
+                msg_data = conn.execute("SELECT text FROM message_logs WHERE msg_id = ? AND chat_id = ?", (message_id, chat_id)).fetchone()
                 conn.close()
                 orig_text = msg_data[0] if msg_data else "[Unknown]"
-                auditor.resolve_and_cleanup(reaction.message_id, chat_id, shop_name, orig_text, f"{staff_name} (Reaction)")
                 
-                log.info(f"✅ Message {reaction.message_id} marked as RESOLVED via Reaction by {staff_name}")
+                auditor.resolve_and_cleanup(message_id, chat_id, shop_name, orig_text, f"{staff_name} (Reaction)")
+                
+                log.info(f"✅ Message {message_id} marked as RESOLVED via Reaction by {staff_name}")
     except Exception as e:
         log.error(f"❌ Reaction Handler Error: {e}")
 
@@ -98,8 +113,24 @@ def handle_all_messages(message):
         user_id = message.from_user.id
         text = message.text or message.caption or "[Media Content]"
         
+        # 💡 ဝန်ထမ်းဖြစ်ကြောင်း စစ်ဆေးခြင်း (Database + Anonymous Admin + Group Owner)
         is_staff = db_manager.check_if_staff(user_id)
         is_manager = (user_id == MANAGER_ID)
+        
+        # Anonymous Admin သို့မဟုတ် Group Owner စစ်ဆေးခြင်း
+        if not is_staff and not is_manager:
+            if message.sender_chat and message.sender_chat.id == chat_id:
+                is_staff = True # Anonymous Admin
+            elif message.from_user and message.from_user.is_bot:
+                return # Bot စာများကို ကျော်မည်
+            else:
+                # Admin List ထဲတွင် ပါ/မပါ စစ်ဆေးခြင်း (Safety Net)
+                try:
+                    member = bot.get_chat_member(chat_id, user_id)
+                    if member.status in ['administrator', 'creator']:
+                        is_staff = True
+                except: pass
+
         is_os_group = db_manager.check_if_os_group(chat_id)
         
         if is_os_group:
@@ -114,18 +145,23 @@ def handle_all_messages(message):
                     original_id = message.reply_to_message.message_id
                     
                     staff_data = db_manager.get_staff_info(user_id)
-                    staff_name = staff_data[1] if staff_data else message.from_user.first_name
+                    staff_name = staff_data[1] if staff_data else (message.from_user.first_name if message.from_user else "Staff")
                     
+                    # ၁။ DB တွင် Resolve လုပ်ခြင်း
                     db_manager.resolve_message(original_id, chat_id, staff_name, method='Reply')
-                    # Auditor logic ကို ခေါ်ရန် (Alert Cleanup အတွက်)
+                    
+                    # ၂။ Alert Cleanup & Record Group သို့ ပို့ခြင်း (Alert ရှိမှသာ ပို့မည်)
                     import auditor
                     _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
+                    
                     # မူရင်းစာသားကို db ကနေ ပြန်ယူရန်
                     conn = db_manager.get_connection()
                     msg_data = conn.execute("SELECT text FROM message_logs WHERE msg_id = ? AND chat_id = ?", (original_id, chat_id)).fetchone()
                     conn.close()
                     orig_text = msg_data[0] if msg_data else "[Unknown]"
-                    auditor.resolve_and_cleanup(original_id, chat_id, shop_name, orig_text)
+                    
+                    # 💡 resolve_and_cleanup ထဲတွင် Alert ရှိ/မရှိ စစ်ဆေးပြီးသားဖြစ်သည်
+                    auditor.resolve_and_cleanup(original_id, chat_id, shop_name, orig_text, f"{staff_name} (Reply)")
                     
                     log.info(f"✅ Message {original_id} marked as RESOLVED via Reply by {staff_name}")
                 return
@@ -146,7 +182,8 @@ def start_bot():
     while True:
         try:
             # skip_pending=False: လိုင်းကျနေတုန်းက ကျန်ခဲ့တဲ့စာတွေကိုပါ ပြန်ဖတ်ရန်
-            bot.infinity_polling(timeout=60, long_polling_timeout=60, skip_pending=False)
+            # 💡 Reaction များ ဖမ်းမိစေရန် allowed_updates ထည့်သွင်းခြင်း
+            bot.infinity_polling(timeout=60, long_polling_timeout=60, skip_pending=False, allowed_updates=telebot.util.update_types)
         except Exception as e:
             log.error(f"⚠️ Bot Polling Error: {e}")
             # If it's a conflict, wait a bit longer

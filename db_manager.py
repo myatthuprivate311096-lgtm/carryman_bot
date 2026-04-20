@@ -74,15 +74,29 @@ def init_db():
                      alert_msg_id INTEGER,
                      alert_chat_id INTEGER,
                      created_at INTEGER,
+                     esc_msg_id INTEGER,
+                     linked_msg_ids TEXT DEFAULT '[]',
                      PRIMARY KEY (original_msg_id, chat_id)
                    )''')
+        
+        # Central Routing Table
+        c.execute('''CREATE TABLE IF NOT EXISTS routing_table (
+                     topic_id INTEGER PRIMARY KEY,
+                     target_group_id INTEGER,
+                     target_topic_id INTEGER
+                   )''')
+        
+        # Initialize Routing Data
+        c.execute("INSERT OR IGNORE INTO routing_table (topic_id, target_group_id, target_topic_id) VALUES (?, ?, ?)", (37, -1003601049225, 37))
+        c.execute("INSERT OR IGNORE INTO routing_table (topic_id, target_group_id, target_topic_id) VALUES (?, ?, ?)", (1, -1003601049225, 1))
+        c.execute("INSERT OR IGNORE INTO routing_table (topic_id, target_group_id, target_topic_id) VALUES (?, ?, ?)", (35, -1003601049225, 35))
 
         # ၂။ Migration Engine (Column အသစ်များ အလိုအလျောက် စစ်ဆေးထည့်သွင်းခြင်း)
         migrations = {
             "staff": ["branch TEXT", "dept TEXT"],
             "message_logs": ["text TEXT", "resolved_by TEXT", "resolve_time INTEGER", "topic_id INTEGER"],
             "os_groups": ["last_read_message_id INTEGER DEFAULT 0"],
-            "alert_tracking": ["created_at INTEGER"]
+            "alert_tracking": ["created_at INTEGER", "esc_msg_id INTEGER", "linked_msg_ids TEXT DEFAULT '[]'"]
         }
         
         for table, columns in migrations.items():
@@ -156,6 +170,8 @@ def get_all_staff():
     return rows
 
 def check_if_staff(user_id):
+    """ user_id သည် ဝန်ထမ်းစာရင်းထဲတွင် ရှိ/မရှိ စစ်ဆေးခြင်း """
+    if not user_id: return False
     conn = get_connection()
     res = conn.execute("SELECT 1 FROM staff WHERE user_id = ?", (user_id,)).fetchone()
     conn.close()
@@ -198,12 +214,14 @@ def resolve_message(msg_id, chat_id, staff_name, method='Reply', topic_id=None):
     """
     conn = get_connection()
     now = int(time.time())
-    full_staff_info = f"{staff_name} ({method})"
+    # method ကို staff_name ထဲမှာ တန်းမထည့်ဘဲ သီးသန့်ထားနိုင်ရန် (သို့မဟုတ်) format ညှိရန်
+    full_staff_info = f"{staff_name} ({method})" if method else staff_name
+    
     try:
         if msg_id != 0:
             conn.execute("UPDATE message_logs SET status='RESOLVED', resolved_by=?, resolve_time=? WHERE msg_id=? AND chat_id=?",
                          (full_staff_info, now, msg_id, chat_id))
-            log.info(f"✅ Message {msg_id} in {chat_id} resolved by {staff_name}")
+            log.info(f"✅ Message {msg_id} in {chat_id} resolved by {full_staff_info}")
         else:
             # msg_id 0 ဖြစ်လျှင် chat_id (နှင့် topic_id ပါလျှင် topic_id) အလိုက် resolve လုပ်မည်
             query = "UPDATE message_logs SET status='RESOLVED', resolved_by=?, resolve_time=? WHERE chat_id=? AND status IN ('PENDING', 'ALERTED', 'ESCALATED')"
@@ -288,17 +306,41 @@ def save_alert_tracking(original_msg_id, chat_id, alert_msg_id, alert_chat_id):
     conn = get_connection()
     try:
         conn.execute(
-            "INSERT OR REPLACE INTO alert_tracking (original_msg_id, chat_id, alert_msg_id, alert_chat_id, created_at) VALUES (?, ?, ?, ?, ?)",
+            "INSERT OR REPLACE INTO alert_tracking (original_msg_id, chat_id, alert_msg_id, alert_chat_id, created_at, linked_msg_ids) VALUES (?, ?, ?, ?, ?, '[]')",
             (original_msg_id, chat_id, alert_msg_id, alert_chat_id, int(time.time()))
         )
         conn.commit()
     finally:
         conn.close()
 
+def update_alert_tracking_esc(original_msg_id, chat_id, esc_msg_id):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE alert_tracking SET esc_msg_id = ? WHERE original_msg_id = ? AND chat_id = ?",
+            (esc_msg_id, original_msg_id, chat_id)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+def add_linked_msg_id(original_msg_id, chat_id, new_msg_id):
+    conn = get_connection()
+    try:
+        res = conn.execute("SELECT linked_msg_ids FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ?", (original_msg_id, chat_id)).fetchone()
+        if res:
+            import json
+            ids = json.loads(res[0])
+            ids.append(new_msg_id)
+            conn.execute("UPDATE alert_tracking SET linked_msg_ids = ? WHERE original_msg_id = ? AND chat_id = ?", (json.dumps(ids), original_msg_id, chat_id))
+            conn.commit()
+    finally:
+        conn.close()
+
 def get_alert_tracking(original_msg_id, chat_id):
     conn = get_connection()
     res = conn.execute(
-        "SELECT alert_msg_id, alert_chat_id, created_at FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ?",
+        "SELECT alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ?",
         (original_msg_id, chat_id)
     ).fetchone()
     conn.close()

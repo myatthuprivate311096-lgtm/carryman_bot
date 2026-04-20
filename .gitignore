@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+ENV/
+env/
+.env
+
+# Databases & Sessions
+*.db
+*.sqlite3
+*.session
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Roo/AI Indexing
+.rooignore
+__pycache__/
+*.db
+logs/
+qdrant_storage/
