@@ -215,13 +215,21 @@ def register_handlers(bot):
         alert_id = auditor.send_new_alert(
             chat_id, topic_id, orig_msg.message_id,
             text, "Manual Alert", shop_name, orig_msg.date,
-            media_id=media_id
+            media_id=media_id,
+            title="🚨 **Urgent Alert (Manual)**"
         )
         
-        if alert_id:
-            bot.reply_to(message, f"🚀 **Manual Alert Sent!**\nဗဟိုဌာနဆီသို့ Alert ပို့ဆောင်ပြီးပါပြီ။\n(ဤ Alert သည် Done Button နှိပ်မှသာ ပျောက်ပါမည်)")
-        else:
-            bot.reply_to(message, "❌ Alert ပို့ဆောင်မှု မအောင်မြင်ပါ။")
+        # 💡 အစ်ကို့တောင်းဆိုချက်အရ Silent ဖြစ်စေရန် Confirmation Message ကို ပိတ်ထားပြီး Command ကို ပြန်ဖျက်ပေးမည်
+        try:
+            bot.delete_message(chat_id, message.message_id)
+        except Exception as e:
+            from logger import logger
+            logger.error(f"Error deleting /alert command: {e}")
+
+        if not alert_id:
+            # Alert မအောင်မြင်ပါက Admin သိစေရန် Log ထုတ်မည် (သို့မဟုတ်) လိုအပ်ပါက Reply ပြန်နိုင်သည်
+            from logger import logger
+            logger.error(f"Manual Alert failed for chat_id: {chat_id}")
 
     # --- [ Section ၇: OS Group စာရင်းနှင့် Register စနစ် ] ---
     @bot.message_handler(commands=['oslist'])

@@ -68,6 +68,201 @@ def handle_done_button(call):
     except Exception as e:
         log.error(f"❌ Done Button Error: {e}")
 
+@bot.callback_query_handler(func=lambda call: call.data.startswith('wrong_'))
+def handle_wrong_alert_button(call):
+    """ Wrong Alert ခလုတ်ကို နှိပ်လိုက်လျှင် Option ၄ ခု ပြပေးခြင်း """
+    try:
+        user_id = call.from_user.id
+        if not (db_manager.check_if_staff(user_id) or user_id == MANAGER_ID):
+            bot.answer_callback_query(call.id, "⚠️ ဝန်ထမ်းများသာ နှိပ်ခွင့်ရှိပါသည်။", show_alert=True)
+            return
+
+        # data format: wrong_{original_msg_id}_{chat_id}
+        parts = call.data.split('_')
+        orig_id = parts[1]
+        chat_id = parts[2]
+
+        markup = telebot.types.InlineKeyboardMarkup(row_width=1)
+        markup.add(
+            telebot.types.InlineKeyboardButton("👋 Greeting (နှုတ်ဆက်စာ)", callback_data=f"fb_greet_{orig_id}_{chat_id}"),
+            telebot.types.InlineKeyboardButton("🔄 Wrong Topic (Topic မှားနေသည်)", callback_data=f"fb_topic_{orig_id}_{chat_id}"),
+            telebot.types.InlineKeyboardButton("📑 Duplicate (ကိစ္စဟောင်း)", callback_data=f"fb_dup_{orig_id}_{chat_id}"),
+            telebot.types.InlineKeyboardButton("✅ Already Resolved (ဖြေရှင်းပြီး)", callback_data=f"fb_done_{orig_id}_{chat_id}"),
+            telebot.types.InlineKeyboardButton("🔙 Back", callback_data=f"wrong_back_{orig_id}_{chat_id}")
+        )
+        
+        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
+        bot.answer_callback_query(call.id)
+    except Exception as e:
+        log.error(f"❌ Wrong Alert Button Error: {e}")
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('wrong_back_'))
+def handle_wrong_back(call):
+    """ Wrong Alert menu မှ မူလ menu သို့ ပြန်သွားခြင်း """
+    try:
+        parts = call.data.split('_')
+        orig_id = parts[2]
+        chat_id = parts[3]
+        
+        clean_chat_id = str(chat_id).replace("-100", "")
+        msg_link = f"https://t.me/c/{clean_chat_id}/{orig_id}"
+        
+        markup = telebot.types.InlineKeyboardMarkup(row_width=2)
+        markup.add(
+            telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
+            telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_id}_{chat_id}"),
+            telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{orig_id}_{chat_id}")
+        )
+        
+        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
+        bot.answer_callback_query(call.id)
+    except Exception as e:
+        log.error(f"❌ Wrong Back Error: {e}")
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('fb_'))
+def handle_feedback_callback(call):
+    """ Feedback Option တစ်ခုခုကို ရွေးလိုက်သည့်အခါ လုပ်ဆောင်ချက်များ """
+    try:
+        user_id = call.from_user.id
+        parts = call.data.split('_')
+        action = parts[1] # greet, topic, dup, done
+        orig_id = int(parts[2])
+        chat_id = int(parts[3])
+        
+        import auditor
+        topic_id = db_manager.get_message_topic(orig_id, chat_id)
+        _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
+        
+        conn = db_manager.get_connection()
+        msg_data = conn.execute("SELECT text FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_id, chat_id)).fetchone()
+        conn.close()
+        orig_text = msg_data[0] if msg_data else "[Unknown]"
+
+        if action == "topic":
+            # Wrong Topic: Show routing options
+            markup = telebot.types.InlineKeyboardMarkup(row_width=1)
+            markup.add(
+                telebot.types.InlineKeyboardButton("🚚 Pickup (Topic 1)", callback_data=f"route_1_{orig_id}_{chat_id}"),
+                telebot.types.InlineKeyboardButton("💰 Finance (Topic 35)", callback_data=f"route_35_{orig_id}_{chat_id}"),
+                telebot.types.InlineKeyboardButton("⚠️ Error (Topic 37)", callback_data=f"route_37_{orig_id}_{chat_id}")
+            )
+            bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
+            bot.answer_callback_query(call.id)
+            return
+
+        # For Greet, Duplicate, Already Resolved:
+        category_map = {
+            "greet": "Greeting (နှုတ်ဆက်စာ)",
+            "dup": "Duplicate (ကိစ္စဟောင်း)",
+            "done": "Already Resolved (ဖြေရှင်းပြီး)"
+        }
+        category = category_map.get(action, "Other")
+        
+        # 💡 Already Resolved: Capture trailing messages for pattern learning
+        if action == "done":
+            trailing = db_manager.get_messages_after(chat_id, topic_id, orig_id, limit=3)
+            if trailing:
+                trailing_text = "\n[Trailing Pattern]:\n" + "\n".join([f"- {t[0]}" for t in trailing])
+                orig_text += trailing_text
+
+        # ၁။ Feedback သိမ်းဆည်းခြင်း (Isolated by chat/topic)
+        db_manager.save_feedback(orig_id, chat_id, topic_id, category, orig_text, user_id)
+        
+        # ၂။ Alert Cleanup (Bypass Archive/Topic 4)
+        # auditor.resolve_and_cleanup ထဲမှာ tracking ရှိမှ Archive ပို့တာဖြစ်လို့
+        # tracking ကို အရင်ဖျက်လိုက်ရင် Archive bypass ဖြစ်သွားပါမယ်
+        db_manager.delete_alert_tracking(orig_id, chat_id)
+        
+        # DB status update
+        db_manager.update_message_status(orig_id, chat_id, 'RESOLVED' if action != "greet" else 'IGNORED', topic_id=topic_id)
+        
+        # Alert message ကို ဖျက်ခြင်း
+        try:
+            bot.delete_message(call.message.chat.id, call.message.message_id)
+        except: pass
+        
+        bot.answer_callback_query(call.id, f"✅ Feedback Recorded: {category}")
+        log.info(f"🎯 Feedback {action} recorded for {orig_id} by {user_id} (Archive Bypassed)")
+
+    except Exception as e:
+        log.error(f"❌ Feedback Callback Error: {e}")
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('route_'))
+def handle_rerouting(call):
+    """ Wrong Topic အတွက် Re-routing လုပ်ဆောင်ခြင်း """
+    try:
+        parts = call.data.split('_')
+        target_topic = int(parts[1])
+        orig_id = int(parts[2])
+        chat_id = int(parts[3])
+        
+        import auditor
+        topic_id = db_manager.get_message_topic(orig_id, chat_id)
+        _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
+        
+        conn = db_manager.get_connection()
+        msg_data = conn.execute("SELECT text, timestamp, media_id FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_id, chat_id)).fetchone()
+        conn.close()
+        
+        if msg_data:
+            text, ts, media_id = msg_data
+            # ၁။ Alert အဟောင်းကို ဖျက်ခြင်း
+            tracking = db_manager.get_alert_tracking(orig_id, chat_id)
+            if tracking:
+                try: bot.delete_message(tracking[1], tracking[0])
+                except: pass
+                db_manager.delete_alert_tracking(orig_id, chat_id)
+
+            # ၂။ Alert အသစ်ကို Target Topic ဆီ ပို့ခြင်း
+            # get_routing_data ကို override လုပ်ဖို့ target_topic ကို သုံးပါမယ်
+            target_chat = -1003601049225 # Central Group
+            
+            # send_new_alert logic ကို manual ခေါ်ယူခြင်း (auditor.py ရဲ့ logic အတိုင်း)
+            # ဒါပေမယ့် target_topic ကို manual သတ်မှတ်ပေးပါမယ်
+            
+            # အချိန်ပြောင်းလဲခြင်း
+            import pytz
+            from datetime import datetime
+            tz = pytz.timezone('Asia/Yangon')
+            orig_time = datetime.fromtimestamp(ts, tz).strftime('%Y-%m-%d %I:%M %p')
+
+            alert_text = (
+                f"🔄 **RE-ROUTED ALERT**\n"
+                f"━━━━━━━━━━━━━━━━━━\n"
+                f"🏪 ဆိုင်: **{shop_name}**\n"
+                f"📝 အနှစ်ချုပ်: Topic မှားယွင်းမှုကြောင့် Topic {target_topic} သို့ ပြောင်းလဲထားသည်\n"
+                f"💬 စာသား: {text}\n"
+                f"⏰ အချိန်: {orig_time}\n"
+                f"━━━━━━━━━━━━━━━━━━"
+            )
+            
+            clean_chat_id = str(chat_id).replace("-100", "")
+            msg_link = f"https://t.me/c/{clean_chat_id}/{orig_id}"
+            markup = telebot.types.InlineKeyboardMarkup(row_width=2)
+            markup.add(
+                telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
+                telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_id}_{chat_id}"),
+                telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{orig_id}_{chat_id}")
+            )
+
+            if media_id:
+                msg = bot.send_photo(target_chat, media_id, caption=alert_text, message_thread_id=target_topic, parse_mode="Markdown", reply_markup=markup)
+            else:
+                msg = bot.send_message(target_chat, alert_text, message_thread_id=target_topic, parse_mode="Markdown", reply_markup=markup)
+            
+            db_manager.save_alert_tracking(orig_id, chat_id, msg.message_id, target_chat)
+            db_manager.update_message_status(orig_id, chat_id, 'ALERTED', topic_id=topic_id)
+            
+            bot.answer_callback_query(call.id, f"✅ Re-routed to Topic {target_topic}")
+            log.info(f"🔄 Re-routed {orig_id} to Topic {target_topic}")
+            
+            # Alert message အဟောင်း (ခလုတ်နှိပ်လိုက်တဲ့စာ) ကို ဖျက်ခြင်း
+            try: bot.delete_message(call.message.chat.id, call.message.message_id)
+            except: pass
+
+    except Exception as e:
+        log.error(f"❌ Re-routing Error: {e}")
+
 @bot.message_reaction_handler(func=lambda message: True)
 def handle_reaction(message):
     """ ဝန်ထမ်းမှ ❤️ Reaction ပေးလျှင် Message ကို RESOLVED အဖြစ် သတ်မှတ်ခြင်း (Alert ရှိရှိ/မရှိရှိ) """
@@ -173,7 +368,8 @@ def handle_all_messages(message):
         is_os_group = db_manager.check_if_os_group(chat_id)
         
         if is_os_group:
-            topic_id = message.message_thread_id if message.is_topic_message else 0
+            # 💡 General Topic Fallback: 0 သို့မဟုတ် None ဖြစ်ပါက 1 ဟု သတ်မှတ်မည်
+            topic_id = message.message_thread_id if (message.is_topic_message and message.message_thread_id) else 1
             
             # Smart Polling အတွက် နောက်ဆုံးဖတ်ထားသော ID ကို အမြဲ Update လုပ်မည်
             db_manager.update_last_read_id(chat_id, topic_id, message.message_id)

@@ -67,6 +67,7 @@ def init_db():
                      (msg_id INTEGER, chat_id INTEGER, topic_id INTEGER, user_id INTEGER,
                       text TEXT, timestamp INTEGER, status TEXT DEFAULT 'PENDING', resolved_by TEXT, resolve_time INTEGER,
                       media_id TEXT, is_manual INTEGER DEFAULT 0,
+                      category TEXT, intent TEXT,
                       PRIMARY KEY (msg_id, chat_id))''')
         
         c.execute('''CREATE TABLE IF NOT EXISTS alert_tracking (
@@ -87,6 +88,26 @@ def init_db():
                      target_group_id INTEGER,
                      target_topic_id INTEGER
                    )''')
+
+        # Feedback & AI Learning Tables
+        c.execute('''CREATE TABLE IF NOT EXISTS feedback_logs (
+                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     message_id INTEGER,
+                     chat_id INTEGER,
+                     topic_id INTEGER,
+                     category TEXT,
+                     original_text TEXT,
+                     staff_id INTEGER,
+                     timestamp INTEGER
+                   )''')
+
+        c.execute('''CREATE TABLE IF NOT EXISTS master_rules (
+                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     rule_content TEXT,
+                     chat_id INTEGER,
+                     topic_id INTEGER,
+                     created_at INTEGER
+                   )''')
         
         # Initialize Routing Data
         c.execute("INSERT OR IGNORE INTO routing_table (topic_id, target_group_id, target_topic_id) VALUES (?, ?, ?)", (37, -1003601049225, 37))
@@ -96,9 +117,11 @@ def init_db():
         # ၂။ Migration Engine (Column အသစ်များ အလိုအလျောက် စစ်ဆေးထည့်သွင်းခြင်း)
         migrations = {
             "staff": ["branch TEXT", "dept TEXT"],
-            "message_logs": ["text TEXT", "resolved_by TEXT", "resolve_time INTEGER", "topic_id INTEGER", "media_id TEXT", "is_manual INTEGER DEFAULT 0"],
+            "message_logs": ["text TEXT", "resolved_by TEXT", "resolve_time INTEGER", "topic_id INTEGER", "media_id TEXT", "is_manual INTEGER DEFAULT 0", "category TEXT", "intent TEXT"],
             "os_groups": ["last_read_message_id INTEGER DEFAULT 0"],
-            "alert_tracking": ["created_at INTEGER", "esc_msg_id INTEGER", "linked_msg_ids TEXT DEFAULT '[]'", "linked_customer_ids TEXT DEFAULT '[]'"]
+            "alert_tracking": ["created_at INTEGER", "esc_msg_id INTEGER", "linked_msg_ids TEXT DEFAULT '[]'", "linked_customer_ids TEXT DEFAULT '[]'"],
+            "feedback_logs": ["chat_id INTEGER", "topic_id INTEGER", "category TEXT", "original_text TEXT", "staff_id INTEGER"],
+            "master_rules": ["chat_id INTEGER", "topic_id INTEGER", "rule_content TEXT"]
         }
         
         for table, columns in migrations.items():
@@ -115,6 +138,8 @@ def init_db():
         c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_status_time ON message_logs(status, timestamp)")
         c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_chat_topic_status ON message_logs(chat_id, topic_id, status)")
         c.execute("CREATE INDEX IF NOT EXISTS idx_os_groups_chat_topic ON os_groups(chat_id, topic_id)")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_feedback_logs_chat_topic ON feedback_logs(chat_id, topic_id)")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_master_rules_chat_topic ON master_rules(chat_id, topic_id)")
 
         conn.commit()
         log.info("✅ Database (Version 5.0) Initialized Successfully.")
@@ -188,12 +213,15 @@ def get_staff_info(user_id):
 # --- [ Message & SLA Logging ] ---
 def log_message(msg_id, chat_id, topic_id, user_id, text, timestamp=None, media_id=None):
     if timestamp is None: timestamp = int(time.time())
+    # 💡 General Topic Fallback Patch
+    safe_topic_id = topic_id if topic_id and topic_id != 0 else 1
+    
     conn = get_connection()
     try:
         # 💡 Parameter ၇ ခု + 'PENDING' (စုစုပေါင်း ၈ ခု) ကို သေချာစွာ ထည့်သွင်းခြင်း
         conn.execute(
             "INSERT OR IGNORE INTO message_logs (msg_id, chat_id, topic_id, user_id, text, timestamp, status, media_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (msg_id, chat_id, topic_id, user_id, text, timestamp, 'PENDING', media_id)
+            (msg_id, chat_id, safe_topic_id, user_id, text, timestamp, 'PENDING', media_id)
         )
         rows_affected = conn.total_changes
         conn.commit()
@@ -399,15 +427,27 @@ def get_messages_after(chat_id, topic_id, msg_id, limit=5):
     conn.close()
     return res
 
-def update_message_status(msg_id, chat_id, status, topic_id=None):
-    """ Message တစ်ခုချင်းစီ၏ Status ကို Update လုပ်ရန် (Strict Topic Filtering) """
+def update_message_status(msg_id, chat_id, status, topic_id=None, category=None, intent=None):
+    """ Message တစ်ခုချင်းစီ၏ Status ကို Update လုပ်ရန် (Category/Intent သိမ်းဆည်းမှု အပါအဝင်) """
     conn = get_connection()
     try:
-        query = "UPDATE message_logs SET status = ? WHERE msg_id = ? AND chat_id = ?"
-        params = [status, msg_id, chat_id]
+        updates = ["status = ?"]
+        params = [status]
+        
+        if category:
+            updates.append("category = ?")
+            params.append(category)
+        if intent:
+            updates.append("intent = ?")
+            params.append(intent)
+            
+        query = f"UPDATE message_logs SET {', '.join(updates)} WHERE msg_id = ? AND chat_id = ?"
+        params.extend([msg_id, chat_id])
+        
         if topic_id is not None:
             query += " AND topic_id = ?"
             params.append(topic_id)
+            
         conn.execute(query, tuple(params))
         conn.commit()
     finally:
@@ -639,6 +679,71 @@ def get_staff_stats(period="all"):
     res = conn.execute(query).fetchall()
     conn.close()
     return res
+
+# --- [ Feedback & AI Learning Helpers ] ---
+def save_feedback(message_id, chat_id, topic_id, category, original_text, staff_id):
+    """ AI Feedback ကို သိမ်းဆည်းခြင်း (Isolated by chat & topic) """
+    safe_topic_id = topic_id if topic_id and topic_id != 0 else 1
+    conn = get_connection()
+    try:
+        conn.execute(
+            "INSERT INTO feedback_logs (message_id, chat_id, topic_id, category, original_text, staff_id, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (message_id, chat_id, safe_topic_id, category, original_text, staff_id, int(time.time()))
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+def get_isolated_feedback(chat_id, topic_id, limit=10):
+    """ သတ်မှတ်ထားသော chat/topic အတွက် နောက်ဆုံး feedback များကို ယူခြင်း """
+    safe_topic_id = topic_id if topic_id and topic_id != 0 else 1
+    conn = get_connection()
+    try:
+        res = conn.execute(
+            "SELECT category, original_text FROM feedback_logs WHERE chat_id = ? AND topic_id = ? ORDER BY timestamp DESC LIMIT ?",
+            (chat_id, safe_topic_id, limit)
+        ).fetchall()
+        return res
+    finally:
+        conn.close()
+
+def save_master_rule(rule_content, chat_id, topic_id):
+    """ AI မှ ထုတ်ပေးသော Rule ကို သိမ်းဆည်းခြင်း """
+    safe_topic_id = topic_id if topic_id and topic_id != 0 else 1
+    conn = get_connection()
+    try:
+        conn.execute(
+            "INSERT INTO master_rules (rule_content, chat_id, topic_id, created_at) VALUES (?, ?, ?, ?)",
+            (rule_content, chat_id, safe_topic_id, int(time.time()))
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+def get_isolated_rules(chat_id, topic_id):
+    """ သတ်မှတ်ထားသော chat/topic အတွက် AI Rules များကို ယူခြင်း """
+    safe_topic_id = topic_id if topic_id and topic_id != 0 else 1
+    conn = get_connection()
+    try:
+        res = conn.execute(
+            "SELECT rule_content FROM master_rules WHERE chat_id = ? AND topic_id = ? ORDER BY created_at DESC",
+            (chat_id, safe_topic_id)
+        ).fetchall()
+        return [r[0] for r in res]
+    finally:
+        conn.close()
+
+def clear_processed_feedback(chat_id, topic_id, before_timestamp):
+    """ Summarize ပြီးသွားသော feedback များကို ဖျက်ခြင်း """
+    conn = get_connection()
+    try:
+        conn.execute(
+            "DELETE FROM feedback_logs WHERE chat_id = ? AND topic_id = ? AND timestamp <= ?",
+            (chat_id, topic_id, before_timestamp)
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
 # Initialize (Only if run directly)
 # 💡 Worker များ၏ main script မှသာ init_db() ကို ခေါ်ရန် အကြံပြုသည်

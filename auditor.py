@@ -41,7 +41,7 @@ def is_office_hours():
         return True
     return False
 
-def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs, subsequent_msgs):
+def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs, subsequent_msgs, chat_id, topic_id):
     """
     Gemini API ကိုသုံး၍ Message အစုအဝေး (Batch) ၏ အခြေအနေကို ဆုံးဖြတ်ခြင်း။
     target_msgs_list: [(msg_id, text, ts), ...]
@@ -67,8 +67,29 @@ def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs
         filtered_subsequent = [s for s in subsequent_msgs if s[0] not in [a[2] for a in active_alerts]]
         subsequent_context = "\n".join([f"- {'Staff' if db_manager.check_if_staff(s[1]) else 'Customer'} ({s[3]}): {s[0]}" for s in filtered_subsequent]) if filtered_subsequent else "None"
 
+        # 💡 Isolated Learning: Fetch past mistakes for this specific chat/topic
+        past_mistakes = db_manager.get_isolated_feedback(chat_id, topic_id, limit=10)
+        master_rules = db_manager.get_isolated_rules(chat_id, topic_id)
+        
+        mistakes_context = ""
+        if past_mistakes:
+            mistakes_context += "\n[Recent Feedback (Mistakes to Avoid)]:\n"
+            for cat, txt in past_mistakes:
+                mistakes_context += f"- Category: {cat} | Text: {txt}\n"
+        
+        rules_context = ""
+        if master_rules:
+            rules_context += "\n[Master Rules for this Topic]:\n"
+            for rule in master_rules:
+                rules_context += f"- {rule}\n"
+
         prompt = f"""
         Role: Senior Auditor for "{group_name}" Delivery Service.
+        
+        ## PAST MISTAKES TO AVOID
+        {mistakes_context}
+        {rules_context}
+
         Task: Audit a group of pending messages. Group them into a single ticket if they concern the same issue.
 
         [Preceding Context]:
@@ -151,7 +172,7 @@ def get_routing_data(chat_id, topic_id):
     log.info(f"📡 Routing: Topic '{topic_name}' (ID: {topic_id}) -> Target Topic: {target_topic}")
     return TARGET_GROUP_ID, target_topic
 
-def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name, original_ts, category="အခြား", intent=None, media_id=None):
+def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name, original_ts, category="အခြား", intent=None, media_id=None, title="⚠️ **Pending Alert (15 Mins)**"):
     """ ဝန်ထမ်း group ထံသို့ Alert အသစ်ပို့ခြင်း (View Message & Done Buttons ပါဝင်သည်) """
     target_chat, target_topic = get_routing_data(chat_id, topic_id)
     
@@ -160,11 +181,9 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
     orig_time = datetime.fromtimestamp(original_ts, tz).strftime('%Y-%m-%d %I:%M %p')
 
     alert_text = (
-        f"⚠️ **Pending Alert (15 Mins)**\n"
+        f"{title}\n"
         f"━━━━━━━━━━━━━━━━━━\n"
         f"🏪 ဆိုင်: **{shop_name}**\n"
-        f"📂 အမျိုးအစား: {category}\n"
-        f"🎯 ရည်ရွယ်ချက်: {intent if intent else 'အထွေထွေ'}\n"
         f"📝 အနှစ်ချုပ်: {summary}\n"
         f"💬 စာသား: {text}\n"
         f"⏰ အချိန်: {orig_time}\n"
@@ -178,7 +197,8 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
     markup = telebot.types.InlineKeyboardMarkup(row_width=2)
     markup.add(
         telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
-        telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{original_msg_id}_{chat_id}")
+        telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{original_msg_id}_{chat_id}"),
+        telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{original_msg_id}_{chat_id}")
     )
     
     try:
@@ -200,7 +220,7 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
                 reply_markup=markup
             )
         db_manager.save_alert_tracking(original_msg_id, chat_id, msg.message_id, target_chat)
-        db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id)
+        db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id, category=category, intent=intent)
         log.info(f"📢 Alert sent for {original_msg_id} in {shop_name} to Central Group")
         return msg.message_id
     except Exception as e:
@@ -356,13 +376,13 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
                 orig_time = datetime.fromtimestamp(orig_ts, tz).strftime('%I:%M %p')
 
                 esc_text = (
-                    f"🚨 **LEVEL 2 ESCALATION (30 Mins)**\n"
+                    f"🔥 **Escalated Alert (30 Mins)**\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
                     f"🏪 ဆိုင်: **{shop_name}**\n"
-                    f"⚠️ ဖြေရှင်းခြင်းမရှိသေးသောစာ: {text}\n"
-                    f"⏰ မူရင်းအချိန်: {orig_time}\n"
-                    f"━━━━━━━━━━━━━━━━━━\n"
-                    f"Manager အနေဖြင့် စစ်ဆေးပေးပါရန်။"
+                    f"📝 အနှစ်ချုပ်: ဖြေရှင်းခြင်းမရှိသေးသောစာ\n"
+                    f"💬 စာသား: {text}\n"
+                    f"⏰ အချိန်: {orig_time}\n"
+                    f"━━━━━━━━━━━━━━━━━━"
                 )
                 
                 # Buttons တည်ဆောက်ခြင်း
@@ -371,7 +391,8 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
                 markup = telebot.types.InlineKeyboardMarkup(row_width=2)
                 markup.add(
                     telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
-                    telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{msg_id}_{chat_id}")
+                    telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{msg_id}_{chat_id}"),
+                    telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{msg_id}_{chat_id}")
                 )
 
                 msg = bot.send_message(MANAGER_ID, esc_text, reply_markup=markup, parse_mode="Markdown")
@@ -486,7 +507,7 @@ def process_audits():
                 # Mark all as AUDITING to prevent double processing
                 for m in msgs: db_manager.update_message_status(m[0], chat_id, 'AUDITING', topic_id=topic_id)
                 
-                action, ai_res = evaluate_with_ai(shop_name, msgs, active_alerts, preceding_msgs, subsequent_msgs)
+                action, ai_res = evaluate_with_ai(shop_name, msgs, active_alerts, preceding_msgs, subsequent_msgs, chat_id, topic_id)
                 
                 grouped_ids = ai_res.get("grouped_msg_ids", [trigger_msg_id])
                 # Ensure trigger_msg_id is in grouped_ids
@@ -512,7 +533,7 @@ def process_audits():
                     for mid in grouped_ids:
                         if mid != trigger_msg_id:
                             db_manager.add_linked_customer_id(trigger_msg_id, chat_id, mid)
-                            db_manager.update_message_status(mid, chat_id, 'ALERTED', topic_id=topic_id)
+                            db_manager.update_message_status(mid, chat_id, 'ALERTED', topic_id=topic_id, category=ai_res.get("category"), intent=ai_res.get("intent"))
 
                 elif action == "NEW_ALERT":
                     # Create one ticket for the group
