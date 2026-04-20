@@ -48,15 +48,17 @@ def handle_done_button(call):
             conn.close()
             orig_text = msg_data[0] if msg_data else "[Unknown]"
 
-            # ၁။ DB တွင် Resolve လုပ်ခြင်း
-            db_manager.resolve_message(original_msg_id, chat_id, staff_name, method='Done Button', topic_id=topic_id)
-            
-            # ၂။ Alert Cleanup & Record Group သို့ ပို့ခြင်း (Archive to Topic 4)
+            # ၁။ Alert Cleanup & Record Group သို့ ပို့ခြင်း (Archive to Topic 4)
+            # 💡 resolve_and_cleanup ကို အရင်ခေါ်ရမည် (Tracking data မပျောက်ခင်)
             import auditor
             _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
             
             # 💡 resolve_and_cleanup ထဲတွင် Alert ဖျက်ခြင်းနှင့် Archive ပို့ခြင်းကို လုပ်ဆောင်မည်
-            auditor.resolve_and_cleanup(original_msg_id, chat_id, shop_name, orig_text, f"{staff_name} (Done Button)")
+            # manual_resolve=True ထည့်ပေးခြင်းဖြင့် Office Hours ပြင်ပဖြစ်စေ Record ပို့မည်
+            auditor.resolve_and_cleanup(original_msg_id, chat_id, shop_name, orig_text, f"{staff_name} (Done Button)", manual_resolve=True)
+
+            # ၂။ DB တွင် Resolve လုပ်ခြင်း
+            db_manager.resolve_message(original_msg_id, chat_id, staff_name, method='Done Button', topic_id=topic_id)
             
             # ၃။ Button နှိပ်သူကို အကြောင်းပြန်ခြင်း
             bot.answer_callback_query(call.id, "✅ Resolved and Recorded!")
@@ -90,6 +92,10 @@ def handle_reaction(message):
             # 💡 Get topic_id from DB
             topic_id = db_manager.get_message_topic(message_id, chat_id)
 
+            # 💡 Manual Alert ဖြစ်နေပါက Reaction ဖြင့် Resolve လုပ်ခွင့်မပေးပါ
+            if db_manager.is_manual_alert(message_id, chat_id):
+                return
+
             # ၁။ DB တွင် Resolve လုပ်ခြင်း (Alert မတက်ခင် ဖြစ်နိုင်သလို တက်ပြီးမှလည်း ဖြစ်နိုင်သည်)
             db_manager.resolve_message(message_id, chat_id, staff_name, method='Reaction (❤️)', topic_id=topic_id)
             
@@ -106,19 +112,45 @@ def handle_reaction(message):
             orig_text = msg_data[0] if msg_data else "[Unknown]"
             
             # resolve_and_cleanup သည် tracking မရှိလျှင် Archive မပို့ဘဲ Cleanup သာ လုပ်ပေးမည်
-            auditor.resolve_and_cleanup(message_id, chat_id, shop_name, orig_text, f"{staff_name} (Reaction ❤️)")
+            # manual_resolve=True ထည့်ပေးခြင်းဖြင့် Office Hours ပြင်ပဖြစ်စေ Record ပို့မည်
+            auditor.resolve_and_cleanup(message_id, chat_id, shop_name, orig_text, f"{staff_name} (Reaction ❤️)", manual_resolve=True)
             
             log.info(f"✅ Message {message_id} marked as RESOLVED via Reaction (❤️) by {staff_name}")
     except Exception as e:
         log.error(f"❌ Reaction Handler Error: {e}")
 
-@bot.message_handler(func=lambda m: True, content_types=['text', 'photo', 'voice', 'video', 'document'])
+@bot.message_handler(func=lambda m: True, content_types=['text', 'photo', 'voice', 'video', 'document', 'video_note', 'audio'])
 def handle_all_messages(message):
     """ Group များအတွင်း စာဝင်လာမှု အားလုံးကို ဖမ်းယူပြီး DB သို့ သိမ်းဆည်းခြင်း """
     try:
         chat_id = message.chat.id
         user_id = message.from_user.id
-        text = message.text or message.caption or "[Media Content]"
+        
+        # 💡 Media Type အလိုက် စာသားပြောင်းလဲခြင်း
+        media_id = None
+        text = message.text or message.caption
+        
+        if not text:
+            if message.photo:
+                text = "🖼️ Photo"
+                media_id = message.photo[-1].file_id
+            elif message.voice:
+                text = "🎙️ Voice Message"
+                media_id = message.voice.file_id
+            elif message.video:
+                text = "📹 Video"
+                media_id = message.video.file_id
+            elif message.video_note:
+                text = "🎥 Video Note"
+                media_id = message.video_note.file_id
+            elif message.document:
+                text = f"📄 Document: {message.document.file_name}"
+                media_id = message.document.file_id
+            elif message.audio:
+                text = f"🎵 Audio: {message.audio.title}"
+                media_id = message.audio.file_id
+            else:
+                text = "📦 Media Content"
         
         # 💡 ဝန်ထမ်းဖြစ်ကြောင်း စစ်ဆေးခြင်း (Database + Anonymous Admin + Group Owner)
         is_staff = db_manager.check_if_staff(user_id)
@@ -157,6 +189,10 @@ def handle_all_messages(message):
                     # 💡 Get the actual topic_id of the original message
                     orig_topic_id = db_manager.get_message_topic(original_id, chat_id)
                     
+                    # 💡 Manual Alert ဖြစ်နေပါက Reply ဖြင့် Resolve လုပ်ခွင့်မပေးပါ
+                    if db_manager.is_manual_alert(original_id, chat_id):
+                        return
+
                     # ၁။ DB တွင် Resolve လုပ်ခြင်း
                     db_manager.resolve_message(original_id, chat_id, staff_name, method='Reply', topic_id=orig_topic_id)
                     
@@ -171,14 +207,15 @@ def handle_all_messages(message):
                     orig_text = msg_data[0] if msg_data else "[Unknown]"
                     
                     # 💡 resolve_and_cleanup ထဲတွင် Alert ရှိ/မရှိ စစ်ဆေးပြီးသားဖြစ်သည်
-                    auditor.resolve_and_cleanup(original_id, chat_id, shop_name, orig_text, f"{staff_name} (Reply)")
+                    # manual_resolve=True ထည့်ပေးခြင်းဖြင့် Office Hours ပြင်ပဖြစ်စေ Record ပို့မည်
+                    auditor.resolve_and_cleanup(original_id, chat_id, shop_name, orig_text, f"{staff_name} (Reply)", manual_resolve=True)
                     
                     log.info(f"✅ Message {original_id} marked as RESOLVED via Reply by {staff_name}")
                 return
 
             # Customer ဆီမှ စာဝင်လာခြင်း
             if not message.from_user.is_bot and not text.startswith('/'):
-                db_manager.log_message(message.message_id, chat_id, topic_id, user_id, text, message.date)
+                db_manager.log_message(message.message_id, chat_id, topic_id, user_id, text, message.date, media_id=media_id)
                 log.info(f"📩 New Pending Message from {user_id} in {chat_id} (Topic: {topic_id})")
 
     except Exception as e:

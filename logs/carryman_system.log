@@ -13189,3 +13189,591 @@
 2026-04-20 09:38:25 AM | INFO | auditor | ℹ️ No active alert tracking found for 319 in -1003816497641. Checking if it was already alerted.
 2026-04-20 09:38:25 AM | INFO | auditor | ℹ️ Message 319 was not an active alert. Skipping record.
 2026-04-20 09:38:25 AM | INFO | main_bot | ✅ Message 319 marked as RESOLVED via Reply by (60501)
+2026-04-20 09:39:28 AM | INFO | db_manager | ✓ Message 233 in -1003415524543 saved as PENDING
+2026-04-20 09:39:28 AM | INFO | main_bot | 📩 New Pending Message from 8052608508 in -1003415524543 (Topic: 0)
+2026-04-20 09:39:28 AM | INFO | auditor | 📡 Routing: chat=-1003898476625, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 09:39:28 AM | INFO | auditor | ➕ Appended message 371 to alert 239
+2026-04-20 09:39:44 AM | INFO | db_manager | ✓ Message 234 in -1003415524543 saved as PENDING
+2026-04-20 09:39:44 AM | INFO | main_bot | 📩 New Pending Message from 8052608508 in -1003415524543 (Topic: 0)
+2026-04-20 09:39:52 AM | INFO | db_manager | ✓ Message 235 in -1003415524543 saved as PENDING
+2026-04-20 09:39:52 AM | INFO | main_bot | 📩 New Pending Message from 8052608508 in -1003415524543 (Topic: 0)
+2026-04-20 09:41:00 AM | WARNING | auditor | 🚨 Escalated 403 to Manager
+2026-04-20 09:41:04 AM | INFO | db_manager | ✓ Message 322 in -1003816497641 saved as PENDING
+2026-04-20 09:41:04 AM | INFO | main_bot | 📩 New Pending Message from 5018531536 in -1003816497641 (Topic: 0)
+2026-04-20 09:41:30 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 09:41:32 AM | ERROR | auditor | ❌ Auditor AI Error: Unterminated string starting at: line 2 column 13 (char 14)
+2026-04-20 09:42:05 AM | INFO | auditor | 📡 Routing: chat=-1003707562121, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 09:42:05 AM | INFO | auditor | 📢 Alert sent for 65 in Charcoal to Central Group
+2026-04-20 09:43:38 AM | ERROR | auditor | ❌ Auditor AI Error: Expecting ',' delimiter: line 3 column 26 (char 52)
+2026-04-20 09:43:42 AM | INFO | db_manager | ✓ Message 375 in -1003898476625 saved as PENDING
+2026-04-20 09:43:42 AM | INFO | main_bot | 📩 New Pending Message from 7414410530 in -1003898476625 (Topic: 0)
+2026-04-20 09:44:11 AM | INFO | auditor | 📡 Routing: chat=-1003871976559, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 09:44:12 AM | INFO | auditor | 📢 Alert sent for 321 in Leo&Aries to Central Group
+2026-04-20 09:44:44 AM | WARNING | auditor | 🚨 Escalated 29 to Manager
+2026-04-20 09:45:50 AM | INFO | db_manager | ✓ Message 237 in -1003415524543 saved as PENDING
+2026-04-20 09:45:50 AM | INFO | main_bot | 📩 New Pending Message from 8052608508 in -1003415524543 (Topic: 0)
+2026-04-20 09:46:18 AM | INFO | db_manager | ✓ Message 239 in -1003415524543 saved as PENDING
+2026-04-20 09:46:18 AM | INFO | main_bot | 📩 New Pending Message from 8052608508 in -1003415524543 (Topic: 0)
+2026-04-20 09:46:44 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 09:46:46 AM | INFO | db_manager | ✓ Message 240 in -1003415524543 saved as PENDING
+2026-04-20 09:46:46 AM | INFO | main_bot | 📩 New Pending Message from 8052608508 in -1003415524543 (Topic: 6)
+2026-04-20 09:47:46 AM | WARNING | auditor | ⚠️ Routing: No topic found for chat=-1003852412184, topic=6 -> MANAGER_ID
+2026-04-20 09:47:46 AM | INFO | auditor | 📢 Alert sent for 303 in ITTC to Central Group
+2026-04-20 09:48:19 AM | INFO | auditor | 📡 Routing: chat=-1003816497641, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 09:48:19 AM | INFO | auditor | 📢 Alert sent for 317 in Blanco Fashion to Central Group
+2026-04-20 09:48:31 AM | INFO | db_manager | ✓ Message 242 in -1003415524543 saved as PENDING
+2026-04-20 09:48:31 AM | INFO | main_bot | 📩 New Pending Message from 8052608508 in -1003415524543 (Topic: 0)
+2026-04-20 09:48:47 AM | INFO | db_manager | ✓ Message 243 in -1003415524543 saved as PENDING
+2026-04-20 09:48:47 AM | INFO | main_bot | 📩 New Pending Message from 8052608508 in -1003415524543 (Topic: 0)
+2026-04-20 09:48:52 AM | INFO | auditor | 🔇 AI Ignored (Irrelevant): 31 in ChawSu Store
+2026-04-20 09:48:59 AM | INFO | db_manager | ✓ Message 245 in -1003415524543 saved as PENDING
+2026-04-20 09:48:59 AM | INFO | main_bot | 📩 New Pending Message from 8052608508 in -1003415524543 (Topic: 0)
+2026-04-20 09:49:54 AM | WARNING | auditor | 🚨 Escalated 111 to Manager
+2026-04-20 09:50:25 AM | WARNING | auditor | 🚨 Escalated 112 to Manager
+2026-04-20 09:50:25 AM | WARNING | auditor | 🚨 Escalated 114 to Manager
+2026-04-20 09:51:25 AM | WARNING | auditor | 🚨 Escalated 119 to Manager
+2026-04-20 09:51:33 AM | INFO | db_manager | ✓ Message 67 in -1003707562121 saved as PENDING
+2026-04-20 09:51:33 AM | INFO | main_bot | 📩 New Pending Message from 5065017556 in -1003707562121 (Topic: 0)
+2026-04-20 09:51:55 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 09:51:55 AM | WARNING | auditor | 🚨 Escalated 121 to Manager
+2026-04-20 09:52:27 AM | INFO | auditor | 📡 Routing: chat=-1003816497641, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 09:52:27 AM | INFO | auditor | 📢 Alert sent for 320 in Blanco Fashion to Central Group
+2026-04-20 09:52:29 AM | WARNING | auditor | 🚨 Escalated 124 to Manager
+2026-04-20 09:53:00 AM | INFO | auditor | 📡 Routing: chat=-1003415524543, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 09:53:00 AM | INFO | auditor | 📢 Alert sent for 229 in Outfits Shop to Central Group
+2026-04-20 09:53:04 AM | INFO | auditor | 📡 Routing: chat=-1003415524543, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 09:53:04 AM | INFO | auditor | 📢 Alert sent for 230 in Outfits Shop to Central Group
+2026-04-20 09:53:37 AM | INFO | auditor | 📡 Routing: chat=-1003415524543, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 09:53:37 AM | INFO | auditor | 📢 Alert sent for 231 in Outfits Shop to Central Group
+2026-04-20 09:53:40 AM | WARNING | auditor | 🚨 Escalated 127 to Manager
+2026-04-20 09:53:40 AM | WARNING | auditor | 🚨 Escalated 128 to Manager
+2026-04-20 09:54:41 AM | INFO | auditor | 📡 Routing: chat=-1003415524543, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 09:54:41 AM | INFO | auditor | 📢 Alert sent for 233 in Outfits Shop to Central Group
+2026-04-20 09:54:43 AM | WARNING | auditor | 🚨 Escalated 129 to Manager
+2026-04-20 09:55:14 AM | INFO | auditor | 📡 Routing: chat=-1003415524543, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 09:55:15 AM | INFO | auditor | 📢 Alert sent for 234 in Outfits Shop to Central Group
+2026-04-20 09:55:24 AM | INFO | auditor | 📡 Routing: chat=-1003415524543, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 09:55:25 AM | INFO | auditor | 📢 Alert sent for 235 in Outfits Shop to Central Group
+2026-04-20 09:55:37 AM | INFO | db_manager | ✅ Message 376 in -1003898476625 resolved by Thida Hlaing (Reply)
+2026-04-20 09:55:37 AM | INFO | auditor | ℹ️ No active alert tracking found for 376 in -1003898476625. Checking if it was already alerted.
+2026-04-20 09:55:37 AM | INFO | auditor | ℹ️ Message 376 was not an active alert. Skipping record.
+2026-04-20 09:55:37 AM | INFO | main_bot | ✅ Message 376 marked as RESOLVED via Reply by Thida Hlaing
+2026-04-20 09:56:28 AM | INFO | auditor | 📡 Routing: chat=-1003816497641, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 09:56:28 AM | INFO | auditor | 📢 Alert sent for 322 in Blanco Fashion to Central Group
+2026-04-20 09:57:00 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 09:57:02 AM | INFO | db_manager | ✓ Message 379 in -1003898476625 saved as PENDING
+2026-04-20 09:57:02 AM | INFO | main_bot | 📩 New Pending Message from 7586720708 in -1003898476625 (Topic: 0)
+2026-04-20 09:58:02 AM | INFO | db_manager | ✓ Message 179 in -1003692715477 saved as PENDING
+2026-04-20 09:58:02 AM | INFO | main_bot | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 0)
+2026-04-20 09:58:28 AM | INFO | db_manager | ✓ Message 180 in -1003692715477 saved as PENDING
+2026-04-20 09:58:28 AM | INFO | main_bot | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 0)
+2026-04-20 09:58:52 AM | INFO | db_manager | ✓ Message 181 in -1003692715477 saved as PENDING
+2026-04-20 09:58:52 AM | INFO | main_bot | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 0)
+2026-04-20 09:59:01 AM | INFO | auditor | 📡 Routing: chat=-1003898476625, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 09:59:02 AM | INFO | auditor | 📢 Alert sent for 375 in SkinCare NextStep to Central Group
+2026-04-20 09:59:13 AM | INFO | db_manager | ✓ Message 182 in -1003692715477 saved as PENDING
+2026-04-20 09:59:13 AM | INFO | main_bot | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 0)
+2026-04-20 09:59:39 AM | INFO | db_manager | ✓ Message 183 in -1003692715477 saved as PENDING
+2026-04-20 09:59:39 AM | INFO | main_bot | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 0)
+2026-04-20 09:59:49 AM | INFO | db_manager | ✓ Message 184 in -1003692715477 saved as PENDING
+2026-04-20 09:59:49 AM | INFO | main_bot | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 0)
+2026-04-20 10:00:04 AM | WARNING | auditor | 🚨 Escalated 31 to Manager
+2026-04-20 10:01:05 AM | INFO | auditor | 📡 Routing: chat=-1003415524543, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:01:05 AM | INFO | auditor | 📢 Alert sent for 237 in Outfits Shop to Central Group
+2026-04-20 10:01:38 AM | INFO | auditor | 📡 Routing: chat=-1003415524543, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:01:38 AM | INFO | auditor | 📢 Alert sent for 239 in Outfits Shop to Central Group
+2026-04-20 10:02:11 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 10:02:11 AM | WARNING | auditor | ⚠️ Routing: No topic found for chat=-1003415524543, topic=6 -> MANAGER_ID
+2026-04-20 10:02:12 AM | INFO | auditor | ➕ Appended message 240 to alert 397
+2026-04-20 10:02:44 AM | WARNING | auditor | 🚨 Escalated 203 to Manager
+2026-04-20 10:03:45 AM | INFO | auditor | 📡 Routing: chat=-1003415524543, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:03:45 AM | INFO | auditor | 📢 Alert sent for 242 in Outfits Shop to Central Group
+2026-04-20 10:04:18 AM | INFO | auditor | 📡 Routing: chat=-1003415524543, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:04:19 AM | INFO | auditor | 📢 Alert sent for 243 in Outfits Shop to Central Group
+2026-04-20 10:04:22 AM | INFO | auditor | 📡 Routing: chat=-1003415524543, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:04:22 AM | INFO | auditor | 📢 Alert sent for 245 in Outfits Shop to Central Group
+2026-04-20 10:04:24 AM | WARNING | auditor | 🚨 Escalated 79 to Manager
+2026-04-20 10:05:02 AM | INFO | db_manager | ✓ Message 186 in -1003692715477 saved as PENDING
+2026-04-20 10:05:02 AM | INFO | main_bot | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 0)
+2026-04-20 10:05:47 AM | INFO | db_manager | ✅ Message 46 in -1003801802038 resolved by CS 2 (Reply)
+2026-04-20 10:05:47 AM | INFO | auditor | ℹ️ No active alert tracking found for 46 in -1003801802038. Checking if it was already alerted.
+2026-04-20 10:05:47 AM | INFO | auditor | ℹ️ Message 46 was not an active alert. Skipping record.
+2026-04-20 10:05:47 AM | INFO | main_bot | ✅ Message 46 marked as RESOLVED via Reply by CS 2
+2026-04-20 10:06:04 AM | INFO | db_manager | ✓ Message 323 in -1003816497641 saved as PENDING
+2026-04-20 10:06:04 AM | INFO | main_bot | 📩 New Pending Message from 5018531536 in -1003816497641 (Topic: 0)
+2026-04-20 10:06:24 AM | WARNING | auditor | 🚨 Escalated 265 to Manager
+2026-04-20 10:06:55 AM | INFO | auditor | 📡 Routing: chat=-1003707562121, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:06:56 AM | INFO | auditor | 📢 Alert sent for 67 in Charcoal to Central Group
+2026-04-20 10:07:28 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 10:07:36 AM | INFO | db_manager | ✓ Message 131 in -1003837547495 saved as PENDING
+2026-04-20 10:07:36 AM | INFO | main_bot | 📩 New Pending Message from 7832992762 in -1003837547495 (Topic: 0)
+2026-04-20 10:07:58 AM | WARNING | auditor | 🚨 Escalated 369 to Manager
+2026-04-20 10:07:58 AM | WARNING | auditor | 🚨 Escalated 2008 to Manager
+2026-04-20 10:09:01 AM | INFO | db_manager | ✓ Message 250 in -1003813366869 saved as PENDING
+2026-04-20 10:09:01 AM | INFO | main_bot | 📩 New Pending Message from 7639309830 in -1003813366869 (Topic: 0)
+2026-04-20 10:10:53 AM | INFO | db_manager | ✓ Message 251 in -1003813366869 saved as PENDING
+2026-04-20 10:10:53 AM | INFO | main_bot | 📩 New Pending Message from 7639309830 in -1003813366869 (Topic: 0)
+2026-04-20 10:11:40 AM | INFO | db_manager | ✓ Message 253 in -1003813366869 saved as PENDING
+2026-04-20 10:11:40 AM | INFO | main_bot | 📩 New Pending Message from 7639309830 in -1003813366869 (Topic: 0)
+2026-04-20 10:11:51 AM | INFO | db_manager | ✓ Message 254 in -1003813366869 saved as PENDING
+2026-04-20 10:11:51 AM | INFO | main_bot | 📩 New Pending Message from 7639309830 in -1003813366869 (Topic: 0)
+2026-04-20 10:12:28 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 10:12:29 AM | INFO | auditor | 📡 Routing: chat=-1003898476625, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:12:30 AM | INFO | auditor | 📢 Alert sent for 379 in SkinCare NextStep to Central Group
+2026-04-20 10:12:32 AM | WARNING | auditor | 🚨 Escalated 65 to Manager
+2026-04-20 10:13:03 AM | INFO | auditor | 📡 Routing: chat=-1003692715477, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:13:03 AM | INFO | auditor | 📢 Alert sent for 179 in Glowic Beauty to Central Group
+2026-04-20 10:13:36 AM | INFO | auditor | 📡 Routing: chat=-1003692715477, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:13:36 AM | INFO | auditor | ➕ Appended message 180 to alert 260
+2026-04-20 10:14:09 AM | INFO | auditor | 📡 Routing: chat=-1003692715477, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:14:09 AM | INFO | auditor | ➕ Appended message 181 to alert 260
+2026-04-20 10:14:42 AM | INFO | auditor | 📡 Routing: chat=-1003692715477, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:14:42 AM | INFO | auditor | ➕ Appended message 182 to alert 260
+2026-04-20 10:14:46 AM | INFO | db_manager | ✓ Message 56 in -1003757321826 saved as PENDING
+2026-04-20 10:14:46 AM | INFO | main_bot | 📩 New Pending Message from 6074866791 in -1003757321826 (Topic: 0)
+2026-04-20 10:14:57 AM | INFO | auditor | 📡 Routing: chat=-1003692715477, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:14:58 AM | INFO | auditor | ➕ Appended message 183 to alert 260
+2026-04-20 10:15:00 AM | WARNING | auditor | 🚨 Escalated 321 to Manager
+2026-04-20 10:15:31 AM | INFO | auditor | 📡 Routing: chat=-1003692715477, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:15:31 AM | INFO | auditor | ➕ Appended message 184 to alert 260
+2026-04-20 10:17:33 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 10:18:04 AM | WARNING | auditor | 🚨 Escalated 303 to Manager
+2026-04-20 10:18:18 AM | INFO | db_manager | ✅ Message 56 in -1003757321826 resolved by (60501) (Reply)
+2026-04-20 10:18:18 AM | INFO | auditor | ℹ️ No active alert tracking found for 56 in -1003757321826. Checking if it was already alerted.
+2026-04-20 10:18:18 AM | INFO | auditor | ℹ️ Message 56 was not an active alert. Skipping record.
+2026-04-20 10:18:18 AM | INFO | main_bot | ✅ Message 56 marked as RESOLVED via Reply by (60501)
+2026-04-20 10:18:34 AM | WARNING | auditor | 🚨 Escalated 317 to Manager
+2026-04-20 10:20:05 AM | INFO | auditor | 📡 Routing: chat=-1003692715477, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:20:05 AM | INFO | auditor | 📢 Alert sent for 186 in Glowic Beauty to Central Group
+2026-04-20 10:21:14 AM | INFO | auditor | 🔇 AI Ignored (Irrelevant): 323 in Blanco Fashion
+2026-04-20 10:22:53 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 10:22:54 AM | INFO | auditor | 📡 Routing: chat=-1003837547495, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:22:54 AM | INFO | auditor | 📢 Alert sent for 131 in Ever smile to Central Group
+2026-04-20 10:22:56 AM | WARNING | auditor | 🚨 Escalated 320 to Manager
+2026-04-20 10:23:49 AM | WARNING | auditor | 🚨 Escalated 229 to Manager
+2026-04-20 10:23:53 AM | WARNING | auditor | 🚨 Escalated 230 to Manager
+2026-04-20 10:23:55 AM | WARNING | auditor | 🚨 Escalated 231 to Manager
+2026-04-20 10:24:57 AM | INFO | auditor | 🔇 AI Ignored (Irrelevant): 250 in K&J Clothing
+2026-04-20 10:25:51 AM | WARNING | auditor | 🚨 Escalated 233 to Manager
+2026-04-20 10:25:52 AM | WARNING | auditor | 🚨 Escalated 234 to Manager
+2026-04-20 10:25:55 AM | WARNING | auditor | 🚨 Escalated 235 to Manager
+2026-04-20 10:27:36 AM | INFO | auditor | 📡 Routing: chat=-1003813366869, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:27:52 AM | INFO | auditor | 📢 Alert sent for 251 in K&J Clothing to Central Group
+2026-04-20 10:28:18 AM | WARNING | auditor | 🚨 Escalated 322 to Manager
+2026-04-20 10:29:16 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 10:29:44 AM | INFO | auditor | 📡 Routing: chat=-1003813366869, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:29:46 AM | INFO | auditor | ➕ Appended message 253 to alert 268
+2026-04-20 10:30:27 AM | INFO | auditor | 📡 Routing: chat=-1003813366869, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)
+2026-04-20 10:30:49 AM | INFO | auditor | 📢 Alert sent for 254 in K&J Clothing to Central Group
+2026-04-20 10:32:12 AM | INFO | db_manager | ✓ Message 394 in -1003883905797 saved as PENDING
+2026-04-20 10:32:12 AM | INFO | db_manager | ✓ Message 395 in -1003883905797 saved as PENDING
+2026-04-20 10:32:26 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 4)
+2026-04-20 10:32:28 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 4)
+2026-04-20 10:32:38 AM | INFO | db_manager | ✅ Message 324 in -1003816497641 resolved by Yoon Waddy (Reply)
+2026-04-20 10:32:39 AM | INFO | auditor | ℹ️ No active alert tracking found for 324 in -1003816497641. Checking if it was already alerted.
+2026-04-20 10:32:39 AM | INFO | auditor | ℹ️ Message 324 was not an active alert. Skipping record.
+2026-04-20 10:32:40 AM | INFO | main_bot | ✅ Message 324 marked as RESOLVED via Reply by Yoon Waddy
+2026-04-20 10:33:28 AM | WARNING | auditor | 🚨 Escalated 375 to Manager
+2026-04-20 10:33:45 AM | WARNING | auditor | 🚨 Escalated 237 to Manager
+2026-04-20 10:34:04 AM | WARNING | auditor | 🚨 Escalated 239 to Manager
+2026-04-20 10:34:14 AM | WARNING | auditor | 🚨 Escalated 242 to Manager
+2026-04-20 10:36:55 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 10:37:17 AM | INFO | db_manager | ✓ Message 397 in -1003883905797 saved as PENDING
+2026-04-20 10:37:28 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 0)
+2026-04-20 10:38:36 AM | INFO | db_manager | ✓ Message 398 in -1003883905797 saved as PENDING
+2026-04-20 10:38:36 AM | INFO | db_manager | ✓ Message 495 in -1003506710131 saved as PENDING
+2026-04-20 10:38:41 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 0)
+2026-04-20 10:38:41 AM | INFO | main_bot | 📩 New Pending Message from 5627501190 in -1003506710131 (Topic: 0)
+2026-04-20 10:39:00 AM | INFO | db_manager | ✓ Message 265 in -1003766245638 saved as PENDING
+2026-04-20 10:39:00 AM | INFO | main_bot | 📩 New Pending Message from 7544386925 in -1003766245638 (Topic: 0)
+2026-04-20 10:39:19 AM | WARNING | auditor | 🚨 Escalated 243 to Manager
+2026-04-20 10:39:29 AM | WARNING | auditor | 🚨 Escalated 245 to Manager
+2026-04-20 10:39:38 AM | WARNING | auditor | 🚨 Escalated 67 to Manager
+2026-04-20 10:40:59 AM | INFO | db_manager | ✓ Message 327 in -1003816497641 saved as PENDING
+2026-04-20 10:41:00 AM | INFO | main_bot | 📩 New Pending Message from 5018531536 in -1003816497641 (Topic: 4)
+2026-04-20 10:41:13 AM | INFO | db_manager | ✓ Message 256 in -1003813366869 saved as PENDING
+2026-04-20 10:41:13 AM | INFO | main_bot | 📩 New Pending Message from 7639309830 in -1003813366869 (Topic: 0)
+2026-04-20 10:41:35 AM | INFO | db_manager | ✅ Message 256 in -1003813366869 resolved by (60501) (Reply)
+2026-04-20 10:41:39 AM | INFO | auditor | ℹ️ No active alert tracking found for 256 in -1003813366869. Checking if it was already alerted.
+2026-04-20 10:41:42 AM | INFO | auditor | ℹ️ Message 256 was not an active alert. Skipping record.
+2026-04-20 10:41:47 AM | INFO | main_bot | ✅ Message 256 marked as RESOLVED via Reply by (60501)
+2026-04-20 10:42:43 AM | WARNING | auditor | 🚨 Escalated 379 to Manager
+2026-04-20 10:43:47 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 10:44:40 AM | WARNING | auditor | 🚨 Escalated 179 to Manager
+2026-04-20 10:44:47 AM | INFO | db_manager | ✅ Message 319 in -1003816497641 resolved by Ei Pan Hmue (Reply)
+2026-04-20 10:44:48 AM | INFO | auditor | ℹ️ No active alert tracking found for 319 in -1003816497641. Checking if it was already alerted.
+2026-04-20 10:44:48 AM | INFO | auditor | ℹ️ Message 319 was not an active alert. Skipping record.
+2026-04-20 10:44:48 AM | INFO | main_bot | ✅ Message 319 marked as RESOLVED via Reply by Ei Pan Hmue
+2026-04-20 10:45:08 AM | INFO | db_manager | ✓ Message 329 in -1003816497641 saved as PENDING
+2026-04-20 10:45:08 AM | INFO | main_bot | 📩 New Pending Message from 5018531536 in -1003816497641 (Topic: 0)
+2026-04-20 10:45:22 AM | WARNING | auditor | ⚠️ Routing: No topic found for chat=-1003883905797, topic=4 -> MANAGER_ID
+2026-04-20 10:45:25 AM | INFO | auditor | 📢 Alert sent for 394 in KSJB to Central Group
+2026-04-20 10:45:39 AM | INFO | db_manager | ✓ Message 402 in -1003883905797 saved as PENDING
+2026-04-20 10:45:40 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 4)
+2026-04-20 10:45:40 AM | WARNING | auditor | ⚠️ Routing: No topic found for chat=-1003883905797, topic=4 -> MANAGER_ID
+2026-04-20 10:45:42 AM | INFO | auditor | 📢 Alert sent for 395 in KSJB to Central Group
+2026-04-20 10:46:03 AM | INFO | db_manager | ✅ Message 86 in -1003822695947 resolved by CS 2 (Reply)
+2026-04-20 10:46:08 AM | INFO | auditor | ℹ️ No active alert tracking found for 86 in -1003822695947. Checking if it was already alerted.
+2026-04-20 10:46:12 AM | INFO | auditor | ℹ️ Message 86 was not an active alert. Skipping record.
+2026-04-20 10:46:13 AM | INFO | main_bot | ✅ Message 86 marked as RESOLVED via Reply by CS 2
+2026-04-20 10:47:02 AM | ERROR | db_manager | ❌ Database Init Error: table routing_table has no column named topic_id
+2026-04-20 10:47:02 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-20 10:47:02 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-20 10:47:02 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 10:47:03 AM | WARNING | auditor | 🚨 Escalated 186 to Manager
+2026-04-20 10:47:03 AM | WARNING | auditor | 🚨 Escalated 131 to Manager
+2026-04-20 10:47:03 AM | WARNING | auditor | 🚨 Escalated 251 to Manager
+2026-04-20 10:47:03 AM | WARNING | auditor | 🚨 Escalated 254 to Manager
+2026-04-20 10:50:34 AM | INFO | auditor | 📂 Processing Topic: 0 in Chat: -1003883905797 (1 messages)
+2026-04-20 10:50:34 AM | INFO | auditor | 🔍 Auditing message 397 in chat -1003883905797 (Topic: 0)
+2026-04-20 10:50:35 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 10:50:45 AM | INFO | auditor | 📂 Processing Topic: 0 in Chat: -1003883905797 (1 messages)
+2026-04-20 10:50:45 AM | INFO | auditor | 🔍 Auditing message 398 in chat -1003883905797 (Topic: 0)
+2026-04-20 10:50:46 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 10:52:26 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 10:52:56 AM | INFO | auditor | 📂 Processing Topic: 0 in Chat: -1003506710131 (1 messages)
+2026-04-20 10:52:56 AM | INFO | auditor | 🔍 Auditing message 495 in chat -1003506710131 (Topic: 0)
+2026-04-20 10:52:57 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 10:53:33 AM | INFO | db_manager | ✅ Message 170 in -1003692715477 (Topic: 34) resolved by CS 2 (Reply)
+2026-04-20 10:53:34 AM | INFO | auditor | ℹ️ No active alert tracking found for 170 in -1003692715477. Checking if it was already alerted.
+2026-04-20 10:53:34 AM | INFO | auditor | ℹ️ Message 170 was not an active alert. Skipping record.
+2026-04-20 10:53:34 AM | INFO | main_bot | ✅ Message 170 marked as RESOLVED via Reply by CS 2
+2026-04-20 10:54:07 AM | INFO | auditor | 📂 Processing Topic: 0 in Chat: -1003766245638 (1 messages)
+2026-04-20 10:54:07 AM | INFO | auditor | 🔍 Auditing message 265 in chat -1003766245638 (Topic: 0)
+2026-04-20 10:54:08 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 10:55:48 AM | INFO | auditor | 📂 Processing Topic: 4 in Chat: -1003816497641 (1 messages)
+2026-04-20 10:55:48 AM | INFO | auditor | 🔍 Auditing message 327 in chat -1003816497641 (Topic: 4)
+2026-04-20 10:55:49 AM | INFO | auditor | 🔇 AI Ignored (Irrelevant): 327 in Blanco Fashion
+2026-04-20 10:55:56 AM | INFO | db_manager | ✓ Message 404 in -1003883905797 saved as PENDING
+2026-04-20 10:55:56 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 0)
+2026-04-20 10:56:07 AM | INFO | db_manager | ✓ Message 405 in -1003883905797 saved as PENDING
+2026-04-20 10:56:07 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 0)
+2026-04-20 10:56:31 AM | INFO | db_manager | ✓ Message 406 in -1003883905797 saved as PENDING
+2026-04-20 10:56:31 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 0)
+2026-04-20 10:56:57 AM | INFO | db_manager | ✓ Message 111 in -1003567788792 saved as PENDING
+2026-04-20 10:56:57 AM | INFO | main_bot | 📩 New Pending Message from 7128781148 in -1003567788792 (Topic: 0)
+2026-04-20 10:57:51 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 10:59:19 AM | INFO | db_manager | ✅ Message 877 in -1003798739565 (Topic: 4) resolved by CS 2 (Reply)
+2026-04-20 10:59:19 AM | INFO | auditor | ℹ️ No active alert tracking found for 877 in -1003798739565. Checking if it was already alerted.
+2026-04-20 10:59:19 AM | INFO | auditor | ℹ️ Message 877 was not an active alert. Skipping record.
+2026-04-20 10:59:19 AM | INFO | main_bot | ✅ Message 877 marked as RESOLVED via Reply by CS 2
+2026-04-20 10:59:35 AM | INFO | db_manager | ✓ Message 407 in -1003883905797 saved as PENDING
+2026-04-20 10:59:35 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 0)
+2026-04-20 11:00:14 AM | INFO | db_manager | ✓ Message 197 in -1003702835668 saved as PENDING
+2026-04-20 11:00:14 AM | INFO | main_bot | 📩 New Pending Message from 5669529378 in -1003702835668 (Topic: 0)
+2026-04-20 11:00:22 AM | INFO | auditor | 📂 Processing Topic: 0 in Chat: -1003816497641 (1 messages)
+2026-04-20 11:00:22 AM | INFO | auditor | 🔍 Auditing message 329 in chat -1003816497641 (Topic: 0)
+2026-04-20 11:00:23 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:00:23 AM | INFO | db_manager | ✓ Message 409 in -1003883905797 saved as PENDING
+2026-04-20 11:00:23 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 0)
+2026-04-20 11:00:33 AM | WARNING | auditor | 🚨 Escalated 394 to Manager
+2026-04-20 11:00:33 AM | WARNING | auditor | 🚨 Escalated 395 to Manager
+2026-04-20 11:01:03 AM | INFO | auditor | 📂 Processing Topic: 4 in Chat: -1003883905797 (1 messages)
+2026-04-20 11:01:03 AM | INFO | auditor | 🔍 Auditing message 402 in chat -1003883905797 (Topic: 4)
+2026-04-20 11:01:04 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:01:27 AM | INFO | db_manager | ✅ Message 197 in -1003702835668 (Topic: 0) resolved by Yoon Waddy (Reply)
+2026-04-20 11:01:27 AM | INFO | auditor | ℹ️ No active alert tracking found for 197 in -1003702835668. Checking if it was already alerted.
+2026-04-20 11:01:27 AM | INFO | auditor | ℹ️ Message 197 was not an active alert. Skipping record.
+2026-04-20 11:01:27 AM | INFO | main_bot | ✅ Message 197 marked as RESOLVED via Reply by Yoon Waddy
+2026-04-20 11:03:14 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 11:04:50 AM | INFO | db_manager | ✅ Message 308 in -1003868121514 (Topic: 4) resolved by CS 2 (Reply)
+2026-04-20 11:04:50 AM | INFO | auditor | ℹ️ No active alert tracking found for 308 in -1003868121514. Checking if it was already alerted.
+2026-04-20 11:04:50 AM | INFO | auditor | ℹ️ Message 308 was not an active alert. Skipping record.
+2026-04-20 11:04:50 AM | INFO | main_bot | ✅ Message 308 marked as RESOLVED via Reply by CS 2
+2026-04-20 11:06:14 AM | INFO | db_manager | ✅ Message 277 in -1003646045828 (Topic: 5) resolved by Moe Pyae (Reply)
+2026-04-20 11:06:14 AM | INFO | auditor | ℹ️ No active alert tracking found for 277 in -1003646045828. Checking if it was already alerted.
+2026-04-20 11:06:14 AM | INFO | auditor | ℹ️ Message 277 was not an active alert. Skipping record.
+2026-04-20 11:06:14 AM | INFO | main_bot | ✅ Message 277 marked as RESOLVED via Reply by Moe Pyae
+2026-04-20 11:06:54 AM | INFO | db_manager | ✓ Message 212 in -1003801077622 saved as PENDING
+2026-04-20 11:06:54 AM | INFO | main_bot | 📩 New Pending Message from 7289275083 in -1003801077622 (Topic: 6)
+2026-04-20 11:06:54 AM | INFO | db_manager | ✓ Message 249 in -1003415524543 saved as PENDING
+2026-04-20 11:06:54 AM | INFO | main_bot | 📩 New Pending Message from 8052608508 in -1003415524543 (Topic: 6)
+2026-04-20 11:07:00 AM | INFO | db_manager | ✓ Message 213 in -1003801077622 saved as PENDING
+2026-04-20 11:07:00 AM | INFO | main_bot | 📩 New Pending Message from 7289275083 in -1003801077622 (Topic: 6)
+2026-04-20 11:07:18 AM | INFO | db_manager | ✓ Message 214 in -1003801077622 saved as PENDING
+2026-04-20 11:07:18 AM | INFO | main_bot | 📩 New Pending Message from 7289275083 in -1003801077622 (Topic: 6)
+2026-04-20 11:07:30 AM | INFO | db_manager | ✅ Message 47 in -1003752686638 (Topic: 4) resolved by Moe Pyae (Reply)
+2026-04-20 11:07:30 AM | INFO | auditor | ℹ️ No active alert tracking found for 47 in -1003752686638. Checking if it was already alerted.
+2026-04-20 11:07:30 AM | INFO | auditor | ℹ️ Message 47 was not an active alert. Skipping record.
+2026-04-20 11:07:30 AM | INFO | main_bot | ✅ Message 47 marked as RESOLVED via Reply by Moe Pyae
+2026-04-20 11:07:31 AM | INFO | db_manager | ✓ Message 250 in -1003415524543 saved as PENDING
+2026-04-20 11:07:31 AM | INFO | main_bot | 📩 New Pending Message from 8052608508 in -1003415524543 (Topic: 6)
+2026-04-20 11:08:15 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 11:08:25 AM | INFO | db_manager | ✅ Message 110 in -1003567788792 (Topic: 0) resolved by (60501) (Reply)
+2026-04-20 11:08:25 AM | INFO | auditor | 🗑️ Deleted alert 214
+2026-04-20 11:08:26 AM | INFO | auditor | 🗑️ Deleted escalation message 541
+2026-04-20 11:08:26 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-20 11:08:26 AM | ERROR | auditor | ❌ Failed to log to record group: name 'RESOLVED_TOP_ID' is not defined
+2026-04-20 11:08:26 AM | INFO | main_bot | ✅ Message 110 marked as RESOLVED via Reply by (60501)
+2026-04-20 11:08:32 AM | INFO | db_manager | ✅ Message 45 in -1003752686638 (Topic: 4) resolved by Moe Pyae (Reply)
+2026-04-20 11:08:32 AM | INFO | auditor | ℹ️ No active alert tracking found for 45 in -1003752686638. Checking if it was already alerted.
+2026-04-20 11:08:32 AM | INFO | auditor | ℹ️ Message 45 was not an active alert. Skipping record.
+2026-04-20 11:08:32 AM | INFO | main_bot | ✅ Message 45 marked as RESOLVED via Reply by Moe Pyae
+2026-04-20 11:09:29 AM | INFO | db_manager | ✅ Message 183 in -1003801077622 (Topic: 4) resolved by Moe Pyae (Reply)
+2026-04-20 11:09:29 AM | INFO | auditor | ℹ️ No active alert tracking found for 183 in -1003801077622. Checking if it was already alerted.
+2026-04-20 11:09:29 AM | INFO | auditor | ℹ️ Message 183 was not an active alert. Skipping record.
+2026-04-20 11:09:29 AM | INFO | main_bot | ✅ Message 183 marked as RESOLVED via Reply by Moe Pyae
+2026-04-20 11:10:04 AM | INFO | db_manager | ✓ Message 202 in -1003702835668 saved as PENDING
+2026-04-20 11:10:04 AM | INFO | main_bot | 📩 New Pending Message from 5669529378 in -1003702835668 (Topic: 0)
+2026-04-20 11:10:11 AM | INFO | db_manager | ✓ Message 203 in -1003702835668 saved as PENDING
+2026-04-20 11:10:11 AM | INFO | main_bot | 📩 New Pending Message from 5669529378 in -1003702835668 (Topic: 0)
+2026-04-20 11:10:16 AM | INFO | db_manager | ✓ Message 217 in -1003801077622 saved as PENDING
+2026-04-20 11:10:16 AM | INFO | main_bot | 📩 New Pending Message from 7289275083 in -1003801077622 (Topic: 6)
+2026-04-20 11:10:25 AM | INFO | db_manager | ✓ Message 218 in -1003801077622 saved as PENDING
+2026-04-20 11:10:25 AM | INFO | main_bot | 📩 New Pending Message from 7289275083 in -1003801077622 (Topic: 6)
+2026-04-20 11:10:28 AM | INFO | db_manager | ✓ Message 219 in -1003801077622 saved as PENDING
+2026-04-20 11:10:28 AM | INFO | main_bot | 📩 New Pending Message from 7289275083 in -1003801077622 (Topic: 6)
+2026-04-20 11:11:15 AM | INFO | auditor | 📂 Processing Topic: 0 in Chat: -1003883905797 (2 messages)
+2026-04-20 11:11:15 AM | INFO | auditor | 🔍 Auditing message 404 in chat -1003883905797 (Topic: 0)
+2026-04-20 11:11:16 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:11:26 AM | INFO | auditor | 📂 Processing Topic: 0 in Chat: -1003883905797 (1 messages)
+2026-04-20 11:11:26 AM | INFO | auditor | 🔍 Auditing message 405 in chat -1003883905797 (Topic: 0)
+2026-04-20 11:11:33 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:11:43 AM | INFO | auditor | 📂 Processing Topic: 0 in Chat: -1003883905797 (1 messages)
+2026-04-20 11:11:43 AM | INFO | auditor | 🔍 Auditing message 406 in chat -1003883905797 (Topic: 0)
+2026-04-20 11:11:51 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:12:01 AM | INFO | auditor | 📂 Processing Topic: 0 in Chat: -1003567788792 (1 messages)
+2026-04-20 11:12:01 AM | INFO | auditor | 🔍 Auditing message 111 in chat -1003567788792 (Topic: 0)
+2026-04-20 11:12:14 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:13:24 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 11:14:54 AM | INFO | auditor | 📂 Processing Topic: 0 in Chat: -1003883905797 (1 messages)
+2026-04-20 11:14:54 AM | INFO | auditor | 🔍 Auditing message 407 in chat -1003883905797 (Topic: 0)
+2026-04-20 11:14:55 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:15:31 AM | INFO | db_manager | ✅ Message 1870 in -1003798739565 (Topic: 4) resolved by CS 2 (Reply)
+2026-04-20 11:15:31 AM | INFO | auditor | ℹ️ No active alert tracking found for 1870 in -1003798739565. Checking if it was already alerted.
+2026-04-20 11:15:31 AM | INFO | auditor | ℹ️ Message 1870 was not an active alert. Skipping record.
+2026-04-20 11:15:31 AM | INFO | main_bot | ✅ Message 1870 marked as RESOLVED via Reply by CS 2
+2026-04-20 11:15:35 AM | INFO | auditor | 📂 Processing Topic: 0 in Chat: -1003883905797 (1 messages)
+2026-04-20 11:15:35 AM | INFO | auditor | 🔍 Auditing message 409 in chat -1003883905797 (Topic: 0)
+2026-04-20 11:15:36 AM | INFO | auditor | 🔇 AI Ignored (Irrelevant): 409 in KSJB
+2026-04-20 11:18:38 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 11:22:08 AM | INFO | auditor | 📂 Processing Topic: 6 in Chat: -1003801077622 (2 messages)
+2026-04-20 11:22:08 AM | INFO | auditor | 🔍 Auditing message 212 in chat -1003801077622 (Topic: 6)
+2026-04-20 11:22:09 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:22:19 AM | INFO | auditor | 📂 Processing Topic: 6 in Chat: -1003415524543 (1 messages)
+2026-04-20 11:22:19 AM | INFO | auditor | 🔍 Auditing message 249 in chat -1003415524543 (Topic: 6)
+2026-04-20 11:22:21 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:22:31 AM | INFO | auditor | 📂 Processing Topic: 6 in Chat: -1003801077622 (2 messages)
+2026-04-20 11:22:31 AM | INFO | auditor | 🔍 Auditing message 213 in chat -1003801077622 (Topic: 6)
+2026-04-20 11:22:32 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:22:42 AM | INFO | auditor | 📂 Processing Topic: 6 in Chat: -1003801077622 (1 messages)
+2026-04-20 11:22:42 AM | INFO | auditor | 🔍 Auditing message 214 in chat -1003801077622 (Topic: 6)
+2026-04-20 11:22:43 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:22:53 AM | INFO | auditor | 📂 Processing Topic: 6 in Chat: -1003415524543 (1 messages)
+2026-04-20 11:22:53 AM | INFO | auditor | 🔍 Auditing message 250 in chat -1003415524543 (Topic: 6)
+2026-04-20 11:22:54 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:24:04 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 11:24:35 AM | INFO | db_manager | ✅ Message 61 in -1003709069700 (Topic: 0) resolved by CS 2 (Reply)
+2026-04-20 11:24:35 AM | INFO | auditor | ℹ️ No active alert tracking found for 61 in -1003709069700. Checking if it was already alerted.
+2026-04-20 11:24:35 AM | INFO | auditor | ℹ️ Message 61 was not an active alert. Skipping record.
+2026-04-20 11:24:35 AM | INFO | main_bot | ✅ Message 61 marked as RESOLVED via Reply by CS 2
+2026-04-20 11:25:34 AM | INFO | auditor | 📂 Processing Topic: 0 in Chat: -1003702835668 (2 messages)
+2026-04-20 11:25:34 AM | INFO | auditor | 🔍 Auditing message 202 in chat -1003702835668 (Topic: 0)
+2026-04-20 11:25:35 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:25:45 AM | INFO | auditor | 📂 Processing Topic: 0 in Chat: -1003702835668 (1 messages)
+2026-04-20 11:25:45 AM | INFO | auditor | 🔍 Auditing message 203 in chat -1003702835668 (Topic: 0)
+2026-04-20 11:25:46 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:25:56 AM | INFO | auditor | 📂 Processing Topic: 6 in Chat: -1003801077622 (3 messages)
+2026-04-20 11:25:56 AM | INFO | auditor | 🔍 Auditing message 217 in chat -1003801077622 (Topic: 6)
+2026-04-20 11:25:57 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:26:07 AM | INFO | auditor | 📂 Processing Topic: 6 in Chat: -1003801077622 (2 messages)
+2026-04-20 11:26:07 AM | INFO | auditor | 🔍 Auditing message 218 in chat -1003801077622 (Topic: 6)
+2026-04-20 11:26:08 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:26:18 AM | INFO | auditor | 📂 Processing Topic: 6 in Chat: -1003801077622 (1 messages)
+2026-04-20 11:26:18 AM | INFO | auditor | 🔍 Auditing message 219 in chat -1003801077622 (Topic: 6)
+2026-04-20 11:26:19 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such column: target_group_id
+2026-04-20 11:29:29 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 11:34:29 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 11:39:29 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 11:39:30 AM | INFO | db_manager | ✓ Message 2031 in -1003798739565 saved as PENDING
+2026-04-20 11:39:30 AM | INFO | main_bot | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 6)
+2026-04-20 11:39:57 AM | INFO | db_manager | ✓ Message 216 in -1003796096237 saved as PENDING
+2026-04-20 11:39:57 AM | INFO | main_bot | 📩 New Pending Message from 5482295505 in -1003796096237 (Topic: 0)
+2026-04-20 11:42:07 AM | INFO | db_manager | ✓ Message 216 in -1003823820784 saved as PENDING
+2026-04-20 11:42:07 AM | INFO | main_bot | 📩 New Pending Message from 5082912204 in -1003823820784 (Topic: 0)
+2026-04-20 11:44:29 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 11:46:13 AM | INFO | db_manager | ✓ Message 113 in -1003567788792 saved as PENDING
+2026-04-20 11:46:13 AM | INFO | main_bot | 📩 New Pending Message from 7128781148 in -1003567788792 (Topic: 0)
+2026-04-20 11:49:29 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 11:54:30 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 11:59:30 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 12:00:34 PM | INFO | db_manager | ✓ Message 206 in -1003702835668 saved as PENDING
+2026-04-20 12:00:34 PM | INFO | main_bot | 📩 New Pending Message from 5669529378 in -1003702835668 (Topic: 0)
+2026-04-20 12:03:12 PM | INFO | db_manager | ✓ Message 130 in -1003361319863 saved as PENDING
+2026-04-20 12:03:12 PM | INFO | main_bot | 📩 New Pending Message from 1610507944 in -1003361319863 (Topic: 0)
+2026-04-20 12:04:17 PM | INFO | db_manager | ✓ Message 267 in -1003766245638 saved as PENDING
+2026-04-20 12:04:17 PM | INFO | main_bot | 📩 New Pending Message from 8375551620 in -1003766245638 (Topic: 0)
+2026-04-20 12:04:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 12:07:15 PM | INFO | db_manager | ✓ Message 87 in -1003801802038 saved as PENDING
+2026-04-20 12:07:15 PM | INFO | main_bot | 📩 New Pending Message from 6858436718 in -1003801802038 (Topic: 0)
+2026-04-20 12:07:27 PM | INFO | db_manager | ✓ Message 88 in -1003801802038 saved as PENDING
+2026-04-20 12:07:27 PM | INFO | main_bot | 📩 New Pending Message from 6858436718 in -1003801802038 (Topic: 0)
+2026-04-20 12:09:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 12:13:35 PM | INFO | db_manager | ✅ Message 98 in -1003810623540 (Topic: 6) resolved by Thida Hlaing (Reply)
+2026-04-20 12:13:35 PM | INFO | auditor | ℹ️ No active alert tracking found for 98 in -1003810623540. Checking if it was already alerted.
+2026-04-20 12:13:35 PM | INFO | auditor | ℹ️ Message 98 was not an active alert. Skipping record.
+2026-04-20 12:13:35 PM | INFO | main_bot | ✅ Message 98 marked as RESOLVED via Reply by Thida Hlaing
+2026-04-20 12:14:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 12:16:32 PM | INFO | db_manager | ✅ Message 76 in -1003752686638 (Topic: 4) resolved by CS 2 (Reply)
+2026-04-20 12:16:32 PM | INFO | auditor | ℹ️ No active alert tracking found for 76 in -1003752686638. Checking if it was already alerted.
+2026-04-20 12:16:32 PM | INFO | auditor | ℹ️ Message 76 was not an active alert. Skipping record.
+2026-04-20 12:16:32 PM | INFO | main_bot | ✅ Message 76 marked as RESOLVED via Reply by CS 2
+2026-04-20 12:19:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 12:24:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 12:25:20 PM | INFO | db_manager | ✅ Message 258 in -1003813366869 (Topic: 6) resolved by Thida Hlaing (Reply)
+2026-04-20 12:25:20 PM | INFO | auditor | ℹ️ No active alert tracking found for 258 in -1003813366869. Checking if it was already alerted.
+2026-04-20 12:25:20 PM | INFO | auditor | ℹ️ Message 258 was not an active alert. Skipping record.
+2026-04-20 12:25:20 PM | INFO | main_bot | ✅ Message 258 marked as RESOLVED via Reply by Thida Hlaing
+2026-04-20 12:26:19 PM | INFO | db_manager | ✓ Message 208 in -1003702835668 saved as PENDING
+2026-04-20 12:26:19 PM | INFO | main_bot | 📩 New Pending Message from 5669529378 in -1003702835668 (Topic: 0)
+2026-04-20 12:29:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 12:29:46 PM | INFO | db_manager | ✓ Message 33 in -1003719485296 saved as PENDING
+2026-04-20 12:29:46 PM | INFO | main_bot | 📩 New Pending Message from 2134240705 in -1003719485296 (Topic: 0)
+2026-04-20 12:34:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 12:39:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 12:43:10 PM | INFO | db_manager | ✓ Message 498 in -1003506710131 saved as PENDING
+2026-04-20 12:43:10 PM | INFO | main_bot | 📩 New Pending Message from 5627501190 in -1003506710131 (Topic: 4)
+2026-04-20 12:44:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 12:46:48 PM | INFO | db_manager | ✓ Message 499 in -1003506710131 saved as PENDING
+2026-04-20 12:46:48 PM | INFO | main_bot | 📩 New Pending Message from 5627501190 in -1003506710131 (Topic: 0)
+2026-04-20 12:47:10 PM | INFO | db_manager | ✓ Message 500 in -1003506710131 saved as PENDING
+2026-04-20 12:47:10 PM | INFO | main_bot | 📩 New Pending Message from 5627501190 in -1003506710131 (Topic: 0)
+2026-04-20 12:47:30 PM | INFO | db_manager | ✓ Message 501 in -1003506710131 saved as PENDING
+2026-04-20 12:47:30 PM | INFO | main_bot | 📩 New Pending Message from 5627501190 in -1003506710131 (Topic: 0)
+2026-04-20 12:49:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 12:52:56 PM | INFO | db_manager | ✓ Message 502 in -1003506710131 saved as PENDING
+2026-04-20 12:52:56 PM | INFO | main_bot | 📩 New Pending Message from 5627501190 in -1003506710131 (Topic: 6)
+2026-04-20 12:54:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 12:59:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 01:04:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 01:05:10 PM | INFO | db_manager | ✓ Message 2034 in -1003798739565 saved as PENDING
+2026-04-20 01:05:10 PM | INFO | main_bot | 📩 New Pending Message from 5254267634 in -1003798739565 (Topic: 0)
+2026-04-20 01:05:17 PM | INFO | db_manager | ✓ Message 2035 in -1003798739565 saved as PENDING
+2026-04-20 01:05:17 PM | INFO | main_bot | 📩 New Pending Message from 5254267634 in -1003798739565 (Topic: 0)
+2026-04-20 01:09:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 01:10:49 PM | INFO | db_manager | ✓ Message 189 in -1003692715477 saved as PENDING
+2026-04-20 01:10:49 PM | INFO | main_bot | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 34)
+2026-04-20 01:11:31 PM | INFO | db_manager | ✓ Message 260 in -1003813366869 saved as PENDING
+2026-04-20 01:11:31 PM | INFO | main_bot | 📩 New Pending Message from 7639309830 in -1003813366869 (Topic: 6)
+2026-04-20 01:14:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 01:16:45 PM | WARNING | commands_handler | ⚠️ Restart command issued by 8353570874. Cleaning up...
+2026-04-20 01:16:50 PM | INFO | commands_handler | 🚀 Process exiting for restart...
+2026-04-20 01:16:50 PM | ERROR | db_manager | ❌ Database Init Error: table routing_table has no column named topic_id
+2026-04-20 01:16:50 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-20 01:19:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 01:24:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 01:29:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 01:31:30 PM | INFO | db_manager | ✓ Message 69 in -1003633412428 saved as PENDING
+2026-04-20 01:31:30 PM | INFO | main_bot | 📩 New Pending Message from 8719285412 in -1003633412428 (Topic: 0)
+2026-04-20 01:31:37 PM | INFO | db_manager | ✓ Message 70 in -1003633412428 saved as PENDING
+2026-04-20 01:31:37 PM | INFO | main_bot | 📩 New Pending Message from 8719285412 in -1003633412428 (Topic: 0)
+2026-04-20 01:34:20 PM | INFO | db_manager | ✓ Message 83 in -1003720313785 saved as PENDING
+2026-04-20 01:34:20 PM | INFO | main_bot | 📩 New Pending Message from 6251359796 in -1003720313785 (Topic: 0)
+2026-04-20 01:34:23 PM | INFO | db_manager | ✓ Message 84 in -1003720313785 saved as PENDING
+2026-04-20 01:34:23 PM | INFO | main_bot | 📩 New Pending Message from 6251359796 in -1003720313785 (Topic: 0)
+2026-04-20 01:34:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 01:39:08 PM | INFO | db_manager | ✓ Message 209 in -1003702835668 saved as PENDING
+2026-04-20 01:39:08 PM | INFO | main_bot | 📩 New Pending Message from 5669529378 in -1003702835668 (Topic: 0)
+2026-04-20 01:39:27 PM | INFO | db_manager | ✓ Message 210 in -1003702835668 saved as PENDING
+2026-04-20 01:39:27 PM | INFO | main_bot | 📩 New Pending Message from 5669529378 in -1003702835668 (Topic: 0)
+2026-04-20 01:39:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 01:44:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 01:49:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 01:50:39 PM | ERROR | main_bot | ❌ Done Button Error: no such column: linked_customer_ids
+2026-04-20 01:50:47 PM | ERROR | main_bot | ❌ Done Button Error: no such column: linked_customer_ids
+2026-04-20 01:51:23 PM | ERROR | main_bot | ❌ Done Button Error: no such column: linked_customer_ids
+2026-04-20 01:51:25 PM | ERROR | main_bot | ❌ Done Button Error: no such column: linked_customer_ids
+2026-04-20 01:51:41 PM | INFO | db_manager | ✓ Message 2036 in -1003798739565 saved as PENDING
+2026-04-20 01:51:41 PM | INFO | main_bot | 📩 New Pending Message from 6258346237 in -1003798739565 (Topic: 4)
+2026-04-20 01:51:42 PM | INFO | db_manager | ✓ Message 2037 in -1003798739565 saved as PENDING
+2026-04-20 01:51:42 PM | INFO | main_bot | 📩 New Pending Message from 6258346237 in -1003798739565 (Topic: 4)
+2026-04-20 01:51:43 PM | INFO | db_manager | ✓ Message 2038 in -1003798739565 saved as PENDING
+2026-04-20 01:51:43 PM | INFO | main_bot | 📩 New Pending Message from 6258346237 in -1003798739565 (Topic: 4)
+2026-04-20 01:54:01 PM | INFO | db_manager | ✓ Message 2039 in -1003798739565 saved as PENDING
+2026-04-20 01:54:01 PM | INFO | main_bot | 📩 New Pending Message from 6258346237 in -1003798739565 (Topic: 4)
+2026-04-20 01:54:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 01:59:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 02:04:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 02:08:04 PM | ERROR | main_bot | ❌ Message Handler Error: no such column: linked_customer_ids
+2026-04-20 02:09:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 02:14:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 02:19:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 02:22:19 PM | INFO | db_manager | ✓ Message 217 in -1003823820784 saved as PENDING
+2026-04-20 02:22:19 PM | INFO | main_bot | 📩 New Pending Message from 5082912204 in -1003823820784 (Topic: 0)
+2026-04-20 02:22:41 PM | WARNING | commands_handler | ⚠️ Restart command issued by 8353570874. Cleaning up...
+2026-04-20 02:22:46 PM | INFO | commands_handler | 🚀 Process exiting for restart...
+2026-04-20 02:22:47 PM | ERROR | db_manager | ❌ Database Init Error: table routing_table has no column named topic_id
+2026-04-20 02:22:47 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-20 02:22:48 PM | ERROR | main_bot | ❌ Done Button Error: no such column: linked_customer_ids
+2026-04-20 02:23:02 PM | ERROR | main_bot | ❌ Done Button Error: no such column: linked_customer_ids
+2026-04-20 02:24:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 02:26:30 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-20 02:26:30 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-20 02:26:31 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-20 02:26:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 02:30:16 PM | INFO | auditor | 🗑️ Deleted Level 1 alert 268
+2026-04-20 02:30:16 PM | INFO | auditor | 🗑️ Deleted Level 2 escalation 617
+2026-04-20 02:30:16 PM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-20 02:30:17 PM | INFO | db_manager | ✅ Group Resolved: [251] in -1003813366869 by Myat Thu (Done Button)
+2026-04-20 02:30:17 PM | INFO | main_bot | ✅ Message 251 resolved via Done Button by Myat Thu
+2026-04-20 02:30:20 PM | INFO | auditor | 🗑️ Deleted Level 1 alert 267
+2026-04-20 02:30:21 PM | INFO | auditor | 🗑️ Deleted Level 2 escalation 616
+2026-04-20 02:30:21 PM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-20 02:30:21 PM | INFO | db_manager | ✅ Group Resolved: [131] in -1003837547495 by Myat Thu (Done Button)
+2026-04-20 02:30:21 PM | INFO | main_bot | ✅ Message 131 resolved via Done Button by Myat Thu
+2026-04-20 02:30:23 PM | INFO | auditor | 🗑️ Deleted Level 1 alert 266
+2026-04-20 02:30:23 PM | INFO | auditor | 🗑️ Deleted Level 2 escalation 615
+2026-04-20 02:30:23 PM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-20 02:30:23 PM | INFO | db_manager | ✅ Group Resolved: [186] in -1003692715477 by Myat Thu (Done Button)
+2026-04-20 02:30:23 PM | INFO | main_bot | ✅ Message 186 resolved via Done Button by Myat Thu
+2026-04-20 02:31:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 02:31:48 PM | INFO | auditor | 🗑️ Deleted Level 1 alert 270
+2026-04-20 02:31:49 PM | INFO | auditor | 🗑️ Deleted Level 2 escalation 618
+2026-04-20 02:31:49 PM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-20 02:31:49 PM | INFO | db_manager | ✅ Group Resolved: [254] in -1003813366869 by Myat Thu (Done Button)
+2026-04-20 02:31:49 PM | INFO | main_bot | ✅ Message 254 resolved via Done Button by Myat Thu
+2026-04-20 02:33:23 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-20 02:33:23 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-20 02:33:24 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-20 02:33:24 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 02:36:59 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-20 02:36:59 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-20 02:36:59 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-20 02:36:59 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 02:41:59 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 02:46:59 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 02:48:26 PM | INFO | db_manager | ✓ Message 113 in -1003798966794 saved as PENDING
+2026-04-20 02:48:26 PM | INFO | main_bot | 📩 New Pending Message from 1678956419 in -1003798966794 (Topic: 0)
+2026-04-20 02:50:05 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-20 02:50:05 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-20 02:50:05 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-20 02:50:05 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 02:51:49 PM | INFO | auditor | 🗑️ Deleted Level 1 alert 260
+2026-04-20 02:51:50 PM | INFO | auditor | 🗑️ Deleted Level 2 escalation 612
+2026-04-20 02:51:50 PM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-20 02:51:50 PM | INFO | db_manager | ✅ Group Resolved: [179] in -1003692715477 by Myat Thu (Done Button)
+2026-04-20 02:51:50 PM | INFO | main_bot | ✅ Message 179 resolved via Done Button by Myat Thu
+2026-04-20 02:51:52 PM | INFO | auditor | 🗑️ Deleted Level 1 alert 259
+2026-04-20 02:51:52 PM | INFO | auditor | 🗑️ Deleted Level 2 escalation 611
+2026-04-20 02:51:52 PM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-20 02:51:52 PM | INFO | db_manager | ✅ Group Resolved: [379] in -1003898476625 by Myat Thu (Done Button)
+2026-04-20 02:51:52 PM | INFO | main_bot | ✅ Message 379 resolved via Done Button by Myat Thu
+2026-04-20 02:51:54 PM | INFO | auditor | 🗑️ Deleted Level 1 alert 258
+2026-04-20 02:51:54 PM | INFO | auditor | 🗑️ Deleted Level 2 escalation 610
+2026-04-20 02:51:54 PM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-20 02:51:55 PM | INFO | db_manager | ✅ Group Resolved: [67] in -1003707562121 by Myat Thu (Done Button)
+2026-04-20 02:51:55 PM | INFO | main_bot | ✅ Message 67 resolved via Done Button by Myat Thu
+2026-04-20 02:51:56 PM | INFO | auditor | 🗑️ Deleted Level 1 alert 257
+2026-04-20 02:51:56 PM | INFO | auditor | 🗑️ Deleted Level 2 escalation 609
+2026-04-20 02:51:56 PM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-20 02:51:57 PM | INFO | db_manager | ✅ Group Resolved: [245] in -1003415524543 by Myat Thu (Done Button)
+2026-04-20 02:51:57 PM | INFO | main_bot | ✅ Message 245 resolved via Done Button by Myat Thu
+2026-04-20 02:55:05 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 03:00:05 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 03:05:05 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 03:10:05 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 03:15:05 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-20 03:16:59 PM | INFO | db_manager | ✓ Message 319 in -1003768124152 saved as PENDING
+2026-04-20 03:16:59 PM | INFO | main_bot | 📩 New Pending Message from 8445190818 in -1003768124152 (Topic: 0)
+2026-04-20 03:17:16 PM | INFO | db_manager | ✓ Message 320 in -1003768124152 saved as PENDING
+2026-04-20 03:17:16 PM | INFO | main_bot | 📩 New Pending Message from 8445190818 in -1003768124152 (Topic: 0)

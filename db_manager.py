@@ -66,6 +66,7 @@ def init_db():
         c.execute('''CREATE TABLE IF NOT EXISTS message_logs
                      (msg_id INTEGER, chat_id INTEGER, topic_id INTEGER, user_id INTEGER,
                       text TEXT, timestamp INTEGER, status TEXT DEFAULT 'PENDING', resolved_by TEXT, resolve_time INTEGER,
+                      media_id TEXT, is_manual INTEGER DEFAULT 0,
                       PRIMARY KEY (msg_id, chat_id))''')
         
         c.execute('''CREATE TABLE IF NOT EXISTS alert_tracking (
@@ -95,7 +96,7 @@ def init_db():
         # ၂။ Migration Engine (Column အသစ်များ အလိုအလျောက် စစ်ဆေးထည့်သွင်းခြင်း)
         migrations = {
             "staff": ["branch TEXT", "dept TEXT"],
-            "message_logs": ["text TEXT", "resolved_by TEXT", "resolve_time INTEGER", "topic_id INTEGER"],
+            "message_logs": ["text TEXT", "resolved_by TEXT", "resolve_time INTEGER", "topic_id INTEGER", "media_id TEXT", "is_manual INTEGER DEFAULT 0"],
             "os_groups": ["last_read_message_id INTEGER DEFAULT 0"],
             "alert_tracking": ["created_at INTEGER", "esc_msg_id INTEGER", "linked_msg_ids TEXT DEFAULT '[]'", "linked_customer_ids TEXT DEFAULT '[]'"]
         }
@@ -185,14 +186,14 @@ def get_staff_info(user_id):
     return res
 
 # --- [ Message & SLA Logging ] ---
-def log_message(msg_id, chat_id, topic_id, user_id, text, timestamp=None):
+def log_message(msg_id, chat_id, topic_id, user_id, text, timestamp=None, media_id=None):
     if timestamp is None: timestamp = int(time.time())
     conn = get_connection()
     try:
-        # 💡 Parameter ၆ ခု + 'PENDING' (စုစုပေါင်း ၇ ခု) ကို သေချာစွာ ထည့်သွင်းခြင်း
+        # 💡 Parameter ၇ ခု + 'PENDING' (စုစုပေါင်း ၈ ခု) ကို သေချာစွာ ထည့်သွင်းခြင်း
         conn.execute(
-            "INSERT OR IGNORE INTO message_logs (msg_id, chat_id, topic_id, user_id, text, timestamp, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (msg_id, chat_id, topic_id, user_id, text, timestamp, 'PENDING')
+            "INSERT OR IGNORE INTO message_logs (msg_id, chat_id, topic_id, user_id, text, timestamp, status, media_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (msg_id, chat_id, topic_id, user_id, text, timestamp, 'PENDING', media_id)
         )
         rows_affected = conn.total_changes
         conn.commit()
@@ -214,6 +215,24 @@ def get_message_topic(msg_id, chat_id):
     try:
         res = conn.execute("SELECT topic_id FROM message_logs WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id)).fetchone()
         return res[0] if res else 0
+    finally:
+        conn.close()
+
+def is_manual_alert(msg_id, chat_id):
+    """ Message သည် Manual Alert (/alert) ဖြစ်မဖြစ် စစ်ဆေးခြင်း """
+    conn = get_connection()
+    try:
+        res = conn.execute("SELECT is_manual FROM message_logs WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id)).fetchone()
+        return (res[0] == 1) if res else False
+    finally:
+        conn.close()
+
+def set_manual_alert(msg_id, chat_id):
+    """ Message ကို Manual Alert အဖြစ် သတ်မှတ်ခြင်း """
+    conn = get_connection()
+    try:
+        conn.execute("UPDATE message_logs SET is_manual = 1 WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id))
+        conn.commit()
     finally:
         conn.close()
 
@@ -273,6 +292,30 @@ def resolve_message(msg_id, chat_id, staff_name, method='Reply', topic_id=None):
         conn.commit()
     finally: conn.close()
 
+def auto_resolve_stale_alerts(hours=30):
+    """
+    သတ်မှတ်ထားသော နာရီထက်ကျော်နေသည့် ALERTED/ESCALATED စာများကို
+    Record Group သို့ မပို့ဘဲ အလိုအလျောက် RESOLVED ပြောင်းပေးခြင်း။
+    """
+    conn = get_connection()
+    now = int(time.time())
+    threshold = now - (hours * 3600)
+    
+    try:
+        # ALERTED သို့မဟုတ် ESCALATED ဖြစ်နေပြီး threshold ထက်ဟောင်းနေသောစာများကို ရှာမည်
+        query = "UPDATE message_logs SET status='RESOLVED', resolved_by='System (Auto-Expired)', resolve_time=? WHERE status IN ('ALERTED', 'ESCALATED') AND timestamp < ?"
+        res = conn.execute(query, (now, threshold))
+        count = res.rowcount
+        conn.commit()
+        if count > 0:
+            log.warning(f"🧹 Auto-resolved {count} stale alerts (Older than {hours} hours)")
+        return count
+    except Exception as e:
+        log.error(f"❌ Auto-resolve stale alerts failed: {e}")
+        return 0
+    finally:
+        conn.close()
+
 # --- [ Watchdog & Context Helpers ] ---
 def get_pending_topics(minutes=15, max_hours=48):
     """ ၁၅ မိနစ်ထက်ကျော်နေသော Pending စာရှိသည့် (chat_id, topic_id) စာရင်းကို ယူသည် """
@@ -290,17 +333,22 @@ def get_pending_topics(minutes=15, max_hours=48):
     conn.close()
     return res
 
-def get_pending_messages(minutes=15, limit=5, max_hours=48, chat_id=None, topic_id=None):
+def get_pending_messages(minutes=15, limit=10, max_hours=48, chat_id=None, topic_id=None, all_pending=False):
     """
     ၁၅ မိနစ်ထက်ကျော်နေသော Pending စာများကို ဆွဲထုတ်ပေးသည် (Topic-specific filtering support)
+    all_pending=True ဖြစ်ပါက ၁၅ မိနစ်မပြည့်သေးသော်လည်း Pending ဖြစ်နေသမျှ အကုန်ယူမည် (Batching အတွက်)
     """
     conn = get_connection()
     now = int(time.time())
     threshold = now - (minutes * 60)
     lookback_limit = now - (max_hours * 3600)
     
-    query = "SELECT msg_id, chat_id, topic_id, text, timestamp FROM message_logs WHERE status='PENDING' AND timestamp < ? AND timestamp > ?"
-    params = [threshold, lookback_limit]
+    if all_pending:
+        query = "SELECT msg_id, chat_id, topic_id, text, timestamp, media_id FROM message_logs WHERE status='PENDING' AND timestamp > ?"
+        params = [lookback_limit]
+    else:
+        query = "SELECT msg_id, chat_id, topic_id, text, timestamp, media_id FROM message_logs WHERE status='PENDING' AND timestamp < ? AND timestamp > ?"
+        params = [threshold, lookback_limit]
     
     if chat_id is not None:
         query += " AND chat_id = ?"
@@ -423,6 +471,32 @@ def get_alert_tracking(original_msg_id, chat_id):
     ).fetchone()
     conn.close()
     return res
+
+def get_parent_msg_id(msg_id, chat_id):
+    """ Child Message ID မှ Parent (Original) Message ID ကို ရှာပေးခြင်း """
+    conn = get_connection()
+    try:
+        # ၁။ သူကိုယ်တိုင်က Parent ဖြစ်နေသလား အရင်စစ်
+        res = conn.execute("SELECT original_msg_id FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ?", (msg_id, chat_id)).fetchone()
+        if res: return msg_id
+        
+        # ၂။ Child ဖြစ်နေသလား စစ် (linked_customer_ids ထဲမှာ ပါနေသလား)
+        res_child = conn.execute("SELECT original_msg_id FROM alert_tracking WHERE chat_id = ? AND linked_customer_ids LIKE ?", (chat_id, f'%{msg_id}%')).fetchone()
+        if res_child:
+            return res_child[0]
+        
+        return msg_id # ရှာမတွေ့ရင် သူ့ကိုယ်သူပဲ ပြန်ပေး
+    finally:
+        conn.close()
+
+def get_original_msg_id_by_alert(alert_msg_id, alert_chat_id):
+    """ Alert Message ID မှ မူရင်း Customer Message ID ကို ရှာပေးခြင်း """
+    conn = get_connection()
+    try:
+        res = conn.execute("SELECT original_msg_id FROM alert_tracking WHERE alert_msg_id = ? AND alert_chat_id = ?", (alert_msg_id, alert_chat_id)).fetchone()
+        return res[0] if res else None
+    finally:
+        conn.close()
 
 def add_linked_customer_id(original_msg_id, chat_id, customer_msg_id):
     """ Grouped Ticket အတွက် Customer Message ID များကို ချိတ်ဆက်သိမ်းဆည်းခြင်း """

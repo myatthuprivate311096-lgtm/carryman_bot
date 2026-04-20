@@ -182,35 +182,46 @@ def register_handlers(bot):
     @bot.message_handler(commands=['alert'])
     def handle_manual_alert(message):
         """ Reply ဆွဲပြီး /alert ရိုက်ပါက Office Hours မကြည့်ဘဲ ချက်ချင်း Alert ထုတ်ပေးခြင်း """
-        user_id = message.from_user.id
-        if user_id == MANAGER_ID or db_manager.check_if_staff(user_id):
-            if not message.reply_to_message:
-                bot.reply_to(message, "⚠️ Alert ထုတ်လိုသော စာကို Reply ဆွဲပြီးမှ `/alert` ဟု ရိုက်ပေးပါဗျာ။")
-                return
+        # 💡 အစ်ကို့တောင်းဆိုချက်အရ ဘယ်သူမဆို သုံးခွင့်ပေးမည်
+        if not message.reply_to_message:
+            bot.reply_to(message, "⚠️ Alert ထုတ်လိုသော စာကို Reply ဆွဲပြီးမှ `/alert` ဟု ရိုက်ပေးပါဗျာ။")
+            return
 
-            orig_msg = message.reply_to_message
-            chat_id = message.chat.id
-            topic_id = orig_msg.message_thread_id if orig_msg.is_topic_message else 0
-            
-            # OS Group ဟုတ်မဟုတ် စစ်ဆေးခြင်း
-            if not db_manager.check_if_os_group(chat_id):
-                bot.reply_to(message, "⚠️ ဤ Command ကို OS Group များအတွင်းသာ အသုံးပြုနိုင်ပါသည်။")
-                return
+        orig_msg = message.reply_to_message
+        chat_id = message.chat.id
+        topic_id = orig_msg.message_thread_id if orig_msg.is_topic_message else 0
+        
+        # OS Group ဟုတ်မဟုတ် စစ်ဆေးခြင်း
+        if not db_manager.check_if_os_group(chat_id):
+            bot.reply_to(message, "⚠️ ဤ Command ကို OS Group များအတွင်းသာ အသုံးပြုနိုင်ပါသည်။")
+            return
 
-            import auditor
-            _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
-            text = orig_msg.text or orig_msg.caption or "[Media Content]"
-            
-            # ချက်ချင်း Alert ပို့ခြင်း
-            alert_id = auditor.send_new_alert(
-                chat_id, topic_id, orig_msg.message_id,
-                text, "Manual Alert", shop_name, orig_msg.date
-            )
-            
-            if alert_id:
-                bot.reply_to(message, f"🚀 **Manual Alert Sent!**\nဗဟိုဌာနဆီသို့ Alert ပို့ဆောင်ပြီးပါပြီ။")
-            else:
-                bot.reply_to(message, "❌ Alert ပို့ဆောင်မှု မအောင်မြင်ပါ။")
+        # 💡 DB တွင် Manual Alert အဖြစ် မှတ်သားခြင်း (Strict Resolution အတွက်)
+        db_manager.set_manual_alert(orig_msg.message_id, chat_id)
+
+        import auditor
+        _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
+        
+        # Media Type စစ်ဆေးခြင်း
+        text = orig_msg.text or orig_msg.caption
+        media_id = None
+        if not text:
+            if orig_msg.photo: text = "🖼️ Photo"; media_id = orig_msg.photo[-1].file_id
+            elif orig_msg.voice: text = "🎙️ Voice Message"; media_id = orig_msg.voice.file_id
+            elif orig_msg.video: text = "📹 Video"; media_id = orig_msg.video.file_id
+            else: text = "📦 Media Content"
+
+        # ချက်ချင်း Alert ပို့ခြင်း
+        alert_id = auditor.send_new_alert(
+            chat_id, topic_id, orig_msg.message_id,
+            text, "Manual Alert", shop_name, orig_msg.date,
+            media_id=media_id
+        )
+        
+        if alert_id:
+            bot.reply_to(message, f"🚀 **Manual Alert Sent!**\nဗဟိုဌာနဆီသို့ Alert ပို့ဆောင်ပြီးပါပြီ။\n(ဤ Alert သည် Done Button နှိပ်မှသာ ပျောက်ပါမည်)")
+        else:
+            bot.reply_to(message, "❌ Alert ပို့ဆောင်မှု မအောင်မြင်ပါ။")
 
     # --- [ Section ၇: OS Group စာရင်းနှင့် Register စနစ် ] ---
     @bot.message_handler(commands=['oslist'])

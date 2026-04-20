@@ -222,11 +222,12 @@ def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_i
     except Exception as e:
         log.error(f"❌ Failed to append to alert: {e}")
 
-def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff"):
+def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff", manual_resolve=False):
     """ Alert ကိုဖျက်ပြီး Record Group သို့ ပို့ခြင်း (View Message Button ပါဝင်သည်) """
     # 💡 အလုပ်ချိန်ပြင်ပဖြစ်ပါက Record မထုတ်ရန် (အစ်ကို့တောင်းဆိုချက်အရ)
     # သို့သော် Alert Cleanup ကိုတော့ ဆက်လုပ်ပေးရမည်
-    is_office = is_office_hours()
+    # manual_resolve=True (Done Button/Reaction) ဖြစ်ပါက အချိန်မရွေး Record ထုတ်မည်
+    is_office = is_office_hours() or manual_resolve
 
     # ၁။ မူရင်းစာ ဝင်ခဲ့သည့် အချိန်နှင့် Topic ကို ရှာခြင်း
     conn = db_manager.get_connection()
@@ -281,9 +282,14 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff")
         
         db_manager.delete_alert_tracking(msg_id, chat_id)
     else:
-        # 💡 Fix: Tracking မရှိရင်တောင် Alert message တွေ ရှိနေနိုင်သေးလို့
-        # အကယ်၍ Alert တက်ထားတဲ့ status ဖြစ်နေရင် tracking ကို ပြန်ရှာပြီး ဖျက်ဖို့ ကြိုးစားမယ်
-        log.info(f"ℹ️ No active alert tracking found for {msg_id} in {chat_id}. Checking if it was already alerted.")
+        # 💡 Fix: Tracking မရှိရင်တောင် Alert message တွေ ရှိနေနိုင်သေးလို့ (ဥပမာ - Grouped Ticket ဖြစ်နေရင်)
+        # Parent ID ကို ပြန်ရှာပြီး Cleanup လုပ်ပေးရမည်
+        parent_id = db_manager.get_parent_msg_id(msg_id, chat_id)
+        if parent_id != msg_id:
+            log.info(f"🔗 Found parent {parent_id} for message {msg_id}. Retrying cleanup...")
+            return resolve_and_cleanup(parent_id, chat_id, shop_name, text, staff_name, manual_resolve)
+        
+        log.info(f"ℹ️ No active alert tracking found for {msg_id} in {chat_id}.")
 
     # ၃။ Record Group သို့ ပို့ခြင်း (Alert တက်ခဲ့သော စာများကိုသာ Record ပို့မည်)
     # 💡 Fix: Resolved Record ကို သတ်မှတ်ထားသော Resolved Group သို့ ပို့ရန်
@@ -428,12 +434,19 @@ def process_audits():
     last_backup_date = None
     last_report_date = None
     last_heartbeat_time = 0
+    last_cleanup_time = 0
     
     while True:
         try:
+            # ၁။ Heartbeat & Cleanup (Every 5 mins)
             if time.time() - last_heartbeat_time >= 300:
                 send_heartbeat()
                 last_heartbeat_time = time.time()
+            
+            # ၃၀ နာရီကျော်နေသော Alert များကို အလိုအလျောက် ရှင်းလင်းခြင်း
+            if time.time() - last_cleanup_time >= 3600: # နာရီဝက်တစ်ခါ စစ်မည်
+                db_manager.auto_resolve_stale_alerts(hours=30)
+                last_cleanup_time = time.time()
 
             tz = pytz.timezone('Asia/Yangon')
             now_mm = datetime.now(tz)
@@ -455,14 +468,15 @@ def process_audits():
             pending_topics = db_manager.get_pending_topics(minutes=15)
             
             for chat_id, topic_id in pending_topics:
-                # 💡 Intent Grouping: Get ALL pending messages in this topic to audit as a batch
-                msgs = db_manager.get_pending_messages(minutes=15, limit=10, chat_id=chat_id, topic_id=topic_id)
+                # 💡 Smart Batching: Get ALL pending messages in this topic (even if < 15 mins)
+                # This prevents multiple alerts for albums/burst messages
+                msgs = db_manager.get_pending_messages(minutes=15, limit=20, chat_id=chat_id, topic_id=topic_id, all_pending=True)
                 if not msgs: continue
 
                 log.info(f"📂 Auditing Batch: Topic {topic_id} in Chat {chat_id} ({len(msgs)} messages)")
                 
                 # Trigger message (the oldest one)
-                trigger_msg_id, _, _, trigger_text, trigger_ts = msgs[0]
+                trigger_msg_id, _, _, trigger_text, trigger_ts, trigger_media_id = msgs[0]
                 
                 active_alerts = db_manager.get_active_alerts_for_group(chat_id, topic_id)
                 preceding_msgs = db_manager.get_messages_before(chat_id, topic_id, trigger_msg_id)
@@ -508,7 +522,8 @@ def process_audits():
                         ai_res.get("summary", "New Grouped Issue"),
                         shop_name, trigger_ts,
                         category=ai_res.get("category", "အခြား"),
-                        intent=ai_res.get("intent", "အထွေထွေစုံစမ်းမှု")
+                        intent=ai_res.get("intent", "အထွေထွေစုံစမ်းမှု"),
+                        media_id=trigger_media_id
                     )
                     # Link other messages to this alert tracking
                     if alert_id:
@@ -516,8 +531,15 @@ def process_audits():
                             if mid != trigger_msg_id:
                                 db_manager.add_linked_customer_id(trigger_msg_id, chat_id, mid)
                                 db_manager.update_message_status(mid, chat_id, 'ALERTED', topic_id=topic_id)
-                else:
-                    # Rollback to PENDING if error
+                # 💡 Safety Net: Group ထဲမှာ မပါဝင်ခဲ့တဲ့ ကျန်ရှိနေတဲ့ စာများကို PENDING ပြန်ပြောင်းပေးခြင်း
+                # ဒါမှ နောက်တစ်ကြိမ် Batch ထဲမှာ ပြန်ပါလာမှာ ဖြစ်ပါတယ်
+                for m in msgs:
+                    mid = m[0]
+                    if mid not in grouped_ids:
+                        db_manager.update_message_status(mid, chat_id, 'PENDING', topic_id=topic_id)
+
+                if action not in ["RESOLVE", "IGNORE", "APPEND", "NEW_ALERT"]:
+                    # Rollback all if error
                     for m in msgs: db_manager.update_message_status(m[0], chat_id, 'PENDING', topic_id=topic_id)
                 
                 time.sleep(2)
