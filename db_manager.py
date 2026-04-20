@@ -76,6 +76,7 @@ def init_db():
                      created_at INTEGER,
                      esc_msg_id INTEGER,
                      linked_msg_ids TEXT DEFAULT '[]',
+                     linked_customer_ids TEXT DEFAULT '[]',
                      PRIMARY KEY (original_msg_id, chat_id)
                    )''')
         
@@ -96,7 +97,7 @@ def init_db():
             "staff": ["branch TEXT", "dept TEXT"],
             "message_logs": ["text TEXT", "resolved_by TEXT", "resolve_time INTEGER", "topic_id INTEGER"],
             "os_groups": ["last_read_message_id INTEGER DEFAULT 0"],
-            "alert_tracking": ["created_at INTEGER", "esc_msg_id INTEGER", "linked_msg_ids TEXT DEFAULT '[]'"]
+            "alert_tracking": ["created_at INTEGER", "esc_msg_id INTEGER", "linked_msg_ids TEXT DEFAULT '[]'", "linked_customer_ids TEXT DEFAULT '[]'"]
         }
         
         for table, columns in migrations.items():
@@ -207,6 +208,15 @@ def log_message(msg_id, chat_id, topic_id, user_id, text, timestamp=None):
                 log.info(f"  → Current status: {status_res[0]}")
     finally: conn.close()
 
+def get_message_topic(msg_id, chat_id):
+    """ Message တစ်ခု၏ topic_id ကို ရှာဖွေရန် helper """
+    conn = get_connection()
+    try:
+        res = conn.execute("SELECT topic_id FROM message_logs WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id)).fetchone()
+        return res[0] if res else 0
+    finally:
+        conn.close()
+
 def resolve_message(msg_id, chat_id, staff_name, method='Reply', topic_id=None):
     """
     Message တစ်ခု သို့မဟုတ် Topic တစ်ခုလုံးကို Resolved အဖြစ် သတ်မှတ်ခြင်း။
@@ -214,14 +224,41 @@ def resolve_message(msg_id, chat_id, staff_name, method='Reply', topic_id=None):
     """
     conn = get_connection()
     now = int(time.time())
-    # method ကို staff_name ထဲမှာ တန်းမထည့်ဘဲ သီးသန့်ထားနိုင်ရန် (သို့မဟုတ်) format ညှိရန်
     full_staff_info = f"{staff_name} ({method})" if method else staff_name
     
     try:
         if msg_id != 0:
-            conn.execute("UPDATE message_logs SET status='RESOLVED', resolved_by=?, resolve_time=? WHERE msg_id=? AND chat_id=?",
-                         (full_staff_info, now, msg_id, chat_id))
-            log.info(f"✅ Message {msg_id} in {chat_id} resolved by {full_staff_info}")
+            # 💡 Linked Resolution Logic: Find if this message is part of a group
+            import json
+            # ၁။ Check if it's a parent (original_msg_id)
+            res = conn.execute("SELECT linked_customer_ids FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ?", (msg_id, chat_id)).fetchone()
+            
+            # ၂။ Check if it's a child (in linked_customer_ids of some parent)
+            if not res:
+                res_child = conn.execute("SELECT original_msg_id, linked_customer_ids FROM alert_tracking WHERE chat_id = ? AND linked_customer_ids LIKE ?", (chat_id, f'%{msg_id}%')).fetchone()
+                if res_child:
+                    parent_id, linked_json = res_child
+                    linked_ids = json.loads(linked_json)
+                    if msg_id in linked_ids:
+                        # If child is resolved, we treat the parent as the main ID to resolve the whole group
+                        msg_id = parent_id
+                        res = (linked_json,)
+
+            # ၃။ Resolve the whole group if linked IDs found
+            ids_to_resolve = [msg_id]
+            if res and res[0]:
+                try:
+                    linked_ids = json.loads(res[0])
+                    ids_to_resolve.extend(linked_ids)
+                except: pass
+
+            # 💡 Update all messages in the group
+            placeholders = ', '.join(['?'] * len(ids_to_resolve))
+            query = f"UPDATE message_logs SET status='RESOLVED', resolved_by=?, resolve_time=? WHERE msg_id IN ({placeholders}) AND chat_id=?"
+            params = [full_staff_info, now] + ids_to_resolve + [chat_id]
+            
+            conn.execute(query, tuple(params))
+            log.info(f"✅ Group Resolved: {ids_to_resolve} in {chat_id} by {full_staff_info}")
         else:
             # msg_id 0 ဖြစ်လျှင် chat_id (နှင့် topic_id ပါလျှင် topic_id) အလိုက် resolve လုပ်မည်
             query = "UPDATE message_logs SET status='RESOLVED', resolved_by=?, resolve_time=? WHERE chat_id=? AND status IN ('PENDING', 'ALERTED', 'ESCALATED')"
@@ -237,22 +274,45 @@ def resolve_message(msg_id, chat_id, staff_name, method='Reply', topic_id=None):
     finally: conn.close()
 
 # --- [ Watchdog & Context Helpers ] ---
-def get_pending_messages(minutes=15, limit=5, max_hours=48):
-    """
-    ၁၅ မိနစ်ထက်ကျော်နေသော Pending စာများကို ဆွဲထုတ်ပေးသည် (Safe Recovery အတွက် limit နှင့် max_hours ထည့်ထားသည်)
-    """
+def get_pending_topics(minutes=15, max_hours=48):
+    """ ၁၅ မိနစ်ထက်ကျော်နေသော Pending စာရှိသည့် (chat_id, topic_id) စာရင်းကို ယူသည် """
     conn = get_connection()
     now = int(time.time())
     threshold = now - (minutes * 60)
     lookback_limit = now - (max_hours * 3600)
     
     res = conn.execute(
-        """SELECT msg_id, chat_id, topic_id, text, timestamp
+        """SELECT DISTINCT chat_id, topic_id
            FROM message_logs
-           WHERE status='PENDING' AND timestamp < ? AND timestamp > ?
-           ORDER BY timestamp ASC LIMIT ?""",
-        (threshold, lookback_limit, limit)
+           WHERE status='PENDING' AND timestamp < ? AND timestamp > ?""",
+        (threshold, lookback_limit)
     ).fetchall()
+    conn.close()
+    return res
+
+def get_pending_messages(minutes=15, limit=5, max_hours=48, chat_id=None, topic_id=None):
+    """
+    ၁၅ မိနစ်ထက်ကျော်နေသော Pending စာများကို ဆွဲထုတ်ပေးသည် (Topic-specific filtering support)
+    """
+    conn = get_connection()
+    now = int(time.time())
+    threshold = now - (minutes * 60)
+    lookback_limit = now - (max_hours * 3600)
+    
+    query = "SELECT msg_id, chat_id, topic_id, text, timestamp FROM message_logs WHERE status='PENDING' AND timestamp < ? AND timestamp > ?"
+    params = [threshold, lookback_limit]
+    
+    if chat_id is not None:
+        query += " AND chat_id = ?"
+        params.append(chat_id)
+    if topic_id is not None:
+        query += " AND topic_id = ?"
+        params.append(topic_id)
+        
+    query += " ORDER BY timestamp ASC LIMIT ?"
+    params.append(limit)
+    
+    res = conn.execute(query, tuple(params)).fetchall()
     conn.close()
     return res
 
@@ -270,22 +330,40 @@ def get_active_alerts_for_group(chat_id, topic_id):
     conn.close()
     return res
 
-def get_messages_after(chat_id, topic_id, msg_id):
+def get_messages_before(chat_id, topic_id, msg_id, limit=5):
+    """ သတ်မှတ်ထားသော message အရှေ့က စာများကို ဆွဲထုတ်ပေးသည် """
+    conn = get_connection()
+    res = conn.execute(
+        "SELECT text, user_id, timestamp, status FROM message_logs WHERE chat_id = ? AND topic_id = ? AND msg_id < ? ORDER BY msg_id DESC LIMIT ?",
+        (chat_id, topic_id, msg_id, limit)
+    ).fetchall()
+    conn.close()
+    # DESC နဲ့ ယူထားတာမို့လို့ အစဉ်လိုက်ဖြစ်အောင် reverse ပြန်လုပ်ပေးရမယ်
+    return res[::-1]
+
+def get_messages_after(chat_id, topic_id, msg_id, limit=5):
     """ သတ်မှတ်ထားသော message နောက်ပိုင်းဝင်လာသည့် စာများကို ဆွဲထုတ်ပေးသည် (ဝန်ထမ်းစာများအပါအဝင်) """
     conn = get_connection()
     res = conn.execute(
-        "SELECT text, user_id, timestamp, status FROM message_logs WHERE chat_id = ? AND topic_id = ? AND msg_id > ? ORDER BY msg_id ASC LIMIT 10",
-        (chat_id, topic_id, msg_id)
+        "SELECT text, user_id, timestamp, status FROM message_logs WHERE chat_id = ? AND topic_id = ? AND msg_id > ? ORDER BY msg_id ASC LIMIT ?",
+        (chat_id, topic_id, msg_id, limit)
     ).fetchall()
     conn.close()
     return res
 
-def update_message_status(msg_id, chat_id, status):
-    """ Message တစ်ခုချင်းစီ၏ Status ကို Update လုပ်ရန် """
+def update_message_status(msg_id, chat_id, status, topic_id=None):
+    """ Message တစ်ခုချင်းစီ၏ Status ကို Update လုပ်ရန် (Strict Topic Filtering) """
     conn = get_connection()
-    conn.execute("UPDATE message_logs SET status = ? WHERE msg_id = ? AND chat_id = ?", (status, msg_id, chat_id))
-    conn.commit()
-    conn.close()
+    try:
+        query = "UPDATE message_logs SET status = ? WHERE msg_id = ? AND chat_id = ?"
+        params = [status, msg_id, chat_id]
+        if topic_id is not None:
+            query += " AND topic_id = ?"
+            params.append(topic_id)
+        conn.execute(query, tuple(params))
+        conn.commit()
+    finally:
+        conn.close()
 
 def get_topic_context(chat_id, topic_id):
     """ AI Analysis အတွက် မဖြေရသေးသောစာများနှင့် နောက်ဆုံးဖြေထားသောစာ ၅ ကြောင်းကို ယူသည် """
@@ -340,11 +418,26 @@ def add_linked_msg_id(original_msg_id, chat_id, new_msg_id):
 def get_alert_tracking(original_msg_id, chat_id):
     conn = get_connection()
     res = conn.execute(
-        "SELECT alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ?",
+        "SELECT alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ?",
         (original_msg_id, chat_id)
     ).fetchone()
     conn.close()
     return res
+
+def add_linked_customer_id(original_msg_id, chat_id, customer_msg_id):
+    """ Grouped Ticket အတွက် Customer Message ID များကို ချိတ်ဆက်သိမ်းဆည်းခြင်း """
+    conn = get_connection()
+    try:
+        res = conn.execute("SELECT linked_customer_ids FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ?", (original_msg_id, chat_id)).fetchone()
+        if res:
+            import json
+            ids = json.loads(res[0]) if res[0] else []
+            if customer_msg_id not in ids:
+                ids.append(customer_msg_id)
+                conn.execute("UPDATE alert_tracking SET linked_customer_ids = ? WHERE original_msg_id = ? AND chat_id = ?", (json.dumps(ids), original_msg_id, chat_id))
+                conn.commit()
+    finally:
+        conn.close()
 
 def delete_alert_tracking(original_msg_id, chat_id):
     conn = get_connection()

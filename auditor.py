@@ -41,8 +41,11 @@ def is_office_hours():
         return True
     return False
 
-def evaluate_with_ai(group_name, target_msg, active_alerts, subsequent_msgs):
-    """ Gemini API ကိုသုံး၍ Message ၏ အခြေအနေကို ဆုံးဖြတ်ခြင်း """
+def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs, subsequent_msgs):
+    """
+    Gemini API ကိုသုံး၍ Message အစုအဝေး (Batch) ၏ အခြေအနေကို ဆုံးဖြတ်ခြင်း။
+    target_msgs_list: [(msg_id, text, ts), ...]
+    """
     if not GEMINI_API_KEY:
         log.error("❌ AI Key Missing (GEMINI_API_KEY or OPENROUTER_API_KEY)")
         return "NEW_ALERT", {"summary": "AI Key Missing"}
@@ -55,115 +58,100 @@ def evaluate_with_ai(group_name, target_msg, active_alerts, subsequent_msgs):
 
         # Context တည်ဆောက်ခြင်း
         active_context = "\n".join([f"- AlertID: {a[0]} | Content: {a[2]}" for a in active_alerts]) if active_alerts else "None"
+        preceding_context = "\n".join([f"- {'Staff' if db_manager.check_if_staff(p[1]) else 'Customer'} ({p[3]}): {p[0]}" for p in preceding_msgs]) if preceding_msgs else "None"
         
-        # 💡 Filter out existing alert messages from subsequent messages to prevent loop
-        active_alert_ids = [a[0] for a in active_alerts]
+        # Target Messages (The batch to audit)
+        targets_context = "\n".join([f"ID: {m[0]} | Text: {m[1]}" for m in target_msgs_list])
+
+        # Subsequent Context (After the last message in target_msgs_list)
         filtered_subsequent = [s for s in subsequent_msgs if s[0] not in [a[2] for a in active_alerts]]
-        
         subsequent_context = "\n".join([f"- {'Staff' if db_manager.check_if_staff(s[1]) else 'Customer'} ({s[3]}): {s[0]}" for s in filtered_subsequent]) if filtered_subsequent else "None"
 
         prompt = f"""
         Role: Senior Auditor for "{group_name}" Delivery Service.
-        Task: Evaluate if a pending message needs a NEW alert, can be APPENDED to an existing alert, is already RESOLVED, or should be IGNORED.
+        Task: Audit a group of pending messages. Group them into a single ticket if they concern the same issue.
 
-        [Target Message]: "{target_msg}"
+        [Preceding Context]:
+        {preceding_context}
+
+        [Target Messages to Audit (Batch)]:
+        {targets_context}
         
-        [Active Alerts in this Group]:
-        {active_context}
-
-        [Subsequent Messages (After Target)]:
+        [Subsequent Conversation Flow]:
         {subsequent_context}
 
+        [Active Alerts in this Topic]:
+        {active_context}
+
         Rules:
-        1. IGNORE: If the target message is just a "thank you", "ok", "hello", or irrelevant noise (e.g., "ကျေးဇူးပါ", "ဟုကဲ့", "hi").
-        2. RESOLVE: If subsequent messages (especially from Staff or if status is RESOLVED) show the issue is handled.
-        3. APPEND: If the target message is about the same topic/order as an active alert.
-        4. NEW_ALERT: If it's a new issue that hasn't been alerted yet.
+        1. DUPLICATE/APPEND: If these messages concern the same issue as an existing 'Active Alert', return APPEND.
+        2. AUTO-RESOLVE: If subsequent messages (especially from Staff or if they react with ❤️) show the issue is already handled, return RESOLVE.
+        3. INTENT GROUPING: Group multiple messages into ONE ticket if they are related. Do NOT issue one ticket per line.
+        4. IGNORE: If messages are just noise (thanks, ok, hi).
 
         Output ONLY JSON:
         {{
             "action": "NEW_ALERT" | "APPEND" | "RESOLVE" | "IGNORE",
             "target_alert_id": alert_msg_id (if APPEND, else null),
-            "summary": "Short Burmese summary (3-5 words) if NEW_ALERT",
-            "category": "ငွေလွှဲ / ပစ္စည်းစုံစမ်း / လိပ်စာပြင် / အခြား" (Choose one if NEW_ALERT)
+            "grouped_msg_ids": [list of msg_ids that belong to this ticket],
+            "summary": "Combined Burmese summary of the issue",
+            "category": "ငွေလွှဲ / ပစ္စည်းစုံစမ်း / လိပ်စာပြင် / အခြား",
+            "intent": "ပစ္စည်းပို့ဆောင်ရေး" | "ငွေလွှဲ/ငွေပေးချေမှု" | "အထွေထွေစုံစမ်းမှု"
         }}
         """
 
-        # Use a more stable model name if needed, but keeping original for now
         response = client.chat.completions.create(
             model="google/gemini-2.0-flash-001",
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
-            timeout=20.0
+            timeout=25.0
         )
         
         res_data = json.loads(response.choices[0].message.content.strip())
         action = res_data.get("action", "NEW_ALERT")
-        # AI က RESOLVE လို့ပြောပေမယ့် staff message မရှိရင် NEW_ALERT အဖြစ်ထားမယ် (Safety Check)
-        if action == "RESOLVE" and not subsequent_msgs:
+        
+        # Safety Check: If AI says RESOLVE but no staff message exists
+        if action == "RESOLVE" and not any(db_manager.check_if_staff(s[1]) for s in subsequent_msgs):
             action = "NEW_ALERT"
+            
         return action, res_data
     except Exception as e:
         log.error(f"❌ Auditor AI Error: {e}")
         return "ERROR", {"summary": "AI Error - Retrying..."}
 
-def get_target_routing(topic_id):
-    """
-    Central Mapping Table မှ Topic ID အလိုက် Target Group/Topic ကို ရှာဖွေခြင်း။
-    """
-    conn = db_manager.get_connection()
-    res = conn.execute(
-        "SELECT target_group_id, target_topic_id FROM routing_table WHERE topic_id = ?",
-        (topic_id,)
-    ).fetchone()
-    conn.close()
-    
-    if res:
-        return res[0], res[1]
-    
-    # Default fallback
-    return -1003601049225, 0
-
 def get_routing_data(chat_id, topic_id):
     """
     ဗဟိုမှ ထိန်းချုပ်ခြင်း (Central Mapping)
-    OS Group ၏ Topic အလိုက် သတ်မှတ်ထားသော Central Alert Group ဆီသို့ လမ်းကြောင်းပေးခြင်း
+    Workflow Step 5: Topic Name အလိုက် Target Topic ID (37, 1, 35) သို့ ပို့ဆောင်ခြင်း
     """
-    # ၁။ Database မှ Topic Name ကို ရှာမည်
-    conn = db_manager.get_connection()
+    TARGET_GROUP_ID = -1003601049225
     
-    # Topic ID 0 (General) ဖြစ်ပါက ထို Group ထဲရှိ အခြား Topic များကို အရင်စစ်မည်
-    if topic_id == 0:
-        # အကယ်၍ Group ထဲမှာ Pick Up သို့မဟုတ် General ဆိုတဲ့ Topic ရှိနေရင် အဲ့ဒါကို သုံးမည်
-        res = conn.execute(
-            "SELECT topic_name, topic_id FROM os_groups WHERE chat_id = ? AND (topic_name LIKE '%Pick Up%' OR topic_name LIKE '%General%') LIMIT 1",
-            (chat_id,)
-        ).fetchone()
-        if res:
-            topic_name, target_topic = res
-        else:
-            # ဘာမှမရှိပါက Default အနေဖြင့် CENTRAL_GROUP_ID, topic=0 (general chat)
-            log.info(f"📡 Routing: chat={chat_id}, topic=0 -> CENTRAL_GROUP_ID, topic=0 (default)")
-            return -1003601049225, 0
-    else:
-        res = conn.execute(
-            "SELECT topic_name, topic_id FROM os_groups WHERE chat_id = ? AND topic_id = ?",
-            (chat_id, topic_id)
-        ).fetchone()
-        if not res:
-            log.warning(f"⚠️ Routing: No topic found for chat={chat_id}, topic={topic_id} -> MANAGER_ID")
-            return MANAGER_ID, 0
-        topic_name, target_topic = res
-        
+    # ၁။ OS Group ၏ Topic Name ကို DB မှ ရှာခြင်း
+    conn = db_manager.get_connection()
+    res = conn.execute("SELECT topic_name FROM os_groups WHERE chat_id = ? AND topic_id = ?", (chat_id, topic_id)).fetchone()
     conn.close()
     
-    # ၂။ Mapping Table အတိုင်း Topic ID သတ်မှတ်ခြင်း
-    target_group, target_topic = get_target_routing(target_topic)
+    topic_name = res[0].lower() if res else ""
     
-    log.info(f"📡 Routing: chat={chat_id}, topic_name='{topic_name}' -> Group={target_group}, Topic={target_topic}")
-    return target_group, target_topic
+    # ၂။ Workflow Mapping (Error -> 37, Pick Up -> 1, Fin -> 35)
+    target_topic = 0 # Default
+    if "error" in topic_name:
+        target_topic = 37
+    elif "pick up" in topic_name or "urgent" in topic_name:
+        target_topic = 1
+    elif "fin" in topic_name or "voc" in topic_name:
+        target_topic = 35
+    else:
+        # Mapping မရှိလျှင် routing_table မှ ID အလိုက် ထပ်ရှာမည်
+        conn = db_manager.get_connection()
+        r_res = conn.execute("SELECT target_topic_id FROM routing_table WHERE topic_id = ?", (topic_id,)).fetchone()
+        conn.close()
+        if r_res: target_topic = r_res[0]
 
-def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name, original_ts, category="အခြား", media_id=None):
+    log.info(f"📡 Routing: Topic '{topic_name}' (ID: {topic_id}) -> Target Topic: {target_topic}")
+    return TARGET_GROUP_ID, target_topic
+
+def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name, original_ts, category="အခြား", intent=None, media_id=None):
     """ ဝန်ထမ်း group ထံသို့ Alert အသစ်ပို့ခြင်း (View Message & Done Buttons ပါဝင်သည်) """
     target_chat, target_topic = get_routing_data(chat_id, topic_id)
     
@@ -175,7 +163,9 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
         f"⚠️ **Pending Alert (15 Mins)**\n"
         f"━━━━━━━━━━━━━━━━━━\n"
         f"🏪 ဆိုင်: **{shop_name}**\n"
-        f" အကြောင်းအရာ: {summary}\n"
+        f"📂 အမျိုးအစား: {category}\n"
+        f"🎯 ရည်ရွယ်ချက်: {intent if intent else 'အထွေထွေ'}\n"
+        f"📝 အနှစ်ချုပ်: {summary}\n"
         f"💬 စာသား: {text}\n"
         f"⏰ အချိန်: {orig_time}\n"
         f"━━━━━━━━━━━━━━━━━━"
@@ -210,14 +200,14 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
                 reply_markup=markup
             )
         db_manager.save_alert_tracking(original_msg_id, chat_id, msg.message_id, target_chat)
-        db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED')
+        db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id)
         log.info(f"📢 Alert sent for {original_msg_id} in {shop_name} to Central Group")
         return msg.message_id
     except Exception as e:
         log.error(f"❌ Failed to send alert: {e}")
         return None
 
-def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_id, chat_id):
+def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_id, chat_id, topic_id=None):
     """ ရှိပြီးသား Alert ထဲသို့ စာသွားပေါင်းခြင်း """
     try:
         msg = bot.send_message(
@@ -227,8 +217,8 @@ def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_i
         )
         # 💡 Linked Message ID ကို သိမ်းဆည်းခြင်း (နောက်မှ ပြန်ဖျက်နိုင်ရန်)
         db_manager.add_linked_msg_id(original_msg_id, chat_id, msg.message_id)
-        db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED')
-        log.info(f"➕ Appended message {original_msg_id} to alert {target_alert_id}")
+        db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id)
+        log.info(f"➕ Appended message {original_msg_id} to alert {target_alert_id} (Topic: {topic_id})")
     except Exception as e:
         log.error(f"❌ Failed to append to alert: {e}")
 
@@ -261,22 +251,22 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff")
     tracking = db_manager.get_alert_tracking(msg_id, chat_id)
     
     if tracking:
-        alert_msg_id, alert_chat_id, _, esc_msg_id, linked_ids_json = tracking
+        alert_msg_id, alert_chat_id, _, esc_msg_id, linked_ids_json, linked_customer_ids_json = tracking
         
-        # (က) မူရင်း Alert ကို ဖျက်ခြင်း
+        # (က) မူရင်း Alert ကို ဖျက်ခြင်း (Level 1)
         try:
             bot.delete_message(alert_chat_id, alert_msg_id)
-            log.info(f"🗑️ Deleted alert {alert_msg_id}")
+            log.info(f"🗑️ Deleted Level 1 alert {alert_msg_id}")
         except Exception as e:
-            log.warning(f"⚠️ Failed to delete alert message {alert_msg_id}: {e}")
+            log.warning(f"⚠️ Failed to delete Level 1 alert {alert_msg_id}: {e}")
         
-        # (ခ) Manager ဆီက Escalation စာကို ဖျက်ခြင်း
+        # (ခ) Manager ဆီက Escalation စာကို ဖျက်ခြင်း (Level 2)
         if esc_msg_id:
             try:
                 bot.delete_message(MANAGER_ID, esc_msg_id)
-                log.info(f"🗑️ Deleted escalation message {esc_msg_id}")
+                log.info(f"🗑️ Deleted Level 2 escalation {esc_msg_id}")
             except Exception as e:
-                log.warning(f"⚠️ Failed to delete escalation message {esc_msg_id}: {e}")
+                log.warning(f"⚠️ Failed to delete Level 2 escalation {esc_msg_id}: {e}")
             
         # (ဂ) စာသွားပေါင်းထားသော (Append) စာများကို ဖျက်ခြင်း
         if linked_ids_json:
@@ -302,7 +292,7 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff")
     
     # အစ်ကို့တောင်းဆိုချက်အရ Resolved Group ID ကို သီးသန့်သတ်မှတ်ပါမည်
     RESOLVED_GROUP_ID = -1003601049225 # အစ်ကိုပြောတဲ့ Group ID
-    RESOLVED_TOPIC_ID = 4 # အစ်কেပြောတဲ့ Topic ID
+    RESOLVED_TOPIC_ID = 4 # အစ်ကိုပြောတဲ့ Topic ID
     
     # [ 🔗 View Message ] Button တည်ဆောက်ခြင်း
     clean_chat_id = str(chat_id).replace("-100", "")
@@ -353,7 +343,7 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
         
         orig_ts = msg_data[0]
         
-        # Escalation မပို့ရသေးလျှင် သို့မဟုတ် ၃၀ မိနစ်ကျော်နေလျှင်
+        # Escalation မပို့ရသေးလျှင် သို့မဟုတ် ၃၀ မိနစ်ကျော်လျှင်
         if not esc_msg_id and (int(time.time()) - orig_ts >= 1800):
             try:
                 tz = pytz.timezone('Asia/Yangon')
@@ -380,7 +370,7 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
 
                 msg = bot.send_message(MANAGER_ID, esc_text, reply_markup=markup, parse_mode="Markdown")
                 db_manager.update_alert_tracking_esc(msg_id, chat_id, msg.message_id)
-                db_manager.update_message_status(msg_id, chat_id, 'ESCALATED')
+                db_manager.update_message_status(msg_id, chat_id, 'ESCALATED', topic_id=topic_id)
                 log.warning(f"🚨 Escalated {msg_id} to Manager")
             except Exception as e:
                 log.error(f"❌ Escalation failed: {e}")
@@ -433,7 +423,7 @@ def send_heartbeat():
             log.error(f"❌ Heartbeat Failed: {e}")
 
 def process_audits():
-    """ Main Auditor Loop """
+    """ Main Auditor Loop (Refactored for Intent Grouping) """
     log.info("🧠 Auditor (Worker 2: AI Brain) is running...")
     last_backup_date = None
     last_report_date = None
@@ -441,22 +431,18 @@ def process_audits():
     
     while True:
         try:
-            # 💡 ၀။ Health Monitoring (၅ မိနစ်တစ်ကြိမ် Heartbeat ပို့မည်)
             if time.time() - last_heartbeat_time >= 300:
                 send_heartbeat()
                 last_heartbeat_time = time.time()
 
-            # 💡 ၁။ Automated Backup & Analytics Report
             tz = pytz.timezone('Asia/Yangon')
             now_mm = datetime.now(tz)
             today_str = now_mm.strftime('%Y-%m-%d')
             
-            # နေ့စဉ် မနက် ၉:၀၀ တွင် Backup လုပ်မည်
             if now_mm.hour == 9 and now_mm.minute < 10 and last_backup_date != today_str:
                 backup_database()
                 last_backup_date = today_str
                 
-            # အပတ်စဉ် တနင်္ဂနွေနေ့ မနက် ၉:၀၅ တွင် Performance Report ပို့မည်
             if now_mm.weekday() == 6 and now_mm.hour == 9 and 5 <= now_mm.minute < 15 and last_report_date != today_str:
                 send_performance_report()
                 last_report_date = today_str
@@ -465,48 +451,75 @@ def process_audits():
                 time.sleep(60)
                 continue
 
-            # ၁။ ၁၅ မိနစ်ကျော်နေသော Pending စာများကို ရှာမည် (Safe Recovery: တစ်ခါလျှင် ၅ စောင်စီသာ)
-            pending_msgs = db_manager.get_pending_messages(minutes=15, limit=5)
+            # ၁။ ၁၅ မိနစ်ကျော်နေသော Pending စာရှိသည့် Topic များကို ရှာမည်
+            pending_topics = db_manager.get_pending_topics(minutes=15)
             
-            for msg_id, chat_id, topic_id, text, ts in pending_msgs:
-                # 💡 Logging added to track audit process
-                log.info(f"🔍 Auditing message {msg_id} in chat {chat_id} (Topic: {topic_id})")
-                active_alerts = db_manager.get_active_alerts_for_group(chat_id, topic_id)
-                subsequent_msgs = db_manager.get_messages_after(chat_id, topic_id, msg_id)
-                _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
-                
-                # Media Support: Temporarily disabled due to missing column
-                media_id = None
+            for chat_id, topic_id in pending_topics:
+                # 💡 Intent Grouping: Get ALL pending messages in this topic to audit as a batch
+                msgs = db_manager.get_pending_messages(minutes=15, limit=10, chat_id=chat_id, topic_id=topic_id)
+                if not msgs: continue
 
-                # Duplicate Alert ကာကွယ်ရန် Status ကို ခေတ္တပြောင်းထားမည်
-                db_manager.update_message_status(msg_id, chat_id, 'AUDITING')
+                log.info(f"📂 Auditing Batch: Topic {topic_id} in Chat {chat_id} ({len(msgs)} messages)")
                 
-                action, ai_res = evaluate_with_ai(shop_name, text, active_alerts, subsequent_msgs)
+                # Trigger message (the oldest one)
+                trigger_msg_id, _, _, trigger_text, trigger_ts = msgs[0]
                 
+                active_alerts = db_manager.get_active_alerts_for_group(chat_id, topic_id)
+                preceding_msgs = db_manager.get_messages_before(chat_id, topic_id, trigger_msg_id)
+                subsequent_msgs = db_manager.get_messages_after(chat_id, topic_id, msgs[-1][0]) # After the last message in batch
+                _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
+
+                # Mark all as AUDITING to prevent double processing
+                for m in msgs: db_manager.update_message_status(m[0], chat_id, 'AUDITING', topic_id=topic_id)
+                
+                action, ai_res = evaluate_with_ai(shop_name, msgs, active_alerts, preceding_msgs, subsequent_msgs)
+                
+                grouped_ids = ai_res.get("grouped_msg_ids", [trigger_msg_id])
+                # Ensure trigger_msg_id is in grouped_ids
+                if trigger_msg_id not in grouped_ids: grouped_ids.append(trigger_msg_id)
+
                 if action == "RESOLVE":
-                    db_manager.update_message_status(msg_id, chat_id, 'RESOLVED')
-                    resolve_and_cleanup(msg_id, chat_id, shop_name, text, "AI Auto-Resolve")
-                    log.info(f"✨ AI Auto-Resolved: {msg_id} in {shop_name}")
+                    for mid in grouped_ids:
+                        db_manager.update_message_status(mid, chat_id, 'RESOLVED', topic_id=topic_id)
+                    resolve_and_cleanup(trigger_msg_id, chat_id, shop_name, trigger_text, "AI Auto-Resolve")
+                    log.info(f"✨ AI Auto-Resolved Group: {grouped_ids}")
+
                 elif action == "IGNORE":
-                    db_manager.update_message_status(msg_id, chat_id, 'RESOLVED')
-                    log.info(f"🔇 AI Ignored (Irrelevant): {msg_id} in {shop_name}")
+                    for mid in grouped_ids:
+                        db_manager.update_message_status(mid, chat_id, 'RESOLVED', topic_id=topic_id)
+                    log.info(f"🔇 AI Ignored Group: {grouped_ids}")
+
                 elif action == "APPEND" and ai_res.get("target_alert_id"):
-                    # Alert ID ကနေ chat_id ရှာဖို့လိုတယ် (လောလောဆယ် routing ကနေပဲယူမယ်)
                     target_chat, _ = get_routing_data(chat_id, topic_id)
-                    append_to_alert(ai_res["target_alert_id"], target_chat, text, msg_id, chat_id)
+                    # Append the combined text of grouped messages
+                    combined_text = "\n".join([m[3] for m in msgs if m[0] in grouped_ids])
+                    append_to_alert(ai_res["target_alert_id"], target_chat, combined_text, trigger_msg_id, chat_id, topic_id=topic_id)
+                    # Link other messages in the group
+                    for mid in grouped_ids:
+                        if mid != trigger_msg_id:
+                            db_manager.add_linked_customer_id(trigger_msg_id, chat_id, mid)
+                            db_manager.update_message_status(mid, chat_id, 'ALERTED', topic_id=topic_id)
+
                 elif action == "NEW_ALERT":
-                    send_new_alert(
-                        chat_id, topic_id, msg_id, text,
-                        ai_res.get("summary", "New Issue"),
-                        shop_name, ts,
-                        ai_res.get("category", "အခြား"),
-                        media_id
+                    # Create one ticket for the group
+                    combined_text = "\n".join([m[3] for m in msgs if m[0] in grouped_ids])
+                    alert_id = send_new_alert(
+                        chat_id, topic_id, trigger_msg_id, combined_text,
+                        ai_res.get("summary", "New Grouped Issue"),
+                        shop_name, trigger_ts,
+                        category=ai_res.get("category", "အခြား"),
+                        intent=ai_res.get("intent", "အထွေထွေစုံစမ်းမှု")
                     )
+                    # Link other messages to this alert tracking
+                    if alert_id:
+                        for mid in grouped_ids:
+                            if mid != trigger_msg_id:
+                                db_manager.add_linked_customer_id(trigger_msg_id, chat_id, mid)
+                                db_manager.update_message_status(mid, chat_id, 'ALERTED', topic_id=topic_id)
                 else:
-                    # If error or unknown, keep as PENDING
-                    db_manager.update_message_status(msg_id, chat_id, 'PENDING')
+                    # Rollback to PENDING if error
+                    for m in msgs: db_manager.update_message_status(m[0], chat_id, 'PENDING', topic_id=topic_id)
                 
-                # Safe Recovery: Rate limit ကာကွယ်ရန် ခေတ္တနားမည်
                 time.sleep(2)
 
             # ၂။ Escalation Check (ALERTED ဖြစ်နေတာ နာရီဝက်ကျော်ရင်)

@@ -40,20 +40,22 @@ def handle_done_button(call):
             staff_data = db_manager.get_staff_info(user_id)
             staff_name = staff_data[1] if staff_data else call.from_user.first_name
             
-            # ၁။ DB တွင် Resolve လုပ်ခြင်း
-            db_manager.resolve_message(original_msg_id, chat_id, staff_name, method='Done Button')
+            # 💡 Get topic_id and original text from DB before resolving
+            topic_id = db_manager.get_message_topic(original_msg_id, chat_id)
             
-            # ၂။ Alert Cleanup & Record Group သို့ ပို့ခြင်း
-            import auditor
-            _, _, shop_name = db_manager.get_topic_context(chat_id, 0)
-            
-            # မူရင်းစာသားကို db ကနေ ပြန်ယူရန်
             conn = db_manager.get_connection()
             msg_data = conn.execute("SELECT text FROM message_logs WHERE msg_id = ? AND chat_id = ?", (original_msg_id, chat_id)).fetchone()
             conn.close()
             orig_text = msg_data[0] if msg_data else "[Unknown]"
+
+            # ၁။ DB တွင် Resolve လုပ်ခြင်း
+            db_manager.resolve_message(original_msg_id, chat_id, staff_name, method='Done Button', topic_id=topic_id)
             
-            # 💡 Alert ရှိမှသာ Cleanup လုပ်ရန် (auditor.resolve_and_cleanup ထဲတွင် tracking စစ်ဆေးပြီးသားဖြစ်သည်)
+            # ၂။ Alert Cleanup & Record Group သို့ ပို့ခြင်း (Archive to Topic 4)
+            import auditor
+            _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
+            
+            # 💡 resolve_and_cleanup ထဲတွင် Alert ဖျက်ခြင်းနှင့် Archive ပို့ခြင်းကို လုပ်ဆောင်မည်
             auditor.resolve_and_cleanup(original_msg_id, chat_id, shop_name, orig_text, f"{staff_name} (Done Button)")
             
             # ၃။ Button နှိပ်သူကို အကြောင်းပြန်ခြင်း
@@ -66,42 +68,47 @@ def handle_done_button(call):
 
 @bot.message_reaction_handler(func=lambda message: True)
 def handle_reaction(message):
-    """ ဝန်ထမ်းမှ Reaction ပေးလျှင် Alert ကို ပိတ်သိမ်းခြင်း """
+    """ ဝန်ထမ်းမှ ❤️ Reaction ပေးလျှင် Message ကို RESOLVED အဖြစ် သတ်မှတ်ခြင်း (Alert ရှိရှိ/မရှိရှိ) """
     try:
-        # 💡 Reaction handler မှာ reaction object ကနေ message_id နဲ့ chat.id ကို ယူရမယ်
-        # message_reaction_handler မှာ reaction object က message parameter ဖြစ်လာတယ်
         reaction = message
         user_id = reaction.user.id
         chat_id = reaction.chat.id
         message_id = reaction.message_id
         
-        # 💡 Reaction အသစ်တွေပဲ စစ်ဆေးမယ် (အဟောင်းတွေ မဟုတ်)
         if not reaction.new_reaction:
+            return
+            
+        # 💡 ❤️ (heart) reaction ဖြစ်မှသာ အလုပ်လုပ်မည်
+        is_heart = any(r.emoji == '❤️' for r in reaction.new_reaction if r.type == 'emoji')
+        if not is_heart:
             return
 
         if db_manager.check_if_staff(user_id) or user_id == MANAGER_ID:
-            # 💡 Alert Tracking ထဲမှာ ရှိမရှိ စစ်ဆေးခြင်း
+            staff_data = db_manager.get_staff_info(user_id)
+            staff_name = staff_data[1] if staff_data else reaction.user.first_name
+            
+            # 💡 Get topic_id from DB
+            topic_id = db_manager.get_message_topic(message_id, chat_id)
+
+            # ၁။ DB တွင် Resolve လုပ်ခြင်း (Alert မတက်ခင် ဖြစ်နိုင်သလို တက်ပြီးမှလည်း ဖြစ်နိုင်သည်)
+            db_manager.resolve_message(message_id, chat_id, staff_name, method='Reaction (❤️)', topic_id=topic_id)
+            
+            # ၂။ Alert Tracking ရှိမရှိ စစ်ဆေးပြီး Cleanup လုပ်ခြင်း
             tracking = db_manager.get_alert_tracking(message_id, chat_id)
-            if tracking:
-                staff_data = db_manager.get_staff_info(user_id)
-                staff_name = staff_data[1] if staff_data else reaction.user.first_name
-                
-                # ၁။ DB တွင် Resolve လုပ်ခြင်း
-                db_manager.resolve_message(message_id, chat_id, staff_name, method='Reaction')
-                
-                # ၂။ Auditor logic ကို ခေါ်ရန် (Alert Cleanup အတွက်)
-                import auditor
-                _, _, shop_name = db_manager.get_topic_context(chat_id, 0)
-                
-                # မူရင်းစာသားကို db ကနေ ပြန်ယူရန်
-                conn = db_manager.get_connection()
-                msg_data = conn.execute("SELECT text FROM message_logs WHERE msg_id = ? AND chat_id = ?", (message_id, chat_id)).fetchone()
-                conn.close()
-                orig_text = msg_data[0] if msg_data else "[Unknown]"
-                
-                auditor.resolve_and_cleanup(message_id, chat_id, shop_name, orig_text, f"{staff_name} (Reaction)")
-                
-                log.info(f"✅ Message {message_id} marked as RESOLVED via Reaction by {staff_name}")
+            
+            import auditor
+            _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
+            
+            # မူရင်းစာသားကို db ကနေ ပြန်ယူရန်
+            conn = db_manager.get_connection()
+            msg_data = conn.execute("SELECT text FROM message_logs WHERE msg_id = ? AND chat_id = ?", (message_id, chat_id)).fetchone()
+            conn.close()
+            orig_text = msg_data[0] if msg_data else "[Unknown]"
+            
+            # resolve_and_cleanup သည် tracking မရှိလျှင် Archive မပို့ဘဲ Cleanup သာ လုပ်ပေးမည်
+            auditor.resolve_and_cleanup(message_id, chat_id, shop_name, orig_text, f"{staff_name} (Reaction ❤️)")
+            
+            log.info(f"✅ Message {message_id} marked as RESOLVED via Reaction (❤️) by {staff_name}")
     except Exception as e:
         log.error(f"❌ Reaction Handler Error: {e}")
 
@@ -147,8 +154,11 @@ def handle_all_messages(message):
                     staff_data = db_manager.get_staff_info(user_id)
                     staff_name = staff_data[1] if staff_data else (message.from_user.first_name if message.from_user else "Staff")
                     
+                    # 💡 Get the actual topic_id of the original message
+                    orig_topic_id = db_manager.get_message_topic(original_id, chat_id)
+                    
                     # ၁။ DB တွင် Resolve လုပ်ခြင်း
-                    db_manager.resolve_message(original_id, chat_id, staff_name, method='Reply')
+                    db_manager.resolve_message(original_id, chat_id, staff_name, method='Reply', topic_id=orig_topic_id)
                     
                     # ၂။ Alert Cleanup & Record Group သို့ ပို့ခြင်း (Alert ရှိမှသာ ပို့မည်)
                     import auditor
