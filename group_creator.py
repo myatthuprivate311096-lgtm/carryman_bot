@@ -10,42 +10,52 @@ API_ID = int(os.getenv('API_ID'))
 API_HASH = os.getenv('API_HASH')
 BOT_USERNAME = os.getenv('BOT_USERNAME')
 
-STAFF_USERNAMES = ['@cmsod1', '@cmmarketing1', '@cmfinance1', '@dataentrycm1']
+STAFF_USERNAMES = ['@cmsod1', '@cmmarketing1', '@cmfinance1', '@dataentrycm1', 8548232517]
+
+from logger import log
 
 async def toggle_forum_safe(client, channel):
     ReqClass = functions.channels.ToggleForumRequest
     try: return await client(ReqClass(channel=channel, enabled=True, tabs=True))
-    except: pass
+    except Exception as e: log.debug(f"ToggleForum attempt 1 failed: {e}")
     try: return await client(ReqClass(channel, True, True))
-    except: pass
+    except Exception as e: log.debug(f"ToggleForum attempt 2 failed: {e}")
     try: return await client(ReqClass(channel=channel, enabled=True))
-    except: pass
+    except Exception as e: log.debug(f"ToggleForum attempt 3 failed: {e}")
     try: return await client(ReqClass(channel, True))
-    except: pass
+    except Exception as e: log.error(f"❌ All ToggleForum attempts failed: {e}")
 
 async def rename_general_safe(client, channel, title):
     ReqClass = getattr(functions.channels, 'EditForumTopicRequest', None) or getattr(functions.messages, 'EditForumTopicRequest', None)
-    if not ReqClass: return False
+    if not ReqClass:
+        log.error("❌ EditForumTopicRequest not found in library")
+        return False
     try: await client(ReqClass(channel=channel, topic_id=1, title=title)); return True
-    except: pass
+    except Exception as e: log.debug(f"RenameGeneral attempt 1 failed: {e}")
     try: await client(ReqClass(channel, 1, title)); return True
-    except: pass
+    except Exception as e: log.debug(f"RenameGeneral attempt 2 failed: {e}")
     try: await client(ReqClass(peer=channel, topic_id=1, title=title)); return True
-    except: pass
+    except Exception as e: log.debug(f"RenameGeneral attempt 3 failed: {e}")
     try: await client(ReqClass(channel, 1, title=title)); return True
-    except: return False
+    except Exception as e:
+        log.error(f"❌ All RenameGeneral attempts failed: {e}")
+        return False
 
 async def create_topic_safe(client, channel, title):
     ReqClass = getattr(functions.channels, 'CreateForumTopicRequest', None) or getattr(functions.messages, 'CreateForumTopicRequest', None)
-    if not ReqClass: raise Exception("Library issue")
+    if not ReqClass:
+        log.error("❌ CreateForumTopicRequest not found in library")
+        raise Exception("Library issue")
     try: return await client(ReqClass(channel=channel, title=title))
-    except: pass
+    except Exception as e: log.debug(f"CreateTopic attempt 1 failed: {e}")
     try: return await client(ReqClass(channel, title))
-    except: pass
+    except Exception as e: log.debug(f"CreateTopic attempt 2 failed: {e}")
     try: return await client(ReqClass(peer=channel, title=title))
-    except: pass
+    except Exception as e: log.debug(f"CreateTopic attempt 3 failed: {e}")
     try: return await client(ReqClass(channel, title=title))
-    except Exception as e: raise Exception(f"Failed to create topic: {e}")
+    except Exception as e:
+        log.error(f"❌ All CreateTopic attempts failed: {e}")
+        raise Exception(f"Failed to create topic: {e}")
 
 # 💡 Rank ကို ဖြုတ်လိုက်ပါပြီ
 async def create_group_task(group_name):
@@ -75,7 +85,8 @@ async def create_group_task(group_name):
                     change_info=False, pin_messages=False, manage_topics=False
                 )
             ))
-        except: pass
+        except Exception as e:
+            log.warning(f"⚠️ Failed to set default banned rights: {e}")
 
         general_topic = "Pick Up/Urgent/စုံစမ်းရန်"
         general_msg = "🎧 Pick Up ခေါ်ခြင်း၊ ပါဆယ်အခြေအနေစုံစမ်းခြင်းနှင့် အရေးကြီးပို့ပေးရမည့်ဝေးများကို ဒီမှာပြောနိုင်ပါတယ်နော်။"
@@ -103,20 +114,23 @@ async def create_group_task(group_name):
                             break
                 await client.send_message(channel, t_msg, reply_to=topic_id)
                 db_records.append((group_name, channel.id, invite_link, t_name, topic_id))
-            except: pass
+            except Exception as e:
+                log.error(f"❌ Failed to create topic {t_name}: {e}")
 
         for user in STAFF_USERNAMES:
             try: await client(functions.channels.InviteToChannelRequest(channel=channel, users=[user]))
-            except: pass
+            except Exception as e:
+                log.warning(f"⚠️ Failed to invite staff {user}: {e}")
             
         try:
             await client(functions.channels.InviteToChannelRequest(channel=channel, users=[BOT_USERNAME]))
             await client(functions.channels.EditAdminRequest(
-                channel=channel, user_id=BOT_USERNAME, 
+                channel=channel, user_id=BOT_USERNAME,
                 admin_rights=types.ChatAdminRights(post_messages=True, delete_messages=True, invite_users=True, pin_messages=True, manage_topics=True),
                 rank='AI Assistant'
             ))
-        except: pass
+        except Exception as e:
+            log.error(f"❌ Failed to invite/promote bot: {e}")
         
         return db_records, invite_link
 
@@ -136,8 +150,11 @@ def create_new_group(bot, message):
         conn = db_manager.get_connection()
         c = conn.cursor()
         for record in db_records:
-            # 💡 rank ကို ဖြုတ်၍ ကော်လံ ၅ ခုသာ Insert လုပ်မည်
-            c.execute("INSERT INTO os_groups (group_name, group_id, invite_link, topic_name, topic_id) VALUES (?, ?, ?, ?, ?)", record)
+            # 💡 Column အစီအစဉ်ကို DB Schema အတိုင်း ပြန်ပြင်ခြင်း (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id)
+            # record format: (group_name, channel_id, invite_link, topic_name, topic_id)
+            # ဒါကြောင့် (channel_id, group_name, channel_id, group_name, invite_link, topic_name, topic_id) အဖြစ် ပြောင်းသိမ်းရပါမယ်
+            full_record = (record[1], record[0], record[1], record[0], record[2], record[3], record[4])
+            c.execute("INSERT INTO os_groups (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id) VALUES (?, ?, ?, ?, ?, ?, ?)", full_record)
         conn.commit()
         conn.close()
         

@@ -1,11 +1,15 @@
-# Version: 5.0 (Worker 1: Data Ingestion Bot)
+# Version: 5.1 (Worker 1: Data Ingestion Bot - Refactored)
 import os
 import time
+import html
+import telebot
+import pytz
+from datetime import datetime
 from dotenv import load_dotenv
 from logger import log
-import telebot
 import db_manager
 import commands_handler
+import auditor
 
 # 💡 Absolute Path Fix for .env
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -50,7 +54,6 @@ def handle_done_button(call):
 
             # ၁။ Alert Cleanup & Record Group သို့ ပို့ခြင်း (Archive to Topic 4)
             # 💡 resolve_and_cleanup ကို အရင်ခေါ်ရမည် (Tracking data မပျောက်ခင်)
-            import auditor
             _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
             
             # 💡 resolve_and_cleanup ထဲတွင် Alert ဖျက်ခြင်းနှင့် Archive ပို့ခြင်းကို လုပ်ဆောင်မည်
@@ -129,7 +132,6 @@ def handle_feedback_callback(call):
         orig_id = int(parts[2])
         chat_id = int(parts[3])
         
-        import auditor
         topic_id = db_manager.get_message_topic(orig_id, chat_id)
         _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
         
@@ -196,7 +198,6 @@ def handle_rerouting(call):
         orig_id = int(parts[2])
         chat_id = int(parts[3])
         
-        import auditor
         topic_id = db_manager.get_message_topic(orig_id, chat_id)
         _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
         
@@ -221,17 +222,18 @@ def handle_rerouting(call):
             # ဒါပေမယ့် target_topic ကို manual သတ်မှတ်ပေးပါမယ်
             
             # အချိန်ပြောင်းလဲခြင်း
-            import pytz
-            from datetime import datetime
             tz = pytz.timezone('Asia/Yangon')
             orig_time = datetime.fromtimestamp(ts, tz).strftime('%Y-%m-%d %I:%M %p')
 
+            # HTML Mode အတွက် Escape လုပ်ခြင်း
+            safe_shop = html.escape(shop_name)
+            safe_text = html.escape(text)
+
             alert_text = (
-                f"🔄 **RE-ROUTED ALERT**\n"
+                f"🔄 <b>RE-ROUTED ALERT</b>\n"
                 f"━━━━━━━━━━━━━━━━━━\n"
-                f"🏪 ဆိုင်: **{shop_name}**\n"
-                f"📝 အနှစ်ချုပ်: Topic မှားယွင်းမှုကြောင့် Topic {target_topic} သို့ ပြောင်းလဲထားသည်\n"
-                f"💬 စာသား: {text}\n"
+                f"🏪 ဆိုင်: <b>{safe_shop}</b>\n"
+                f"💬 စာသား: {safe_text}\n"
                 f"⏰ အချိန်: {orig_time}\n"
                 f"━━━━━━━━━━━━━━━━━━"
             )
@@ -246,9 +248,9 @@ def handle_rerouting(call):
             )
 
             if media_id:
-                msg = bot.send_photo(target_chat, media_id, caption=alert_text, message_thread_id=target_topic, parse_mode="Markdown", reply_markup=markup)
+                msg = bot.send_photo(target_chat, media_id, caption=alert_text, message_thread_id=target_topic, parse_mode="HTML", reply_markup=markup)
             else:
-                msg = bot.send_message(target_chat, alert_text, message_thread_id=target_topic, parse_mode="Markdown", reply_markup=markup)
+                msg = bot.send_message(target_chat, alert_text, message_thread_id=target_topic, parse_mode="HTML", reply_markup=markup)
             
             db_manager.save_alert_tracking(orig_id, chat_id, msg.message_id, target_chat)
             db_manager.update_message_status(orig_id, chat_id, 'ALERTED', topic_id=topic_id)
@@ -297,7 +299,6 @@ def handle_reaction(message):
             # ၂။ Alert Tracking ရှိမရှိ စစ်ဆေးပြီး Cleanup လုပ်ခြင်း
             tracking = db_manager.get_alert_tracking(message_id, chat_id)
             
-            import auditor
             _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
             
             # မူရင်းစာသားကို db ကနေ ပြန်ယူရန်
@@ -393,7 +394,6 @@ def handle_all_messages(message):
                     db_manager.resolve_message(original_id, chat_id, staff_name, method='Reply', topic_id=orig_topic_id)
                     
                     # ၂။ Alert Cleanup & Record Group သို့ ပို့ခြင်း (Alert ရှိမှသာ ပို့မည်)
-                    import auditor
                     _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
                     
                     # မူရင်းစာသားကို db ကနေ ပြန်ယူရန်

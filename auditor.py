@@ -1,15 +1,16 @@
-# Version: 2.0 (Worker 2: AI Brain - Standalone Auditor)
+# Version: 2.1 (Worker 2: AI Brain - Standalone Auditor - Refactored)
 import os
 import time
 import json
+import html
 import telebot
 import pytz
+import requests
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from logger import log
 import db_manager
 from openai import OpenAI
-import requests
 
 # 💡 Absolute Path Fix
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -19,17 +20,25 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 MANAGER_ID = int(os.getenv('MANAGER_ID', 0))
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY') or os.getenv('OPENROUTER_API_KEY')
-RECORD_GROUP_ID = int(os.getenv('ARCHIVE_CHAT_ID', 0))
+RECORD_GROUP_ID = int(os.getenv('ARCHIVE_CHAT_ID', -1003601049225))
 HEALTHCHECK_URL = os.getenv('HEALTHCHECK_URL')
+
+# 🧪 Test Mode Configuration
+TEST_GROUP_ID = int(os.getenv('TEST_GROUP_ID', 3539520778))
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
-def is_office_hours():
+def is_office_hours(chat_id=None):
     """
     Asia/Yangon Timezone (UTC+6:30)
     Business Hours: 09:00 AM - 06:00 PM
     Grace Period: Start at 09:10 AM
+    
+    💡 Test Mode: TEST_GROUP_ID bypasses office hours (24/7)
     """
+    if chat_id == TEST_GROUP_ID:
+        return True
+
     tz = pytz.timezone('Asia/Yangon')
     mm_time = datetime.now(tz)
     
@@ -37,7 +46,12 @@ def is_office_hours():
     current_minute = mm_time.minute
     
     # 09:10 AM to 05:59 PM
-    if (current_hour == 9 and current_minute >= 10) or (9 < current_hour < 18):
+    # 💡 Logic ကို ပိုမိုတိကျစေရန် မိနစ်ဖြင့် တွက်ချက်ခြင်း
+    total_minutes = current_hour * 60 + current_minute
+    start_minutes = 9 * 60 + 10 # 09:10 AM
+    end_minutes = 18 * 60      # 06:00 PM
+    
+    if start_minutes <= total_minutes < end_minutes:
         return True
     return False
 
@@ -128,7 +142,17 @@ def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs
             timeout=25.0
         )
         
-        res_data = json.loads(response.choices[0].message.content.strip())
+        content = response.choices[0].message.content.strip()
+        res_data = json.loads(content)
+        
+        # 💡 AI က တစ်ခါတရံ list အနေနဲ့ ပြန်ပေးတတ်လို့ dict ဖြစ်အောင် ညှိခြင်း
+        if isinstance(res_data, list) and len(res_data) > 0:
+            res_data = res_data[0]
+            
+        if not isinstance(res_data, dict):
+            log.error(f"❌ AI returned invalid format: {type(res_data)}")
+            return "NEW_ALERT", {"summary": "AI Format Error - Defaulting to New Alert"}
+
         action = res_data.get("action", "NEW_ALERT")
         
         # Safety Check: If AI says RESOLVE but no staff message exists
@@ -140,52 +164,99 @@ def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs
         log.error(f"❌ Auditor AI Error: {e}")
         return "ERROR", {"summary": "AI Error - Retrying..."}
 
-def get_routing_data(chat_id, topic_id):
+def get_routing_data(chat_id, topic_id, summary="", category="", intent=""):
     """
     ဗဟိုမှ ထိန်းချုပ်ခြင်း (Central Mapping)
     Workflow Step 5: Topic Name အလိုက် Target Topic ID (37, 1, 35) သို့ ပို့ဆောင်ခြင်း
     """
-    TARGET_GROUP_ID = -1003601049225
+    TARGET_GROUP_ID = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
     
     # ၁။ OS Group ၏ Topic Name ကို DB မှ ရှာခြင်း
     conn = db_manager.get_connection()
+    # 💡 Fix: topic_id နဲ့ ရှာလို့မတွေ့ရင် chat_id တစ်ခုတည်းနဲ့ ရှာပြီး topic_name ကို ယူမည် (Legacy Groups များအတွက်)
     res = conn.execute("SELECT topic_name FROM os_groups WHERE chat_id = ? AND topic_id = ?", (chat_id, topic_id)).fetchone()
+    if not res:
+        res = conn.execute("SELECT topic_name FROM os_groups WHERE chat_id = ? LIMIT 1", (chat_id,)).fetchone()
     conn.close()
     
     topic_name = res[0].lower() if res else ""
-    
+
     # ၂။ Workflow Mapping (Error -> 37, Pick Up -> 1, Fin -> 35)
     target_topic = 0 # Default
+    
+    # 💡 အစ်ကို့လိုအပ်ချက်အရ Topic Name ထဲမှာ "error" ပါရင် Topic ID 37 သို့ ပို့မည်
     if "error" in topic_name:
         target_topic = 37
-    elif "pick up" in topic_name or "urgent" in topic_name:
+    elif "ပို့မရ" in topic_name:
+        target_topic = 37
+    # 💡 အစ်ကို့လိုအပ်ချက်အရ "pick up", "urgent" သို့မဟုတ် "စုံစမ်းရန်" ပါရင် Topic ID 1 သို့ ပို့မည်
+    elif "pick up" in topic_name or "urgent" in topic_name or "စုံစမ်းရန်" in topic_name:
         target_topic = 1
-    elif "fin" in topic_name or "voc" in topic_name:
+    # 💡 အစ်ကို့လိုအပ်ချက်အရ "fin", "voc" သို့မဟုတ် "fin & voc" ပါရင် Topic ID 35 သို့ ပို့မည်
+    elif "fin" in topic_name or "voc" in topic_name or "ငွေစာရင်း" in topic_name or "ဘောင်ချာ" in topic_name:
         target_topic = 35
-    else:
-        # Mapping မရှိလျှင် routing_table မှ ID အလိုက် ထပ်ရှာမည်
-        conn = db_manager.get_connection()
-        r_res = conn.execute("SELECT target_topic_id FROM routing_table WHERE topic_id = ?", (topic_id,)).fetchone()
-        conn.close()
-        if r_res: target_topic = r_res[0]
+    
+    # 💡 Topic ID Mapping (AI ထက် ဦးစားပေးမည်)
+    if target_topic == 0:
+        if topic_id == 37: target_topic = 37
+        elif topic_id == 1: target_topic = 1
+        elif topic_id == 35: target_topic = 35
+        else:
+            # routing_table မှ ID အလိုက် ထပ်ရှာမည်
+            conn = db_manager.get_connection()
+            r_res = conn.execute("SELECT target_topic_id FROM routing_table WHERE topic_id = ?", (topic_id,)).fetchone()
+            conn.close()
+            if r_res: target_topic = r_res[0]
 
+    # 💡 AI Fallback: Mapping မမိပါက AI ၏ Classification ကို သုံး၍ Route လုပ်ခြင်း
+    if target_topic == 0:
+        summary_l = summary.lower()
+        category_l = category.lower()
+        intent_l = intent.lower() if intent else ""
+        
+        # Error Detection (Burmese & English)
+        if any(x in summary_l for x in ["မှား", "error", "မရ", "မထွက်", "မဝင်", "တက်မလာ"]) or \
+           any(x in category_l for x in ["error", "မှား"]) or \
+           "error" in intent_l:
+            target_topic = 37
+        # Finance Detection
+        elif any(x in summary_l for x in ["ငွေ", "ဘောင်ချာ", "ရှင်း", "pay", "money", "လွှဲ"]) or \
+             any(x in category_l for x in ["ငွေ", "finance", "ဘောင်ချာ"]) or \
+             "ငွေ" in intent_l:
+            target_topic = 35
+        # Pickup/Inquiry Detection
+        elif any(x in summary_l for x in ["ပို့", "စုံစမ်း", "ယူ", "pick", "order", "ရောက်"]) or \
+             any(x in category_l for x in ["ပို့", "စုံစမ်း", "pickup"]) or \
+             "ပို့" in intent_l:
+            target_topic = 1
+    
+    # 💡 Final Safety Net: အားလုံးစစ်လို့မရရင် Topic 1 (General/Pickup) သို့ ပို့မည်
+    if target_topic == 0:
+        target_topic = 1
+        
     log.info(f"📡 Routing: Topic '{topic_name}' (ID: {topic_id}) -> Target Topic: {target_topic}")
     return TARGET_GROUP_ID, target_topic
 
 def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name, original_ts, category="အခြား", intent=None, media_id=None, title="⚠️ **Pending Alert (15 Mins)**"):
     """ ဝန်ထမ်း group ထံသို့ Alert အသစ်ပို့ခြင်း (View Message & Done Buttons ပါဝင်သည်) """
-    target_chat, target_topic = get_routing_data(chat_id, topic_id)
+    target_chat, target_topic = get_routing_data(chat_id, topic_id, summary=summary, category=category, intent=intent)
     
     # အချိန်ကို မြန်မာစံတော်ချိန်ဖြင့် ပြောင်းလဲခြင်း
     tz = pytz.timezone('Asia/Yangon')
     orig_time = datetime.fromtimestamp(original_ts, tz).strftime('%Y-%m-%d %I:%M %p')
 
+    # HTML Mode အတွက် စာသားများကို Escape လုပ်ခြင်း (Special characters ကြောင့် Error မတက်စေရန်)
+    safe_shop = html.escape(shop_name)
+    safe_summary = html.escape(summary)
+    safe_text = html.escape(text)
+    safe_category = html.escape(category)
+    safe_intent = html.escape(intent if intent else 'အထွေထွေ')
+
     alert_text = (
-        f"{title}\n"
+        f"<b>{title}</b>\n"
         f"━━━━━━━━━━━━━━━━━━\n"
-        f"🏪 ဆိုင်: **{shop_name}**\n"
-        f"📝 အနှစ်ချုပ်: {summary}\n"
-        f"💬 စာသား: {text}\n"
+        f"🏪 ဆိုင်: <b>{safe_shop}</b>\n"
+        f"💬 စာသား: {safe_text}\n"
         f"⏰ အချိန်: {orig_time}\n"
         f"━━━━━━━━━━━━━━━━━━"
     )
@@ -193,6 +264,9 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
     # Buttons တည်ဆောက်ခြင်း
     clean_chat_id = str(chat_id).replace("-100", "")
     msg_link = f"https://t.me/c/{clean_chat_id}/{original_msg_id}"
+    
+    # 💡 Topic ID 0 ဖြစ်နေလျှင် None သို့ ပြောင်းလဲခြင်း (General Topic အတွက်)
+    safe_target_topic = target_topic if target_topic != 0 else None
     
     markup = telebot.types.InlineKeyboardMarkup(row_width=2)
     markup.add(
@@ -207,16 +281,16 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
                 target_chat,
                 media_id,
                 caption=alert_text,
-                message_thread_id=target_topic,
-                parse_mode="Markdown",
+                message_thread_id=safe_target_topic,
+                parse_mode="HTML",
                 reply_markup=markup
             )
         else:
             msg = bot.send_message(
                 target_chat,
                 alert_text,
-                message_thread_id=target_topic,
-                parse_mode="Markdown",
+                message_thread_id=safe_target_topic,
+                parse_mode="HTML",
                 reply_markup=markup
             )
         db_manager.save_alert_tracking(original_msg_id, chat_id, msg.message_id, target_chat)
@@ -224,16 +298,47 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
         log.info(f"📢 Alert sent for {original_msg_id} in {shop_name} to Central Group")
         return msg.message_id
     except Exception as e:
+        # 💡 Topic ID မရှိသော Error (Bad Request: message thread not found) ဖြစ်ပါက General သို့ ပို့မည်
+        if "message thread not found" in str(e).lower() and safe_target_topic is not None:
+            log.warning(f"⚠️ Topic {safe_target_topic} not found in Central Group. Falling back to General.")
+            try:
+                if media_id:
+                    msg = bot.send_photo(target_chat, media_id, caption=alert_text, parse_mode="HTML", reply_markup=markup)
+                else:
+                    msg = bot.send_message(target_chat, alert_text, parse_mode="HTML", reply_markup=markup)
+                db_manager.save_alert_tracking(original_msg_id, chat_id, msg.message_id, target_chat)
+                db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id, category=category, intent=intent)
+                return msg.message_id
+            except Exception as e2:
+                log.error(f"❌ Final Fallback Failed: {e2}")
+                return None
+        
         log.error(f"❌ Failed to send alert: {e}")
         return None
 
 def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_id, chat_id, topic_id=None):
     """ ရှိပြီးသား Alert ထဲသို့ စာသွားပေါင်းခြင်း """
     try:
+        # HTML Mode အတွက် Escape လုပ်ခြင်း
+        safe_new_text = html.escape(new_text)
+
+        # Buttons တည်ဆောက်ခြင်း (Update message မှာလည်း တန်းနှိပ်လို့ရအောင်)
+        clean_chat_id = str(chat_id).replace("-100", "")
+        msg_link = f"https://t.me/c/{clean_chat_id}/{original_msg_id}"
+        
+        markup = telebot.types.InlineKeyboardMarkup(row_width=2)
+        markup.add(
+            telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
+            telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{original_msg_id}_{chat_id}"),
+            telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{original_msg_id}_{chat_id}")
+        )
+
         msg = bot.send_message(
             target_alert_chat,
-            f"➕ **Update for Alert:**\n{new_text}",
-            reply_to_message_id=target_alert_id
+            f"➕ <b>Update for Alert:</b>\n{safe_new_text}",
+            reply_to_message_id=target_alert_id,
+            reply_markup=markup,
+            parse_mode="HTML"
         )
         # 💡 Linked Message ID ကို သိမ်းဆည်းခြင်း (နောက်မှ ပြန်ဖျက်နိုင်ရန်)
         db_manager.add_linked_msg_id(original_msg_id, chat_id, msg.message_id)
@@ -247,7 +352,7 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
     # 💡 အလုပ်ချိန်ပြင်ပဖြစ်ပါက Record မထုတ်ရန် (အစ်ကို့တောင်းဆိုချက်အရ)
     # သို့သော် Alert Cleanup ကိုတော့ ဆက်လုပ်ပေးရမည်
     # manual_resolve=True (Done Button/Reaction) ဖြစ်ပါက အချိန်မရွေး Record ထုတ်မည်
-    is_office = is_office_hours() or manual_resolve
+    is_office = is_office_hours(chat_id) or manual_resolve
 
     # ၁။ မူရင်းစာ ဝင်ခဲ့သည့် အချိန်နှင့် Topic ကို ရှာခြင်း
     conn = db_manager.get_connection()
@@ -291,7 +396,6 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
             
         # (ဂ) စာသွားပေါင်းထားသော (Append) စာများကို ဖျက်ခြင်း
         if linked_ids_json:
-            import json
             linked_ids = json.loads(linked_ids_json)
             for l_id in linked_ids:
                 try:
@@ -317,8 +421,8 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
     # သီးသန့် Resolved Group ID ကို သုံးရပါမယ်။
     
     # အစ်ကို့တောင်းဆိုချက်အရ Resolved Group ID ကို သီးသန့်သတ်မှတ်ပါမည်
-    RESOLVED_GROUP_ID = -1003601049225 # အစ်ကိုပြောတဲ့ Group ID
-    RESOLVED_TOPIC_ID = 4 # အစ်ကိုပြောတဲ့ Topic ID
+    RESOLVED_GROUP_ID = int(os.getenv('RESOLVED_GROUP_ID', -1003601049225))
+    RESOLVED_TOPIC_ID = int(os.getenv('RESOLVED_TOPIC_ID', 4))
     
     # [ 🔗 View Message ] Button တည်ဆောက်ခြင်း
     clean_chat_id = str(chat_id).replace("-100", "")
@@ -331,6 +435,10 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
     if tracking:
         try:
             if is_office:
+                # မူရင်းစာဝင်သည့်အချိန်ကို Format ချခြင်း
+                tz = pytz.timezone('Asia/Yangon')
+                orig_time_str = datetime.fromtimestamp(orig_ts, tz).strftime('%Y-%m-%d %I:%M %p') if 'orig_ts' in locals() else datetime.now(tz).strftime('%Y-%m-%d %I:%M %p')
+
                 record_text = (
                     f"✅ **RESOLVED RECORD**\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
@@ -338,7 +446,7 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
                     f"💬 မူရင်းစာ: {text if text != '[Unknown]' else 'စာသားရှာမတွေ့ပါ'}\n"
                     f"👤 ဖြေရှင်းသူ: {staff_name}\n"
                     f"⏳ ကြာချိန်: {duration_str if duration_str != 'Unknown' else 'ချက်ချင်း'}\n"
-                    f"📅 အချိန်: {datetime.now(pytz.timezone('Asia/Yangon')).strftime('%Y-%m-%d %I:%M %p')}"
+                    f"📅 အချိန်: {orig_time_str}"
                 )
                 bot.send_message(
                     RESOLVED_GROUP_ID,
@@ -357,7 +465,8 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
     """ ၃၀ မိနစ်ပြည့်ပါက Manager ထံ Escalation ပို့ခြင်း (Layout အပြည့်အစုံဖြင့်) """
     tracking = db_manager.get_alert_tracking(msg_id, chat_id)
     if tracking:
-        _, _, created_at, esc_msg_id, _ = tracking
+        # alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids
+        _, _, created_at, esc_msg_id, _, _ = tracking
         
         # မူရင်းအချိန်ကို ရှာခြင်း
         conn = db_manager.get_connection()
@@ -375,12 +484,15 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
                 tz = pytz.timezone('Asia/Yangon')
                 orig_time = datetime.fromtimestamp(orig_ts, tz).strftime('%I:%M %p')
 
+                # HTML Mode အတွက် Escape လုပ်ခြင်း
+                safe_shop = html.escape(shop_name)
+                safe_text = html.escape(text)
+
                 esc_text = (
-                    f"🔥 **Escalated Alert (30 Mins)**\n"
+                    f"🔥 <b>Escalated Alert (30 Mins)</b>\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
-                    f"🏪 ဆိုင်: **{shop_name}**\n"
-                    f"📝 အနှစ်ချုပ်: ဖြေရှင်းခြင်းမရှိသေးသောစာ\n"
-                    f"💬 စာသား: {text}\n"
+                    f"🏪 ဆိုင်: <b>{safe_shop}</b>\n"
+                    f"💬 စာသား: {safe_text}\n"
                     f"⏰ အချိန်: {orig_time}\n"
                     f"━━━━━━━━━━━━━━━━━━"
                 )
@@ -395,7 +507,7 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
                     telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{msg_id}_{chat_id}")
                 )
 
-                msg = bot.send_message(MANAGER_ID, esc_text, reply_markup=markup, parse_mode="Markdown")
+                msg = bot.send_message(MANAGER_ID, esc_text, reply_markup=markup, parse_mode="HTML")
                 db_manager.update_alert_tracking_esc(msg_id, chat_id, msg.message_id)
                 db_manager.update_message_status(msg_id, chat_id, 'ESCALATED', topic_id=topic_id)
                 log.warning(f"🚨 Escalated {msg_id} to Manager")
@@ -481,13 +593,21 @@ def process_audits():
                 send_performance_report()
                 last_report_date = today_str
 
-            if not is_office_hours():
-                time.sleep(60)
-                continue
+            is_standard_office = is_office_hours()
 
             # ၁။ ၁၅ မိနစ်ကျော်နေသော Pending စာရှိသည့် Topic များကို ရှာမည်
             pending_topics = db_manager.get_pending_topics(minutes=15)
             
+            # 💡 Selective Processing: အလုပ်ချိန်ပြင်ပဆိုလျှင် Test Group တစ်ခုတည်းကိုပဲ စစ်မည်
+            # 💡 Bypass for Testing: အခုလောလောဆယ် အစ်ကိုစမ်းသပ်နိုင်အောင် အချိန်မရွေး Audit လုပ်ပေးပါမည်
+            if not is_standard_office:
+                # pending_topics = [t for t in pending_topics if t[0] == TEST_GROUP_ID]
+                pass
+            
+            if not pending_topics and not is_standard_office:
+                time.sleep(60)
+                continue
+
             for chat_id, topic_id in pending_topics:
                 # 💡 Smart Batching: Get ALL pending messages in this topic (even if < 15 mins)
                 # This prevents multiple alerts for albums/burst messages
@@ -525,7 +645,7 @@ def process_audits():
                     log.info(f"🔇 AI Ignored Group: {grouped_ids}")
 
                 elif action == "APPEND" and ai_res.get("target_alert_id"):
-                    target_chat, _ = get_routing_data(chat_id, topic_id)
+                    target_chat, _ = get_routing_data(chat_id, topic_id, summary=ai_res.get("summary", ""), category=ai_res.get("category", ""), intent=ai_res.get("intent", ""))
                     # Append the combined text of grouped messages
                     combined_text = "\n".join([m[3] for m in msgs if m[0] in grouped_ids])
                     append_to_alert(ai_res["target_alert_id"], target_chat, combined_text, trigger_msg_id, chat_id, topic_id=topic_id)
@@ -573,6 +693,10 @@ def process_audits():
             conn.close()
             
             for m_id, c_id, t_id, txt in alerted_msgs:
+                # Escalation လည်း အလုပ်ချိန်ပြင်ပဆိုလျှင် Test Group အတွက်ပဲ အလုပ်လုပ်မည်
+                if not is_standard_office and c_id != TEST_GROUP_ID:
+                    continue
+                    
                 _, _, s_name = db_manager.get_topic_context(c_id, t_id)
                 handle_escalation(m_id, c_id, s_name, txt, t_id)
 

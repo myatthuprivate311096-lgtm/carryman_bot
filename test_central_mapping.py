@@ -20,7 +20,8 @@ def run_test():
         topics = [
             (test_chat_id, "AI Testing OS Gp", test_chat_id, "AI Testing OS Gp", "Link", "Error", 101),
             (test_chat_id, "AI Testing OS Gp", test_chat_id, "AI Testing OS Gp", "Link", "Pick Up/Urgent", 102),
-            (test_chat_id, "AI Testing OS Gp", test_chat_id, "AI Testing OS Gp", "Link", "Fin & Voc", 103)
+            (test_chat_id, "AI Testing OS Gp", test_chat_id, "AI Testing OS Gp", "Link", "Fin & Voc", 103),
+            (test_chat_id, "AI Testing OS Gp", test_chat_id, "AI Testing OS Gp", "Link", "စုံစမ်းရန်", 104)
         ]
         conn.executemany(
             "INSERT INTO os_groups (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -35,7 +36,8 @@ def run_test():
     test_cases = [
         (101, "Error"),
         (102, "Pick Up"),
-        (103, "Finance")
+        (103, "Finance"),
+        (104, "စုံစမ်းရန်")
     ]
     
     for t_id, label in test_cases:
@@ -45,7 +47,8 @@ def run_test():
         if target_chat == -1003601049225:
             if (label == "Error" and target_topic == 37) or \
                (label == "Pick Up" and target_topic == 1) or \
-               (label == "Finance" and target_topic == 35):
+               (label == "Finance" and target_topic == 35) or \
+               (label == "စုံစမ်းရန်" and target_topic == 1):
                 log.info(f"✅ {label} Routing is CORRECT")
             else:
                 log.error(f"❌ {label} Routing Topic ID is WRONG (Got {target_topic})")
@@ -59,7 +62,7 @@ def run_test():
     test_text = "CENTRAL MAPPING TEST: Error in order #456"
     
     # Mocking send_new_alert call
-    alert_id = auditor.send_new_alert(test_chat_id, 101, test_msg_id, test_text, "Test Error", "AI Testing OS Gp")
+    alert_id = auditor.send_new_alert(test_chat_id, 101, test_msg_id, test_text, "Test Error", "AI Testing OS Gp", int(time.time()))
     if alert_id:
         log.info(f"✅ SUCCESS: Central Alert sent! Alert ID: {alert_id}")
     else:

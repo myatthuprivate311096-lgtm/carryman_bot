@@ -1,5 +1,6 @@
 import os
 import time
+import auditor
 from telebot import types
 from logger import log
 import db_manager
@@ -70,7 +71,9 @@ def register_handlers(bot):
                 time.sleep(5) # Telegram Server ဘက်မှာ Connection ပြတ်တောက်ရန် အချိန်ပေးခြင်း
                 
                 log.info("🚀 Process exiting for restart...")
-                # PM2 က အလိုအလျောက် ပြန်နှိုးပေးမည်
+                # 💡 PM2 ကို သုံး၍ စနစ်တစ်ခုလုံး (Bot + Auditor) ကို Restart လုပ်ခြင်း
+                import os
+                os.system("pm2 restart all")
                 os._exit(0)
             except Exception as e:
                 log.error(f"❌ Restart Error: {e}")
@@ -199,7 +202,6 @@ def register_handlers(bot):
         # 💡 DB တွင် Manual Alert အဖြစ် မှတ်သားခြင်း (Strict Resolution အတွက်)
         db_manager.set_manual_alert(orig_msg.message_id, chat_id)
 
-        import auditor
         _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
         
         # Media Type စစ်ဆေးခြင်း
@@ -223,13 +225,11 @@ def register_handlers(bot):
         try:
             bot.delete_message(chat_id, message.message_id)
         except Exception as e:
-            from logger import logger
-            logger.error(f"Error deleting /alert command: {e}")
+            log.error(f"Error deleting /alert command: {e}")
 
         if not alert_id:
             # Alert မအောင်မြင်ပါက Admin သိစေရန် Log ထုတ်မည် (သို့မဟုတ်) လိုအပ်ပါက Reply ပြန်နိုင်သည်
-            from logger import logger
-            logger.error(f"Manual Alert failed for chat_id: {chat_id}")
+            log.error(f"Manual Alert failed for chat_id: {chat_id}")
 
     # --- [ Section ၇: OS Group စာရင်းနှင့် Register စနစ် ] ---
     @bot.message_handler(commands=['oslist'])

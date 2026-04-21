@@ -75,11 +75,12 @@ def distill_feedback():
             rules = res_data.get("rules", []) if isinstance(res_data, dict) else res_data
             
             if isinstance(rules, list):
+                now_ts = int(time.time())
                 for rule in rules:
-                    db_manager.save_master_rule(chat_id, topic_id, rule)
+                    db_manager.save_master_rule(rule, chat_id, topic_id)
                 
                 # ၃။ Cleanup: Process ပြီးသား feedback များကို ဖျက်ခြင်း
-                db_manager.clear_processed_feedback(chat_id, topic_id)
+                db_manager.clear_processed_feedback(chat_id, topic_id, now_ts)
                 log.info(f"✅ Successfully distilled rules for Topic {topic_id}")
             
         except Exception as e:

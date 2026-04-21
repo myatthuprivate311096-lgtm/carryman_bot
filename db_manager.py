@@ -38,10 +38,15 @@ def clean_shop_name(raw_name):
     return cleaned or "Unknown Shop"
 
 def get_connection():
-    """ Database ချိတ်ဆက်မှုအား Multithreading နှင့် မြန်နှုန်းမြင့် WAL Mode သတ်မှတ်ခြင်း (Timeout 30s ထည့်ထားသည်) """
-    conn = sqlite3.connect(DB_FILE, check_same_thread=False, timeout=30)
-    conn.execute('PRAGMA journal_mode=WAL;')
-    return conn
+    """ Database ချိတ်ဆက်မှုအား Multithreading နှင့် မြန်နှုန်းမြင့် WAL Mode သတ်မှတ်ခြင်း (Timeout 60s ထည့်ထားသည်) """
+    try:
+        conn = sqlite3.connect(DB_FILE, check_same_thread=False, timeout=60)
+        conn.execute('PRAGMA journal_mode=WAL;')
+        conn.execute('PRAGMA synchronous=NORMAL;')
+        return conn
+    except sqlite3.Error as e:
+        log.error(f"❌ Database Connection Error: {e}")
+        raise
 
 def init_db():
     """ Database initialization နှင့် migration များကို safe ဖြစ်အောင် လုပ်ဆောင်ပေးသည် (Version 5.0) """
@@ -745,7 +750,6 @@ def clear_processed_feedback(chat_id, topic_id, before_timestamp):
     finally:
         conn.close()
 
-# Initialize (Only if run directly)
 # 💡 Worker များ၏ main script မှသာ init_db() ကို ခေါ်ရန် အကြံပြုသည်
-if __name__ == "__main__":
-    init_db()
+# if __name__ == "__main__":
+#     init_db()
