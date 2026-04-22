@@ -30,6 +30,64 @@ commands_handler.register_handlers(bot)
 # 🧠 Core Logic (Data Ingestion & Auto-Resolve)
 # ==========================================
 
+@bot.callback_query_handler(func=lambda call: call.data.startswith('setrt_'))
+def handle_set_routing(call):
+    """ Manager မှ Missing Route အတွက် Topic ရွေးချယ်ပေးခြင်းကို လက်ခံဆောင်ရွက်ခြင်း """
+    try:
+        user_id = call.from_user.id
+        if user_id != MANAGER_ID:
+            bot.answer_callback_query(call.id, "⚠️ Manager သာ လုပ်ဆောင်ခွင့်ရှိပါသည်။", show_alert=True)
+            return
+
+        # data format: setrt_{chat_id}_{topic_id}_{target_topic_id}_{original_msg_id}
+        parts = call.data.split('_')
+        chat_id = int(parts[1])
+        topic_id = int(parts[2])
+        target_topic = int(parts[3])
+        original_msg_id = int(parts[4]) if len(parts) > 4 else 0
+        target_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
+
+        # ၁။ Database တွင် Routing Update လုပ်ခြင်း
+        db_manager.update_routing_entry(chat_id, topic_id, target_chat, target_topic)
+
+        # ၂။ ချက်ချင်း Alert ပို့ပေးခြင်း (အစ်ကို့တောင်းဆိုချက်အရ)
+        log.info(f"🔍 Attempting to send immediate alert for msg_id: {original_msg_id}, chat: {chat_id}, topic: {topic_id}")
+        if original_msg_id != 0:
+            # WAITING_ROUTE ဖြစ်နေတဲ့ context ကို ပြန်ယူမယ်
+            ctx = db_manager.get_message_context(original_msg_id, chat_id)
+            if ctx:
+                text, summary, category, intent, ts, media_id = ctx
+                _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
+                
+                log.info(f"📤 Sending alert to target topic {target_topic} for {shop_name}")
+                # Alert ပို့မယ်
+                auditor.send_new_alert(
+                    chat_id, topic_id, original_msg_id, text, summary, shop_name, ts,
+                    category=category, intent=intent, media_id=media_id
+                )
+                
+                # တူတူ WAITING_ROUTE ဖြစ်နေတဲ့ တခြားစာတွေကိုလည်း ALERTED ပြောင်းပေးရမယ်
+                conn = db_manager.get_connection()
+                conn.execute(
+                    "UPDATE message_logs SET status='ALERTED' WHERE chat_id=? AND topic_id=? AND status='WAITING_ROUTE'",
+                    (chat_id, topic_id)
+                )
+                conn.commit()
+                conn.close()
+
+        # ၃။ အောင်မြင်ကြောင်း အကြောင်းပြန်ခြင်း (စာမကျန်စေရန် Message ကို ဖျက်လိုက်ပါမည်)
+        try:
+            bot.delete_message(call.message.chat.id, call.message.message_id)
+        except Exception as de:
+            log.warning(f"⚠️ Could not delete routing confirmation message: {de}")
+
+        bot.answer_callback_query(call.id, "✅ Routing Updated & Alert Sent!", show_alert=True)
+        log.info(f"🎯 Manager set explicit route and sent alert for {chat_id}/{topic_id} -> {target_topic}")
+
+    except Exception as e:
+        log.error(f"❌ Set Routing Callback Error: {e}")
+        bot.answer_callback_query(call.id, "❌ Error occurred")
+
 @bot.callback_query_handler(func=lambda call: call.data.startswith('done_'))
 def handle_done_button(call):
     """ Alert Message ရှိ Done Button ကို နှိပ်လိုက်လျှင် ဖြေရှင်းပြီးအဖြစ် သတ်မှတ်ခြင်း """
@@ -65,11 +123,43 @@ def handle_done_button(call):
             
             # ၃။ Button နှိပ်သူကို အကြောင်းပြန်ခြင်း
             bot.answer_callback_query(call.id, "✅ Resolved and Recorded!")
+            
+            # 💡 Safety: Tracking မရှိလို့ resolve_and_cleanup က မဖျက်မိပါက နှိပ်လိုက်တဲ့ message ကို တိုက်ရိုက်ဖျက်မည်
+            try:
+                bot.delete_message(call.message.chat.id, call.message.message_id)
+            except:
+                pass
+                
             log.info(f"✅ Message {original_msg_id} resolved via Done Button by {staff_name}")
         else:
             bot.answer_callback_query(call.id, "⚠️ ဝန်ထမ်းများသာ နှိပ်ခွင့်ရှိပါသည်။", show_alert=True)
     except Exception as e:
         log.error(f"❌ Done Button Error: {e}")
+        bot.answer_callback_query(call.id, "❌ Error occurred")
+
+@bot.callback_query_handler(func=lambda call: call.data.startswith('wrong_back_'))
+def handle_wrong_back(call):
+    """ Wrong Alert menu မှ မူလ menu သို့ ပြန်သွားခြင်း """
+    try:
+        parts = call.data.split('_')
+        orig_id = parts[2]
+        chat_id = parts[3]
+        
+        clean_chat_id = str(chat_id).replace("-100", "")
+        # 💡 tg:// protocol သုံးခြင်းဖြင့် Telegram App ထဲ တိုက်ရိုက်ပွင့်စေသည်
+        msg_link = f"tg://privatepost?channel={clean_chat_id}&post={orig_id}"
+        
+        markup = telebot.types.InlineKeyboardMarkup(row_width=2)
+        markup.add(
+            telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
+            telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_id}_{chat_id}"),
+            telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{orig_id}_{chat_id}")
+        )
+        
+        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
+        bot.answer_callback_query(call.id)
+    except Exception as e:
+        log.error(f"❌ Wrong Back Error: {e}")
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('wrong_'))
 def handle_wrong_alert_button(call):
@@ -98,29 +188,6 @@ def handle_wrong_alert_button(call):
         bot.answer_callback_query(call.id)
     except Exception as e:
         log.error(f"❌ Wrong Alert Button Error: {e}")
-
-@bot.callback_query_handler(func=lambda call: call.data.startswith('wrong_back_'))
-def handle_wrong_back(call):
-    """ Wrong Alert menu မှ မူလ menu သို့ ပြန်သွားခြင်း """
-    try:
-        parts = call.data.split('_')
-        orig_id = parts[2]
-        chat_id = parts[3]
-        
-        clean_chat_id = str(chat_id).replace("-100", "")
-        msg_link = f"https://t.me/c/{clean_chat_id}/{orig_id}"
-        
-        markup = telebot.types.InlineKeyboardMarkup(row_width=2)
-        markup.add(
-            telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
-            telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_id}_{chat_id}"),
-            telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{orig_id}_{chat_id}")
-        )
-        
-        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
-        bot.answer_callback_query(call.id)
-    except Exception as e:
-        log.error(f"❌ Wrong Back Error: {e}")
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('fb_'))
 def handle_feedback_callback(call):
@@ -215,11 +282,7 @@ def handle_rerouting(call):
                 db_manager.delete_alert_tracking(orig_id, chat_id)
 
             # ၂။ Alert အသစ်ကို Target Topic ဆီ ပို့ခြင်း
-            # get_routing_data ကို override လုပ်ဖို့ target_topic ကို သုံးပါမယ်
-            target_chat = -1003601049225 # Central Group
-            
-            # send_new_alert logic ကို manual ခေါ်ယူခြင်း (auditor.py ရဲ့ logic အတိုင်း)
-            # ဒါပေမယ့် target_topic ကို manual သတ်မှတ်ပေးပါမယ်
+            target_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
             
             # အချိန်ပြောင်းလဲခြင်း
             tz = pytz.timezone('Asia/Yangon')
@@ -239,7 +302,8 @@ def handle_rerouting(call):
             )
             
             clean_chat_id = str(chat_id).replace("-100", "")
-            msg_link = f"https://t.me/c/{clean_chat_id}/{orig_id}"
+            # 💡 tg:// protocol သုံးခြင်းဖြင့် Telegram App ထဲ တိုက်ရိုက်ပွင့်စေသည်
+            msg_link = f"tg://privatepost?channel={clean_chat_id}&post={orig_id}"
             markup = telebot.types.InlineKeyboardMarkup(row_width=2)
             markup.add(
                 telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
@@ -267,7 +331,7 @@ def handle_rerouting(call):
 
 @bot.message_reaction_handler(func=lambda message: True)
 def handle_reaction(message):
-    """ ဝန်ထမ်းမှ ❤️ Reaction ပေးလျှင် Message ကို RESOLVED အဖြစ် သတ်မှတ်ခြင်း (Alert ရှိရှိ/မရှိရှိ) """
+    """ ဝန်ထမ်းမှ Reaction ပေးလျှင် Message ကို RESOLVED အဖြစ် သတ်မှတ်ခြင်း (Alert ရှိရှိ/မရှိရှိ) """
     try:
         reaction = message
         user_id = reaction.user.id
@@ -277,14 +341,17 @@ def handle_reaction(message):
         if not reaction.new_reaction:
             return
             
-        # 💡 ❤️ (heart) reaction ဖြစ်မှသာ အလုပ်လုပ်မည်
-        is_heart = any(r.emoji == '❤️' for r in reaction.new_reaction if r.type == 'emoji')
-        if not is_heart:
+        # 💡 ဘာ Reaction ပဲပေးပေး (Emoji ဖြစ်လျှင်) အလုပ်လုပ်မည်
+        has_emoji = any(r.type == 'emoji' for r in reaction.new_reaction)
+        if not has_emoji:
             return
 
         if db_manager.check_if_staff(user_id) or user_id == MANAGER_ID:
             staff_data = db_manager.get_staff_info(user_id)
             staff_name = staff_data[1] if staff_data else reaction.user.first_name
+            
+            # ပေးလိုက်သော emoji ကို ယူခြင်း (Logging အတွက်)
+            emoji_used = next((r.emoji for r in reaction.new_reaction if r.type == 'emoji'), "Emoji")
             
             # 💡 Get topic_id from DB
             topic_id = db_manager.get_message_topic(message_id, chat_id)
@@ -294,7 +361,7 @@ def handle_reaction(message):
                 return
 
             # ၁။ DB တွင် Resolve လုပ်ခြင်း (Alert မတက်ခင် ဖြစ်နိုင်သလို တက်ပြီးမှလည်း ဖြစ်နိုင်သည်)
-            db_manager.resolve_message(message_id, chat_id, staff_name, method='Reaction (❤️)', topic_id=topic_id)
+            db_manager.resolve_message(message_id, chat_id, staff_name, method=f'Reaction ({emoji_used})', topic_id=topic_id)
             
             # ၂။ Alert Tracking ရှိမရှိ စစ်ဆေးပြီး Cleanup လုပ်ခြင်း
             tracking = db_manager.get_alert_tracking(message_id, chat_id)
@@ -309,9 +376,9 @@ def handle_reaction(message):
             
             # resolve_and_cleanup သည် tracking မရှိလျှင် Archive မပို့ဘဲ Cleanup သာ လုပ်ပေးမည်
             # manual_resolve=True ထည့်ပေးခြင်းဖြင့် Office Hours ပြင်ပဖြစ်စေ Record ပို့မည်
-            auditor.resolve_and_cleanup(message_id, chat_id, shop_name, orig_text, f"{staff_name} (Reaction ❤️)", manual_resolve=True)
+            auditor.resolve_and_cleanup(message_id, chat_id, shop_name, orig_text, f"{staff_name} (Reaction {emoji_used})", manual_resolve=True)
             
-            log.info(f"✅ Message {message_id} marked as RESOLVED via Reaction (❤️) by {staff_name}")
+            log.info(f"✅ Message {message_id} marked as RESOLVED via Reaction ({emoji_used}) by {staff_name}")
     except Exception as e:
         log.error(f"❌ Reaction Handler Error: {e}")
 

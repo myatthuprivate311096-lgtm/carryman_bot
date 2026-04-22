@@ -152,9 +152,22 @@ def create_new_group(bot, message):
         for record in db_records:
             # 💡 Column အစီအစဉ်ကို DB Schema အတိုင်း ပြန်ပြင်ခြင်း (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id)
             # record format: (group_name, channel_id, invite_link, topic_name, topic_id)
-            # ဒါကြောင့် (channel_id, group_name, channel_id, group_name, invite_link, topic_name, topic_id) အဖြစ် ပြောင်းသိမ်းရပါမယ်
-            full_record = (record[1], record[0], record[1], record[0], record[2], record[3], record[4])
-            c.execute("INSERT INTO os_groups (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id) VALUES (?, ?, ?, ?, ?, ?, ?)", full_record)
+            
+            t_name = record[3]
+            target_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
+            target_topic = 1
+            t_name_l = t_name.lower()
+            
+            # Logic: နာမည်အလိုက် Target Topic သတ်မှတ်ခြင်း (Consistent with db_manager.py)
+            if any(x in t_name_l for x in ["error", "ပို့မရ"]):
+                target_topic = 37
+            elif any(x in t_name_l for x in ["fin", "voc", "ငွေစာရင်း", "ဘောင်ချာ"]):
+                target_topic = 35
+            elif any(x in t_name_l for x in ["pick up", "urgent", "စုံစမ်းရန်"]):
+                target_topic = 1
+            
+            full_record = (record[1], record[0], record[1], record[0], record[2], record[3], record[4], target_chat, target_topic)
+            c.execute("INSERT INTO os_groups (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id, target_chat_id, target_topic_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", full_record)
         conn.commit()
         conn.close()
         

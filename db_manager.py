@@ -66,13 +66,15 @@ def init_db():
                      invite_link TEXT,
                      topic_name TEXT,
                      topic_id INTEGER,
-                     last_read_message_id INTEGER DEFAULT 0
+                     last_read_message_id INTEGER DEFAULT 0,
+                     target_chat_id INTEGER,
+                     target_topic_id INTEGER
                    )''')
         c.execute('''CREATE TABLE IF NOT EXISTS message_logs
                      (msg_id INTEGER, chat_id INTEGER, topic_id INTEGER, user_id INTEGER,
                       text TEXT, timestamp INTEGER, status TEXT DEFAULT 'PENDING', resolved_by TEXT, resolve_time INTEGER,
                       media_id TEXT, is_manual INTEGER DEFAULT 0,
-                      category TEXT, intent TEXT,
+                      category TEXT, intent TEXT, summary TEXT,
                       PRIMARY KEY (msg_id, chat_id))''')
         
         c.execute('''CREATE TABLE IF NOT EXISTS alert_tracking (
@@ -87,13 +89,6 @@ def init_db():
                      PRIMARY KEY (original_msg_id, chat_id)
                    )''')
         
-        # Central Routing Table
-        c.execute('''CREATE TABLE IF NOT EXISTS routing_table (
-                     topic_id INTEGER PRIMARY KEY,
-                     target_group_id INTEGER,
-                     target_topic_id INTEGER
-                   )''')
-
         # Feedback & AI Learning Tables
         c.execute('''CREATE TABLE IF NOT EXISTS feedback_logs (
                      id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -114,16 +109,11 @@ def init_db():
                      created_at INTEGER
                    )''')
         
-        # Initialize Routing Data
-        c.execute("INSERT OR IGNORE INTO routing_table (topic_id, target_group_id, target_topic_id) VALUES (?, ?, ?)", (37, -1003601049225, 37))
-        c.execute("INSERT OR IGNORE INTO routing_table (topic_id, target_group_id, target_topic_id) VALUES (?, ?, ?)", (1, -1003601049225, 1))
-        c.execute("INSERT OR IGNORE INTO routing_table (topic_id, target_group_id, target_topic_id) VALUES (?, ?, ?)", (35, -1003601049225, 35))
-
         # ၂။ Migration Engine (Column အသစ်များ အလိုအလျောက် စစ်ဆေးထည့်သွင်းခြင်း)
         migrations = {
             "staff": ["branch TEXT", "dept TEXT"],
-            "message_logs": ["text TEXT", "resolved_by TEXT", "resolve_time INTEGER", "topic_id INTEGER", "media_id TEXT", "is_manual INTEGER DEFAULT 0", "category TEXT", "intent TEXT"],
-            "os_groups": ["last_read_message_id INTEGER DEFAULT 0"],
+            "message_logs": ["text TEXT", "resolved_by TEXT", "resolve_time INTEGER", "topic_id INTEGER", "media_id TEXT", "is_manual INTEGER DEFAULT 0", "category TEXT", "intent TEXT", "summary TEXT"],
+            "os_groups": ["last_read_message_id INTEGER DEFAULT 0", "target_chat_id INTEGER", "target_topic_id INTEGER"],
             "alert_tracking": ["created_at INTEGER", "esc_msg_id INTEGER", "linked_msg_ids TEXT DEFAULT '[]'", "linked_customer_ids TEXT DEFAULT '[]'"],
             "feedback_logs": ["chat_id INTEGER", "topic_id INTEGER", "category TEXT", "original_text TEXT", "staff_id INTEGER"],
             "master_rules": ["chat_id INTEGER", "topic_id INTEGER", "rule_content TEXT"]
@@ -248,6 +238,15 @@ def get_message_topic(msg_id, chat_id):
     try:
         res = conn.execute("SELECT topic_id FROM message_logs WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id)).fetchone()
         return res[0] if res else 0
+    finally:
+        conn.close()
+
+def get_message_context(msg_id, chat_id):
+    """ Message တစ်ခု၏ AI Context (summary, category, intent) ကို ပြန်ယူခြင်း """
+    conn = get_connection()
+    try:
+        res = conn.execute("SELECT text, summary, category, intent, timestamp, media_id FROM message_logs WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id)).fetchone()
+        return res
     finally:
         conn.close()
 
@@ -432,8 +431,8 @@ def get_messages_after(chat_id, topic_id, msg_id, limit=5):
     conn.close()
     return res
 
-def update_message_status(msg_id, chat_id, status, topic_id=None, category=None, intent=None):
-    """ Message တစ်ခုချင်းစီ၏ Status ကို Update လုပ်ရန် (Category/Intent သိမ်းဆည်းမှု အပါအဝင်) """
+def update_message_status(msg_id, chat_id, status, topic_id=None, category=None, intent=None, summary=None, text=None):
+    """ Message တစ်ခုချင်းစီ၏ Status ကို Update လုပ်ရန် (Category/Intent/Summary/Text သိမ်းဆည်းမှု အပါအဝင်) """
     conn = get_connection()
     try:
         updates = ["status = ?"]
@@ -445,6 +444,12 @@ def update_message_status(msg_id, chat_id, status, topic_id=None, category=None,
         if intent:
             updates.append("intent = ?")
             params.append(intent)
+        if summary:
+            updates.append("summary = ?")
+            params.append(summary)
+        if text:
+            updates.append("text = ?")
+            params.append(text)
             
         query = f"UPDATE message_logs SET {', '.join(updates)} WHERE msg_id = ? AND chat_id = ?"
         params.extend([msg_id, chat_id])
@@ -455,6 +460,9 @@ def update_message_status(msg_id, chat_id, status, topic_id=None, category=None,
             
         conn.execute(query, tuple(params))
         conn.commit()
+    except Exception as e:
+        log.error(f"❌ update_message_status failed for msg_id={msg_id}, chat_id={chat_id}: {e}")
+        raise
     finally:
         conn.close()
 
@@ -568,16 +576,47 @@ def delete_alert_tracking(original_msg_id, chat_id):
 
 def get_routing_entry(chat_id, topic_id):
     """
-    OS Group ၏ topic အလိုက် alert ပို့ရမည့် group ကို ရှာဖွေခြင်း။
-    လက်ရှိတွင် os_groups table ထဲမှ group_id ကို သုံးထားသည်။
+    OS Group ၏ topic အလိုက် alert ပို့ရမည့် group နှင့် topic ကို ရှာဖွေခြင်း။
     """
     conn = get_connection()
     res = conn.execute(
-        "SELECT group_id, topic_id FROM os_groups WHERE chat_id = ? AND topic_id = ?",
+        "SELECT target_chat_id, target_topic_id FROM os_groups WHERE chat_id = ? AND topic_id = ?",
         (chat_id, topic_id)
     ).fetchone()
     conn.close()
     return res
+
+def update_routing_entry(chat_id, topic_id, target_chat_id, target_topic_id):
+    """
+    OS Group ၏ topic တစ်ခုအတွက် alert ပို့ရမည့် target ကို update လုပ်ခြင်း။
+    မရှိသေးပါက အသစ်ထည့်သွင်းမည်။
+    """
+    conn = get_connection()
+    try:
+        # ၁။ အရင်ရှိမရှိ စစ်ဆေးခြင်း (သို့မဟုတ် INSERT OR REPLACE သုံးခြင်း)
+        # os_groups မှာ chat_id, topic_id က primary key သို့မဟုတ် unique ဖြစ်ရမည်
+        # လက်ရှိ schema အရ UPDATE အရင်လုပ်ကြည့်ပြီး rowcount 0 ဖြစ်လျှင် INSERT လုပ်မည်
+        cursor = conn.execute(
+            "UPDATE os_groups SET target_chat_id = ?, target_topic_id = ? WHERE chat_id = ? AND topic_id = ?",
+            (target_chat_id, target_topic_id, chat_id, topic_id)
+        )
+        
+        if cursor.rowcount == 0:
+            # Row မရှိသေးပါက အသစ်ထည့်မည် (shop_name ကို topic_context မှ ယူမည်)
+            _, _, shop_name = get_topic_context(chat_id, topic_id)
+            conn.execute(
+                "INSERT INTO os_groups (chat_id, topic_id, shop_name, target_chat_id, target_topic_id) VALUES (?, ?, ?, ?, ?)",
+                (chat_id, topic_id, shop_name, target_chat_id, target_topic_id)
+            )
+            log.info(f"🆕 New Routing Created: {chat_id}/{topic_id} ({shop_name}) -> {target_chat_id}/{target_topic_id}")
+        else:
+            log.info(f"✅ Routing Updated: {chat_id}/{topic_id} -> {target_chat_id}/{target_topic_id}")
+            
+        conn.commit()
+    except Exception as e:
+        log.error(f"❌ Failed to update routing entry: {e}")
+    finally:
+        conn.close()
 
 # --- [ OS Group & Analytics ] ---
 def check_if_os_group(chat_id):
@@ -590,8 +629,8 @@ def add_os_group(chat_id, shop_name):
     clean_name = clean_shop_name(shop_name)
     conn = get_connection()
     conn.execute(
-        "INSERT INTO os_groups (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (chat_id, clean_name, chat_id, clean_name, "Legacy", "Legacy", 0)
+        "INSERT INTO os_groups (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id, target_chat_id, target_topic_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (chat_id, clean_name, chat_id, clean_name, "Legacy", "Legacy", 0, -1003601049225, 1)
     )
     conn.commit()
     conn.close()
@@ -612,11 +651,24 @@ def save_manual_register(chat_id, shop_name, topic_entries):
             t_name = item["topic_name"]
             t_id = int(item["topic_id"])
 
+            # Default routing based on name if not provided
+            target_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
+            target_topic = 1
+            t_name_lower = t_name.lower()
+            
+            # Logic: နာမည်အလိုက် Target Topic သတ်မှတ်ခြင်း
+            if any(x in t_name_lower for x in ["error", "ပို့မရ"]):
+                target_topic = 37
+            elif any(x in t_name_lower for x in ["fin", "voc", "ငွေစာရင်း", "ဘောင်ချာ"]):
+                target_topic = 35
+            elif any(x in t_name_lower for x in ["pick up", "urgent", "စုံစမ်းရန်"]):
+                target_topic = 1
+
             c.execute(
                 """INSERT INTO os_groups
-                   (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                (chat_id, clean_name, chat_id, clean_name, "Manual Register", t_name, t_id)
+                   (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id, target_chat_id, target_topic_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (chat_id, clean_name, chat_id, clean_name, "Manual Register", t_name, t_id, target_chat, target_topic)
             )
         conn.commit()
     finally:
@@ -670,6 +722,7 @@ def get_staff_stats(period="all"):
     
     now = datetime.now()
     if period == "today":
+        # လွန်ခဲ့သော ၂၄ နာရီ
         start_ts = int(now.replace(hour=0, minute=0, second=0).timestamp())
         query += f"AND resolve_time >= {start_ts} "
     elif period == "weekly":

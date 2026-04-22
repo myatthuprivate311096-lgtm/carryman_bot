@@ -161,86 +161,76 @@ def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs
             
         return action, res_data
     except Exception as e:
-        log.error(f"❌ Auditor AI Error: {e}")
+        log.error(f"❌ Auditor AI Error for {group_name} ({chat_id}/{topic_id}): {e}")
         return "ERROR", {"summary": "AI Error - Retrying..."}
 
 def get_routing_data(chat_id, topic_id, summary="", category="", intent=""):
     """
     ဗဟိုမှ ထိန်းချုပ်ခြင်း (Central Mapping)
-    Workflow Step 5: Topic Name အလိုက် Target Topic ID (37, 1, 35) သို့ ပို့ဆောင်ခြင်း
+    Workflow Step 5: Explicit Routing Table (os_groups) မှ Target Group/Topic ကို ရှာဖွေခြင်း
     """
-    TARGET_GROUP_ID = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
-    
-    # ၁။ OS Group ၏ Topic Name ကို DB မှ ရှာခြင်း
-    conn = db_manager.get_connection()
-    # 💡 Fix: topic_id နဲ့ ရှာလို့မတွေ့ရင် chat_id တစ်ခုတည်းနဲ့ ရှာပြီး topic_name ကို ယူမည် (Legacy Groups များအတွက်)
-    res = conn.execute("SELECT topic_name FROM os_groups WHERE chat_id = ? AND topic_id = ?", (chat_id, topic_id)).fetchone()
-    if not res:
-        res = conn.execute("SELECT topic_name FROM os_groups WHERE chat_id = ? LIMIT 1", (chat_id,)).fetchone()
-    conn.close()
-    
-    topic_name = res[0].lower() if res else ""
+    # ၁။ Explicit Routing Table (os_groups) မှ ရှာဖွေခြင်း
+    route = db_manager.get_routing_entry(chat_id, topic_id)
+    if route and route[0] is not None and route[1] is not None:
+        log.info(f"🎯 Explicit Route Found: {chat_id}/{topic_id} -> {route[0]}/{route[1]}")
+        return route[0], route[1]
 
-    # ၂။ Workflow Mapping (Error -> 37, Pick Up -> 1, Fin -> 35)
-    target_topic = 0 # Default
-    
-    # 💡 အစ်ကို့လိုအပ်ချက်အရ Topic Name ထဲမှာ "error" ပါရင် Topic ID 37 သို့ ပို့မည်
-    if "error" in topic_name:
-        target_topic = 37
-    elif "ပို့မရ" in topic_name:
-        target_topic = 37
-    # 💡 အစ်ကို့လိုအပ်ချက်အရ "pick up", "urgent" သို့မဟုတ် "စုံစမ်းရန်" ပါရင် Topic ID 1 သို့ ပို့မည်
-    elif "pick up" in topic_name or "urgent" in topic_name or "စုံစမ်းရန်" in topic_name:
-        target_topic = 1
-    # 💡 အစ်ကို့လိုအပ်ချက်အရ "fin", "voc" သို့မဟုတ် "fin & voc" ပါရင် Topic ID 35 သို့ ပို့မည်
-    elif "fin" in topic_name or "voc" in topic_name or "ငွေစာရင်း" in topic_name or "ဘောင်ချာ" in topic_name:
-        target_topic = 35
-    
-    # 💡 Topic ID Mapping (AI ထက် ဦးစားပေးမည်)
-    if target_topic == 0:
-        if topic_id == 37: target_topic = 37
-        elif topic_id == 1: target_topic = 1
-        elif topic_id == 35: target_topic = 35
+    # ၂။ ရှာမတွေ့ပါက Manager ထံ အကြောင်းကြားရန် Status ပြန်ပေးခြင်း
+    log.warning(f"⚠️ No Explicit Route for {chat_id}/{topic_id}. Notifying Manager...")
+    return None, None
+
+def notify_manager_missing_route(chat_id, topic_id, shop_name, trigger_text, ai_summary, original_msg_id=0):
+    """ Routing မရှိသေးသော ဆိုင်အတွက် Manager ထံ ရွေးချယ်စရာ Button များ ပို့ပေးခြင်း """
+    try:
+        log.info(f"🔍 notify_manager_missing_route: shop={shop_name}, msg_id={original_msg_id}, chat={chat_id}")
+        text = (
+            f"🚨 **Missing Routing Rule**\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"🏪 ဆိုင်: <b>{shop_name}</b>\n"
+            f"🎧 Topic: <b>{topic_id}</b>\n"
+            f"💬 စာသား: {html.escape(trigger_text[:100])}...\n"
+            f"🤖 AI Summary: {html.escape(ai_summary)}\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"ဤဆိုင်မှ Alert များအတွက် Target Topic ကို ရွေးပေးပါ-"
+        )
+        
+        markup = telebot.types.InlineKeyboardMarkup(row_width=1)
+        
+        # 💡 View Message Link
+        if original_msg_id and original_msg_id != 0:
+            clean_chat_id = str(chat_id).replace("-100", "")
+            # 💡 tg:// protocol and https:// fallback
+            msg_link = f"https://t.me/c/{clean_chat_id}/{original_msg_id}"
+            markup.add(telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link))
         else:
-            # routing_table မှ ID အလိုက် ထပ်ရှာမည်
-            conn = db_manager.get_connection()
-            r_res = conn.execute("SELECT target_topic_id FROM routing_table WHERE topic_id = ?", (topic_id,)).fetchone()
-            conn.close()
-            if r_res: target_topic = r_res[0]
+            log.warning(f"⚠️ Cannot add View Message button: original_msg_id is {original_msg_id}")
 
-    # 💡 AI Fallback: Mapping မမိပါက AI ၏ Classification ကို သုံး၍ Route လုပ်ခြင်း
-    if target_topic == 0:
-        summary_l = summary.lower()
-        category_l = category.lower()
-        intent_l = intent.lower() if intent else ""
+        # 💡 callback_data format: setrt_{chat_id}_{topic_id}_{target_topic_id}_{original_msg_id}
+        markup.add(telebot.types.InlineKeyboardButton("🚚 Pickup (Topic 1)", callback_data=f"setrt_{chat_id}_{topic_id}_1_{original_msg_id}"))
+        markup.add(telebot.types.InlineKeyboardButton("💰 Finance (Topic 35)", callback_data=f"setrt_{chat_id}_{topic_id}_35_{original_msg_id}"))
+        markup.add(telebot.types.InlineKeyboardButton("⚠️ Error (Topic 37)", callback_data=f"setrt_{chat_id}_{topic_id}_37_{original_msg_id}"))
         
-        # Error Detection (Burmese & English)
-        if any(x in summary_l for x in ["မှား", "error", "မရ", "မထွက်", "မဝင်", "တက်မလာ"]) or \
-           any(x in category_l for x in ["error", "မှား"]) or \
-           "error" in intent_l:
-            target_topic = 37
-        # Finance Detection
-        elif any(x in summary_l for x in ["ငွေ", "ဘောင်ချာ", "ရှင်း", "pay", "money", "လွှဲ"]) or \
-             any(x in category_l for x in ["ငွေ", "finance", "ဘောင်ချာ"]) or \
-             "ငွေ" in intent_l:
-            target_topic = 35
-        # Pickup/Inquiry Detection
-        elif any(x in summary_l for x in ["ပို့", "စုံစမ်း", "ယူ", "pick", "order", "ရောက်"]) or \
-             any(x in category_l for x in ["ပို့", "စုံစမ်း", "pickup"]) or \
-             "ပို့" in intent_l:
-            target_topic = 1
-    
-    # 💡 Final Safety Net: အားလုံးစစ်လို့မရရင် Topic 1 (General/Pickup) သို့ ပို့မည်
-    if target_topic == 0:
-        target_topic = 1
-        
-    log.info(f"📡 Routing: Topic '{topic_name}' (ID: {topic_id}) -> Target Topic: {target_topic}")
-    return TARGET_GROUP_ID, target_topic
+        bot.send_message(MANAGER_ID, text, reply_markup=markup, parse_mode="HTML")
+        log.info(f"📲 Missing route notification sent to Manager for {shop_name}")
+    except Exception as e:
+        log.error(f"❌ Failed to notify Manager for {shop_name} ({chat_id}): {e}")
 
 def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name, original_ts, category="အခြား", intent=None, media_id=None, title="⚠️ **Pending Alert (15 Mins)**"):
     """ ဝန်ထမ်း group ထံသို့ Alert အသစ်ပို့ခြင်း (View Message & Done Buttons ပါဝင်သည်) """
+    # 💡 Ensure IDs are integers to prevent binding errors
+    chat_id = int(chat_id)
+    topic_id = int(topic_id)
+    original_msg_id = int(original_msg_id)
+
     target_chat, target_topic = get_routing_data(chat_id, topic_id, summary=summary, category=category, intent=intent)
     
+    if target_chat is None or target_topic is None:
+        # Route မရှိရင် Manager ဆီ စာပို့ပြီး WAITING_ROUTE ထားမယ်
+        # 💡 AI က ထုတ်ပေးထားတဲ့ summary, category, intent တွေကို သိမ်းထားမှ Manager ရွေးပြီးရင် ပြန်သုံးလို့ရမယ်
+        db_manager.update_message_status(original_msg_id, chat_id, 'WAITING_ROUTE', topic_id=topic_id, category=category, intent=intent, summary=summary)
+        notify_manager_missing_route(chat_id, topic_id, shop_name, text, summary, original_msg_id=original_msg_id)
+        return None
+
     # အချိန်ကို မြန်မာစံတော်ချိန်ဖြင့် ပြောင်းလဲခြင်း
     tz = pytz.timezone('Asia/Yangon')
     orig_time = datetime.fromtimestamp(original_ts, tz).strftime('%Y-%m-%d %I:%M %p')
@@ -263,7 +253,8 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
     
     # Buttons တည်ဆောက်ခြင်း
     clean_chat_id = str(chat_id).replace("-100", "")
-    msg_link = f"https://t.me/c/{clean_chat_id}/{original_msg_id}"
+    # 💡 tg:// protocol သုံးခြင်းဖြင့် Telegram App ထဲ တိုက်ရိုက်ပွင့်စေသည်
+    msg_link = f"tg://privatepost?channel={clean_chat_id}&post={original_msg_id}"
     
     # 💡 Topic ID 0 ဖြစ်နေလျှင် None သို့ ပြောင်းလဲခြင်း (General Topic အတွက်)
     safe_target_topic = target_topic if target_topic != 0 else None
@@ -294,7 +285,7 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
                 reply_markup=markup
             )
         db_manager.save_alert_tracking(original_msg_id, chat_id, msg.message_id, target_chat)
-        db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id, category=category, intent=intent)
+        db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id, category=category, intent=intent, summary=summary)
         log.info(f"📢 Alert sent for {original_msg_id} in {shop_name} to Central Group")
         return msg.message_id
     except Exception as e:
@@ -307,7 +298,7 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
                 else:
                     msg = bot.send_message(target_chat, alert_text, parse_mode="HTML", reply_markup=markup)
                 db_manager.save_alert_tracking(original_msg_id, chat_id, msg.message_id, target_chat)
-                db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id, category=category, intent=intent)
+                db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id, category=category, intent=intent, summary=summary)
                 return msg.message_id
             except Exception as e2:
                 log.error(f"❌ Final Fallback Failed: {e2}")
@@ -324,7 +315,8 @@ def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_i
 
         # Buttons တည်ဆောက်ခြင်း (Update message မှာလည်း တန်းနှိပ်လို့ရအောင်)
         clean_chat_id = str(chat_id).replace("-100", "")
-        msg_link = f"https://t.me/c/{clean_chat_id}/{original_msg_id}"
+        # 💡 tg:// protocol သုံးခြင်းဖြင့် Telegram App ထဲ တိုက်ရိုက်ပွင့်စေသည်
+        msg_link = f"tg://privatepost?channel={clean_chat_id}&post={original_msg_id}"
         
         markup = telebot.types.InlineKeyboardMarkup(row_width=2)
         markup.add(
@@ -426,7 +418,8 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
     
     # [ 🔗 View Message ] Button တည်ဆောက်ခြင်း
     clean_chat_id = str(chat_id).replace("-100", "")
-    msg_link = f"https://t.me/c/{clean_chat_id}/{msg_id}"
+    # 💡 tg:// protocol သုံးခြင်းဖြင့် Telegram App ထဲ တိုက်ရိုက်ပွင့်စေသည်
+    msg_link = f"tg://privatepost?channel={clean_chat_id}&post={msg_id}"
     
     markup = telebot.types.InlineKeyboardMarkup()
     markup.add(telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link))
@@ -499,7 +492,8 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
                 
                 # Buttons တည်ဆောက်ခြင်း
                 clean_chat_id = str(chat_id).replace("-100", "")
-                msg_link = f"https://t.me/c/{clean_chat_id}/{msg_id}"
+                # 💡 tg:// protocol သုံးခြင်းဖြင့် Telegram App ထဲ တိုက်ရိုက်ပွင့်စေသည်
+                msg_link = f"tg://privatepost?channel={clean_chat_id}&post={msg_id}"
                 markup = telebot.types.InlineKeyboardMarkup(row_width=2)
                 markup.add(
                     telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
@@ -609,12 +603,15 @@ def process_audits():
                 continue
 
             for chat_id, topic_id in pending_topics:
+                # 💡 Get shop name early for logging context
+                _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
+                
                 # 💡 Smart Batching: Get ALL pending messages in this topic (even if < 15 mins)
                 # This prevents multiple alerts for albums/burst messages
                 msgs = db_manager.get_pending_messages(minutes=15, limit=20, chat_id=chat_id, topic_id=topic_id, all_pending=True)
                 if not msgs: continue
 
-                log.info(f"📂 Auditing Batch: Topic {topic_id} in Chat {chat_id} ({len(msgs)} messages)")
+                log.info(f"📂 Auditing Batch: {shop_name} (Topic {topic_id}) in Chat {chat_id} ({len(msgs)} messages)")
                 
                 # Trigger message (the oldest one)
                 trigger_msg_id, _, _, trigger_text, trigger_ts, trigger_media_id = msgs[0]
@@ -622,12 +619,16 @@ def process_audits():
                 active_alerts = db_manager.get_active_alerts_for_group(chat_id, topic_id)
                 preceding_msgs = db_manager.get_messages_before(chat_id, topic_id, trigger_msg_id)
                 subsequent_msgs = db_manager.get_messages_after(chat_id, topic_id, msgs[-1][0]) # After the last message in batch
-                _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
 
                 # Mark all as AUDITING to prevent double processing
-                for m in msgs: db_manager.update_message_status(m[0], chat_id, 'AUDITING', topic_id=topic_id)
+                # 💡 Cast to int to prevent "tuple binding" error
+                safe_chat_id = int(chat_id)
+                safe_topic_id = int(topic_id)
                 
-                action, ai_res = evaluate_with_ai(shop_name, msgs, active_alerts, preceding_msgs, subsequent_msgs, chat_id, topic_id)
+                for m in msgs:
+                    db_manager.update_message_status(int(m[0]), safe_chat_id, 'AUDITING', topic_id=safe_topic_id)
+                
+                action, ai_res = evaluate_with_ai(shop_name, msgs, active_alerts, preceding_msgs, subsequent_msgs, safe_chat_id, safe_topic_id)
                 
                 grouped_ids = ai_res.get("grouped_msg_ids", [trigger_msg_id])
                 # Ensure trigger_msg_id is in grouped_ids
@@ -645,15 +646,20 @@ def process_audits():
                     log.info(f"🔇 AI Ignored Group: {grouped_ids}")
 
                 elif action == "APPEND" and ai_res.get("target_alert_id"):
-                    target_chat, _ = get_routing_data(chat_id, topic_id, summary=ai_res.get("summary", ""), category=ai_res.get("category", ""), intent=ai_res.get("intent", ""))
-                    # Append the combined text of grouped messages
-                    combined_text = "\n".join([m[3] for m in msgs if m[0] in grouped_ids])
-                    append_to_alert(ai_res["target_alert_id"], target_chat, combined_text, trigger_msg_id, chat_id, topic_id=topic_id)
-                    # Link other messages in the group
-                    for mid in grouped_ids:
-                        if mid != trigger_msg_id:
-                            db_manager.add_linked_customer_id(trigger_msg_id, chat_id, mid)
-                            db_manager.update_message_status(mid, chat_id, 'ALERTED', topic_id=topic_id, category=ai_res.get("category"), intent=ai_res.get("intent"))
+                    target_chat, target_topic = get_routing_data(chat_id, topic_id, summary=ai_res.get("summary", ""), category=ai_res.get("category", ""), intent=ai_res.get("intent", ""))
+                    
+                    if target_chat and target_topic:
+                        # Append the combined text of grouped messages
+                        combined_text = "\n".join([m[3] for m in msgs if m[0] in grouped_ids])
+                        append_to_alert(ai_res["target_alert_id"], target_chat, combined_text, trigger_msg_id, chat_id, topic_id=topic_id)
+                        # Link other messages in the group
+                        for mid in grouped_ids:
+                            if mid != trigger_msg_id:
+                                db_manager.add_linked_customer_id(trigger_msg_id, chat_id, mid)
+                                db_manager.update_message_status(mid, chat_id, 'ALERTED', topic_id=topic_id, category=ai_res.get("category"), intent=ai_res.get("intent"))
+                    else:
+                        # Route မရှိရင် NEW_ALERT logic အတိုင်း Manager ဆီ စာပို့ဖို့ Status ပြန်ပြောင်းမယ်
+                        for mid in msgs: db_manager.update_message_status(mid, chat_id, 'PENDING', topic_id=topic_id)
 
                 elif action == "NEW_ALERT":
                     # Create one ticket for the group
@@ -672,8 +678,15 @@ def process_audits():
                             if mid != trigger_msg_id:
                                 db_manager.add_linked_customer_id(trigger_msg_id, chat_id, mid)
                                 db_manager.update_message_status(mid, chat_id, 'ALERTED', topic_id=topic_id)
+                    else:
+                        # Alert မပို့ဖြစ်ရင် (ဥပမာ - Route မရှိလို့ Manager ဆီ စာပို့လိုက်ရင်)
+                        # Trigger message က WAITING_ROUTE ဖြစ်သွားပြီမို့လို့ ကျန်တဲ့စာတွေကိုလည်း WAITING_ROUTE ပြောင်းထားမယ်
+                        for m in msgs:
+                            mid = m[0]
+                            if mid != trigger_msg_id:
+                                db_manager.update_message_status(mid, chat_id, 'WAITING_ROUTE', topic_id=topic_id)
+
                 # 💡 Safety Net: Group ထဲမှာ မပါဝင်ခဲ့တဲ့ ကျန်ရှိနေတဲ့ စာများကို PENDING ပြန်ပြောင်းပေးခြင်း
-                # ဒါမှ နောက်တစ်ကြိမ် Batch ထဲမှာ ပြန်ပါလာမှာ ဖြစ်ပါတယ်
                 for m in msgs:
                     mid = m[0]
                     if mid not in grouped_ids:
@@ -703,7 +716,14 @@ def process_audits():
             time.sleep(30)
 
         except Exception as e:
-            log.error(f"⚠️ Auditor Loop Error: {e}")
+            # 💡 Enhanced logging to identify which shop/chat/topic caused the crash
+            context_parts = []
+            if 'shop_name' in locals(): context_parts.append(f"Shop: {shop_name}")
+            if 'chat_id' in locals(): context_parts.append(f"Chat: {chat_id}")
+            if 'topic_id' in locals(): context_parts.append(f"Topic: {topic_id}")
+            
+            context = f" ({', '.join(context_parts)})" if context_parts else ""
+            log.error(f"⚠️ Auditor Loop Error{context}: {e}")
             time.sleep(10)
 
 if __name__ == "__main__":

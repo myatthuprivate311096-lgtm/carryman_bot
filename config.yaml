@@ -1,0 +1,4 @@
+storage:
+  on_disk_payload: true
+optimizers:
+  memmap_threshold: 10000
