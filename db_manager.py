@@ -18,16 +18,22 @@ def clean_shop_name(raw_name):
     """
     Shop name မှ emoji/non-ascii noise များကိုဖြတ်၍ base name ပြန်ပေးမည်။
     🤝 ပါဝင်ပါက ၎င်း၏ ရှေ့က အမည်ကိုသာ ယူမည်။
+    (***) ပါဝင်ပါက ၎င်းကို ဖယ်ရှားမည်။
     """
     if raw_name is None:
         return "Unknown Shop"
     
-    # 🤝 ဖြင့် ခွဲထုတ်ခြင်း
     raw_str = str(raw_name)
+    
+    # 🤝 ဖြင့် ခွဲထုတ်ခြင်း
     if '🤝' in raw_str:
         base = raw_str.split('🤝')[0]
     else:
         base = raw_str
+
+    # (***) ဖြင့် ရေးထားသည်များကို ဖယ်ရှားခြင်း
+    import re
+    base = re.sub(r'\(.*?\)', '', base)
         
     # Emoji နှင့် Non-ASCII များကို ဖယ်ရှားခြင်း
     ascii_only = base.encode('ascii', 'ignore').decode('utf-8')
@@ -43,6 +49,9 @@ def get_connection():
         conn = sqlite3.connect(DB_FILE, check_same_thread=False, timeout=60)
         conn.execute('PRAGMA journal_mode=WAL;')
         conn.execute('PRAGMA synchronous=NORMAL;')
+        conn.execute('PRAGMA cache_size=-64000;') # 64MB Cache
+        conn.execute('PRAGMA temp_store=MEMORY;')
+        conn.execute('PRAGMA mmap_size=268435456;') # 256MB Mmap
         return conn
     except sqlite3.Error as e:
         log.error(f"❌ Database Connection Error: {e}")
@@ -58,6 +67,12 @@ def init_db():
         # ၁။ Core Tables
         c.execute('CREATE TABLE IF NOT EXISTS staff (user_id INTEGER PRIMARY KEY, name TEXT, branch TEXT, dept TEXT)')
         c.execute('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)')
+        c.execute('''CREATE TABLE IF NOT EXISTS functions_registry (
+                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     name TEXT UNIQUE,
+                     description TEXT,
+                     module_path TEXT
+                   )''')
         c.execute('''CREATE TABLE IF NOT EXISTS os_groups (
                      chat_id INTEGER,
                      shop_name TEXT,
@@ -88,7 +103,41 @@ def init_db():
                      linked_customer_ids TEXT DEFAULT '[]',
                      PRIMARY KEY (original_msg_id, chat_id)
                    )''')
-        
+
+        c.execute('''CREATE TABLE IF NOT EXISTS pickup_queue (
+                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     chat_id INTEGER,
+                     orig_msg_id INTEGER,
+                     target_date TEXT,
+                     os_name TEXT,
+                     remark TEXT,
+                     vehicle TEXT,
+                     status TEXT DEFAULT 'PENDING',
+                     error_msg TEXT,
+                     created_at INTEGER
+                   )''')
+
+        c.execute('''CREATE TABLE IF NOT EXISTS shop_mappings (
+                     chat_id INTEGER PRIMARY KEY,
+                     website_os_name TEXT,
+                     updated_at INTEGER
+                   )''')
+
+        c.execute('''CREATE TABLE IF NOT EXISTS website_shops (
+                     name TEXT PRIMARY KEY,
+                     created_at INTEGER
+                   )''')
+
+        c.execute('''CREATE TABLE IF NOT EXISTS knowledge_base (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        category TEXT,
+                        question TEXT,
+                        answer TEXT,
+                        tags TEXT,
+                        level INTEGER DEFAULT 1,
+                        last_updated INTEGER
+                    )''')
+
         # Feedback & AI Learning Tables
         c.execute('''CREATE TABLE IF NOT EXISTS feedback_logs (
                      id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -116,7 +165,8 @@ def init_db():
             "os_groups": ["last_read_message_id INTEGER DEFAULT 0", "target_chat_id INTEGER", "target_topic_id INTEGER"],
             "alert_tracking": ["created_at INTEGER", "esc_msg_id INTEGER", "linked_msg_ids TEXT DEFAULT '[]'", "linked_customer_ids TEXT DEFAULT '[]'"],
             "feedback_logs": ["chat_id INTEGER", "topic_id INTEGER", "category TEXT", "original_text TEXT", "staff_id INTEGER"],
-            "master_rules": ["chat_id INTEGER", "topic_id INTEGER", "rule_content TEXT"]
+            "master_rules": ["chat_id INTEGER", "topic_id INTEGER", "rule_content TEXT"],
+            "knowledge_base": ["category TEXT", "question TEXT", "answer TEXT", "tags TEXT", "level INTEGER DEFAULT 1", "last_updated INTEGER"]
         }
         
         for table, columns in migrations.items():
@@ -128,6 +178,7 @@ def init_db():
 
         # ၃။ Default Settings
         c.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('bot_active', 'True')")
+        c.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('env_mode', 'Sandbox')")
 
         # ၄။ Performance Indexes
         c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_status_time ON message_logs(status, timestamp)")
@@ -204,6 +255,52 @@ def get_staff_info(user_id):
     res = conn.execute("SELECT user_id, name, branch, dept FROM staff WHERE user_id = ?", (user_id,)).fetchone()
     conn.close()
     return res
+
+# --- [ RBAC & User Levels ] ---
+def get_user_level(user_id, chat_id):
+    """
+    User Level ခွဲခြားခြင်း (Level 1 to 4)
+    Level 4 (Manager): .env ထဲက MANAGER_IDS ထဲမှာ ပါဝင်သူများ
+    Level 3 (Staff): staff table ထဲမှာ ရှိနေသူများ
+    Level 2 (OS): Group ထဲမှာ မေးမြန်းတဲ့ သာမန်အသုံးပြုသူများ (chat_id < 0)
+    Level 1 (Customer): Private DM မှ လာမေးသူများ (chat_id > 0)
+    """
+    if not user_id: return 1
+    
+    # ၁။ Level 4: Manager Check
+    manager_ids_raw = os.getenv('MANAGER_IDS', os.getenv('MANAGER_ID', ''))
+    manager_ids = [int(i.strip()) for i in manager_ids_raw.split(',') if i.strip()]
+    if user_id in manager_ids:
+        return 4
+        
+    # ၂။ Level 3: Staff Check
+    if check_if_staff(user_id):
+        return 3
+        
+    # ၃။ Level 2 & 1: Group vs Private Check
+    # Telegram တွင် Group chat_id များသည် အနှုတ် (-) ဖြင့် စတင်ပါသည်
+    if chat_id and int(chat_id) < 0:
+        return 2
+    else:
+        return 1
+
+# --- [ Functions Registry ] ---
+def add_function(name, description, module_path):
+    """ Module အသစ်များကို functions_registry table ထဲသို့ ထည့်သွင်းခြင်း သို့မဟုတ် Update လုပ်ခြင်း """
+    conn = get_connection()
+    try:
+        conn.execute(
+            "INSERT OR REPLACE INTO functions_registry (name, description, module_path) VALUES (?, ?, ?)",
+            (name, description, module_path)
+        )
+        conn.commit()
+        log.info(f"✅ Function Registered: {name} -> {module_path}")
+        return True
+    except Exception as e:
+        log.error(f"❌ Failed to add function {name}: {e}")
+        return False
+    finally:
+        conn.close()
 
 # --- [ Message & SLA Logging ] ---
 def log_message(msg_id, chat_id, topic_id, user_id, text, timestamp=None, media_id=None):
@@ -577,14 +674,24 @@ def delete_alert_tracking(original_msg_id, chat_id):
 def get_routing_entry(chat_id, topic_id):
     """
     OS Group ၏ topic အလိုက် alert ပို့ရမည့် group နှင့် topic ကို ရှာဖွေခြင်း။
+    Type casting ထည့်သွင်းထားသဖြင့် String/Integer ကွဲလွဲမှုများကို ဖြေရှင်းပေးသည်။
     """
-    conn = get_connection()
-    res = conn.execute(
-        "SELECT target_chat_id, target_topic_id FROM os_groups WHERE chat_id = ? AND topic_id = ?",
-        (chat_id, topic_id)
-    ).fetchone()
-    conn.close()
-    return res
+    try:
+        # ၁။ Type Casting (String ဖြစ်နေပါက Integer သို့ ပြောင်းခြင်း)
+        c_id = int(chat_id)
+        t_id = int(topic_id) if topic_id is not None else 0
+        
+        conn = get_connection()
+        res = conn.execute(
+            "SELECT target_chat_id, target_topic_id FROM os_groups WHERE chat_id = ? AND topic_id = ?",
+            (c_id, t_id)
+        ).fetchone()
+        conn.close()
+        
+        return res
+    except Exception as e:
+        log.error(f"❌ Error in get_routing_entry: {e}")
+        return None
 
 def update_routing_entry(chat_id, topic_id, target_chat_id, target_topic_id):
     """
@@ -806,3 +913,208 @@ def clear_processed_feedback(chat_id, topic_id, before_timestamp):
 # 💡 Worker များ၏ main script မှသာ init_db() ကို ခေါ်ရန် အကြံပြုသည်
 # if __name__ == "__main__":
 #     init_db()
+
+def upsert_knowledge_batch(data_list):
+    """
+    Google Sheet မှလာသော Data စာရင်းကို တစ်ခါတည်း အကုန်သွင်းပေးခြင်း။
+    data_list: [(category, question, answer, tags, level, timestamp), ...]
+    """
+    conn = get_connection()
+    try:
+        # Sync လုပ်တိုင်း အဟောင်းတွေကို ဖျက်ပြီး အသစ်ပြန်သွင်းရန် (Data ထပ်မနေစေရန်)
+        conn.execute("DELETE FROM knowledge_base")
+        conn.executemany(
+            "INSERT INTO knowledge_base (category, question, answer, tags, level, last_updated) VALUES (?, ?, ?, ?, ?, ?)",
+            data_list
+        )
+        conn.commit()
+        log.info(f"✅ Knowledge Base Sync: {len(data_list)} rows updated.")
+        return True
+    except Exception as e:
+        log.error(f"❌ Batch Upsert Error: {e}")
+        return False
+    finally:
+        conn.close()
+
+def search_knowledge(query, user_level):
+    """
+    User ရဲ့ Level အလိုက် Database ထဲမှာ မေးခွန်းရှာပေးခြင်း
+    Level 4: 1,2,3,4 အကုန်ရမည်
+    Level 3: 1,2,3 ရမည်
+    Level 2: 1,2 ရမည်
+    Level 1: 1 ပဲရမည်
+    """
+    conn = get_connection()
+    try:
+        c = conn.cursor()
+        search_query = f"%{query}%"
+        # level <= user_level ဖြစ်တဲ့ Data တွေကိုပဲ ရှာခွင့်ပေးမည်
+        c.execute('''SELECT category, question, answer FROM knowledge_base
+                     WHERE (question LIKE ? OR tags LIKE ? OR category LIKE ?)
+                     AND level <= ?
+                     ORDER BY level DESC LIMIT 1''',
+                     (search_query, search_query, search_query, user_level))
+        
+        return c.fetchone()
+    except Exception as e:
+        log.error(f"❌ Search Knowledge Error: {e}")
+        return None
+    finally:
+        conn.close()
+
+# --- [ Pickup Queue Helpers ] ---
+def add_to_pickup_queue(chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status='PENDING'):
+    conn = get_connection()
+    try:
+        cursor = conn.execute(
+            "INSERT INTO pickup_queue (chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status, int(time.time()))
+        )
+        last_id = cursor.lastrowid
+        conn.commit()
+        return last_id
+    finally:
+        conn.close()
+
+def confirm_pickup_order(queue_id):
+    """ WAITING_CONFIRM ဖြစ်နေသော order ကို PENDING ပြောင်း၍ စက်ရုပ်ကို အလုပ်လုပ်ခိုင်းခြင်း """
+    conn = get_connection()
+    try:
+        conn.execute("UPDATE pickup_queue SET status = 'PENDING' WHERE id = ?", (queue_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+def delete_pickup_order(queue_id):
+    """ Queue ထဲမှ order ကို ဖျက်ခြင်း (ပြင်ဆင်ရန် သို့မဟုတ် Admin နှင့်ပြောရန်) """
+    conn = get_connection()
+    try:
+        conn.execute("DELETE FROM pickup_queue WHERE id = ?", (queue_id,))
+        conn.commit()
+    finally:
+        conn.close()
+
+def get_next_queued_pickup():
+    conn = get_connection()
+    try:
+        res = conn.execute(
+            "SELECT id, chat_id, orig_msg_id, target_date, os_name, remark, vehicle FROM pickup_queue WHERE status = 'PENDING' ORDER BY created_at ASC LIMIT 1"
+        ).fetchone()
+        return res
+    finally:
+        conn.close()
+
+def update_queue_status(queue_id, status, error_msg=None):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE pickup_queue SET status = ?, error_msg = ? WHERE id = ?",
+            (status, error_msg, queue_id)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+def retry_failed_pickups(chat_id):
+    """ Mapping ပြင်ပြီးနောက် FAILED ဖြစ်နေသော pickup များကို PENDING ပြန်ပြောင်း၍ Retry လုပ်ခြင်း """
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE pickup_queue SET status = 'PENDING', error_msg = NULL WHERE chat_id = ? AND status = 'FAILED'",
+            (chat_id,)
+        )
+        conn.commit()
+        log.info(f"🔄 Retrying failed pickups for chat_id: {chat_id}")
+    finally:
+        conn.close()
+
+def retry_failed_pickups(chat_id):
+    """ ကျရှုံးသွားသော (FAILED) pickup များကို PENDING ပြန်ပြောင်း၍ Retry လုပ်ခိုင်းခြင်း """
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE pickup_queue SET status = 'PENDING', error_msg = NULL WHERE chat_id = ? AND status = 'FAILED'",
+            (chat_id,)
+        )
+        conn.commit()
+        log.info(f"🔄 Retrying failed pickups for chat_id: {chat_id}")
+    finally:
+        conn.close()
+
+# --- [ Shop Mapping Helpers ] ---
+def get_shop_mapping(chat_id):
+    conn = get_connection()
+    try:
+        res = conn.execute("SELECT website_os_name FROM shop_mappings WHERE chat_id = ?", (chat_id,)).fetchone()
+        return res[0] if res else None
+    finally:
+        conn.close()
+
+def set_shop_mapping(chat_id, website_os_name):
+    conn = get_connection()
+    try:
+        conn.execute(
+            "INSERT OR REPLACE INTO shop_mappings (chat_id, website_os_name, updated_at) VALUES (?, ?, ?)",
+            (chat_id, website_os_name, int(time.time()))
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+def sync_website_shops(shop_list):
+    """ Website မှ ဆိုင်နာမည်များကို Database ထဲသို့ အကုန်သွင်းပေးခြင်း (Cleaning included) """
+    conn = get_connection()
+    try:
+        # အဟောင်းများကို အရင်ဖျက်မည်
+        conn.execute("DELETE FROM website_shops")
+        now = int(time.time())
+        
+        # (***) များကို ဖယ်ရှားပြီး Clean လုပ်မည်
+        cleaned_shops = set()
+        for name in shop_list:
+            cleaned = clean_shop_name(name)
+            if cleaned and cleaned != "Unknown Shop":
+                cleaned_shops.add(cleaned)
+        
+        data = [(name, now) for name in cleaned_shops]
+        conn.executemany("INSERT OR IGNORE INTO website_shops (name, created_at) VALUES (?, ?)", data)
+        conn.commit()
+        return len(data)
+    finally:
+        conn.close()
+
+def get_all_website_shops():
+    conn = get_connection()
+    try:
+        rows = conn.execute("SELECT name FROM website_shops ORDER BY name ASC").fetchall()
+        return [r[0] for r in rows]
+    finally:
+        conn.close()
+
+def get_unmapped_os_groups():
+    """ Mapping မရှိသေးသော OS Group များကို ရှာပေးခြင်း """
+    conn = get_connection()
+    try:
+        # os_groups ထဲမှာရှိပြီး shop_mappings ထဲမှာ မရှိသေးတာတွေကို ယူမည်
+        # website_shops ထဲမှာ အတိအကျတူတာ ရှိနေရင်လည်း ကျော်မည်
+        query = """
+            SELECT DISTINCT g.chat_id, g.shop_name
+            FROM os_groups g
+            LEFT JOIN shop_mappings m ON g.chat_id = m.chat_id
+            LEFT JOIN website_shops w ON g.shop_name = w.name
+            WHERE m.chat_id IS NULL AND w.name IS NULL AND g.shop_name IS NOT NULL
+        """
+        return conn.execute(query).fetchall()
+    finally:
+        conn.close()
+
+def get_website_suggestions(keyword, limit=5):
+    """ Website Shops ထဲမှ အနီးစပ်ဆုံးတူသော နာမည်များကို ရှာပေးခြင်း """
+    conn = get_connection()
+    try:
+        # Simple LIKE search for now
+        query = "SELECT name FROM website_shops WHERE name LIKE ? LIMIT ?"
+        res = conn.execute(query, (f'%{keyword}%', limit)).fetchall()
+        return [r[0] for r in res]
+    finally:
+        conn.close()

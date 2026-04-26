@@ -1,8 +1,11 @@
 import os
 import sys
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-import auditor
+# 💡 Absolute Path Fix for Test Script
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
+
+from modules import auditor
 from logger import log
 
 def check_central_topics():

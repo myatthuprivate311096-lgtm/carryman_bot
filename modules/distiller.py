@@ -1,26 +1,24 @@
-# Version: 1.0 (Daily AI Distiller)
+# Version: 1.1 (Daily AI Distiller - Module Standardized)
 import os
 import time
 import json
 import pytz
+import sys
 from datetime import datetime
 from dotenv import load_dotenv
+import ai_utils
+
+# 💡 Absolute Path Fix for Module
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
+
 from logger import log
 import db_manager
-from openai import OpenAI
 
-# 💡 Absolute Path Fix
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(BASE_DIR, '.env'))
-
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY') or os.getenv('OPENROUTER_API_KEY')
 
 def distill_feedback():
     """ နေ့စဉ် Feedback များကို AI ဖြင့် အနှစ်ချုပ်ပြီး Master Rules ထုတ်ပြန်ခြင်း """
-    if not GEMINI_API_KEY:
-        log.error("❌ AI Key Missing for Distiller")
-        return
-
     log.info("🧠 Starting Daily AI Distiller...")
     
     # ၁။ Feedback ရှိသော Chat/Topic အားလုံးကို ရှာခြင်း
@@ -31,11 +29,6 @@ def distill_feedback():
     if not topics:
         log.info("ℹ️ No new feedback to distill.")
         return
-
-    client = OpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=GEMINI_API_KEY
-    )
 
     for chat_id, topic_id in topics:
         try:
@@ -64,14 +57,11 @@ def distill_feedback():
             ["Ignore greetings", "Do not alert on 'Ok' only messages"]
             """
 
-            response = client.chat.completions.create(
-                model="google/gemini-2.0-flash-001",
-                messages=[{"role": "user", "content": prompt}],
-                response_format={"type": "json_object"},
-                timeout=60.0
-            )
-            
-            res_data = json.loads(response.choices[0].message.content.strip())
+            content = ai_utils.get_ai_completion(prompt, response_format={"type": "json_object"}, timeout=60.0)
+            if not content:
+                continue
+
+            res_data = json.loads(content)
             rules = res_data.get("rules", []) if isinstance(res_data, dict) else res_data
             
             if isinstance(rules, list):
@@ -106,6 +96,4 @@ def run_scheduler():
             time.sleep(60)
 
 if __name__ == "__main__":
-    # စမ်းသပ်ရန်အတွက် တန်း Run ချင်ပါက distill_feedback() ကို ခေါ်နိုင်သည်
-    # distill_feedback() 
     run_scheduler()

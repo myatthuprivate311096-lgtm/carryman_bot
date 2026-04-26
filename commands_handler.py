@@ -1,13 +1,18 @@
 import os
 import time
-import auditor
+from modules import auditor
+import gsheet_sync
 from telebot import types
 from logger import log
 import db_manager
-import group_creator
+from modules import group_creator
 
 # Environment Variable
 MANAGER_ID = int(os.getenv('MANAGER_ID'))
+MANAGER_IDS = [int(i.strip()) for i in os.getenv('MANAGER_IDS', str(MANAGER_ID)).split(',')]
+
+def is_manager(user_id):
+    return user_id in MANAGER_IDS
 
 # --- [ အစ်ကို့ရဲ့ မူရင်း စာရင်းများ ] ---
 BRANCHES = ["Yangon", "Insein", "Htauk Kyant", "Mandalay"]
@@ -26,28 +31,54 @@ def register_handlers(bot):
     """ Bot Command အားလုံးကို ဤနေရာတွင် စုစည်းမှတ်ပုံတင်ပေးသည် """
     
     # --- [ Section: Maintenance Control (အသစ်ထည့်ရမည့်နေရာ) ] ---
+    @bot.message_handler(commands=['gsupdate'])
+    def handle_gs_update(message):
+        """ Google Sheet မှ Data များကို Manual Sync လုပ်ခြင်း """
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
+            msg = bot.reply_to(message, "⏳ **Google Sheet မှ ဒေတာများကို ရယူနေပါသည်...**")
+            
+            # .env ထဲက URL ကို ယူခြင်း
+            sheet_url = os.getenv('GSHEET_URL')
+            if not sheet_url:
+                bot.edit_message_text("❌ `.env` ထဲမှာ `GSHEET_URL` ထည့်သွင်းထားခြင်း မရှိသေးပါ အစ်ကို။",
+                                     msg.chat.id, msg.message_id)
+                return
+
+            # Sync Module ကို ခေါ်ယူခြင်း
+            syncer = gsheet_sync.GSheetSync()
+            success, result_msg = syncer.sync_knowledge(sheet_url)
+            
+            if success:
+                bot.edit_message_text(f"✅ **Sync Success!**\n\n{result_msg}",
+                                     msg.chat.id, msg.message_id)
+            else:
+                bot.edit_message_text(f"❌ **Sync Failed!**\n\n{result_msg}",
+                                     msg.chat.id, msg.message_id)
+        else:
+            bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
+
     @bot.message_handler(commands=['off'])
     def handle_bot_off(message):
         """ Bot ကို ခေတ္တ အိပ်ပျော်စေခြင်း (Database ထဲတွင် သိမ်းမည်) """
-        if message.from_user.id == MANAGER_ID:
+        if is_manager(message.from_user.id):
             db_manager.set_setting('bot_active', 'False')
             bot.reply_to(message, "💤 **Bot Maintenance Mode: ON**\n\nစနစ်ကို ပိတ်ထားလိုက်ပါပြီ။ ဝန်ထမ်းများ Command ရိုက်လျှင်လည်း အသိပေးစာ ပြန်ပါလိမ့်မည်။")
 
     @bot.message_handler(commands=['on'])
     def handle_bot_on(message):
         """ Bot ကို ပြန်လည် နိုးထစေခြင်း """
-        if message.from_user.id == MANAGER_ID:
+        if is_manager(message.from_user.id):
             db_manager.set_setting('bot_active', 'True')
             bot.reply_to(message, "🚀 **Bot Maintenance Mode: OFF**\n\nစနစ်ကို ပုံမှန်အတိုင်း ပြန်လည်ဖွင့်လှစ်လိုက်ပါပြီ။")
 
     @bot.message_handler(commands=['start'])
     def send_welcome(message):
-        if message.from_user.id == MANAGER_ID or db_manager.check_if_staff(message.from_user.id):
+        if is_manager(message.from_user.id) or db_manager.check_if_staff(message.from_user.id):
             bot.reply_to(message, "🤖 CarryMan AI Agent စနစ်မှ ကြိုဆိုပါတယ်။\nအကူအညီလိုပါက Manager ကို ဆက်သွယ်ပါ။")
 
     @bot.message_handler(commands=['status'])
     def handle_status(message):
-        if message.from_user.id == MANAGER_ID or db_manager.check_if_staff(message.from_user.id):
+        if is_manager(message.from_user.id) or db_manager.check_if_staff(message.from_user.id):
             staff_count = len(db_manager.get_all_staff())
             status_text = (
                 "🟢 **Bot Status: Online**\n"
@@ -61,7 +92,7 @@ def register_handlers(bot):
     @bot.message_handler(commands=['restart'])
     def handle_restart(message):
         user_id = message.from_user.id
-        if user_id == MANAGER_ID:
+        if is_manager(user_id):
             try:
                 bot.reply_to(message, "🔄 **Bot Hard Restart:**\nစနစ်တစ်ခုလုံးကို အမြစ်ပြတ်သတ်ပြီး အသစ်ပြန်နှိုးနေပါပြီ။ ၁၀ စက္ကန့်ခန့် စောင့်ပေးပါဗျ။")
                 log.warning(f"⚠️ Restart command issued by {user_id}. Cleaning up...")
@@ -83,7 +114,7 @@ def register_handlers(bot):
 
     @bot.message_handler(commands=['stafflist'])
     def handle_staff_list(message):
-        if message.from_user.id == MANAGER_ID or db_manager.check_if_staff(message.from_user.id):
+        if is_manager(message.from_user.id) or db_manager.check_if_staff(message.from_user.id):
             staffs = db_manager.get_all_staff()
             if staffs:
                 msg = "👥 **ဝန်ထမ်းစာရင်း:**\n"
@@ -96,7 +127,7 @@ def register_handlers(bot):
     # --- [ Section ၄: အဆင့်မြင့် ဝန်ထမ်းသွင်းခြင်းစနစ် (/addstaff) ] ---
     @bot.message_handler(commands=['addstaff'])
     def start_add_staff(message):
-        if message.from_user.id == MANAGER_ID:
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
             text_parts = message.text.split(' ', 2)
             if len(text_parts) == 3:
                 try:
@@ -157,7 +188,7 @@ def register_handlers(bot):
     # --- [ Section ၅: Analytics & Group Creation ] ---
     @bot.message_handler(commands=['analytics'])
     def handle_analytics(message):
-        if message.from_user.id == MANAGER_ID:
+        if is_manager(message.from_user.id):
             markup = types.InlineKeyboardMarkup()
             markup.add(types.InlineKeyboardButton("📅 Today", callback_data="stat_today"),
                        types.InlineKeyboardButton("🗓️ Month", callback_data="stat_month"),
@@ -178,7 +209,7 @@ def register_handlers(bot):
 
     @bot.message_handler(commands=['newgroup'])
     def handle_new_group(message):
-        if message.from_user.id == MANAGER_ID:
+        if is_manager(message.from_user.id):
             group_creator.create_new_group(bot, message)
 
     # --- [ Section ၆: Instant Alert ] ---
@@ -235,7 +266,7 @@ def register_handlers(bot):
     @bot.message_handler(commands=['oslist'])
     def handle_os_list(message):
         user_id = message.from_user.id
-        if user_id == MANAGER_ID or db_manager.check_if_staff(user_id):
+        if is_manager(user_id) or db_manager.check_if_staff(user_id):
             try:
                 groups = db_manager.get_os_group_names()
 
@@ -259,7 +290,7 @@ def register_handlers(bot):
     @bot.message_handler(commands=['register'])
     def handle_register_group(message):
         user_id = message.from_user.id
-        if user_id == MANAGER_ID:
+        if is_manager(user_id):
             if message.chat.type not in ['group', 'supergroup']:
                 bot.reply_to(message, "⚠️ ဤ Command ကို OS Group ထဲမှာပဲ ရိုက်ပေးပါ။")
                 return
@@ -347,7 +378,7 @@ def register_handlers(bot):
 
     @bot.message_handler(commands=['delos'])
     def handle_delos(message):
-        if message.from_user.id == MANAGER_ID:
+        if is_manager(message.from_user.id):
             chat_id = message.chat.id
             text_parts = message.text.split()
             
@@ -368,7 +399,7 @@ def register_handlers(bot):
 
     @bot.message_handler(commands=['pending'])
     def handle_pending(message):
-        if message.from_user.id == MANAGER_ID or db_manager.check_if_staff(message.from_user.id):
+        if is_manager(message.from_user.id) or db_manager.check_if_staff(message.from_user.id):
             try:
                 rows = db_manager.get_pending_counts_by_shop()
 
@@ -387,7 +418,7 @@ def register_handlers(bot):
 
     @bot.message_handler(commands=['broadcast'])
     def handle_broadcast(message):
-        if message.from_user.id == MANAGER_ID:
+        if is_manager(message.from_user.id):
             text = message.text.replace('/broadcast', '').strip()
             if not text:
                 bot.reply_to(message, "⚠️ ပို့ချင်သော စာသားကို ထည့်ပါ။\nဥပမာ - `/broadcast ဒီနေ့ နေ့လယ် ရုံးခဏပိတ်ပါမည်`")
@@ -407,7 +438,7 @@ def register_handlers(bot):
 
     @bot.message_handler(commands=['logs'])
     def handle_logs(message):
-        if message.from_user.id == MANAGER_ID:
+        if is_manager(message.from_user.id):
             try:
                 with open('logs/carryman_system.log', 'r', encoding='utf-8') as f:
                     lines = f.readlines()[-10:] # နောက်ဆုံး ၁၀ ကြောင်းကိုပဲ ယူမည်
@@ -425,7 +456,7 @@ def register_handlers(bot):
 
     @bot.message_handler(commands=['findos'])
     def handle_findos(message):
-        if message.from_user.id == MANAGER_ID or db_manager.check_if_staff(message.from_user.id):
+        if is_manager(message.from_user.id) or db_manager.check_if_staff(message.from_user.id):
             keyword = message.text.replace('/findos', '').strip()
             if not keyword:
                 bot.reply_to(message, "⚠️ ရှာဖွေလိုသော ဆိုင်အမည်ကို ထည့်ပါ။\nဥပမာ - `/findos lucky`")
@@ -444,3 +475,74 @@ def register_handlers(bot):
             except Exception as e:
                 log.error(f"Find OS Error: {e}")
                 bot.reply_to(message, f"⚠️ Error: {e}")
+
+    @bot.message_handler(commands=['toggle_env'])
+    def handle_toggle_env(message):
+        """ Sandbox နှင့် Production အကြား ပြောင်းလဲခြင်း """
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
+            current = db_manager.get_setting('env_mode', 'Sandbox')
+            new_mode = 'Production' if current == 'Sandbox' else 'Sandbox'
+            db_manager.set_setting('env_mode', new_mode)
+            
+            icon = "🚀" if new_mode == 'Production' else "🧪"
+            bot.reply_to(message, f"{icon} **Environment Mode Switched!**\n\nCurrent Mode: `{new_mode}`", parse_mode="Markdown")
+            log.warning(f"⚠️ Environment switched to {new_mode} by {message.from_user.id}")
+        else:
+            bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
+
+    @bot.message_handler(commands=['addfun'])
+    def handle_add_function(message):
+        """ Module အသစ်များကို Database တွင် Register လုပ်ခြင်း """
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
+            # Format: /addfun <name> <description> <module_path>
+            # Description တွင် space များပါနိုင်သဖြင့် ပိုမိုကောင်းမွန်သော parsing ကို အသုံးပြုပါမည်။
+            parts = message.text.split()
+            
+            if len(parts) < 4:
+                bot.reply_to(message, "⚠️ **အသုံးပြုပုံ မှားယွင်းနေပါသည် အစ်ကို။**\n\nပုံစံ - `/addfun <name> <description> <module_path>`\nဥပမာ - `/addfun auto_pickup \"Auto Pickup System\" modules.auto_pickup`", parse_mode="Markdown")
+                return
+            
+            name = parts[1].strip()
+            module_path = parts[-1].strip()
+            # ကြားထဲက အစိတ်အပိုင်းအားလုံးကို description အဖြစ် ယူပါမည်
+            description = " ".join(parts[2:-1]).strip().strip("'").strip('"')
+            
+            # Database ထဲသို့ ထည့်သွင်းခြင်း
+            success = db_manager.add_function(name, description, module_path)
+            
+            if success:
+                bot.reply_to(message, f"✅ **Function Registered Successfully!**\n\n📌 Name: `{name}`\n📝 Description: {description}\n📂 Path: `{module_path}`", parse_mode="Markdown")
+            else:
+                bot.reply_to(message, "❌ Database ထဲသို့ ထည့်သွင်းရာတွင် အမှားအယွင်း ရှိသွားပါသည် အစ်ကို။")
+        else:
+            bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
+
+    @bot.message_handler(commands=['mapshops'])
+    def handle_map_shops(message):
+        """ Mapping မရှိသေးသော ဆိုင်များကို Manager ထံ ပို့ပေးခြင်း """
+        if is_manager(message.from_user.id):
+            unmapped = db_manager.get_unmapped_os_groups()
+            if not unmapped:
+                bot.reply_to(message, "✨ Mapping လုပ်ရန် လိုအပ်သော ဆိုင်မရှိပါ။ အားလုံး အဆင်ပြေပါသည်။")
+                return
+
+            bot.reply_to(message, f"🔍 Mapping မရှိသေးသော ဆိုင် {len(unmapped)} ခု တွေ့ရှိရပါသည်။ တစ်ခုချင်းစီ ပို့ပေးပါ့မယ်။")
+            
+            for chat_id, shop_name in unmapped[:20]: # တစ်ခါတည်း အများကြီး မပို့မိစေရန် ၂၀ ခုစီ ကန့်သတ်မည်
+                clean_name = db_manager.clean_shop_name(shop_name)
+                suggestions = db_manager.get_website_suggestions(clean_name[:5])
+
+                markup = types.InlineKeyboardMarkup(row_width=1)
+                for s in suggestions:
+                    markup.add(types.InlineKeyboardButton(f"✅ {s}", callback_data=f"ap_set_{chat_id}_{s}"))
+                
+                markup.add(types.InlineKeyboardButton("⌨️ Manual Type", callback_data=f"ap_manual_{chat_id}"))
+
+                bot.send_message(
+                    message.chat.id,
+                    f"🏪 Telegram: <b>{shop_name}</b>\n\nမှန်ကန်တဲ့ Website ဆိုင်နာမည်ကို ရွေးပေးပါ-",
+                    reply_markup=markup, parse_mode="HTML"
+                )
+                time.sleep(1) # Telegram Flood Limit မမိစေရန်
+        else:
+            bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")

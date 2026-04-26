@@ -1,7 +1,13 @@
 import os
 import time
+import sys
+
+# 💡 Absolute Path Fix for Test Script
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
+
 import db_manager
-import auditor
+from modules import auditor
 from logger import log
 
 def run_test():

@@ -1,18 +1,23 @@
 import os
 import asyncio
+import sys
 from telethon import TelegramClient
 from telethon.tl import functions, types
 from dotenv import load_dotenv
-import db_manager
 
-load_dotenv()
+# 💡 Absolute Path Fix for Module
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
+
+import db_manager
+from logger import log
+
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 API_ID = int(os.getenv('API_ID'))
 API_HASH = os.getenv('API_HASH')
 BOT_USERNAME = os.getenv('BOT_USERNAME')
 
 STAFF_USERNAMES = ['@cmsod1', '@cmmarketing1', '@cmfinance1', '@dataentrycm1', 8548232517]
-
-from logger import log
 
 async def toggle_forum_safe(client, channel):
     ReqClass = functions.channels.ToggleForumRequest
@@ -59,7 +64,9 @@ async def create_topic_safe(client, channel, title):
 
 # 💡 Rank ကို ဖြုတ်လိုက်ပါပြီ
 async def create_group_task(group_name):
-    async with TelegramClient('carryman', int(API_ID), API_HASH) as client:
+    # session file is in BASE_DIR
+    session_path = os.path.join(BASE_DIR, 'carryman')
+    async with TelegramClient(session_path, int(API_ID), API_HASH) as client:
         print(f"🚀 Creating Group: {group_name}")
         
         created_chat = await client(functions.channels.CreateChannelRequest(
