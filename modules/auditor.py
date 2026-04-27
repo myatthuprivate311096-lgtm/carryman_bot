@@ -32,12 +32,13 @@ RECORD_GROUP_ID = int(os.getenv('ARCHIVE_CHAT_ID', -1003601049225))
 HEALTHCHECK_URL = os.getenv('HEALTHCHECK_URL')
 
 # 🧪 Test Mode Configuration
-TEST_GROUP_ID = int(os.getenv('TEST_GROUP_ID', 3539520778))
+TEST_GROUP_ID = int(os.getenv('TEST_GROUP_ID', -1003539520778))
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
 def is_office_hours(chat_id=None):
-    if chat_id == TEST_GROUP_ID:
+    # အစ်ကို့တောင်းဆိုချက်အရ Test Group ကို အလုပ်ချိန်ပြင်ပလည်း Alert ပို့ရန်
+    if chat_id and int(chat_id) == TEST_GROUP_ID:
         return True
 
     tz = pytz.timezone('Asia/Yangon')
@@ -48,7 +49,7 @@ def is_office_hours(chat_id=None):
     
     total_minutes = current_hour * 60 + current_minute
     start_minutes = 9 * 60 + 10 # 09:10 AM
-    end_minutes = 18 * 60      # 06:00 PM
+    end_minutes = 18 * 60 + 16 # 06:15 PM (Inclusive)
     
     if start_minutes <= total_minutes < end_minutes:
         return True

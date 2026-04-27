@@ -22,8 +22,13 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             vehicle = parts[4] if parts[4] != "none" else None
 
             chat_id = call.message.chat.id
+            # 💡 connection_scope() သည် auto-commit လုပ်ပေးသော်လည်း SELECT သာဖြစ်ပါက commit မလိုအပ်ပါ
             with db_manager.connection_scope() as conn:
                 msg_data = conn.execute("SELECT text FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id)).fetchone()
+            
+            if not msg_data:
+                log.warning(f"⚠️ Message {orig_msg_id} not found in logs for chat {chat_id}")
+                # မူရင်းစာ မရှိတော့ပါကလည်း ဆက်သွားနိုင်ရန် (သို့မဟုတ် error ပြရန်)
             
             if action == "dt":
                 if not vehicle:
@@ -58,6 +63,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, sent_msg.message_id)
                 auto_pickup.ask_remark(bot, chat_id, date_type, vehicle, orig_msg_id)
                 bot.edit_message_text(f"✅ **Today** အဖြစ် သတ်မှတ်ပြီး Group ထဲသို့ အကြောင်းကြားလိုက်ပါပြီ။", call.message.chat.id, call.message.message_id)
+                auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "📅 Today (Staff Decision)")
             else:
                 markup = telebot.types.InlineKeyboardMarkup(row_width=2)
                 v_str = vehicle if vehicle else "none"
@@ -65,6 +71,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                     telebot.types.InlineKeyboardButton("✅ OK", callback_data=f"ap_cs_{orig_msg_id}_{chat_id}_ok_{v_str}"),
                     telebot.types.InlineKeyboardButton("💬 Admin နှင့်ပြောမည်", callback_data=f"ap_cs_{orig_msg_id}_{chat_id}_admin_{v_str}")
                 )
+                markup.add(telebot.types.InlineKeyboardButton("❌ Pickup မဟုတ်ပါ", callback_data=f"ap_cancel_{orig_msg_id}"))
                 sent_msg = bot.send_message(
                     chat_id,
                     "ဒီနေ့ rider လေးကဝေးလမ်းကြောင်းလေးကျော်သွားပြီမို့လို့ မနက်ဖြန်လေးကောက်ပေးလို့ရမလားရှင့်",
@@ -94,6 +101,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             if action == "ok":
                 auto_pickup.ask_remark(bot, chat_id, "tomorrow", vehicle, orig_msg_id)
                 bot.edit_message_text("✅ မနက်ဖြန်အတွက် pick up တင်ပေးထားပါ့မယ်ရှင်။", chat_id, call.message.message_id)
+                auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "📅 Tomorrow (Customer OK)")
             else:
                 db_manager.set_manual_alert(orig_msg_id, chat_id)
                 with db_manager.connection_scope() as conn:
@@ -120,8 +128,13 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             from modules import auto_pickup
             orig_msg_id = int(call.data.split('_')[2])
             chat_id = call.message.chat.id
+            
+            # Status Sync: message_logs မှာပါ CANCELLED သွားပြောင်းမည်
+            db_manager.cancel_message(orig_msg_id, chat_id, reason='Rider: Not a Pickup')
+            
             bot.delete_message(chat_id, call.message.message_id)
             auto_pickup.cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id)
+            auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Cancelled (Not a Pickup)")
             bot.answer_callback_query(call.id, "❌ Pickup မဟုတ်ကြောင်း မှတ်သားလိုက်ပါပြီ။")
         except Exception as e:
             log.error(f"❌ Pickup Cancel Callback Error: {e}")
@@ -214,6 +227,14 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             queue_id = int(call.data.split('_')[2])
             db_manager.confirm_pickup_order(queue_id)
             bot.edit_message_text("✅ **အတည်ပြုပြီးပါပြီ!**\n\nစက်ရုပ်မှ အော်ဒါတင်ပေးနေပါပြီ၊ ခဏစောင့်ပေးပါခင်ဗျာ။", call.message.chat.id, call.message.message_id)
+            
+            # Ensure this message is tracked for cleanup
+            order = db_manager.get_pickup_order(queue_id)
+            if order:
+                from modules import auto_pickup
+                db_manager.add_pickup_intermediate_msg(call.message.chat.id, order[2], call.message.message_id)
+                auto_pickup.update_central_pickup_alert(bot, order[2], call.message.chat.id, "✅ Confirmed (Waiting for Robot)")
+                
             bot.answer_callback_query(call.id)
         except Exception as e:
             log.error(f"❌ Pickup Confirm Callback Error: {e}")
@@ -329,11 +350,15 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     def handle_back_to_conf_callback(call):
         """ ပြင်ဆင်မှုမလုပ်ဘဲ မူလ Confirmation သို့ ပြန်သွားခြင်း """
         try:
-            queue_id = int(call.data.split('_')[3])
-            show_pickup_reconfirmation(bot, call.message.chat.id, queue_id, call.message.message_id)
+            # format: ap_ed_back_{queue_id}
+            parts = call.data.split('_')
+            if len(parts) >= 4:
+                queue_id = int(parts[3])
+                show_pickup_reconfirmation(bot, call.message.chat.id, queue_id, call.message.message_id)
             bot.answer_callback_query(call.id)
         except Exception as e:
             log.error(f"❌ Back to Conf Callback Error: {e}")
+            bot.answer_callback_query(call.id, "❌ အမှားတစ်ခု ဖြစ်သွားပါသည်။")
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_admin_'))
     def handle_pickup_admin_callback(call):
@@ -373,7 +398,8 @@ def save_manual_remark(message, bot, orig_msg_id, date_type, vehicle):
         remark = message.text.strip()
         chat_id = message.chat.id
         if not remark:
-            bot.reply_to(message, "⚠️ မှတ်ချက် အလွတ်ဖြစ်နေလို့ မူရင်းစာသားအတိုင်းပဲ တင်ပေးလိုက်ပါမယ်။")
+            sent_msg = bot.reply_to(message, "⚠️ မှတ်ချက် အလွတ်ဖြစ်နေလို့ မူရင်းစာသားအတိုင်းပဲ တင်ပေးလိုက်ပါမယ်။")
+            db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, sent_msg.message_id)
             remark = None
         finalize_pickup_queue(bot, chat_id, orig_msg_id, date_type, vehicle, remark)
     except Exception as e:
@@ -387,10 +413,13 @@ def finalize_pickup_queue(bot, chat_id, orig_msg_id, date_type, vehicle, manual_
         target_date = (now if date_type == "today" else now + timedelta(days=1)).strftime("%d-%m-%Y")
         
         with db_manager.connection_scope() as conn:
-            msg_data = conn.execute("SELECT text FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id)).fetchone()
+            msg_data = conn.execute("SELECT text, summary FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id)).fetchone()
         
         orig_text = msg_data[0] if msg_data else "Auto Pickup Request"
-        final_remark = manual_remark if manual_remark else orig_text
+        ai_summary = msg_data[1] if msg_data and msg_data[1] else None
+        
+        # Priority: Manual Remark > AI Summary (Clean Remark) > Original Text
+        final_remark = manual_remark if manual_remark else (ai_summary if ai_summary else orig_text)
         _, _, shop_name = db_manager.get_topic_context(chat_id, 1)
         v_str = vehicle if vehicle != "none" else "Bicycle"
 
@@ -416,6 +445,10 @@ def finalize_pickup_queue(bot, chat_id, orig_msg_id, date_type, vehicle, manual_
         
         sent_msg = bot.send_message(chat_id, confirm_text, reply_to_message_id=orig_msg_id, reply_markup=markup)
         db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, sent_msg.message_id)
+        
+        # Update central alert with latest info (Remark/Vehicle might have changed)
+        from modules import auto_pickup
+        auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "⏳ Waiting Confirmation (Rider)")
     except Exception as e:
         log.error(f"❌ Finalize Pickup Queue Error: {e}")
 
@@ -442,7 +475,8 @@ def show_pickup_reconfirmation(bot, chat_id, queue_id, message_id=None):
             bot.send_message(chat_id, "❌ အချက်အလက် ရှာမတွေ့တော့ပါ။")
             return
 
-        _, _, orig_msg_id, target_date, shop_name, remark, vehicle, status = order
+        # order format: (id, chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status, created_at)
+        _, _, orig_msg_id, target_date, shop_name, remark, vehicle, status, _ = order
         confirm_text = (
             f"⏳ **Auto Pickup အချက်အလက်များ (ပြင်ဆင်ပြီး)**\n"
             f"━━━━━━━━━━━━━━━━━━\n"
@@ -462,7 +496,8 @@ def show_pickup_reconfirmation(bot, chat_id, queue_id, message_id=None):
         if message_id:
             bot.edit_message_text(confirm_text, chat_id, message_id, reply_markup=markup)
         else:
-            bot.send_message(chat_id, confirm_text, reply_markup=markup)
+            sent_msg = bot.send_message(chat_id, confirm_text, reply_markup=markup)
+            db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, sent_msg.message_id)
     except Exception as e:
         log.error(f"❌ Show Pickup Reconfirmation Error: {e}")
 

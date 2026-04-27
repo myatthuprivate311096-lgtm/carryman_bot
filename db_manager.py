@@ -3,6 +3,7 @@ import sqlite3
 import time
 import os
 from datetime import datetime
+from contextlib import contextmanager
 from dotenv import load_dotenv
 from logger import log
 
@@ -56,6 +57,19 @@ def get_connection():
     except sqlite3.Error as e:
         log.error(f"❌ Database Connection Error: {e}")
         raise
+
+@contextmanager
+def connection_scope():
+    """ Database connection ကို context manager အဖြစ် အသုံးပြုရန် (Auto-commit/rollback ပါဝင်သည်) """
+    conn = get_connection()
+    try:
+        yield conn
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
 
 def init_db():
     """ Database initialization နှင့် migration များကို safe ဖြစ်အောင် လုပ်ဆောင်ပေးသည် (Version 5.0) """
@@ -428,6 +442,22 @@ def resolve_message(msg_id, chat_id, staff_name, method='Reply', topic_id=None):
             
         conn.commit()
     finally: conn.close()
+
+def cancel_message(msg_id, chat_id, reason='Cancelled by User'):
+    """ Message ကို CANCELLED အဖြစ် သတ်မှတ်ခြင်း """
+    conn = get_connection()
+    now = int(time.time())
+    try:
+        conn.execute(
+            "UPDATE message_logs SET status='CANCELLED', resolved_by=?, resolve_time=? WHERE msg_id=? AND chat_id=?",
+            (reason, now, msg_id, chat_id)
+        )
+        conn.commit()
+        log.info(f"❌ Message {msg_id} in {chat_id} cancelled. Reason: {reason}")
+    except Exception as e:
+        log.error(f"❌ Cancel Message Error: {e}")
+    finally:
+        conn.close()
 
 def auto_resolve_stale_alerts(hours=30):
     """
@@ -1037,6 +1067,19 @@ def retry_failed_pickups(chat_id):
         conn.close()
 
 
+# --- [ Pickup Duplicate Check ] ---
+def check_existing_pickup(chat_id, target_date):
+    """ သတ်မှတ်ထားတဲ့ ရက်စွဲနဲ့ ဆိုင် (Chat ID) အတွက် အောင်မြင်ပြီးသား Pickup ရှိမရှိ စစ်ဆေးခြင်း """
+    conn = get_connection()
+    try:
+        res = conn.execute(
+            "SELECT 1 FROM pickup_queue WHERE chat_id = ? AND target_date = ? AND status = 'SUCCESS'",
+            (chat_id, target_date)
+        ).fetchone()
+        return res is not None
+    finally:
+        conn.close()
+
 # --- [ Shop Mapping Helpers ] ---
 def get_shop_mapping(chat_id):
     conn = get_connection()
@@ -1185,6 +1228,20 @@ def get_pickup_order(queue_id):
         res = conn.execute(
             "SELECT id, chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status, created_at FROM pickup_queue WHERE id = ?",
             (queue_id,)
+        ).fetchone()
+        return res
+    finally:
+        conn.close()
+
+def get_waiting_confirm_order(chat_id):
+    """ လက်ရှိ chat တွင် အတည်ပြုချက်စောင့်ဆိုင်းနေသော (WAITING_CONFIRM) အော်ဒါရှိမရှိ စစ်ဆေးခြင်း """
+    conn = get_connection()
+    try:
+        res = conn.execute(
+            "SELECT id, chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status, created_at "
+            "FROM pickup_queue WHERE chat_id = ? AND status = 'WAITING_CONFIRM' "
+            "ORDER BY created_at DESC LIMIT 1",
+            (chat_id,)
         ).fetchone()
         return res
     finally:

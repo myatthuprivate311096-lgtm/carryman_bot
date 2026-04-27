@@ -93,7 +93,7 @@ def call_groq_direct(prompt, model="llama-3.3-70b-versatile", response_format=No
         log.error(f"❌ Groq Direct Exception: {e}")
         return None
 
-def get_ai_completion(prompt, model="google/gemini-2.0-flash-001", response_format=None, timeout=30.0):
+def get_ai_completion(prompt, model="google/gemini-3.1-flash-lite-preview", response_format=None, timeout=30.0):
     """
     Centralized AI call with Auto-Recovery and Manager Notifications.
     Always tries OpenRouter first.
