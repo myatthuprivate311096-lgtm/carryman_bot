@@ -24800,3 +24800,661 @@
 2026-04-26 06:54:50 AM | INFO | auditor | ℹ️ No active alert tracking found for 1083 in -1003721882616.
 2026-04-26 06:54:50 AM | INFO | auditor | ℹ️ Message 1083 was not an active alert. Skipping record.
 2026-04-26 06:54:50 AM | INFO | main_bot | ✅ Message 1083 marked as RESOLVED via Reaction (❤) by Myat Noe Paing
+2026-04-27 09:20:33 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-27 09:20:33 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-27 09:20:33 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-27 09:20:33 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-27 09:20:33 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-27 09:20:33 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-27 09:20:59 AM | WARNING | commands_handler | ⚠️ Restart command issued by 8353570874. Cleaning up...
+2026-04-27 09:21:04 AM | INFO | commands_handler | 🚀 Process exiting for restart...
+2026-04-27 09:21:05 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-27 09:21:05 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-27 09:21:05 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-27 09:21:05 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-27 09:21:05 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-27 09:21:05 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-27 09:23:03 AM | INFO | db_manager | ✅ Group Resolved: [1117] in -1003721882616 by Moe Pyae (Reaction (❤))
+2026-04-27 09:23:03 AM | ERROR | main_bot | ❌ Reaction Handler Error: database disk image is malformed
+2026-04-27 09:23:05 AM | INFO | db_manager | ✅ Group Resolved: [1118] in -1003721882616 by Moe Pyae (Reaction (❤))
+2026-04-27 09:23:05 AM | ERROR | main_bot | ❌ Reaction Handler Error: database disk image is malformed
+2026-04-27 09:23:50 AM | ERROR | main_bot | ❌ Message Handler Error: database disk image is malformed
+2026-04-27 09:23:56 AM | ERROR | main_bot | ❌ Done Button Error: database disk image is malformed
+2026-04-27 09:24:59 AM | INFO | db_manager | ✅ Group Resolved: [100] in -1003720790867 by Eaindra (Reaction (❤))
+2026-04-27 09:24:59 AM | ERROR | main_bot | ❌ Reaction Handler Error: database disk image is malformed
+2026-04-27 09:26:06 AM | INFO | db_manager | ✓ Message 126 in -1003783350266 saved as PENDING
+2026-04-27 09:26:06 AM | INFO | main_bot | 📩 New Pending Message from 1666821675 in -1003783350266 (Topic: 6)
+2026-04-27 09:27:57 AM | INFO | db_manager | ✅ Group Resolved: [3581] in -1003798739565 by CS 2 (Reply)
+2026-04-27 09:27:57 AM | ERROR | main_bot | ❌ Message Handler Error: database disk image is malformed
+2026-04-27 09:28:22 AM | ERROR | main_bot | ❌ Feedback Callback Error: database disk image is malformed
+2026-04-27 09:29:08 AM | ERROR | main_bot | ❌ Done Button Error: database disk image is malformed
+2026-04-27 09:31:36 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:31:46 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:31:48 AM | ERROR | main_router | ❌ Router Error: no such table: settings
+2026-04-27 09:31:48 AM | ERROR | main_bot | ❌ Message Handler Error: no such table: staff
+2026-04-27 09:31:56 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:32:06 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:32:16 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:32:26 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:32:36 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:32:46 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:32:56 AM | ERROR | main_bot | ❌ Reaction Handler Error: no such table: staff
+2026-04-27 09:32:56 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:32:59 AM | ERROR | main_router | ❌ Router Error: no such table: settings
+2026-04-27 09:32:59 AM | ERROR | main_bot | ❌ Message Handler Error: no such table: staff
+2026-04-27 09:33:00 AM | ERROR | main_router | ❌ Router Error: no such table: settings
+2026-04-27 09:33:00 AM | ERROR | main_bot | ❌ Message Handler Error: no such table: staff
+2026-04-27 09:33:05 AM | ERROR | main_bot | ❌ Reaction Handler Error: no such table: staff
+2026-04-27 09:33:06 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:33:13 AM | ERROR | main_router | ❌ Router Error: no such table: settings
+2026-04-27 09:33:13 AM | ERROR | main_bot | ❌ Message Handler Error: no such table: staff
+2026-04-27 09:33:16 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:33:18 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-27 09:33:18 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 09:33:18 AM | ERROR | db_manager | ❌ Auto-resolve stale alerts failed: no such table: message_logs
+2026-04-27 09:33:18 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such table: message_logs
+2026-04-27 09:33:26 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:33:28 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such table: message_logs
+2026-04-27 09:33:36 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:33:38 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-27 09:34:06 AM | INFO | db_manager | ✓ Message 452 in -1003868121514 saved as PENDING
+2026-04-27 09:34:06 AM | INFO | main_bot | 📩 New Pending Message from 1828417786 in -1003868121514 (Topic: 6)
+2026-04-27 09:34:31 AM | INFO | db_manager | ✓ Message 174 in -1003837547495 saved as PENDING
+2026-04-27 09:34:31 AM | INFO | main_bot | 📩 New Pending Message from 5497143255 in -1003837547495 (Topic: 6)
+2026-04-27 09:34:38 AM | ERROR | db_manager | ❌ Database Connection Error: database is locked
+2026-04-27 09:34:38 AM | ERROR | auditor | ⚠️ Auditor Loop Error: database is locked
+2026-04-27 09:34:41 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:34:48 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such table: message_logs
+2026-04-27 09:34:51 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:34:58 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such table: message_logs
+2026-04-27 09:35:01 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:35:07 AM | ERROR | main_router | ❌ Router Error: no such table: settings
+2026-04-27 09:35:07 AM | ERROR | main_bot | ❌ Message Handler Error: no such table: staff
+2026-04-27 09:35:08 AM | ERROR | auditor | ⚠️ Auditor Loop Error: no such table: message_logs
+2026-04-27 09:35:11 AM | ERROR | auto_pickup | ❌ Queue Worker Error: no such table: pickup_queue
+2026-04-27 09:35:13 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-27 09:35:56 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-27 09:35:56 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 09:35:56 AM | WARNING | db_manager | 🧹 Auto-resolved 16 stale alerts (Older than 30 hours)
+2026-04-27 09:35:56 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-27 09:35:56 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-27 09:35:56 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-27 09:35:56 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-27 09:35:56 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-27 09:35:56 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-27 09:37:54 AM | WARNING | commands_handler | ⚠️ Restart command issued by 8353570874. Cleaning up...
+2026-04-27 09:37:59 AM | INFO | commands_handler | 🚀 Process exiting for restart...
+2026-04-27 09:38:01 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-27 09:38:01 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-27 09:38:01 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-27 09:38:01 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-27 09:38:01 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-27 09:38:01 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-27 09:38:18 AM | WARNING | auditor | ⚠️ Failed to delete Level 1 alert 799: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message to delete not found
+2026-04-27 09:38:18 AM | INFO | auditor | 🗑️ Deleted Level 2 escalation 1140
+2026-04-27 09:38:18 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-27 09:38:19 AM | INFO | db_manager | ✅ Group Resolved: [439] in -1003868121514 by Myat Thu (Done Button)
+2026-04-27 09:38:19 AM | INFO | main_bot | ✅ Message 439 resolved via Done Button by Myat Thu
+2026-04-27 09:40:56 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 09:41:45 AM | INFO | db_manager | ✅ Group Resolved: [467] in -1003898476625 by Eaindra (Reply)
+2026-04-27 09:41:45 AM | INFO | auditor | ℹ️ No active alert tracking found for 467 in -1003898476625.
+2026-04-27 09:41:45 AM | INFO | auditor | ℹ️ Message 467 was not an active alert. Skipping record.
+2026-04-27 09:41:45 AM | INFO | main_bot | ✅ Message 467 marked as RESOLVED via Reply by Eaindra
+2026-04-27 09:42:00 AM | INFO | db_manager | ✓ Message 567 in -1003898476625 saved as PENDING
+2026-04-27 09:42:00 AM | INFO | main_bot | 📩 New Pending Message from 7586720708 in -1003898476625 (Topic: 6)
+2026-04-27 09:42:07 AM | INFO | db_manager | ✅ Group Resolved: [567] in -1003898476625 by Eaindra (Reaction (❤))
+2026-04-27 09:42:07 AM | INFO | auditor | ℹ️ No active alert tracking found for 567 in -1003898476625.
+2026-04-27 09:42:07 AM | INFO | auditor | ℹ️ Message 567 was not an active alert. Skipping record.
+2026-04-27 09:42:07 AM | INFO | main_bot | ✅ Message 567 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-04-27 09:42:56 AM | INFO | db_manager | ✓ Message 568 in -1003898476625 saved as PENDING
+2026-04-27 09:42:56 AM | INFO | main_bot | 📩 New Pending Message from 7586720708 in -1003898476625 (Topic: 6)
+2026-04-27 09:43:02 AM | INFO | db_manager | ✅ Group Resolved: [568] in -1003898476625 by Eaindra (Reaction (❤))
+2026-04-27 09:43:02 AM | INFO | auditor | ℹ️ No active alert tracking found for 568 in -1003898476625.
+2026-04-27 09:43:02 AM | INFO | auditor | ℹ️ Message 568 was not an active alert. Skipping record.
+2026-04-27 09:43:02 AM | INFO | main_bot | ✅ Message 568 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-04-27 09:43:14 AM | INFO | db_manager | ✓ Message 569 in -1003898476625 saved as PENDING
+2026-04-27 09:43:14 AM | INFO | main_bot | 📩 New Pending Message from 7586720708 in -1003898476625 (Topic: 6)
+2026-04-27 09:45:57 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 09:46:57 AM | INFO | db_manager | ✓ Message 167 in -1003798966794 saved as PENDING
+2026-04-27 09:46:57 AM | INFO | main_bot | 📩 New Pending Message from 5989936352 in -1003798966794 (Topic: 6)
+2026-04-27 09:47:31 AM | INFO | db_manager | ✓ Message 544 in -1003731394148 saved as PENDING
+2026-04-27 09:47:31 AM | INFO | main_bot | 📩 New Pending Message from 5914750831 in -1003731394148 (Topic: 1)
+2026-04-27 09:48:11 AM | INFO | db_manager | ✓ Message 545 in -1003731394148 saved as PENDING
+2026-04-27 09:48:11 AM | INFO | main_bot | 📩 New Pending Message from 5914750831 in -1003731394148 (Topic: 1)
+2026-04-27 09:48:18 AM | INFO | db_manager | ✓ Message 546 in -1003731394148 saved as PENDING
+2026-04-27 09:48:18 AM | INFO | main_bot | 📩 New Pending Message from 5914750831 in -1003731394148 (Topic: 1)
+2026-04-27 09:48:32 AM | INFO | db_manager | ✓ Message 547 in -1003731394148 saved as PENDING
+2026-04-27 09:48:32 AM | INFO | main_bot | 📩 New Pending Message from 5914750831 in -1003731394148 (Topic: 1)
+2026-04-27 09:48:46 AM | INFO | db_manager | ✓ Message 548 in -1003731394148 saved as PENDING
+2026-04-27 09:48:46 AM | INFO | main_bot | 📩 New Pending Message from 5914750831 in -1003731394148 (Topic: 1)
+2026-04-27 09:48:55 AM | INFO | db_manager | ✅ Group Resolved: [566] in -1003898476625 by Eaindra (Reply)
+2026-04-27 09:48:55 AM | INFO | auditor | ℹ️ No active alert tracking found for 566 in -1003898476625.
+2026-04-27 09:48:55 AM | INFO | auditor | ℹ️ Message 566 was not an active alert. Skipping record.
+2026-04-27 09:48:55 AM | INFO | main_bot | ✅ Message 566 marked as RESOLVED via Reply by Eaindra
+2026-04-27 09:49:25 AM | INFO | db_manager | ✓ Message 168 in -1003798966794 saved as PENDING
+2026-04-27 09:49:25 AM | INFO | main_bot | 📩 New Pending Message from 5989936352 in -1003798966794 (Topic: 1)
+2026-04-27 09:50:57 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 09:51:11 AM | INFO | db_manager | ✓ Message 585 in -1003883905797 saved as PENDING
+2026-04-27 09:51:11 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 1)
+2026-04-27 09:51:18 AM | INFO | db_manager | ✅ Group Resolved: [168] in -1003798966794 by (60501) (Reply)
+2026-04-27 09:51:18 AM | INFO | auditor | ℹ️ No active alert tracking found for 168 in -1003798966794.
+2026-04-27 09:51:18 AM | INFO | auditor | ℹ️ Message 168 was not an active alert. Skipping record.
+2026-04-27 09:51:18 AM | INFO | main_bot | ✅ Message 168 marked as RESOLVED via Reply by (60501)
+2026-04-27 09:52:00 AM | INFO | db_manager | ✅ Group Resolved: [585] in -1003883905797 by (60501) (Reply)
+2026-04-27 09:52:00 AM | INFO | auditor | ℹ️ No active alert tracking found for 585 in -1003883905797.
+2026-04-27 09:52:00 AM | INFO | auditor | ℹ️ Message 585 was not an active alert. Skipping record.
+2026-04-27 09:52:00 AM | INFO | main_bot | ✅ Message 585 marked as RESOLVED via Reply by (60501)
+2026-04-27 09:52:02 AM | INFO | db_manager | ✓ Message 573 in -1003898476625 saved as PENDING
+2026-04-27 09:52:02 AM | INFO | main_bot | 📩 New Pending Message from 1623723163 in -1003898476625 (Topic: 1)
+2026-04-27 09:52:14 AM | INFO | db_manager | ✓ Message 587 in -1003883905797 saved as PENDING
+2026-04-27 09:52:14 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 1)
+2026-04-27 09:52:15 AM | INFO | db_manager | ✅ Group Resolved: [573] in -1003898476625 by Yoon Waddy (Reaction (❤))
+2026-04-27 09:52:15 AM | INFO | auditor | ℹ️ No active alert tracking found for 573 in -1003898476625.
+2026-04-27 09:52:15 AM | INFO | auditor | ℹ️ Message 573 was not an active alert. Skipping record.
+2026-04-27 09:52:15 AM | INFO | main_bot | ✅ Message 573 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-04-27 09:52:28 AM | INFO | db_manager | ✅ Group Resolved: [573] in -1003898476625 by (60501) (Reply)
+2026-04-27 09:52:29 AM | INFO | auditor | ℹ️ No active alert tracking found for 573 in -1003898476625.
+2026-04-27 09:52:29 AM | INFO | auditor | ℹ️ Message 573 was not an active alert. Skipping record.
+2026-04-27 09:52:29 AM | INFO | main_bot | ✅ Message 573 marked as RESOLVED via Reply by (60501)
+2026-04-27 09:55:57 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 09:57:52 AM | INFO | db_manager | ✓ Message 54 in -1003569233047 saved as PENDING
+2026-04-27 09:57:52 AM | INFO | main_bot | 📩 New Pending Message from 1658332977 in -1003569233047 (Topic: 6)
+2026-04-27 09:58:01 AM | INFO | db_manager | ✅ Group Resolved: [54] in -1003569233047 by Eaindra (Reaction (❤))
+2026-04-27 09:58:01 AM | INFO | auditor | ℹ️ No active alert tracking found for 54 in -1003569233047.
+2026-04-27 09:58:01 AM | INFO | auditor | ℹ️ Message 54 was not an active alert. Skipping record.
+2026-04-27 09:58:01 AM | INFO | main_bot | ✅ Message 54 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-04-27 09:58:28 AM | INFO | auditor | 📂 Auditing Batch: SkinCare NextStep (Topic 6) in Chat -1003898476625 (1 messages)
+2026-04-27 09:58:29 AM | INFO | auditor | 🔇 AI Ignored Group: [569]
+2026-04-27 10:00:28 AM | INFO | main_bot | 🎯 Feedback done recorded for 165 by 8353570874 (Archive Bypassed)
+2026-04-27 10:00:38 AM | INFO | main_bot | 🎯 Feedback done recorded for 165 by 8353570874 (Archive Bypassed)
+2026-04-27 10:01:01 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 10:02:01 AM | INFO | auditor | 📂 Auditing Batch: Scarlett Beauty (Topic 6) in Chat -1003798966794 (1 messages)
+2026-04-27 10:02:02 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003798966794, topic=6, msg=167, force=False
+2026-04-27 10:02:02 AM | WARNING | auditor | ⚠️ No Explicit Route for -1003798966794/6. Notifying Manager...
+2026-04-27 10:02:02 AM | WARNING | auditor | ⚠️ No route found for Scarlett Beauty (-1003798966794/6). Notifying Manager.
+2026-04-27 10:02:02 AM | INFO | auditor | 🔍 notify_manager_missing_route: shop=Scarlett Beauty, msg_id=167, chat=-1003798966794
+2026-04-27 10:02:03 AM | INFO | auditor | 📲 Missing route notification sent to Manager for Scarlett Beauty
+2026-04-27 10:02:18 AM | INFO | db_manager | 🆕 New Routing Created: -1003798966794/6 (Scarlett Beauty) -> -1003601049225/35
+2026-04-27 10:02:18 AM | INFO | main_bot | 🔍 Attempting to send immediate alert for msg_id: 167, chat: -1003798966794, topic: 6
+2026-04-27 10:02:18 AM | INFO | main_bot | 📤 Sending alert to target topic 35 for Scarlett Beauty
+2026-04-27 10:02:18 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003798966794, topic=6, msg=167, force=False
+2026-04-27 10:02:18 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798966794/6 -> -1003601049225/35
+2026-04-27 10:02:19 AM | INFO | auditor | 📢 Alert sent for 167 in Scarlett Beauty to Central Group
+2026-04-27 10:02:19 AM | INFO | main_bot | 🎯 Manager set explicit route and sent alert for -1003798966794/6 -> 35
+2026-04-27 10:02:35 AM | INFO | auditor | 📂 Auditing Batch: Naseem (Topic 1) in Chat -1003731394148 (5 messages)
+2026-04-27 10:02:36 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003731394148, topic=1, msg=544, force=False
+2026-04-27 10:02:36 AM | INFO | auditor | 🎯 Explicit Route Found: -1003731394148/1 -> -1003601049225/1
+2026-04-27 10:02:36 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-04-27 10:03:11 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 868
+2026-04-27 10:03:11 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-27 10:03:11 AM | INFO | db_manager | ✅ Group Resolved: [544] in -1003731394148 by Yoon Waddy (Done Button)
+2026-04-27 10:03:11 AM | INFO | main_bot | ✅ Message 544 resolved via Done Button by Yoon Waddy
+2026-04-27 10:05:38 AM | INFO | db_manager | ✓ Message 124 in -1003812325795 saved as PENDING
+2026-04-27 10:05:38 AM | INFO | main_bot | 📩 New Pending Message from 1976889162 in -1003812325795 (Topic: 1)
+2026-04-27 10:06:09 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 10:07:39 AM | INFO | auditor | 📂 Auditing Batch: KSJB (Topic 1) in Chat -1003883905797 (1 messages)
+2026-04-27 10:07:40 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003883905797, topic=1, msg=587, force=False
+2026-04-27 10:07:40 AM | INFO | auditor | 🎯 Explicit Route Found: -1003883905797/1 -> -1003601049225/1
+2026-04-27 10:07:40 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-04-27 10:11:12 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 10:12:37 AM | INFO | db_manager | ✓ Message 350 in -1003780967023 saved as PENDING
+2026-04-27 10:12:37 AM | INFO | main_bot | 📩 New Pending Message from 8755095351 in -1003780967023 (Topic: 1)
+2026-04-27 10:13:08 AM | INFO | db_manager | ✓ Message 351 in -1003780967023 saved as PENDING
+2026-04-27 10:13:08 AM | INFO | main_bot | 📩 New Pending Message from 8755095351 in -1003780967023 (Topic: 1)
+2026-04-27 10:14:31 AM | INFO | db_manager | ✅ Group Resolved: [2958] in -1003798739565 by Eaindra (Reply)
+2026-04-27 10:14:31 AM | INFO | auditor | ℹ️ No active alert tracking found for 2958 in -1003798739565.
+2026-04-27 10:14:31 AM | INFO | auditor | ℹ️ Message 2958 was not an active alert. Skipping record.
+2026-04-27 10:14:31 AM | INFO | main_bot | ✅ Message 2958 marked as RESOLVED via Reply by Eaindra
+2026-04-27 10:16:13 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 10:17:13 AM | WARNING | auditor | 🚨 Escalated 167 to Manager
+2026-04-27 10:18:28 AM | INFO | main_bot | 🎯 Feedback greet recorded for 587 by 8353570874 (Archive Bypassed)
+2026-04-27 10:19:40 AM | INFO | db_manager | ✅ Group Resolved: [3588] in -1003798739565 by Eaindra (Reply)
+2026-04-27 10:19:40 AM | INFO | auditor | ℹ️ No active alert tracking found for 3588 in -1003798739565.
+2026-04-27 10:19:40 AM | INFO | auditor | ℹ️ Message 3588 was not an active alert. Skipping record.
+2026-04-27 10:19:40 AM | INFO | main_bot | ✅ Message 3588 marked as RESOLVED via Reply by Eaindra
+2026-04-27 10:20:44 AM | INFO | auditor | 📂 Auditing Batch: KPC OS (Topic 1) in Chat -1003812325795 (1 messages)
+2026-04-27 10:21:17 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 10:23:30 AM | INFO | db_manager | ✓ Message 143 in -1003720313785 saved as PENDING
+2026-04-27 10:23:30 AM | INFO | main_bot | 📩 New Pending Message from 6251359796 in -1003720313785 (Topic: 1)
+2026-04-27 10:24:05 AM | INFO | db_manager | ✅ Group Resolved: [124] in -1003812325795 by CS 2 (Reaction (❤))
+2026-04-27 10:24:05 AM | INFO | auditor | ℹ️ No active alert tracking found for 124 in -1003812325795.
+2026-04-27 10:24:05 AM | INFO | auditor | ℹ️ Message 124 was not an active alert. Skipping record.
+2026-04-27 10:24:05 AM | INFO | main_bot | ✅ Message 124 marked as RESOLVED via Reaction (❤) by CS 2
+2026-04-27 10:24:08 AM | INFO | db_manager | ✅ Group Resolved: [351] in -1003780967023 by (60501) (Reply)
+2026-04-27 10:24:08 AM | INFO | auditor | ℹ️ No active alert tracking found for 351 in -1003780967023.
+2026-04-27 10:24:08 AM | INFO | auditor | ℹ️ Message 351 was not an active alert. Skipping record.
+2026-04-27 10:24:08 AM | INFO | main_bot | ✅ Message 351 marked as RESOLVED via Reply by (60501)
+2026-04-27 10:24:47 AM | INFO | db_manager | ✅ Group Resolved: [143] in -1003720313785 by (60501) (Reply)
+2026-04-27 10:24:47 AM | INFO | auditor | ℹ️ No active alert tracking found for 143 in -1003720313785.
+2026-04-27 10:24:47 AM | INFO | auditor | ℹ️ Message 143 was not an active alert. Skipping record.
+2026-04-27 10:24:47 AM | INFO | main_bot | ✅ Message 143 marked as RESOLVED via Reply by (60501)
+2026-04-27 10:24:47 AM | INFO | db_manager | ✅ Group Resolved: [124] in -1003812325795 by CS 2 (Reply)
+2026-04-27 10:24:48 AM | INFO | auditor | ℹ️ No active alert tracking found for 124 in -1003812325795.
+2026-04-27 10:24:48 AM | INFO | auditor | ℹ️ Message 124 was not an active alert. Skipping record.
+2026-04-27 10:24:48 AM | INFO | main_bot | ✅ Message 124 marked as RESOLVED via Reply by CS 2
+2026-04-27 10:26:18 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 10:27:20 AM | INFO | db_manager | ✓ Message 74 in -1003849260656 saved as PENDING
+2026-04-27 10:27:20 AM | INFO | main_bot | 📩 New Pending Message from 8263230205 in -1003849260656 (Topic: 1)
+2026-04-27 10:27:48 AM | INFO | auditor | 📂 Auditing Batch: NNKW Bookstore (Topic 1) in Chat -1003780967023 (1 messages)
+2026-04-27 10:27:49 AM | INFO | auditor | 🔇 AI Ignored Group: [350]
+2026-04-27 10:28:19 AM | INFO | db_manager | ✅ Group Resolved: [74] in -1003849260656 by (60501) (Reply)
+2026-04-27 10:28:19 AM | INFO | auditor | ℹ️ No active alert tracking found for 74 in -1003849260656.
+2026-04-27 10:28:19 AM | INFO | auditor | ℹ️ Message 74 was not an active alert. Skipping record.
+2026-04-27 10:28:19 AM | INFO | main_bot | ✅ Message 74 marked as RESOLVED via Reply by (60501)
+2026-04-27 10:30:46 AM | INFO | db_manager | ✓ Message 265 in -1003552853303 saved as PENDING
+2026-04-27 10:30:46 AM | INFO | main_bot | 📩 New Pending Message from 1621732326 in -1003552853303 (Topic: 1)
+2026-04-27 10:31:21 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 10:33:51 AM | INFO | db_manager | ✓ Message 588 in -1003883905797 saved as PENDING
+2026-04-27 10:33:51 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 1)
+2026-04-27 10:36:22 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 10:36:22 AM | WARNING | db_manager | 🧹 Auto-resolved 2 stale alerts (Older than 30 hours)
+2026-04-27 10:41:22 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 10:42:51 AM | INFO | db_manager | ✓ Message 499 in -1003768124152 saved as PENDING
+2026-04-27 10:42:51 AM | INFO | main_bot | 📩 New Pending Message from 8445190818 in -1003768124152 (Topic: 6)
+2026-04-27 10:45:52 AM | INFO | auditor | 📂 Auditing Batch: S&H (Topic 1) in Chat -1003552853303 (1 messages)
+2026-04-27 10:45:54 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003552853303, topic=1, msg=265, force=False
+2026-04-27 10:45:54 AM | INFO | auditor | 🎯 Explicit Route Found: -1003552853303/1 -> -1003601049225/1
+2026-04-27 10:45:54 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-04-27 10:46:26 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 10:48:56 AM | INFO | auditor | 📂 Auditing Batch: KSJB (Topic 1) in Chat -1003883905797 (1 messages)
+2026-04-27 10:48:57 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003883905797, topic=1, msg=588, force=False
+2026-04-27 10:48:57 AM | INFO | auditor | 🎯 Explicit Route Found: -1003883905797/1 -> -1003601049225/1
+2026-04-27 10:48:57 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-04-27 10:49:51 AM | INFO | db_manager | ✅ Group Resolved: [500] in -1003768124152 by Thida Hlaing (Reply)
+2026-04-27 10:49:51 AM | INFO | auditor | ℹ️ No active alert tracking found for 500 in -1003768124152.
+2026-04-27 10:49:51 AM | INFO | auditor | ℹ️ Message 500 was not an active alert. Skipping record.
+2026-04-27 10:49:51 AM | INFO | main_bot | ✅ Message 500 marked as RESOLVED via Reply by Thida Hlaing
+2026-04-27 10:51:30 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 10:53:08 AM | INFO | db_manager | ✅ Group Resolved: [111] in -1003720790867 by Yoon Waddy (Reaction (❤))
+2026-04-27 10:53:08 AM | INFO | auditor | ℹ️ No active alert tracking found for 111 in -1003720790867.
+2026-04-27 10:53:08 AM | INFO | auditor | ℹ️ Message 111 was not an active alert. Skipping record.
+2026-04-27 10:53:08 AM | INFO | main_bot | ✅ Message 111 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-04-27 10:54:40 AM | INFO | db_manager | ✅ Group Resolved: [588] in -1003883905797 by (60501) (Reply)
+2026-04-27 10:54:40 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 872
+2026-04-27 10:54:40 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-27 10:54:41 AM | INFO | main_bot | ✅ Message 588 marked as RESOLVED via Reply by (60501)
+2026-04-27 10:54:54 AM | INFO | db_manager | ✅ Group Resolved: [265] in -1003552853303 by (60501) (Reply)
+2026-04-27 10:54:54 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 871
+2026-04-27 10:54:54 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-27 10:54:54 AM | INFO | main_bot | ✅ Message 265 marked as RESOLVED via Reply by (60501)
+2026-04-27 10:56:30 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 10:58:00 AM | INFO | auditor | 📂 Auditing Batch: CiCi Beauty (Topic 6) in Chat -1003768124152 (1 messages)
+2026-04-27 10:58:01 AM | INFO | auditor | 🔇 AI Ignored Group: [499]
+2026-04-27 11:01:33 AM | INFO | db_manager | ✅ Group Resolved: [311] in -1003796096237 by Eaindra (Reply)
+2026-04-27 11:01:33 AM | INFO | auditor | ℹ️ No active alert tracking found for 311 in -1003796096237.
+2026-04-27 11:01:33 AM | INFO | auditor | ℹ️ Message 311 was not an active alert. Skipping record.
+2026-04-27 11:01:33 AM | INFO | main_bot | ✅ Message 311 marked as RESOLVED via Reply by Eaindra
+2026-04-27 11:01:34 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 11:02:06 AM | INFO | db_manager | ✅ Group Resolved: [668] in -1003745970988 by Eaindra (Reaction (❤))
+2026-04-27 11:02:06 AM | INFO | auditor | ℹ️ No active alert tracking found for 668 in -1003745970988.
+2026-04-27 11:02:06 AM | INFO | auditor | ℹ️ Message 668 was not an active alert. Skipping record.
+2026-04-27 11:02:06 AM | INFO | main_bot | ✅ Message 668 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-04-27 11:03:14 AM | INFO | db_manager | ✅ Group Resolved: [588] in -1003883905797 by Thida Hlaing (Reply)
+2026-04-27 11:03:14 AM | INFO | auditor | ℹ️ No active alert tracking found for 588 in -1003883905797.
+2026-04-27 11:03:14 AM | INFO | auditor | ℹ️ Message 588 was not an active alert. Skipping record.
+2026-04-27 11:03:14 AM | INFO | main_bot | ✅ Message 588 marked as RESOLVED via Reply by Thida Hlaing
+2026-04-27 11:05:36 AM | INFO | db_manager | ✓ Message 217 in -1003862716436 saved as PENDING
+2026-04-27 11:05:36 AM | INFO | main_bot | 📩 New Pending Message from 7104947843 in -1003862716436 (Topic: 1)
+2026-04-27 11:05:49 AM | INFO | db_manager | ✓ Message 592 in -1003883905797 saved as PENDING
+2026-04-27 11:05:49 AM | INFO | main_bot | 📩 New Pending Message from 5794708221 in -1003883905797 (Topic: 1)
+2026-04-27 11:05:57 AM | INFO | db_manager | ✓ Message 218 in -1003862716436 saved as PENDING
+2026-04-27 11:05:57 AM | INFO | main_bot | 📩 New Pending Message from 7104947843 in -1003862716436 (Topic: 1)
+2026-04-27 11:06:34 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 11:07:14 AM | INFO | db_manager | ✅ Group Resolved: [217] in -1003862716436 by (60501) (Reply)
+2026-04-27 11:07:14 AM | INFO | auditor | ℹ️ No active alert tracking found for 217 in -1003862716436.
+2026-04-27 11:07:14 AM | INFO | auditor | ℹ️ Message 217 was not an active alert. Skipping record.
+2026-04-27 11:07:14 AM | INFO | main_bot | ✅ Message 217 marked as RESOLVED via Reply by (60501)
+2026-04-27 11:08:14 AM | INFO | db_manager | ✓ Message 220 in -1003862716436 saved as PENDING
+2026-04-27 11:08:14 AM | INFO | main_bot | 📩 New Pending Message from 7104947843 in -1003862716436 (Topic: 1)
+2026-04-27 11:08:30 AM | INFO | db_manager | ✓ Message 221 in -1003862716436 saved as PENDING
+2026-04-27 11:08:30 AM | INFO | main_bot | 📩 New Pending Message from 7104947843 in -1003862716436 (Topic: 1)
+2026-04-27 11:09:20 AM | INFO | db_manager | ✅ Group Resolved: [673] in -1003745970988 by Eaindra (Reaction (❤))
+2026-04-27 11:09:20 AM | INFO | auditor | ℹ️ No active alert tracking found for 673 in -1003745970988.
+2026-04-27 11:09:20 AM | INFO | auditor | ℹ️ Message 673 was not an active alert. Skipping record.
+2026-04-27 11:09:20 AM | INFO | main_bot | ✅ Message 673 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-04-27 11:11:34 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 11:12:05 AM | INFO | db_manager | ✓ Message 3594 in -1003798739565 saved as PENDING
+2026-04-27 11:12:05 AM | INFO | main_bot | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 4)
+2026-04-27 11:12:11 AM | INFO | db_manager | ✓ Message 3595 in -1003798739565 saved as PENDING
+2026-04-27 11:12:11 AM | INFO | main_bot | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 4)
+2026-04-27 11:12:53 AM | INFO | db_manager | ✅ Group Resolved: [379] in -1003760073283 by Thida Hlaing (Reply)
+2026-04-27 11:12:53 AM | INFO | auditor | ℹ️ No active alert tracking found for 379 in -1003760073283.
+2026-04-27 11:12:53 AM | INFO | auditor | ℹ️ Message 379 was not an active alert. Skipping record.
+2026-04-27 11:12:53 AM | INFO | main_bot | ✅ Message 379 marked as RESOLVED via Reply by Thida Hlaing
+2026-04-27 11:13:50 AM | INFO | db_manager | ✓ Message 605 in -1003506710131 saved as PENDING
+2026-04-27 11:13:50 AM | INFO | main_bot | 📩 New Pending Message from 5627501190 in -1003506710131 (Topic: 1)
+2026-04-27 11:16:35 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 11:16:43 AM | INFO | db_manager | ✅ Group Resolved: [605] in -1003506710131 by (60501) (Reply)
+2026-04-27 11:16:43 AM | INFO | auditor | ℹ️ No active alert tracking found for 605 in -1003506710131.
+2026-04-27 11:16:43 AM | INFO | auditor | ℹ️ Message 605 was not an active alert. Skipping record.
+2026-04-27 11:16:43 AM | INFO | main_bot | ✅ Message 605 marked as RESOLVED via Reply by (60501)
+2026-04-27 11:18:54 AM | INFO | db_manager | ✓ Message 3597 in -1003798739565 saved as PENDING
+2026-04-27 11:18:54 AM | INFO | main_bot | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 4)
+2026-04-27 11:21:05 AM | INFO | auditor | 📂 Auditing Batch: KSJB (Topic 1) in Chat -1003883905797 (1 messages)
+2026-04-27 11:21:06 AM | INFO | auditor | 🔇 AI Ignored Group: [592]
+2026-04-27 11:21:08 AM | INFO | auditor | 📂 Auditing Batch: Pretty Petals (Topic 1) in Chat -1003862716436 (3 messages)
+2026-04-27 11:21:10 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003862716436, topic=1, msg=218, force=False
+2026-04-27 11:21:10 AM | INFO | auditor | 🎯 Explicit Route Found: -1003862716436/1 -> -1003601049225/1
+2026-04-27 11:21:10 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-04-27 11:21:36 AM | INFO | db_manager | ✓ Message 291 in -1003692715477 saved as PENDING
+2026-04-27 11:21:36 AM | INFO | main_bot | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 1)
+2026-04-27 11:21:42 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 11:21:44 AM | INFO | db_manager | ✓ Message 292 in -1003692715477 saved as PENDING
+2026-04-27 11:21:44 AM | INFO | main_bot | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 1)
+2026-04-27 11:23:06 AM | INFO | main_bot | 🎯 Feedback done recorded for 218 by 7261311241 (Archive Bypassed)
+2026-04-27 11:26:01 AM | INFO | db_manager | ✓ Message 294 in -1003692715477 saved as PENDING
+2026-04-27 11:26:01 AM | INFO | main_bot | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 1)
+2026-04-27 11:26:18 AM | INFO | db_manager | ✅ Group Resolved: [294] in -1003692715477 by Yoon Waddy (Reaction (❤))
+2026-04-27 11:26:18 AM | INFO | auditor | ℹ️ No active alert tracking found for 294 in -1003692715477.
+2026-04-27 11:26:18 AM | INFO | auditor | ℹ️ Message 294 was not an active alert. Skipping record.
+2026-04-27 11:26:18 AM | INFO | main_bot | ✅ Message 294 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-04-27 11:26:32 AM | INFO | db_manager | ✓ Message 43 in -1003250479427 saved as PENDING
+2026-04-27 11:26:32 AM | INFO | main_bot | 📩 New Pending Message from 5337325691 in -1003250479427 (Topic: 1)
+2026-04-27 11:26:43 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 11:26:47 AM | INFO | db_manager | ✓ Message 44 in -1003250479427 saved as PENDING
+2026-04-27 11:26:47 AM | INFO | main_bot | 📩 New Pending Message from 5337325691 in -1003250479427 (Topic: 1)
+2026-04-27 11:26:56 AM | INFO | db_manager | ✓ Message 743 in -1003810399961 saved as PENDING
+2026-04-27 11:26:56 AM | INFO | main_bot | 📩 New Pending Message from 5355078970 in -1003810399961 (Topic: 1)
+2026-04-27 11:27:03 AM | INFO | db_manager | ✓ Message 744 in -1003810399961 saved as PENDING
+2026-04-27 11:27:03 AM | INFO | main_bot | 📩 New Pending Message from 5355078970 in -1003810399961 (Topic: 1)
+2026-04-27 11:27:13 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion (Topic 4) in Chat -1003798739565 (3 messages)
+2026-04-27 11:27:14 AM | INFO | auditor | 🔇 AI Ignored Group: [3594, 3595, 3597]
+2026-04-27 11:27:52 AM | INFO | db_manager | ✅ Group Resolved: [218] in -1003709069700 by CS 2 (Reply)
+2026-04-27 11:27:52 AM | INFO | auditor | ℹ️ No active alert tracking found for 218 in -1003709069700.
+2026-04-27 11:27:52 AM | INFO | auditor | ℹ️ Message 218 was not an active alert. Skipping record.
+2026-04-27 11:27:52 AM | INFO | main_bot | ✅ Message 218 marked as RESOLVED via Reply by CS 2
+2026-04-27 11:29:42 AM | INFO | db_manager | ✓ Message 3599 in -1003798739565 saved as PENDING
+2026-04-27 11:29:42 AM | INFO | main_bot | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 4)
+2026-04-27 11:30:22 AM | INFO | db_manager | ✓ Message 3600 in -1003798739565 saved as PENDING
+2026-04-27 11:30:22 AM | INFO | main_bot | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 4)
+2026-04-27 11:30:36 AM | INFO | db_manager | ✓ Message 3601 in -1003798739565 saved as PENDING
+2026-04-27 11:30:36 AM | INFO | main_bot | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 4)
+2026-04-27 11:31:44 AM | INFO | db_manager | ✓ Message 359 in -1003780967023 saved as PENDING
+2026-04-27 11:31:44 AM | INFO | main_bot | 📩 New Pending Message from 8755095351 in -1003780967023 (Topic: 1)
+2026-04-27 11:32:00 AM | INFO | db_manager | ✅ Group Resolved: [742] in -1003810399961 by Thida Hlaing (Reply)
+2026-04-27 11:32:00 AM | INFO | auditor | ℹ️ No active alert tracking found for 742 in -1003810399961.
+2026-04-27 11:32:00 AM | INFO | auditor | ℹ️ Message 742 was not an active alert. Skipping record.
+2026-04-27 11:32:00 AM | INFO | main_bot | ✅ Message 742 marked as RESOLVED via Reply by Thida Hlaing
+2026-04-27 11:32:16 AM | INFO | db_manager | ✅ Group Resolved: [680] in -1003745970988 by Eaindra (Reaction (❤))
+2026-04-27 11:32:16 AM | INFO | auditor | ℹ️ No active alert tracking found for 680 in -1003745970988.
+2026-04-27 11:32:16 AM | INFO | auditor | ℹ️ Message 680 was not an active alert. Skipping record.
+2026-04-27 11:32:16 AM | INFO | main_bot | ✅ Message 680 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-04-27 11:32:17 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 11:32:18 AM | INFO | db_manager | ✅ Group Resolved: [681] in -1003745970988 by Eaindra (Reaction (❤))
+2026-04-27 11:32:18 AM | INFO | auditor | ℹ️ No active alert tracking found for 681 in -1003745970988.
+2026-04-27 11:32:18 AM | INFO | auditor | ℹ️ Message 681 was not an active alert. Skipping record.
+2026-04-27 11:32:18 AM | INFO | main_bot | ✅ Message 681 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-04-27 11:32:47 AM | INFO | db_manager | ✓ Message 296 in -1003692715477 saved as PENDING
+2026-04-27 11:32:47 AM | INFO | main_bot | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 1)
+2026-04-27 11:34:05 AM | INFO | db_manager | ✅ Group Resolved: [359] in -1003780967023 by Yoon Waddy (Reaction (❤))
+2026-04-27 11:34:05 AM | INFO | auditor | ℹ️ No active alert tracking found for 359 in -1003780967023.
+2026-04-27 11:34:05 AM | INFO | auditor | ℹ️ Message 359 was not an active alert. Skipping record.
+2026-04-27 11:34:05 AM | INFO | main_bot | ✅ Message 359 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-04-27 11:34:21 AM | INFO | db_manager | ✅ Group Resolved: [296] in -1003692715477 by Yoon Waddy (Reaction (❤))
+2026-04-27 11:34:21 AM | INFO | auditor | ℹ️ No active alert tracking found for 296 in -1003692715477.
+2026-04-27 11:34:21 AM | INFO | auditor | ℹ️ Message 296 was not an active alert. Skipping record.
+2026-04-27 11:34:21 AM | INFO | main_bot | ✅ Message 296 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-04-27 11:35:58 AM | INFO | db_manager | ✅ Group Resolved: [436] in -1003646045828 by CS 2 (Reply)
+2026-04-27 11:35:58 AM | INFO | auditor | ℹ️ No active alert tracking found for 436 in -1003646045828.
+2026-04-27 11:35:58 AM | INFO | auditor | ℹ️ Message 436 was not an active alert. Skipping record.
+2026-04-27 11:35:58 AM | INFO | main_bot | ✅ Message 436 marked as RESOLVED via Reply by CS 2
+2026-04-27 11:37:17 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 11:37:17 AM | WARNING | db_manager | 🧹 Auto-resolved 2 stale alerts (Older than 30 hours)
+2026-04-27 11:37:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:37:35 AM | INFO | db_manager | ✓ Message 77 in -1003849260656 saved as PENDING
+2026-04-27 11:37:35 AM | INFO | main_bot | 📩 New Pending Message from 8263230205 in -1003849260656 (Topic: 1)
+2026-04-27 11:38:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:38:25 AM | INFO | db_manager | ✅ Group Resolved: [3600] in -1003798739565 by Yoon Waddy (Reaction (❤))
+2026-04-27 11:38:25 AM | INFO | auditor | ℹ️ No active alert tracking found for 3600 in -1003798739565.
+2026-04-27 11:38:25 AM | INFO | auditor | ℹ️ Message 3600 was not an active alert. Skipping record.
+2026-04-27 11:38:25 AM | INFO | main_bot | ✅ Message 3600 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-04-27 11:38:27 AM | INFO | db_manager | ✅ Group Resolved: [3599] in -1003798739565 by Yoon Waddy (Reaction (❤))
+2026-04-27 11:38:27 AM | INFO | auditor | ℹ️ No active alert tracking found for 3599 in -1003798739565.
+2026-04-27 11:38:27 AM | INFO | auditor | ℹ️ Message 3599 was not an active alert. Skipping record.
+2026-04-27 11:38:27 AM | INFO | main_bot | ✅ Message 3599 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-04-27 11:38:29 AM | INFO | db_manager | ✅ Group Resolved: [3601] in -1003798739565 by Yoon Waddy (Reaction (❤))
+2026-04-27 11:38:29 AM | INFO | auditor | ℹ️ No active alert tracking found for 3601 in -1003798739565.
+2026-04-27 11:38:29 AM | INFO | auditor | ℹ️ Message 3601 was not an active alert. Skipping record.
+2026-04-27 11:38:29 AM | INFO | main_bot | ✅ Message 3601 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-04-27 11:39:04 AM | INFO | db_manager | ✅ Group Resolved: [690] in -1003745970988 by Eaindra (Reaction (❤))
+2026-04-27 11:39:04 AM | INFO | auditor | ℹ️ No active alert tracking found for 690 in -1003745970988.
+2026-04-27 11:39:04 AM | INFO | auditor | ℹ️ Message 690 was not an active alert. Skipping record.
+2026-04-27 11:39:04 AM | INFO | main_bot | ✅ Message 690 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-04-27 11:39:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:39:47 AM | INFO | db_manager | ✅ Group Resolved: [3601] in -1003798739565 by Yoon Waddy (Reply)
+2026-04-27 11:39:47 AM | INFO | auditor | ℹ️ No active alert tracking found for 3601 in -1003798739565.
+2026-04-27 11:39:47 AM | INFO | auditor | ℹ️ Message 3601 was not an active alert. Skipping record.
+2026-04-27 11:39:47 AM | INFO | main_bot | ✅ Message 3601 marked as RESOLVED via Reply by Yoon Waddy
+2026-04-27 11:40:03 AM | INFO | db_manager | ✓ Message 195 in -1003881120872 saved as PENDING
+2026-04-27 11:40:03 AM | INFO | main_bot | 📩 New Pending Message from 5453401661 in -1003881120872 (Topic: 1)
+2026-04-27 11:40:09 AM | INFO | db_manager | ✓ Message 196 in -1003881120872 saved as PENDING
+2026-04-27 11:40:09 AM | INFO | main_bot | 📩 New Pending Message from 5453401661 in -1003881120872 (Topic: 1)
+2026-04-27 11:40:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:40:36 AM | INFO | db_manager | ✓ Message 197 in -1003881120872 saved as PENDING
+2026-04-27 11:40:36 AM | INFO | main_bot | 📩 New Pending Message from 5453401661 in -1003881120872 (Topic: 1)
+2026-04-27 11:41:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:42:17 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 11:42:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:42:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:42:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:43:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:43:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:43:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:43:54 AM | INFO | db_manager | ✅ Group Resolved: [366] in -1003812868558 by CS 2 (Reply)
+2026-04-27 11:43:54 AM | INFO | auditor | ℹ️ No active alert tracking found for 366 in -1003812868558.
+2026-04-27 11:43:54 AM | INFO | auditor | ℹ️ Message 366 was not an active alert. Skipping record.
+2026-04-27 11:43:54 AM | INFO | main_bot | ✅ Message 366 marked as RESOLVED via Reply by CS 2
+2026-04-27 11:44:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:44:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:44:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:44:32 AM | INFO | db_manager | ✓ Message 146 in -1003720313785 saved as PENDING
+2026-04-27 11:44:32 AM | INFO | main_bot | 📩 New Pending Message from 6251359796 in -1003720313785 (Topic: 1)
+2026-04-27 11:45:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:45:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:45:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:46:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:46:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:46:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:47:16 AM | INFO | db_manager | ✓ Message 406 in -1003819601608 saved as PENDING
+2026-04-27 11:47:16 AM | INFO | main_bot | 📩 New Pending Message from 5800003331 in -1003819601608 (Topic: 6)
+2026-04-27 11:47:17 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 11:47:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:47:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:47:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:48:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:48:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:48:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:49:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:49:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:49:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:49:38 AM | INFO | db_manager | ✓ Message 147 in -1003720313785 saved as PENDING
+2026-04-27 11:49:38 AM | INFO | main_bot | 📩 New Pending Message from 6251359796 in -1003720313785 (Topic: 1)
+2026-04-27 11:50:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:50:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:50:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:51:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:51:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:51:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:52:02 AM | INFO | db_manager | ✅ Group Resolved: [175] in -1003752062728 by Yoon Waddy (Reaction (❤))
+2026-04-27 11:52:02 AM | INFO | auditor | ℹ️ No active alert tracking found for 175 in -1003752062728.
+2026-04-27 11:52:02 AM | INFO | auditor | ℹ️ Message 175 was not an active alert. Skipping record.
+2026-04-27 11:52:02 AM | INFO | main_bot | ✅ Message 175 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-04-27 11:52:17 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 11:52:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:52:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:52:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:53:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:53:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:53:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:53:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 11:54:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:54:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:54:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:54:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 11:55:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:55:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:55:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:55:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 11:55:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 11:55:26 AM | WARNING | commands_handler | ⚠️ Restart command issued by 8353570874. Cleaning up...
+2026-04-27 11:55:31 AM | INFO | commands_handler | 🚀 Process exiting for restart...
+2026-04-27 11:55:33 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-27 11:55:33 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-27 11:55:33 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-27 11:55:33 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-27 11:55:33 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-27 11:55:33 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-27 11:56:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:56:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:56:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:56:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 11:56:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 11:57:17 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 11:57:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:57:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:57:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:57:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 11:57:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 11:58:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:58:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:58:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:58:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 11:58:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 11:59:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 11:59:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 11:59:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 11:59:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 11:59:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:00:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:00:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:00:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:00:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:00:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:00:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:01:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:01:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:01:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:01:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:01:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:01:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:02:17 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 12:02:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:02:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:02:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:02:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:02:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:02:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:02:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/6 -> -1003601049225/35
+2026-04-27 12:02:33 PM | ERROR | alert_handler | ❌ Reaction Handler Error: module 'db_manager' has no attribute 'connection_scope'
+2026-04-27 12:03:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:03:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:03:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:03:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:03:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:03:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:03:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/6 -> -1003601049225/35
+2026-04-27 12:04:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:04:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:04:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:04:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:04:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:04:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:04:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/6 -> -1003601049225/35
+2026-04-27 12:04:26 PM | INFO | db_manager | ✓ Message 149 in -1003720313785 saved as PENDING
+2026-04-27 12:04:26 PM | INFO | message_handler | 📩 New Pending Message from 6251359796 in -1003720313785 (Topic: 1)
+2026-04-27 12:05:16 PM | INFO | db_manager | ✅ Group Resolved: [361] in -1003780967023 by Eaindra (Reply)
+2026-04-27 12:05:16 PM | INFO | auditor | ℹ️ No active alert tracking found for 361 in -1003780967023.
+2026-04-27 12:05:16 PM | INFO | auditor | ℹ️ Message 361 was not an active alert. Skipping record.
+2026-04-27 12:05:16 PM | INFO | message_handler | ✅ Message 361 marked as RESOLVED via Reply by Eaindra
+2026-04-27 12:05:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:05:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:05:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:05:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:05:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:05:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:05:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/6 -> -1003601049225/35
+2026-04-27 12:06:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:06:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:06:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:06:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:06:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:06:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:06:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/6 -> -1003601049225/35
+2026-04-27 12:07:17 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 12:07:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:07:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:07:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:07:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:07:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:07:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:07:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/6 -> -1003601049225/35
+2026-04-27 12:08:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:08:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:08:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:08:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:08:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:08:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:08:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/6 -> -1003601049225/35
+2026-04-27 12:08:18 PM | ERROR | alert_handler | ❌ Reaction Handler Error: module 'db_manager' has no attribute 'connection_scope'
+2026-04-27 12:09:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:09:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:09:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:09:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:09:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:09:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:09:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/6 -> -1003601049225/35
+2026-04-27 12:09:32 PM | ERROR | alert_handler | ❌ Reaction Handler Error: module 'db_manager' has no attribute 'connection_scope'
+2026-04-27 12:10:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:10:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:10:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:10:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:10:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:10:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:10:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/6 -> -1003601049225/35
+2026-04-27 12:10:30 PM | ERROR | alert_handler | ❌ Reaction Handler Error: module 'db_manager' has no attribute 'connection_scope'
+2026-04-27 12:10:43 PM | ERROR | alert_handler | ❌ Reaction Handler Error: module 'db_manager' has no attribute 'connection_scope'
+2026-04-27 12:11:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:11:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:11:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:11:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:11:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:11:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:11:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/6 -> -1003601049225/35
+2026-04-27 12:11:42 PM | INFO | db_manager | ✓ Message 310 in -1003723204023 saved as PENDING
+2026-04-27 12:11:42 PM | INFO | message_handler | 📩 New Pending Message from 1604241630 in -1003723204023 (Topic: 6)
+2026-04-27 12:11:52 PM | ERROR | alert_handler | ❌ Reaction Handler Error: module 'db_manager' has no attribute 'connection_scope'
+2026-04-27 12:12:17 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-27 12:12:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:12:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:12:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:12:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:12:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:12:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:12:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/6 -> -1003601049225/35
+2026-04-27 12:12:23 PM | ERROR | alert_handler | ❌ Reaction Handler Error: module 'db_manager' has no attribute 'connection_scope'
+2026-04-27 12:12:51 PM | ERROR | alert_handler | ❌ Reaction Handler Error: module 'db_manager' has no attribute 'connection_scope'
+2026-04-27 12:13:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:13:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:13:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:13:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:13:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:13:17 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:13:18 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/6 -> -1003601049225/35
+2026-04-27 12:13:34 PM | INFO | db_manager | ✅ Group Resolved: [22] in -1003739231843 by Thida Hlaing (Reply)
+2026-04-27 12:13:34 PM | INFO | auditor | ℹ️ No active alert tracking found for 22 in -1003739231843.
+2026-04-27 12:13:34 PM | INFO | auditor | ℹ️ Message 22 was not an active alert. Skipping record.
+2026-04-27 12:13:34 PM | INFO | message_handler | ✅ Message 22 marked as RESOLVED via Reply by Thida Hlaing
+2026-04-27 12:14:18 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:14:18 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:14:18 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:14:18 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:14:18 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:14:18 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:14:18 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/6 -> -1003601049225/35
+2026-04-27 12:15:18 PM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/1 -> -1003601049225/1
+2026-04-27 12:15:18 PM | INFO | auditor | 🎯 Explicit Route Found: -1003250479427/1 -> -1003601049225/1
+2026-04-27 12:15:18 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-27 12:15:18 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/1 -> -1003601049225/1
+2026-04-27 12:15:18 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-27 12:15:18 PM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-04-27 12:15:18 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/6 -> -1003601049225/35

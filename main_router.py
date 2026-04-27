@@ -44,10 +44,6 @@ def handle_ai_query(bot, message):
             return
 
         # ၄။ Step 2: AI Intent Detection (Address vs General)
-        if not client:
-            bot.reply_to(message, "😔 စိတ်မရှိပါနဲ့ခင်ဗျာ။ AI စနစ် ခေတ္တချို့ယွင်းနေလို့ပါ။")
-            return
-
         intent_prompt = f"""
         Analyze the user query and decide if they are asking for the office address, location, or how to get there.
         User Query: "{query}"
@@ -129,9 +125,9 @@ def route_message(bot, message):
         Task: Analyze the user message and decide which module should handle it.
         
         Available Modules:
-        - auto_pickup: Use ONLY for NEW pickup requests (e.g., "pick up လာယူပေးပါ", "မနက်ဖြန် pick up ရှိပါတယ်").
+        - auto_pickup: Use for NEW pickup requests OR inquiries about pickup availability (e.g., "pick up လာယူပေးပါ", "ဒီနေ့ pickup ရဦးမလား", "မနက်ဖြန် pick up ရှိပါတယ်").
         - check_order: Use for checking order status, tracking numbers, or finding specific orders.
-        - auditor: Use for general inquiries, complaints, or when the user is asking "where is the pickup?" or "why is it late?" (e.g., "pick up မလာသေးဘူးလား", "ဘယ်အချိန်လာမှာလဲ").
+        - auditor: Use for complaints or when the user is asking about an ALREADY PLACED pickup (e.g., "pick up မလာသေးဘူးလား", "ဘယ်အချိန်လာမှာလဲ").
         - none: Use if the message is just a greeting, spam, or irrelevant.
 
         User Message: "{text}"

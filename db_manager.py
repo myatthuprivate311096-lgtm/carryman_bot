@@ -139,6 +139,14 @@ def init_db():
                     )''')
 
         # Feedback & AI Learning Tables
+        c.execute('''CREATE TABLE IF NOT EXISTS pickup_intermediate_messages (
+                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     orig_msg_id INTEGER,
+                     chat_id INTEGER,
+                     intermediate_msg_id INTEGER,
+                     created_at INTEGER
+                   )''')
+
         c.execute('''CREATE TABLE IF NOT EXISTS feedback_logs (
                      id INTEGER PRIMARY KEY AUTOINCREMENT,
                      message_id INTEGER,
@@ -1028,18 +1036,6 @@ def retry_failed_pickups(chat_id):
     finally:
         conn.close()
 
-def retry_failed_pickups(chat_id):
-    """ ကျရှုံးသွားသော (FAILED) pickup များကို PENDING ပြန်ပြောင်း၍ Retry လုပ်ခိုင်းခြင်း """
-    conn = get_connection()
-    try:
-        conn.execute(
-            "UPDATE pickup_queue SET status = 'PENDING', error_msg = NULL WHERE chat_id = ? AND status = 'FAILED'",
-            (chat_id,)
-        )
-        conn.commit()
-        log.info(f"🔄 Retrying failed pickups for chat_id: {chat_id}")
-    finally:
-        conn.close()
 
 # --- [ Shop Mapping Helpers ] ---
 def get_shop_mapping(chat_id):
@@ -1116,5 +1112,80 @@ def get_website_suggestions(keyword, limit=5):
         query = "SELECT name FROM website_shops WHERE name LIKE ? LIMIT ?"
         res = conn.execute(query, (f'%{keyword}%', limit)).fetchall()
         return [r[0] for r in res]
+    finally:
+        conn.close()
+
+def update_pickup_field(queue_id, field, value):
+    """ pickup_queue ထဲရှိ field တစ်ခုကို update လုပ်ခြင်း """
+    conn = get_connection()
+    try:
+        # SQL Injection ကာကွယ်ရန် field name ကို whitelist စစ်မည်
+        allowed_fields = ['target_date', 'vehicle', 'remark', 'status']
+        if field not in allowed_fields:
+            log.error(f"❌ Invalid field name: {field}")
+            return False
+            
+        conn.execute(f"UPDATE pickup_queue SET {field} = ? WHERE id = ?", (value, queue_id))
+        conn.commit()
+        return True
+    except Exception as e:
+        log.error(f"❌ update_pickup_field Error: {e}")
+        return False
+    finally:
+        conn.close()
+
+def add_pickup_intermediate_msg(chat_id, orig_msg_id, intermediate_msg_id):
+    """ Bot မှ ပို့လိုက်သော ကြားဖြတ်စာ ID ကို သိမ်းဆည်းခြင်း """
+    conn = get_connection()
+    try:
+        conn.execute(
+            "INSERT INTO pickup_intermediate_messages (orig_msg_id, chat_id, intermediate_msg_id, created_at) VALUES (?, ?, ?, ?)",
+            (orig_msg_id, chat_id, intermediate_msg_id, int(time.time()))
+        )
+        conn.commit()
+    except Exception as e:
+        log.error(f"❌ add_pickup_intermediate_msg Error: {e}")
+    finally:
+        conn.close()
+
+def delete_pickup_intermediate_msgs(chat_id, orig_msg_id):
+    """ Cleanup လုပ်ပြီးနောက် DB မှ record များကို ဖျက်ရန် """
+    conn = get_connection()
+    try:
+        conn.execute(
+            "DELETE FROM pickup_intermediate_messages WHERE chat_id = ? AND orig_msg_id = ?",
+            (chat_id, orig_msg_id)
+        )
+        conn.commit()
+    except Exception as e:
+        log.error(f"❌ delete_pickup_intermediate_msgs Error: {e}")
+    finally:
+        conn.close()
+
+def get_pickup_intermediate_msgs(chat_id, orig_msg_id):
+    """ သိမ်းထားသော ကြားဖြတ်စာ ID များကို ပြန်ယူခြင်း """
+    conn = get_connection()
+    try:
+        res = conn.execute(
+            "SELECT intermediate_msg_id FROM pickup_intermediate_messages WHERE chat_id = ? AND orig_msg_id = ?",
+            (chat_id, orig_msg_id)
+        ).fetchall()
+        return [r[0] for r in res]
+    except Exception as e:
+        log.error(f"❌ get_pickup_intermediate_msgs Error: {e}")
+        return []
+    finally:
+        conn.close()
+
+
+def get_pickup_order(queue_id):
+    """ queue_id ဖြင့် pickup order အချက်အလက်များကို ယူခြင်း """
+    conn = get_connection()
+    try:
+        res = conn.execute(
+            "SELECT id, chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status, created_at FROM pickup_queue WHERE id = ?",
+            (queue_id,)
+        ).fetchone()
+        return res
     finally:
         conn.close()

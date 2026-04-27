@@ -7,6 +7,7 @@ import pytz
 from telebot import types
 import db_manager
 from logger import log
+import ai_utils
 
 def submit_pickup_order(target_date, os_name, remark, vehicle="Bicycle"):
     log.info("🚀 Auto Pickup စက်ရုပ် (Playwright) စတင်နေပါပြီ...")
@@ -156,30 +157,29 @@ def handle(bot, message):
         os_name = db_manager.clean_shop_name(chat_title)
         
         # ၂။ AI Extraction (Vehicle & Date)
-        from main_router import client
-        if not client:
-            bot.reply_to(message, "❌ AI Client မရှိသဖြင့် အော်ဒါမတင်နိုင်သေးပါ။")
-            return
-
         extract_prompt = f"""
-        Analyze the following message for a NEW pickup request.
+        Analyze the following message for a NEW pickup request or an inquiry about pickup availability.
         Message: "{text}"
 
         Output ONLY a JSON object with:
-        - is_new_request: boolean (True if this is a request to pick up items, False if it's a question about status, complaint, or something else)
+        - is_new_request: boolean (True if this is a request to pick up items OR an inquiry if pickup is available, False if it's a question about status of an existing order, complaint, or something else)
         - vehicle: "Bicycle" or "Car" (Default to null if not mentioned)
         - date_type: "today" or "tomorrow" (Default to "tomorrow" if not mentioned)
         - remark: A short summary of the request in English.
         """
 
-        ai_res = client.chat.completions.create(
+        ai_res_content = ai_utils.get_ai_completion(
+            prompt=extract_prompt,
             model="google/gemini-2.0-flash-001",
-            messages=[{"role": "user", "content": extract_prompt}],
             response_format={ "type": "json_object" },
             timeout=30.0
         )
         
-        extracted_data = json.loads(ai_res.choices[0].message.content.strip())
+        if not ai_res_content:
+            log.error("❌ AI Extraction failed in auto_pickup.")
+            return
+
+        extracted_data = json.loads(ai_res_content)
         
         # ၃။ Validation: အကယ်၍ pickup အသစ်တင်တာမဟုတ်ရင် ရပ်တန့်မည်
         if not extracted_data.get("is_new_request", True):
@@ -219,7 +219,7 @@ def handle(bot, message):
             return
 
         # အကုန်ပြည့်စုံလျှင် မှတ်ချက်ရှိမရှိ မေးမည်
-        ask_remark(bot, message, date_type, vehicle, message.message_id)
+        ask_remark(bot, chat_id, date_type, vehicle, message.message_id)
 
     except Exception as e:
         log.error(f"❌ Auto Pickup Handle Error: {e}")
@@ -237,9 +237,11 @@ def ask_vehicle(bot, message, date_type, orig_msg_id):
         types.InlineKeyboardButton("🚲 စက်ဘီး (Bicycle)", callback_data=f"ap_vh_{orig_msg_id}_{date_type}_Bicycle"),
         types.InlineKeyboardButton("🚗 ကား (Car)", callback_data=f"ap_vh_{orig_msg_id}_{date_type}_Car")
     )
-    bot.reply_to(message, text, reply_markup=markup)
+    markup.add(types.InlineKeyboardButton("❌ Pickup မဟုတ်ပါ", callback_data=f"ap_cancel_{orig_msg_id}"))
+    msg = bot.reply_to(message, text, reply_markup=markup)
+    db_manager.add_pickup_intermediate_msg(message.chat.id, orig_msg_id, msg.message_id)
 
-def ask_remark(bot, message, date_type, vehicle, orig_msg_id):
+def ask_remark(bot, chat_id, date_type, vehicle, orig_msg_id):
     """ မှတ်ချက် (Remark) ရှိမရှိ မေးမြန်းခြင်း """
     text = "pick up အချက်အလက်စုံရင် Pick up တင်ပေးပါတော့မယ်၊ ထည့်ချင်တဲ့မှတ်ချက်ရှိရင် ရေးပေးပါခင်ဗျ"
     
@@ -249,7 +251,10 @@ def ask_remark(bot, message, date_type, vehicle, orig_msg_id):
         types.InlineKeyboardButton("📝 မှတ်ချက်ရေးမည်", callback_data=f"ap_rm_{orig_msg_id}_{date_type}_{vehicle}_write"),
         types.InlineKeyboardButton("❌ မှတ်ချက်မရှိပါ", callback_data=f"ap_rm_{orig_msg_id}_{date_type}_{vehicle}_none")
     )
-    bot.reply_to(message, text, reply_markup=markup)
+    markup.add(types.InlineKeyboardButton("❌ Pickup မဟုတ်ပါ", callback_data=f"ap_cancel_{orig_msg_id}"))
+    # bot.reply_to(message, text, reply_markup=markup)
+    msg = bot.send_message(chat_id, text, reply_to_message_id=orig_msg_id, reply_markup=markup)
+    db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, msg.message_id)
 
 def send_staff_decision_alert(bot, message, os_name, vehicle):
     """ 11:01 AM - 03:00 PM အတွင်း Staff ဆီ Decision Alert ပို့ခြင်း """
@@ -258,6 +263,12 @@ def send_staff_decision_alert(bot, message, os_name, vehicle):
         chat_id = message.chat.id
         orig_msg_id = message.message_id
         
+        # ၁။ ဆိုင် Group ထဲသို့ အလိုအလျောက် အကြောင်းကြားစာ ပို့ခြင်း
+        late_pickup_text = "Pick up တင်တာ (၁၁)နာရီကျော်ပြီမို့လို့ Pick up လမ်းကြောင်းလေးရသေးလားဆိုတာ အတည်ပြုပြီးပြန်လည်အကြောင်းပြန်ပေးပါ့မယ်ရှင်။"
+        msg = bot.reply_to(message, late_pickup_text)
+        db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, msg.message_id)
+        log.info(f"📢 Sent late pickup notification to shop group: {chat_id}")
+
         clean_chat_id = str(chat_id).replace("-100", "")
         msg_link = f"https://t.me/c/{clean_chat_id}/{orig_msg_id}"
         
@@ -276,6 +287,7 @@ def send_staff_decision_alert(bot, message, os_name, vehicle):
             types.InlineKeyboardButton("📅 Today", callback_data=f"ap_st_{orig_msg_id}_{chat_id}_today_{vehicle}"),
             types.InlineKeyboardButton("📅 Tomorrow", callback_data=f"ap_st_{orig_msg_id}_{chat_id}_tomorrow_{vehicle}")
         )
+        markup.add(types.InlineKeyboardButton("❌ Pickup မဟုတ်ပါ", callback_data=f"ap_cancel_{orig_msg_id}"))
         
         try:
             bot.send_message(central_chat, alert_text, parse_mode="HTML", reply_markup=markup)
@@ -286,6 +298,20 @@ def send_staff_decision_alert(bot, message, os_name, vehicle):
 
     except Exception as e:
         log.error(f"❌ send_staff_decision_alert Error: {e}")
+
+def cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id):
+    """ Pickup flow ပြီးဆုံးသွားသောအခါ ကြားဖြတ် Bot စာများကို ဖျက်ထုတ်ခြင်း """
+    try:
+        msg_ids = db_manager.get_pickup_intermediate_msgs(chat_id, orig_msg_id)
+        for mid in msg_ids:
+            try:
+                bot.delete_message(chat_id, mid)
+            except Exception:
+                pass
+        db_manager.delete_pickup_intermediate_msgs(chat_id, orig_msg_id)
+        log.info(f"🧹 Cleaned up {len(msg_ids)} intermediate messages for orig_msg {orig_msg_id}")
+    except Exception as e:
+        log.error(f"❌ Cleanup Pickup Intermediate Messages Error: {e}")
 
 def run_queue_worker(bot):
     """ Background Queue Worker """
@@ -315,6 +341,19 @@ def run_queue_worker(bot):
                 db_manager.update_queue_status(queue_id, 'SUCCESS')
                 bot.send_message(chat_id, f"✅ **Auto Pickup အောင်မြင်ပါသည်!**\n🏪 ဆိုင်: {final_os_name}\n📅 ရက်စွဲ: {target_date}", reply_to_message_id=orig_msg_id)
                 
+                # Cleanup intermediate messages
+                try:
+                    msg_ids = db_manager.get_pickup_intermediate_msgs(chat_id, orig_msg_id)
+                    for mid in msg_ids:
+                        try:
+                            bot.delete_message(chat_id, mid)
+                        except Exception:
+                            pass
+                    db_manager.delete_pickup_intermediate_msgs(chat_id, orig_msg_id)
+                    log.info(f"🧹 Cleaned up {len(msg_ids)} intermediate messages for successful pickup {orig_msg_id}")
+                except Exception as e:
+                    log.error(f"❌ Cleanup Error in Queue Worker: {e}")
+
                 # အကယ်၍ Mapping မရှိသေးဘဲ အောင်မြင်သွားတာဆိုရင် Mapping အလိုအလျောက် မှတ်သားမည်
                 if not mapped_name and final_os_name != os_name:
                     db_manager.set_shop_mapping(chat_id, final_os_name)

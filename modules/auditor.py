@@ -9,12 +9,12 @@ import requests
 import sys
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-import ai_utils
 
 # 💡 Absolute Path Fix for Module
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
+import ai_utils
 import db_manager
 from logger import log
 
