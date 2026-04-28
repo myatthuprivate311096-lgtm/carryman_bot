@@ -34834,3 +34834,41 @@
 2026-04-28 05:38:39 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
 2026-04-28 05:38:49 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
 2026-04-28 05:38:59 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:39:09 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:39:19 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:39:29 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:39:39 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 05:39:39 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:39:49 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:39:59 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:40:09 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:40:19 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:40:29 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:40:39 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:40:49 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:40:59 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:41:09 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:41:19 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:41:29 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:41:39 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:41:49 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:41:59 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:42:09 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:42:19 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:42:29 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:42:39 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:42:49 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:42:59 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:43:10 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:43:20 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:43:30 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:43:36 PM | WARNING | commands_handler | ⚠️ System Restart triggered by 8353570874
+2026-04-28 05:43:39 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-28 05:43:39 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 05:43:39 PM | WARNING | db_manager | 🧹 Auto-resolved 2 stale alerts (Older than 30 hours)
+2026-04-28 05:43:41 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-28 05:43:41 PM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-28 05:43:41 PM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-28 05:43:41 PM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-28 05:43:41 PM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-28 05:43:41 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...

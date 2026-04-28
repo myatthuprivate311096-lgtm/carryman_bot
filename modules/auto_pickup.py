@@ -184,11 +184,8 @@ def handle(bot, message):
         chat_title = message.chat.title or "Unknown Shop"
         os_name = db_manager.clean_shop_name(chat_title)
         
-        # 🧪 Test Group Tagging
+        # 🧪 Sandbox Bypass Definition
         TEST_GROUP_ID = -1003539520778
-        if chat_id == TEST_GROUP_ID:
-            os_name = f"[TEST] {os_name}"
-            log.info(f"🧪 Sandbox Order detected. Tagging OS Name as: {os_name}")
 
         # ၂။ AI Extraction (Action, Vehicle & Date)
         extract_prompt = f"""
