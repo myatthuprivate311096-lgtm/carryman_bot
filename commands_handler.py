@@ -61,35 +61,41 @@ def register_handlers(bot):
         else:
             bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
 
-    @bot.message_handler(commands=['aion', 'aioff'])
+    @bot.message_handler(commands=['aion', 'aioff', 'ai_on', 'ai_off'])
     def handle_ai_global_toggle(message):
-        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
-            if message.text.startswith('/aion'):
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) >= 3:
+            if 'on' in message.text.lower():
                 db_manager.set_ai_global_status('ON')
-                bot.reply_to(message, '✅ **AI Answer (Global): ON**\nAI မှ စာပြန်ခြင်းစနစ်ကို ဖွင့်လိုက်ပါပြီ။')
+                bot.reply_to(message, '✅ **AI Auto-Reply has been turned ON**\nAI မှ စာပြန်ခြင်းစနစ်ကို ဖွင့်လိုက်ပါပြီ အစ်ကို။', parse_mode="Markdown")
             else:
                 db_manager.set_ai_global_status('OFF')
-                bot.reply_to(message, '❌ **AI Answer (Global): OFF**\nAI မှ စာပြန်ခြင်းစနစ်ကို ပိတ်လိုက်ပါပြီ။')
+                bot.reply_to(message, '✅ **AI Auto-Reply has been turned OFF**\nAI မှ စာပြန်ခြင်းစနစ်ကို ပိတ်လိုက်ပါပြီ အစ်ကို။', parse_mode="Markdown")
+        else:
+            bot.reply_to(message, "🚫 **Access Denied**\nဤ Command ကို အသုံးပြုရန် ခွင့်ပြုချက်မရှိပါ အစ်ကို။")
 
-    @bot.message_handler(commands=['pickupon', 'pickupoff'])
+    @bot.message_handler(commands=['pickupon', 'pickupoff', 'pickup_on', 'pickup_off'])
     def handle_pickup_global_toggle(message):
-        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
-            if message.text.startswith('/pickupon'):
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) >= 3:
+            if 'on' in message.text.lower():
                 db_manager.set_auto_pickup_global_status('ON')
-                bot.reply_to(message, '✅ **Auto Pickup (Global): ON**\nအော်ဒါအလိုအလျောက်ကောက်သည့်စနစ်ကို ဖွင့်လိုက်ပါပြီ။')
+                bot.reply_to(message, '✅ **Auto Pickup has been turned ON**\nအော်ဒါအလိုအလျောက်ကောက်သည့်စနစ်ကို ဖွင့်လိုက်ပါပြီ အစ်ကို။', parse_mode="Markdown")
             else:
                 db_manager.set_auto_pickup_global_status('OFF')
-                bot.reply_to(message, '❌ **Auto Pickup (Global): OFF**\nအော်ဒါအလိုအလျောက်ကောက်သည့်စနစ်ကို ပိတ်လိုက်ပါပြီ။')
+                bot.reply_to(message, '✅ **Auto Pickup has been turned OFF**\nအော်ဒါအလိုအလျောက်ကောက်သည့်စနစ်ကို ပိတ်လိုက်ပါပြီ အစ်ကို။', parse_mode="Markdown")
+        else:
+            bot.reply_to(message, "🚫 **Access Denied**\nဤ Command ကို အသုံးပြုရန် ခွင့်ပြုချက်မရှိပါ အစ်ကို။")
 
-    @bot.message_handler(commands=['alerton', 'alertoff'])
+    @bot.message_handler(commands=['alerton', 'alertoff', 'alert_on', 'alert_off'])
     def handle_alert_global_toggle(message):
-        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
-            if message.text.startswith('/alerton'):
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) >= 3:
+            if 'on' in message.text.lower():
                 db_manager.set_alert_system_global_status('ON')
-                bot.reply_to(message, '✅ **Alert System (Global): ON**\n၁၅ မိနစ် Alert ပေးသည့်စနစ်ကို ဖွင့်လိုက်ပါပြီ။')
+                bot.reply_to(message, '✅ **Alert System has been turned ON**\n၁၅ မိနစ် Alert ပေးသည့်စနစ်ကို ဖွင့်လိုက်ပါပြီ အစ်ကို။', parse_mode="Markdown")
             else:
                 db_manager.set_alert_system_global_status('OFF')
-                bot.reply_to(message, '❌ **Alert System (Global): OFF**\n၁၅ မိနစ် Alert ပေးသည့်စနစ်ကို ပိတ်လိုက်ပါပြီ။')
+                bot.reply_to(message, '✅ **Alert System has been turned OFF**\n၁၅ မိနစ် Alert ပေးသည့်စနစ်ကို ပိတ်လိုက်ပါပြီ အစ်ကို။', parse_mode="Markdown")
+        else:
+            bot.reply_to(message, "🚫 **Access Denied**\nဤ Command ကို အသုံးပြုရန် ခွင့်ပြုချက်မရှိပါ အစ်ကို။")
 
     @bot.message_handler(commands=['start'])
     def send_welcome(message):
@@ -650,7 +656,7 @@ def register_handlers(bot):
                 except Exception as e:
                     log.warning(f"Broadcast failed for {name} ({u_id}): {e}")
             
-            bot.reply_to(message, f"✅ ဝန်ထမ်းសរុប {success_count} ဦးဆီသို့ အသိပေးချက် ပို့ပြီးပါပြီ။")
+            bot.reply_to(message, f"✅ ဝန်ထမ်းစရုပ္ {success_count} ဦးဆီသို့ အသိပေးချက် ပို့ပြီးပါပြီ။")
 
     @bot.message_handler(commands=['logs'])
     def handle_logs(message):
