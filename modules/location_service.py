@@ -16,61 +16,84 @@ except ImportError:
 
 def search_location_osm(query):
     """
-    Search for a location using Nominatim (OpenStreetMap) API.
-    Returns the township, suburb, or city_district if found.
+    Search for a location using Nominatim (OpenStreetMap) API with Yangon-first logic.
+    Returns a formatted string 'Township, City' and a note if ambiguous.
     """
-    # Respect Nominatim's rate limit (1 request per second)
-    time.sleep(1)
-    
     url = "https://nominatim.openstreetmap.org/search"
-    params = {
-        "q": query,
-        "format": "json",
-        "addressdetails": 1,
-        "limit": 1
-    }
-    headers = {
-        "User-Agent": "CarrymanBot/1.0"
-    }
+    headers = {"User-Agent": "CarrymanBot/1.0"}
     
-    try:
-        response = requests.get(url, params=params, headers=headers, timeout=10)
+    def perform_request(q, limit=1):
+        time.sleep(1) # Rate limit
+        params = {"q": q, "format": "json", "addressdetails": 1, "limit": limit}
+        try:
+            resp = requests.get(url, params=params, headers=headers, timeout=10)
+            return resp.json() if resp.status_code == 200 else []
+        except Exception as e:
+            log.error(f"❌ OSM Request Error: {e}")
+            return []
+
+    # Step 1: Search in Yangon, Myanmar
+    yangon_query = f"{query}, Yangon, Myanmar"
+    results = perform_request(yangon_query, limit=1)
+    
+    if results:
+        addr = results[0].get("address", {})
+        township = addr.get("township") or addr.get("suburb") or addr.get("city_district") or addr.get("city")
+        city = addr.get("city") or addr.get("state") or "Yangon"
+        if township:
+            log.info(f"✅ OSM (Step 1): Found '{township}, {city}'")
+            return f"{township}, {city}", None
+
+    # Step 2: Fallback to Myanmar search
+    log.info(f"📍 OSM: No Yangon result for '{query}'. Trying Myanmar fallback...")
+    myanmar_query = f"{query}, Myanmar"
+    results = perform_request(myanmar_query, limit=5) # Get more to check for ambiguity
+    
+    if not results:
+        log.info(f"📍 OSM: No results found for '{query}' in Myanmar.")
+        return None, None
+
+    # Ambiguity Handling
+    yangon_result = None
+    other_cities = set()
+    
+    for res in results:
+        addr = res.get("address", {})
+        t = addr.get("township") or addr.get("suburb") or addr.get("city_district") or addr.get("city")
+        c = addr.get("city") or addr.get("state") or addr.get("region")
         
-        if response.status_code == 200:
-            data = response.json()
-            if not data:
-                log.info(f"📍 OSM: No results found for '{query}'")
-                return None
-            
-            address = data[0].get("address", {})
-            
-            # Extract township, suburb, or city_district in order of preference
-            township = address.get("township") or address.get("suburb") or address.get("city_district")
-            
-            if township:
-                log.info(f"✅ OSM: Found '{township}' for '{query}'")
-                return township
-            else:
-                log.info(f"⚠️ OSM: Location found but no township/suburb/city_district for '{query}'")
-                return None
+        if not t: continue
+        
+        if c and "Yangon" in c:
+            if not yangon_result:
+                yangon_result = f"{t}, {c}"
         else:
-            log.error(f"❌ OSM API Error: {response.status_code} - {response.text}")
-            return None
-            
-    except Exception as e:
-        log.error(f"❌ OSM Exception for '{query}': {e}")
-        return None
+            if c: other_cities.add(c)
+
+    if yangon_result:
+        note = f"(Note: Similar name exists in {', '.join(list(other_cities)[:2])})" if other_cities else None
+        return yangon_result, note
+    
+    # If no Yangon result in Step 2, take the first Myanmar result
+    addr = results[0].get("address", {})
+    t = addr.get("township") or addr.get("suburb") or addr.get("city_district") or addr.get("city")
+    c = addr.get("city") or addr.get("state") or addr.get("region")
+    if t:
+        return f"{t}, {c}", None
+
+    return None, None
 
 def get_location_with_fallback(query):
     """
-    Get township for a location query.
+    Get location for a query.
     Tries OSM first, then falls back to AI.
-    Returns (township, source)
+    Returns (location_string, source)
     """
     # 1. Try OSM
-    township = search_location_osm(query)
-    if township:
-        return township, "API"
+    loc_str, note = search_location_osm(query)
+    if loc_str:
+        final_str = f"{loc_str} {note}" if note else loc_str
+        return final_str, "API"
     
     # 2. AI Fallback
     log.info(f"🤖 OSM failed. Trying AI fallback for '{query}'...")

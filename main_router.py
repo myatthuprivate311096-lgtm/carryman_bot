@@ -117,6 +117,10 @@ def handle_ai_query(bot, message, is_automatic=False):
         - Whether COD (Cash on Delivery) is accepted.
         - Estimated Delivery Duration (Days).'
 
+        Location Labeling: 'Always clearly state the Township and City in your response (e.g., "Found in Insein, Yangon" or "အင်းစိန်မြို့နယ်၊ ရန်ကုန်မြို့တွင် တွေ့ရှိရပါသည်") to ensure the user knows exactly which area you are referring to.'
+
+        Ambiguity Handling: 'If you find that the same location or street name exists in multiple cities, ALWAYS mention the Yangon result first and add a small note that a similar name exists in another city (e.g., Mandalay) to ensure accuracy.'
+
         Format Constraint: 'Combine these details into a single, concise, human-like paragraph in Burmese.'
 
         [Context Data]:
@@ -257,6 +261,8 @@ def route_message(bot, message):
         
         # --- Private Chat Audit ---
         is_private = chat_id > 0
+        user_level = db_manager.get_user_level(user_id, chat_id)
+        is_staff = user_level >= 3
 
         if intent == "auto_pickup":
             if is_private:
@@ -266,11 +272,11 @@ def route_message(bot, message):
                 log.info(f"⏭️ Skipping Auto Pickup: Global Status is {global_pickup}")
                 return
         elif intent == "auditor":
-            if is_private:
-                log.info(f"⏭️ Skipping Auditor: Private Chat detected")
+            if is_private and not is_staff:
+                log.info(f"⏭️ Skipping Auditor: Private Chat detected for non-staff")
                 return
             if not is_sandbox:
-                if global_ai != 'ON' or group_ai != 'ON' or not is_ai_office_hours():
+                if not is_private and (global_ai != 'ON' or group_ai != 'ON' or not is_ai_office_hours()):
                     log.info("⏭️ Skipping Auditor: Restrictions applied")
                     return
         else:
@@ -288,7 +294,7 @@ def route_message(bot, message):
                     return
 
         # ၄။ Dynamic Loader (importlib)
-        if intent == 'support':
+        if intent == 'support' or (intent == 'auditor' and is_private and is_staff):
             handle_ai_query(bot, message, is_automatic=True)
             return
 
