@@ -28,10 +28,28 @@ def handle_ai_query(bot, message, is_automatic=False):
     try:
         user_id = message.from_user.id
         chat_id = message.chat.id
+        is_private = chat_id > 0
 
         # ၁။ User Level သတ်မှတ်ခြင်း
         user_level = db_manager.get_user_level(user_id, chat_id)
-        
+
+        # --- Private Chat Logic (Staff Exemption & Three-Strike Rule) ---
+        if is_private:
+            # Check if human intervention is already needed
+            _, human_needed = db_manager.get_user_state(user_id)
+            if human_needed:
+                log.info(f"🔇 AI Muted for user {user_id} due to human_intervention_needed")
+                return
+
+            # Staff Exemption (Level 3/4)
+            if user_level >= 3:
+                log.info(f"👑 Staff Exemption: Full AI access for user {user_id}")
+                # Proceed to general AI response without RAG restrictions if needed,
+                # but for now we'll just let them pass the out-of-scope check.
+            else:
+                # Non-Staff: Apply Strict RAG & Three-Strike Rule
+                pass # Will be handled during intent/scope check
+
         # ၂။ မေးခွန်းကို ရယူခြင်း
         query = message.text.replace('/ai', '').strip() if not is_automatic else (message.text or message.caption or '')
         if not query and message.reply_to_message:
@@ -45,11 +63,10 @@ def handle_ai_query(bot, message, is_automatic=False):
 
         # ၃။ Step 1: Database (Knowledge Base) Search
         kb_result = db_manager.search_knowledge(query, user_level)
+        kb_context = ""
         if kb_result:
             category, question, answer = kb_result
-            response_text = f"🤖 **CarryMan AI Support (KB)**\n\n📌 **ကဏ္ဍ:** {category}\n❓ **မေးခွန်း:** {question}\n\n💡 **အဖြေ:** \n{answer}"
-            bot.reply_to(message, response_text)
-            return
+            kb_context = f"\n[Knowledge Base Data]:\nCategory: {category}\nQuestion: {question}\nAnswer: {answer}\n"
 
         # ၄။ Step 2: AI Intent Detection (Address vs General)
         intent_prompt = f"""
@@ -78,20 +95,68 @@ def handle_ai_query(bot, message, is_automatic=False):
             bot.reply_to(message, address_text, parse_mode="Markdown")
             return
 
-        # ၅။ Step 3: General AI Response
-        ai_prompt = f"""
-        Role: Helpful Customer Support for CarryMan Logistics.
-        User Query: "{query}"
-        Language: Myanmar (Burmese)
-        Tone: Professional and Friendly.
+        # ၅။ Step 3: General AI Response (with Scope Check for Private Chat)
+        is_staff = user_level >= 3
         
-        Instructions:
-        - Answer the user query based on general logistics knowledge.
-        - If you don't know, suggest contacting a manager.
-        - Keep it concise.
+        scope_check_prompt = ""
+        if is_private and not is_staff:
+            scope_check_prompt = """
+            Scope Check: 'Determine if the user query is related to CarryMan Logistics services (delivery, tracking, pickup, pricing, locations).
+            If it is OUT OF SCOPE (e.g., coding, math, general knowledge, personal questions), output ONLY the word "OUT_OF_SCOPE".
+            Otherwise, proceed with the answer.'
+            """
+
+        ai_prompt = f"""
+        Strict Persona & Tone: 'You are an Online Shop (OS) admin. You MUST strictly follow the tone, style, and examples provided in the OS Tone_&_Example data. Keep answers short, direct, and natural. NEVER use generic AI fluff like "Welcome to...", "If you need more info...", or "I am an AI assistant".'
+
+        {scope_check_prompt}
+
+        Comprehensive Data Extraction: 'When a user asks about delivery to a specific location (e.g., မြစ်ကြီးနား), you MUST look up that location in the database/sheets and extract ALL relevant details. Your answer MUST include:
+        - Whether Home Delivery is available.
+        - The Delivery Fee range (Min and Max price).
+        - Whether COD (Cash on Delivery) is accepted.
+        - Estimated Delivery Duration (Days).'
+
+        Format Constraint: 'Combine these details into a single, concise, human-like paragraph in Burmese.'
+
+        [Context Data]:
+        {kb_context}
+
+        User Query: "{query}"
         """
         
         answer = ai_utils.get_ai_completion(ai_prompt, timeout=30.0)
+
+        # --- Three-Strike Rule Implementation ---
+        if is_private and not is_staff and answer and "OUT_OF_SCOPE" in answer:
+            count = db_manager.increment_out_of_scope(user_id)
+            
+            if count < 3:
+                strike_msg = "တောင်းပန်ပါတယ်ခင်ဗျာ။ ကျွန်တော်က CarryMan Logistics နှင့် သက်ဆိုင်သော ဝန်ဆောင်မှုများကိုသာ ဖြေကြားပေးနိုင်ပါတယ်။ အခြားအကြောင်းအရာများကို မဖြေကြားနိုင်ပါဘူးခင်ဗျာ။"
+                bot.reply_to(message, strike_msg)
+                return
+            else:
+                # Strike 3
+                # To User
+                bot.reply_to(message, "admin ဆီကိုအကြောင်းကြားပေးထားတာမို့ ရုံးချိန်အတွင်းအမြန်ဆုံးဆက်သွယ်ပေးပါလိမ့်မယ်နော်")
+                
+                # To Admin Topic 920
+                admin_chat = -1003601049225
+                topic_id = 920
+                username = f"@{message.from_user.username}" if message.from_user.username else f"ID: {user_id}"
+                alert_text = f"⚠️ **Human Support Needed!**\nA user ({username}) has asked out-of-scope questions 3 times in Private Chat. AI auto-reply is now paused for them."
+                
+                try:
+                    bot.send_message(admin_chat, alert_text, message_thread_id=topic_id)
+                except Exception as ae:
+                    log.error(f"❌ Failed to send Strike 3 alert to admin: {ae}")
+                    # Fallback to general if topic fails
+                    bot.send_message(admin_chat, alert_text)
+
+                # Mute Action
+                db_manager.set_human_intervention(user_id, 1)
+                log.info(f"🚫 User {user_id} muted after 3 strikes.")
+                return
         if not answer:
             bot.reply_to(message, "⚠️ တောင်းပန်ပါတယ်ခင်ဗျာ။ အဖြေရှာနေစဉ် အမှားတစ်ခု ဖြစ်သွားလို့ပါ။")
             return
@@ -183,17 +248,32 @@ def route_message(bot, message):
         # Auto Pickup: ၂၄ နာရီ (Global ON ဖြစ်ရမည်)
         # AI Answer (Support/Auditor): 09:00 AM - 08:00 PM (Global & Group ON ဖြစ်ရမည်)
         
+        # --- Private Chat Audit ---
+        is_private = chat_id > 0
+
         if intent == "auto_pickup":
+            if is_private:
+                log.info(f"⏭️ Skipping Auto Pickup: Private Chat detected")
+                return
             if not is_sandbox and global_pickup != 'ON':
                 log.info(f"⏭️ Skipping Auto Pickup: Global Status is {global_pickup}")
                 return
+        elif intent == "auditor":
+            if is_private:
+                log.info(f"⏭️ Skipping Auditor: Private Chat detected")
+                return
+            if not is_sandbox:
+                if global_ai != 'ON' or group_ai != 'ON' or not is_ai_office_hours():
+                    log.info("⏭️ Skipping Auditor: Restrictions applied")
+                    return
         else:
-            # Support သို့မဟုတ် Auditor (AI Answer) အတွက် စစ်ဆေးခြင်း
+            # Support (AI Answer) အတွက် စစ်ဆေးခြင်း
             if not is_sandbox:
                 if global_ai != 'ON':
                     log.info(f"⏭️ Skipping AI Answer: Global Status is {global_ai}")
                     return
-                if group_ai != 'ON':
+                # Private chat doesn't have group_ai setting, so we skip that check for private
+                if not is_private and group_ai != 'ON':
                     log.info(f"⏭️ Skipping AI Answer: Group Status is {group_ai}")
                     return
                 if not is_ai_office_hours():

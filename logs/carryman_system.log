@@ -34872,3 +34872,103 @@
 2026-04-28 05:43:41 PM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
 2026-04-28 05:43:41 PM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
 2026-04-28 05:43:41 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-28 05:45:13 PM | INFO | main_router | 🧪 Sandbox Mode: Bypassing all global/group/time restrictions for chat -1003539520778
+2026-04-28 05:45:13 PM | INFO | main_router | � Routing message from -1003539520778: မြစ်ကြီးနားအိမ်အရောက်ပို့ရလား...
+2026-04-28 05:45:14 PM | INFO | main_router | 🎯 AI Decision: support
+2026-04-28 05:45:14 PM | INFO | main_router | 🤖 AI Query from 8047375926: မြစ်ကြီးနားအိမ်အရောက်ပို့ရလား...
+2026-04-28 05:45:16 PM | INFO | db_manager | ✓ Message 290 in -1003539520778 saved as PENDING
+2026-04-28 05:45:16 PM | INFO | message_handler | 📩 New Pending Message from 8047375926 in -1003539520778 (Topic: 1)
+2026-04-28 05:48:40 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 05:50:57 PM | INFO | main_router | � Routing message from -1003897065464: မြစ်ကြီးနားက ၃ ရက်မကဘူးထင်တယ်ညီမ။ ပြန်စစ်ကြည့်ပေးပ...
+2026-04-28 05:50:58 PM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-28 05:50:58 PM | INFO | main_router | 🌙 Skipping AI Answer: Outside Office Hours (09:00 AM - 08:00 PM)
+2026-04-28 05:53:40 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 05:58:40 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 06:00:41 PM | INFO | auditor | 🧪 Sandbox Audit: Bypassing restrictions for chat -1003539520778
+2026-04-28 06:00:41 PM | INFO | auditor | 📂 Auditing Batch: AI Testing OS Gp (Topic 1) in Chat -1003539520778 (1 messages)
+2026-04-28 06:00:42 PM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003539520778, topic=1, msg=290, force=False
+2026-04-28 06:00:42 PM | INFO | auditor | 🎯 Explicit Route Found: -1003539520778/1 -> -1003601049225/1
+2026-04-28 06:00:42 PM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-04-28 06:03:44 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 06:05:25 PM | INFO | main_router | � Routing message from -1003798739565: No.309
+Chit Po Po Win 
+
+တွံတေးမြို့ ညောင်တံခါးလမ်း...
+2026-04-28 06:05:26 PM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-28 06:05:26 PM | INFO | auto_pickup | 🚚 Auto Pickup module handling message: 3688
+2026-04-28 06:05:32 PM | INFO | main_router | � Routing message from -1003798739565: All paid နဲ့ပို့ပေးပါနော်...
+2026-04-28 06:05:32 PM | INFO | auto_pickup | ℹ️ Message 3688 is not a pickup request (Action: OTHER). Skipping auto_pickup.
+2026-04-28 06:05:32 PM | INFO | db_manager | ✓ Message 3688 in -1003798739565 saved as PENDING
+2026-04-28 06:05:32 PM | INFO | message_handler | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 4)
+2026-04-28 06:05:32 PM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-28 06:05:32 PM | INFO | auto_pickup | 🚚 Auto Pickup module handling message: 3689
+2026-04-28 06:05:52 PM | WARNING | ai_utils | ⚠️ OpenRouter Error (1/3): Error code: 429 - {'error': {'message': 'Provider returned error', 'code': 429, 'metadata': {'raw': 'google/gemini-2.0-flash-001 is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations', 'provider_name': 'Google AI Studio', 'is_byok': False}}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-28 06:05:52 PM | ERROR | ai_utils | ❌ Gemini Direct Error: 429 - {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash\nPlease retry in 7.88723123s.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Learn more about Gemini API quotas",
+            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+        "violations": [
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.0-flash"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.0-flash"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count",
+            "quotaId": "GenerateContentInputTokensPerModelPerMinute-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.0-flash"
+            }
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "7s"
+      }
+    ]
+  }
+}
+
+2026-04-28 06:05:52 PM | INFO | ai_utils | ⚡ Groq Fallback used successfully.
+2026-04-28 06:05:52 PM | INFO | auto_pickup | ℹ️ Message 3689 is not a pickup request (Action: OTHER). Skipping auto_pickup.
+2026-04-28 06:05:52 PM | INFO | db_manager | ✓ Message 3689 in -1003798739565 saved as PENDING
+2026-04-28 06:05:52 PM | INFO | message_handler | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 4)
+2026-04-28 06:06:18 PM | INFO | main_router | � Routing message from 8353570874: တောင်ထိပ်ပန်းလမ်းက ဘယ်မြို့နယ်မှာရှိတာလဲ...
+2026-04-28 06:06:19 PM | INFO | main_router | 🎯 AI Decision: support
+2026-04-28 06:06:19 PM | INFO | main_router | 🌙 Skipping AI Answer: Outside Office Hours (09:00 AM - 08:00 PM)
+2026-04-28 06:08:45 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 06:12:57 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-28 06:12:57 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 06:12:57 PM | INFO | health_monitor | 🚀 Proactive Health Monitor started (5 min interval)
+2026-04-28 06:12:58 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-28 06:12:58 PM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-28 06:12:58 PM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-28 06:12:58 PM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-28 06:12:58 PM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-28 06:12:58 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...

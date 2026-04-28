@@ -211,7 +211,15 @@ def init_db():
                      ai_status TEXT DEFAULT 'ON'
                    )''')
 
-        # ၅။ Performance Indexes
+        # ၅။ User States (Private Chat Escalation)
+        c.execute('''CREATE TABLE IF NOT EXISTS user_states (
+                     user_id INTEGER PRIMARY KEY,
+                     out_of_scope_count INTEGER DEFAULT 0,
+                     human_intervention_needed INTEGER DEFAULT 0,
+                     last_updated INTEGER
+                   )''')
+
+        # ၆။ Performance Indexes
         c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_status_time ON message_logs(status, timestamp)")
         c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_chat_topic_status ON message_logs(chat_id, topic_id, status)")
         c.execute("CREATE INDEX IF NOT EXISTS idx_os_groups_chat_topic ON os_groups(chat_id, topic_id)")
@@ -1298,4 +1306,73 @@ def get_alert_system_global_status():
 def set_alert_system_global_status(status):
     """ Alert System Global Status ကို settings table တွင် update လုပ်ခြင်း ('ON' or 'OFF') """
     set_setting('global_alert_system', status)
+
+# --- [ User State Helpers ] ---
+def get_user_state(user_id):
+    """ User ၏ out_of_scope_count နှင့် human_intervention_needed status ကို ယူခြင်း """
+    conn = get_connection()
+    try:
+        res = conn.execute(
+            "SELECT out_of_scope_count, human_intervention_needed FROM user_states WHERE user_id = ?",
+            (user_id,)
+        ).fetchone()
+        return res if res else (0, 0)
+    finally:
+        conn.close()
+
+def increment_out_of_scope(user_id):
+    """ User ၏ out_of_scope_count ကို ၁ တိုးခြင်း """
+    conn = get_connection()
+    try:
+        # အရင်ရှိမရှိ စစ်ပြီး INSERT သို့မဟုတ် UPDATE လုပ်မည်
+        res = conn.execute("SELECT out_of_scope_count FROM user_states WHERE user_id = ?", (user_id,)).fetchone()
+        now = int(time.time())
+        if res:
+            new_count = res[0] + 1
+            conn.execute(
+                "UPDATE user_states SET out_of_scope_count = ?, last_updated = ? WHERE user_id = ?",
+                (new_count, now, user_id)
+            )
+        else:
+            new_count = 1
+            conn.execute(
+                "INSERT INTO user_states (user_id, out_of_scope_count, last_updated) VALUES (?, ?, ?)",
+                (user_id, 1, now)
+            )
+        conn.commit()
+        return new_count
+    finally:
+        conn.close()
+
+def set_human_intervention(user_id, needed=1):
+    """ User ကို human_intervention_needed အဖြစ် သတ်မှတ်ခြင်း (Mute AI) """
+    conn = get_connection()
+    try:
+        now = int(time.time())
+        res = conn.execute("SELECT 1 FROM user_states WHERE user_id = ?", (user_id,)).fetchone()
+        if res:
+            conn.execute(
+                "UPDATE user_states SET human_intervention_needed = ?, last_updated = ? WHERE user_id = ?",
+                (needed, now, user_id)
+            )
+        else:
+            conn.execute(
+                "INSERT INTO user_states (user_id, human_intervention_needed, last_updated) VALUES (?, ?, ?)",
+                (user_id, needed, now)
+            )
+        conn.commit()
+    finally:
+        conn.close()
+
+def reset_user_state(user_id):
+    """ User ၏ state ကို reset လုပ်ခြင်း (Admin မှ ပြန်ဖွင့်ပေးသည့်အခါ သုံးရန်) """
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE user_states SET out_of_scope_count = 0, human_intervention_needed = 0, last_updated = ? WHERE user_id = ?",
+            (int(time.time()), user_id)
+        )
+        conn.commit()
+    finally:
+        conn.close()
 

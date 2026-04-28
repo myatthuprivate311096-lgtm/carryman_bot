@@ -147,6 +147,12 @@ def handle(bot, message):
     """
     try:
         chat_id = message.chat.id
+        
+        # 0. Private Chat Audit: Strictly operate only in Groups
+        if chat_id > 0:
+            log.info(f"⏭️ Skipping Auto Pickup: Private Chat detected ({chat_id})")
+            return
+
         text = message.text or message.caption
         if not text:
             return
