@@ -491,6 +491,7 @@ def process_audits():
             import main_router
             is_ai_time = main_router.is_ai_office_hours()
             global_ai = db_manager.get_ai_global_status()
+            global_alert = db_manager.get_alert_system_global_status()
             
             pending_topics = db_manager.get_pending_topics(minutes=15)
             
@@ -498,12 +499,13 @@ def process_audits():
             for c_id, t_id in pending_topics:
                 # Sandbox/Test Group always allowed
                 if c_id == TEST_GROUP_ID or c_id == main_router.SANDBOX_CHAT_ID:
+                    log.info(f"🧪 Sandbox Audit: Bypassing restrictions for chat {c_id}")
                     filtered_topics.append((c_id, t_id))
                     continue
                 
                 # Global & Group & Time Check
                 group_ai = db_manager.get_group_ai_status(c_id)
-                if global_ai == 'ON' and group_ai == 'ON' and is_ai_time:
+                if global_ai == 'ON' and group_ai == 'ON' and global_alert == 'ON' and is_ai_time:
                     filtered_topics.append((c_id, t_id))
                 else:
                     # If AI is off, we don't audit, but we might still need to handle alerts manually?
@@ -593,8 +595,15 @@ def process_audits():
             conn.close()
             
             for m_id, c_id, t_id, txt in alerted_msgs:
-                if not is_standard_office and c_id != TEST_GROUP_ID:
+                # Sandbox bypass for escalation
+                is_sandbox = (c_id == TEST_GROUP_ID or c_id == main_router.SANDBOX_CHAT_ID)
+                
+                if not is_ai_time and not is_sandbox:
                     continue
+                
+                if global_alert != 'ON' and not is_sandbox:
+                    continue
+
                 _, _, s_name = db_manager.get_topic_context(c_id, t_id)
                 handle_escalation(m_id, c_id, s_name, txt, t_id)
 

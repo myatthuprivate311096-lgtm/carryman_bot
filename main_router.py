@@ -28,7 +28,7 @@ def handle_ai_query(bot, message, is_automatic=False):
     try:
         user_id = message.from_user.id
         chat_id = message.chat.id
-        
+
         # ၁။ User Level သတ်မှတ်ခြင်း
         user_level = db_manager.get_user_level(user_id, chat_id)
         
@@ -123,6 +123,8 @@ def route_message(bot, message):
     """
     try:
         chat_id = message.chat.id
+        user_id = message.from_user.id
+        
         text = message.text or message.caption
         
         if not text:
@@ -135,7 +137,14 @@ def route_message(bot, message):
         
         is_sandbox = (chat_id == SANDBOX_CHAT_ID)
         
-        log.info(f"🧠 Routing message from {chat_id}: {text[:50]}...")
+        if is_sandbox:
+            log.info(f"🧪 Sandbox Mode: Bypassing all global/group/time restrictions for chat {chat_id}")
+            # Force all toggles to ON for sandbox
+            global_ai = 'ON'
+            group_ai = 'ON'
+            global_pickup = 'ON'
+        
+        log.info(f"� Routing message from {chat_id}: {text[:50]}...")
 
         # ၂။ AI Decision (Intent Detection)
         # လက်ရှိ modules folder ထဲမှာ ရှိတဲ့ module list ကို ယူမယ်

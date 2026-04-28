@@ -34580,3 +34580,257 @@
 2026-04-28 04:28:27 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
 2026-04-28 04:30:47 PM | INFO | db_manager | ✓ Message 322 in -1003692715477 saved as PENDING
 2026-04-28 04:30:47 PM | INFO | message_handler | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 1)
+2026-04-28 04:33:27 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 04:33:34 PM | INFO | db_manager | ✓ Message 323 in -1003692715477 saved as PENDING
+2026-04-28 04:33:34 PM | INFO | message_handler | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 1)
+2026-04-28 04:38:27 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 04:43:04 PM | INFO | db_manager | ✓ Message 324 in -1003692715477 saved as PENDING
+2026-04-28 04:43:04 PM | INFO | message_handler | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 1)
+2026-04-28 04:43:22 PM | INFO | db_manager | ✓ Message 325 in -1003692715477 saved as PENDING
+2026-04-28 04:43:22 PM | INFO | message_handler | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 1)
+2026-04-28 04:43:28 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 04:48:28 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 04:51:35 PM | INFO | db_manager | ✓ Message 3686 in -1003798739565 saved as PENDING
+2026-04-28 04:51:35 PM | INFO | message_handler | 📩 New Pending Message from 6258346237 in -1003798739565 (Topic: 1)
+2026-04-28 04:53:28 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 04:53:57 PM | INFO | db_manager | ✓ Message 3687 in -1003798739565 saved as PENDING
+2026-04-28 04:53:57 PM | INFO | message_handler | 📩 New Pending Message from 6258346237 in -1003798739565 (Topic: 1)
+2026-04-28 04:58:29 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 05:03:29 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 05:04:20 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-28 05:04:20 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 05:04:20 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:04:21 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-28 05:04:21 PM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-28 05:04:21 PM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-28 05:04:21 PM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-28 05:04:21 PM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-28 05:04:21 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-28 05:04:30 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:04:40 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:04:50 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:05:00 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:05:10 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:05:19 PM | INFO | health_monitor | 🚀 Proactive Health Monitor started (5 min interval)
+2026-04-28 05:05:21 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:05:31 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:05:41 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:05:51 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:06:01 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:06:11 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:06:21 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:06:31 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:06:41 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:06:51 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:07:01 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:07:11 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:07:21 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:07:31 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:07:41 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:07:51 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:08:01 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:08:11 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:08:21 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:08:31 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:08:41 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:08:51 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:09:01 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:09:11 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:09:21 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 05:09:21 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:09:31 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:09:41 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:09:51 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:10:01 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:10:11 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:10:21 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:10:31 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:10:41 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:10:51 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:11:01 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:11:11 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:11:22 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:11:32 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:11:42 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:11:52 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:12:02 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:12:12 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:12:22 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:12:32 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:12:42 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:12:52 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:13:02 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:13:12 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:13:22 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:13:32 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:13:42 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:13:52 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:14:02 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:14:12 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:14:22 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 05:14:22 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:14:32 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:14:42 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:14:52 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:15:02 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:15:12 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:15:22 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:15:32 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:15:42 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:15:52 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:16:02 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:16:12 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:16:22 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:16:32 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:16:42 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:16:52 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:17:02 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:17:13 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:17:23 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:17:33 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:17:43 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:17:53 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:18:03 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:18:13 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:18:23 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:18:33 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:18:43 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:18:53 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:19:03 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:19:13 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:19:23 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 05:19:23 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:19:33 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:19:35 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-28 05:19:36 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 05:19:36 PM | WARNING | db_manager | 🧹 Auto-resolved 2 stale alerts (Older than 30 hours)
+2026-04-28 05:19:36 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:19:36 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-28 05:19:36 PM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-28 05:19:36 PM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-28 05:19:36 PM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-28 05:19:36 PM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-28 05:19:36 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-28 05:19:46 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:19:46 PM | INFO | health_monitor | 🚀 Proactive Health Monitor started (5 min interval)
+2026-04-28 05:19:56 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:20:06 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:20:16 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:20:26 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:20:36 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:20:46 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:20:56 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:21:06 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:21:16 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:21:26 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:21:36 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:21:46 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:21:56 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:22:06 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:22:16 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:22:26 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:22:36 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:22:46 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:22:56 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:23:06 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:23:16 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:23:26 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:23:36 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:23:46 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:23:56 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:24:06 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:24:16 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:24:26 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:24:36 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 05:24:36 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:24:46 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:24:56 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:25:07 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:25:17 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:25:27 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:25:37 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:25:47 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:25:57 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:26:07 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:26:17 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:26:27 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:26:37 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:26:47 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:26:57 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:27:07 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:27:17 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:27:27 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:27:37 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:27:47 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:27:57 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:28:07 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:28:17 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:28:27 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:28:37 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:28:47 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:28:51 PM | INFO | main_router | 🧠 Routing message from 8353570874: /ai myo min mg ဖုန်းနံပါတ်ဘယ်လောက်လဲ...
+2026-04-28 05:28:52 PM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-28 05:28:52 PM | INFO | main_router | 🌙 Skipping AI Answer: Outside Office Hours (09:00 AM - 08:00 PM)
+2026-04-28 05:28:57 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:29:07 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:29:17 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:29:27 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:29:37 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 05:29:37 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:29:47 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:29:57 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:30:07 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:30:17 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:30:27 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:30:37 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:30:47 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:30:58 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:31:08 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:31:18 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:31:28 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:31:38 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:31:48 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:31:58 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:32:08 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:32:18 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:32:28 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:32:38 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:32:48 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:32:58 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:33:08 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:33:18 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:33:28 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:33:38 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:33:48 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:33:58 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:34:08 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:34:18 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:34:28 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:34:38 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 05:34:38 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:34:48 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:34:58 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:35:08 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:35:18 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:35:28 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:35:38 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:35:48 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:35:58 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:36:08 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:36:18 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:36:28 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:36:38 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:36:48 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:36:59 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:37:09 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:37:19 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:37:29 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:37:39 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:37:49 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:37:59 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:38:09 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:38:19 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:38:29 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:38:39 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:38:49 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined
+2026-04-28 05:38:59 PM | ERROR | auditor | ⚠️ Auditor Loop Error: name 'is_standard_office' is not defined

@@ -1,5 +1,8 @@
 import os
 import time
+import subprocess
+import psutil
+import html
 from modules import auditor
 import gsheet_sync
 from telebot import types
@@ -57,20 +60,6 @@ def register_handlers(bot):
         else:
             bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
 
-    @bot.message_handler(commands=['off'])
-    def handle_bot_off(message):
-        """ Bot ကို ခေတ္တ အိပ်ပျော်စေခြင်း (Database ထဲတွင် သိမ်းမည်) """
-        if is_manager(message.from_user.id):
-            db_manager.set_setting('bot_active', 'False')
-            bot.reply_to(message, "💤 **Bot Maintenance Mode: ON**\n\nစနစ်ကို ပိတ်ထားလိုက်ပါပြီ။ ဝန်ထမ်းများ Command ရိုက်လျှင်လည်း အသိပေးစာ ပြန်ပါလိမ့်မည်။")
-
-    @bot.message_handler(commands=['on'])
-    def handle_bot_on(message):
-        """ Bot ကို ပြန်လည် နိုးထစေခြင်း """
-        if is_manager(message.from_user.id):
-            db_manager.set_setting('bot_active', 'True')
-            bot.reply_to(message, "🚀 **Bot Maintenance Mode: OFF**\n\nစနစ်ကို ပုံမှန်အတိုင်း ပြန်လည်ဖွင့်လှစ်လိုက်ပါပြီ။")
-
     @bot.message_handler(commands=['aion', 'aioff'])
     def handle_ai_global_toggle(message):
         if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
@@ -108,46 +97,110 @@ def register_handlers(bot):
 
     @bot.message_handler(commands=['status'])
     def handle_status(message):
-        if is_manager(message.from_user.id) or db_manager.check_if_staff(message.from_user.id):
-            staff_count = len(db_manager.get_all_staff())
+        user_id = message.from_user.id
+        chat_id = message.chat.id
+        user_level = db_manager.get_user_level(user_id, chat_id)
+        
+        if user_level >= 3:
+            # 1. Global Toggles
             ai_global = db_manager.get_ai_global_status()
             pickup_global = db_manager.get_auto_pickup_global_status()
             alert_global = db_manager.get_alert_system_global_status()
+            # 2. Process Health (PM2)
+            processes = {"carryman-ingestion": "🔴", "carryman-auditor": "🔴"}
+            unhealthy_processes = []
+            try:
+                pm2_output = subprocess.check_output(["pm2", "jlist"]).decode('utf-8')
+                import json
+                pm2_data = json.loads(pm2_output)
+                for proc in pm2_data:
+                    name = proc.get('name')
+                    status = proc.get('pm2_env', {}).get('status')
+                    if name in processes:
+                        if status == 'online':
+                            processes[name] = "🟢 Online"
+                        else:
+                            processes[name] = f"🔴 {status.capitalize()}"
+                            unhealthy_processes.append(name)
+            except Exception as e:
+                log.error(f"PM2 Status Error: {e}")
+                for k in processes: processes[k] = "⚠️ Error"
+
+            # 3. Resources
+            cpu_usage = psutil.cpu_percent()
+            ram_usage = psutil.virtual_memory().percent
             
             status_text = (
-                "🤖 **CarryMan System v4.0 Status**\n"
+                "🤖 **CarryMan System v4.2 Diagnostics**\n"
                 "━━━━━━━━━━━━━━━━━━\n"
-                f"👥 Staff Count: {staff_count} ဦး\n"
+                "⚙️ **Global Toggles:**\n"
                 f"🧠 AI Answer: **{ai_global}**\n"
                 f"📦 Auto Pickup: **{pickup_global}**\n"
-                f"🚨 Alert System: **{alert_global}**\n"
+                f"🚨 Alert System: **{alert_global}**\n\n"
+                "📡 **Process Health:**\n"
+                f"📥 Ingestion: {processes['carryman-ingestion']}\n"
+                f"🕵️ Auditor: {processes['carryman-auditor']}\n\n"
+                "💻 **Resources:**\n"
+                f"🖥 CPU: {cpu_usage}%\n"
+                f"💾 RAM: {ram_usage}%\n"
                 "━━━━━━━━━━━━━━━━━━\n"
                 "📡 SLA Watchdog: Active"
             )
-            bot.reply_to(message, status_text, parse_mode="Markdown")
+            
+            markup = types.InlineKeyboardMarkup(row_width=2)
+            if user_level == 4:
+                # Contextual Buttons based on unhealthy processes
+                for proc in unhealthy_processes:
+                    if proc == "carryman-auditor":
+                        markup.add(types.InlineKeyboardButton("🔇 Disable AI (aioff)", callback_data="sys_aioff"))
+                    elif proc == "carryman-ingestion":
+                        markup.add(types.InlineKeyboardButton("⏸️ Disable Pickup (pickupoff)", callback_data="sys_pickupoff"))
+
+                markup.add(
+                    types.InlineKeyboardButton("🔄 Restart All", callback_data="sys_restart_confirm"),
+                    types.InlineKeyboardButton("📋 Last Logs", callback_data="sys_logs_20")
+                )
+            
+            bot.reply_to(message, status_text, reply_markup=markup, parse_mode="Markdown")
 
     @bot.message_handler(commands=['restart'])
     def handle_restart(message):
-        user_id = message.from_user.id
-        if is_manager(user_id):
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton("✅ အတည်ပြုသည် (Confirm)", callback_data="sys_restart_all"))
+            markup.add(types.InlineKeyboardButton("❌ မလုပ်တော့ပါ (Cancel)", callback_data="sys_cancel"))
+            bot.reply_to(message, "🔄 **System Restart**\n\nစနစ်တစ်ခုလုံးကို Restart ချရန် သေချာပါသလား အစ်ကို?", reply_markup=markup)
+        else:
+            bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
+
+    @bot.message_handler(commands=['sys_update'])
+    def handle_sys_update(message):
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
+            msg = bot.reply_to(message, "⏳ **System Updating...**\nGit Pull လုပ်နေပါသည်...")
             try:
-                bot.reply_to(message, "🔄 **Bot Hard Restart:**\nစနစ်တစ်ခုလုံးကို အမြစ်ပြတ်သတ်ပြီး အသစ်ပြန်နှိုးနေပါပြီ။ ၁၀ စက္ကန့်ခန့် စောင့်ပေးပါဗျ။")
-                log.warning(f"⚠️ Restart command issued by {user_id}. Cleaning up...")
-                
-                # 💡 Graceful Shutdown: Polling ကို အရင်ရပ်ပြီး Connection သေချာဖြတ်မည်
-                bot.stop_polling()
-                time.sleep(5) # Telegram Server ဘက်မှာ Connection ပြတ်တောက်ရန် အချိန်ပေးခြင်း
-                
-                log.info("🚀 Process exiting for restart...")
-                # 💡 PM2 ကို သုံး၍ စနစ်တစ်ခုလုံး (Bot + Auditor) ကို Restart လုပ်ခြင်း
-                import os
+                output = subprocess.check_output(["git", "pull"]).decode('utf-8')
+                bot.edit_message_text(f"✅ **Git Pull Success!**\n\n`{output}`\n\n🔄 စနစ်ကို Restart ချနေပါပြီ...", msg.chat.id, msg.message_id)
+                time.sleep(2)
                 os.system("pm2 restart all")
-                os._exit(0)
             except Exception as e:
-                log.error(f"❌ Restart Error: {e}")
-                os._exit(1)
-        elif db_manager.check_if_staff(user_id):
-            bot.reply_to(message, "⚠️ စနစ်ကို Restart ချခွင့်မှာ Manager သီးသန့်သာ ရှိပါသည်။")
+                bot.edit_message_text(f"❌ **Update Failed!**\n\nError: {e}", msg.chat.id, msg.message_id)
+        else:
+            bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
+
+    @bot.message_handler(commands=['sys_logs'])
+    def handle_sys_logs(message):
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
+            try:
+                # PM2 logs are usually in ~/.pm2/logs/
+                # But we can use pm2 logs --nostream --lines 20
+                output = subprocess.check_output(["pm2", "logs", "--nostream", "--lines", "20"]).decode('utf-8')
+                # Telegram limit 4096
+                if len(output) > 4000: output = output[-4000:]
+                bot.reply_to(message, f"📋 **System Logs (Last 20 lines):**\n\n`<pre>{html.escape(output)}</pre>`", parse_mode="HTML")
+            except Exception as e:
+                bot.reply_to(message, f"❌ Log ဖတ်၍မရပါ: {e}")
+        else:
+            bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
 
     @bot.message_handler(commands=['stafflist'])
     def handle_staff_list(message):
@@ -293,6 +346,69 @@ def register_handlers(bot):
             bot.send_message(chat_id, "✅ ဤ Group အတွက် AI Auto-Answer ကို ပြန်လည်ဖွင့်လှစ်လိုက်ပါပြီ။")
         except Exception as e:
             log.error(f"❌ Failed to send unmute confirmation to group {chat_id}: {e}")
+
+    @bot.callback_query_handler(func=lambda call: call.data == "sys_restart_confirm")
+    def callback_sys_restart_confirm(call):
+        if db_manager.get_user_level(call.from_user.id, call.message.chat.id) == 4:
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton("✅ အတည်ပြုသည် (Confirm)", callback_data="sys_restart_all"))
+            markup.add(types.InlineKeyboardButton("❌ မလုပ်တော့ပါ (Cancel)", callback_data="sys_cancel"))
+            bot.edit_message_text("🔄 **System Restart**\n\nစနစ်တစ်ခုလုံးကို Restart ချရန် သေချာပါသလား အစ်ကို?",
+                                  call.message.chat.id, call.message.message_id, reply_markup=markup)
+
+    @bot.callback_query_handler(func=lambda call: call.data == "sys_restart_all")
+    def callback_sys_restart_all(call):
+        if db_manager.get_user_level(call.from_user.id, call.message.chat.id) == 4:
+            bot.edit_message_text("🔄 **Restarting All Processes...**\n၁၀ စက္ကန့်ခန့် စောင့်ပေးပါဗျ။",
+                                  call.message.chat.id, call.message.message_id)
+            log.warning(f"⚠️ System Restart triggered by {call.from_user.id}")
+            time.sleep(2)
+            os.system("pm2 restart all")
+            # No need to exit here as PM2 will restart the process
+
+    @bot.callback_query_handler(func=lambda call: call.data == "sys_cancel")
+    def callback_sys_cancel(call):
+        bot.delete_message(call.message.chat.id, call.message.message_id)
+
+    @bot.callback_query_handler(func=lambda call: call.data == "sys_aioff")
+    def callback_sys_aioff(call):
+        if db_manager.get_user_level(call.from_user.id, call.message.chat.id) == 4:
+            db_manager.set_ai_global_status('OFF')
+            bot.answer_callback_query(call.id, "🔇 AI Answer (Global): OFF")
+            bot.send_message(call.message.chat.id, "❌ **AI Answer (Global): OFF**\nAI မှ စာပြန်ခြင်းစနစ်ကို ပိတ်လိုက်ပါပြီ။", message_thread_id=920)
+            handle_status(call.message)
+
+    @bot.callback_query_handler(func=lambda call: call.data == "sys_pickupoff")
+    def callback_sys_pickupoff(call):
+        if db_manager.get_user_level(call.from_user.id, call.message.chat.id) == 4:
+            db_manager.set_auto_pickup_global_status('OFF')
+            bot.answer_callback_query(call.id, "⏸️ Auto Pickup (Global): OFF")
+            bot.send_message(call.message.chat.id, "❌ **Auto Pickup (Global): OFF**\nအော်ဒါအလိုအလျောက်ကောက်သည့်စနစ်ကို ပိတ်လိုက်ပါပြီ။", message_thread_id=920)
+            handle_status(call.message)
+
+    @bot.callback_query_handler(func=lambda call: call.data == "sys_logs_20")
+    def callback_sys_logs_20(call):
+        if db_manager.get_user_level(call.from_user.id, call.message.chat.id) == 4:
+            try:
+                output = subprocess.check_output(["pm2", "logs", "--nostream", "--lines", "20"]).decode('utf-8')
+                if len(output) > 4000: output = output[-4000:]
+                bot.send_message(call.message.chat.id, f"📋 **System Logs (Last 20 lines):**\n\n`<pre>{html.escape(output)}</pre>`", parse_mode="HTML")
+            except Exception as e:
+                bot.answer_callback_query(call.id, f"❌ Error: {e}")
+
+    @bot.callback_query_handler(func=lambda call: call.data == "sys_copy_fix")
+    def callback_sys_copy_fix(call):
+        if db_manager.get_user_level(call.from_user.id, call.message.chat.id) == 4:
+            try:
+                fix_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'last_fix_prompt.txt')
+                if os.path.exists(fix_file):
+                    with open(fix_file, 'r', encoding='utf-8') as f:
+                        fix_prompt = f.read()
+                    bot.send_message(call.message.chat.id, f"📋 **Fix-Prompt (Copy-Paste this):**\n\n`{fix_prompt}`", parse_mode="Markdown")
+                else:
+                    bot.answer_callback_query(call.id, "⚠️ Fix-Prompt မတွေ့ပါ။")
+            except Exception as e:
+                bot.answer_callback_query(call.id, f"❌ Error: {e}")
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("stat_"))
     def callback_analytics(call):

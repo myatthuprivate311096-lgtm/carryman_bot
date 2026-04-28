@@ -1298,3 +1298,4 @@ def get_alert_system_global_status():
 def set_alert_system_global_status(status):
     """ Alert System Global Status ကို settings table တွင် update လုပ်ခြင်း ('ON' or 'OFF') """
     set_setting('global_alert_system', status)
+

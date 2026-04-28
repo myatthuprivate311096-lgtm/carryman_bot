@@ -184,6 +184,12 @@ def handle(bot, message):
         chat_title = message.chat.title or "Unknown Shop"
         os_name = db_manager.clean_shop_name(chat_title)
         
+        # 🧪 Test Group Tagging
+        TEST_GROUP_ID = -1003539520778
+        if chat_id == TEST_GROUP_ID:
+            os_name = f"[TEST] {os_name}"
+            log.info(f"🧪 Sandbox Order detected. Tagging OS Name as: {os_name}")
+
         # ၂။ AI Extraction (Action, Vehicle & Date)
         extract_prompt = f"""
         Analyze the following message from a staff member.
@@ -259,7 +265,6 @@ def handle(bot, message):
         current_time = now.hour * 100 + now.minute # e.g., 11:01 -> 1101
         
         # 🧪 Test Group Bypass: အလုပ်ချိန်ပြင်ပလည်း ပုံမှန်အတိုင်း အလုပ်လုပ်ရန်
-        TEST_GROUP_ID = -1003539520778
         if chat_id == TEST_GROUP_ID:
             log.info(f"🧪 Test Group {chat_id} detected. Bypassing time restrictions.")
             # Test group အတွက် အမြဲတမ်း Window 1 (Today) သို့မဟုတ် Window 2 (Staff Decision) အတိုင်းသွားရန်
