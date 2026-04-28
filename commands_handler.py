@@ -235,12 +235,64 @@ def register_handlers(bot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith("mute_ai:"))
     def callback_mute_ai(call):
         chat_id = int(call.data.split(":")[1])
-        # Manager သို့မဟုတ် Staff ဖြစ်မှ ပိတ်ခွင့်ပေးမည် (သို့မဟုတ် OS Group ထဲက ဘယ်သူမဆို ပိတ်ခွင့်ပေးမလား?)
-        # အစ်ကို့ရဲ့ လိုအပ်ချက်အရ OS Group ထဲက ဝန်ထမ်းတွေ စိတ်အနှောင့်အယှက်မဖြစ်အောင် ပိတ်ခွင့်ပေးလိုက်ပါမယ်။
+        user_name = call.from_user.first_name
+        group_name = call.message.chat.title or "Unknown Group"
+        
+        # ၁။ DB Update
         db_manager.set_group_ai_status(chat_id, 'OFF')
+        
+        # ၂။ User Feedback
         bot.answer_callback_query(call.id, "🔇 ဤ Group အတွက် AI ကို ပိတ်လိုက်ပါပြီ။")
         bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
         bot.send_message(chat_id, "🔇 **AI System: OFF**\nဤ Group အတွက် AI အော်တိုစာပြန်ခြင်းကို ပိတ်လိုက်ပါပြီ။ ပြန်ဖွင့်လိုပါက Manager ကို အကြောင်းကြားပါ။")
+
+        # ၃။ Admin Notification (Topic 920)
+        try:
+            import pytz
+            from datetime import datetime
+            tz = pytz.timezone('Asia/Yangon')
+            now_str = datetime.now(tz).strftime('%Y-%m-%d %I:%M %p')
+            
+            admin_chat_id = -1003601049225
+            admin_topic_id = 920
+            
+            alert_text = (
+                "⚠️ **AI Disabled Alert**\n"
+                "━━━━━━━━━━━━━━━━━━\n"
+                f"🏪 Group: <b>{group_name}</b>\n"
+                f"👤 By: <b>{user_name}</b>\n"
+                f"📅 Date/Time: {now_str}\n"
+                "━━━━━━━━━━━━━━━━━━\n"
+                "Status: Currently <b>OFF</b>."
+            )
+            
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton("[ 🔓 ပြန်ဖွင့်မည် ]", callback_data=f"unmute_ai:{chat_id}"))
+            
+            bot.send_message(admin_chat_id, alert_text, message_thread_id=admin_topic_id, reply_markup=markup, parse_mode="HTML")
+            log.info(f"📢 AI Mute Alert sent to Admin for {group_name}")
+        except Exception as e:
+            log.error(f"❌ Failed to send AI Mute Alert: {e}")
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("unmute_ai:"))
+    def callback_unmute_ai(call):
+        chat_id = int(call.data.split(":")[1])
+        
+        # ၁။ DB Update
+        db_manager.set_group_ai_status(chat_id, 'ON')
+        
+        # ၂။ Admin Feedback & Cleanup
+        bot.answer_callback_query(call.id, "✅ AI ကို ပြန်လည်ဖွင့်လှစ်ပြီးပါပြီ။")
+        try:
+            bot.delete_message(call.message.chat.id, call.message.message_id)
+        except Exception as e:
+            log.warning(f"⚠️ Could not delete admin notification: {e}")
+            
+        # ၃။ Group Notification
+        try:
+            bot.send_message(chat_id, "✅ ဤ Group အတွက် AI Auto-Answer ကို ပြန်လည်ဖွင့်လှစ်လိုက်ပါပြီ။")
+        except Exception as e:
+            log.error(f"❌ Failed to send unmute confirmation to group {chat_id}: {e}")
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("stat_"))
     def callback_analytics(call):
