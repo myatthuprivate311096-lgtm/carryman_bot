@@ -33085,3 +33085,332 @@
 2026-04-28 01:58:49 PM | INFO | message_handler | 📩 New Pending Message from 6869170635 in -1003727765180 (Topic: 1)
 2026-04-28 01:59:36 PM | INFO | db_manager | ✓ Message 150 in -1003727765180 saved as PENDING
 2026-04-28 01:59:36 PM | INFO | message_handler | 📩 New Pending Message from 6869170635 in -1003727765180 (Topic: 6)
+2026-04-28 02:05:17 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-28 02:05:17 PM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-28 02:05:17 PM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-28 02:05:17 PM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-28 02:05:17 PM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-28 02:05:17 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-28 02:08:13 PM | INFO | db_manager | ✅ Group Resolved: [3666] in -1003798739565 by Thida Hlaing (Reply)
+2026-04-28 02:08:13 PM | INFO | auditor | ℹ️ No active alert tracking found for 3666 in -1003798739565.
+2026-04-28 02:08:13 PM | INFO | auditor | ℹ️ Message 3666 was not an active alert. Skipping record.
+2026-04-28 02:08:13 PM | INFO | message_handler | ✅ Message 3666 marked as RESOLVED via Reply by Thida Hlaing
+2026-04-28 02:08:31 PM | INFO | db_manager | ✓ Message 3668 in -1003798739565 saved as PENDING
+2026-04-28 02:08:31 PM | INFO | message_handler | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 6)
+2026-04-28 02:08:41 PM | INFO | db_manager | ✓ Message 3669 in -1003798739565 saved as PENDING
+2026-04-28 02:08:41 PM | INFO | message_handler | 📩 New Pending Message from 6177632442 in -1003798739565 (Topic: 6)
+2026-04-28 02:08:46 PM | INFO | db_manager | ✓ Message 3670 in -1003798739565 saved as PENDING
+2026-04-28 02:08:46 PM | INFO | message_handler | 📩 New Pending Message from 6177632442 in -1003798739565 (Topic: 1)
+2026-04-28 02:08:53 PM | INFO | db_manager | ✓ Message 3671 in -1003798739565 saved as PENDING
+2026-04-28 02:08:53 PM | INFO | message_handler | 📩 New Pending Message from 6177632442 in -1003798739565 (Topic: 1)
+2026-04-28 02:09:08 PM | INFO | db_manager | ✓ Message 3672 in -1003798739565 saved as PENDING
+2026-04-28 02:09:08 PM | INFO | message_handler | 📩 New Pending Message from 6177632442 in -1003798739565 (Topic: 1)
+2026-04-28 02:09:18 PM | INFO | auditor | ℹ️ No active alert tracking found for 3669 in -1003798739565.
+2026-04-28 02:09:18 PM | INFO | auditor | ℹ️ Message 3669 was not an active alert. Skipping record.
+2026-04-28 02:09:18 PM | INFO | db_manager | ✅ Group Resolved: [3669] in -1003798739565 by Thida Hlaing (Reaction (❤))
+2026-04-28 02:09:18 PM | INFO | alert_handler | ✅ Message 3669 marked as RESOLVED via Reaction (❤) by Thida Hlaing
+2026-04-28 02:09:26 PM | INFO | auditor | ℹ️ No active alert tracking found for 3668 in -1003798739565.
+2026-04-28 02:09:26 PM | INFO | auditor | ℹ️ Message 3668 was not an active alert. Skipping record.
+2026-04-28 02:09:26 PM | INFO | db_manager | ✅ Group Resolved: [3668] in -1003798739565 by Thida Hlaing (Reaction (❤))
+2026-04-28 02:09:26 PM | INFO | alert_handler | ✅ Message 3668 marked as RESOLVED via Reaction (❤) by Thida Hlaing
+2026-04-28 02:09:42 PM | INFO | db_manager | ✓ Message 3675 in -1003798739565 saved as PENDING
+2026-04-28 02:09:42 PM | INFO | message_handler | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 6)
+2026-04-28 02:10:00 PM | INFO | db_manager | ✓ Message 3676 in -1003798739565 saved as PENDING
+2026-04-28 02:10:00 PM | INFO | message_handler | 📩 New Pending Message from 6177632442 in -1003798739565 (Topic: 6)
+2026-04-28 02:12:48 PM | INFO | db_manager | ✅ Group Resolved: [3677] in -1003798739565 by Thida Hlaing (Reply)
+2026-04-28 02:12:48 PM | INFO | auditor | ℹ️ No active alert tracking found for 3677 in -1003798739565.
+2026-04-28 02:12:48 PM | INFO | auditor | ℹ️ Message 3677 was not an active alert. Skipping record.
+2026-04-28 02:12:48 PM | INFO | message_handler | ✅ Message 3677 marked as RESOLVED via Reply by Thida Hlaing
+2026-04-28 02:14:31 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-28 02:14:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003672811205/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/4 -> -1003601049225/37
+2026-04-28 02:14:31 PM | WARNING | auditor | ⚠️ No Explicit Route for -1003780967023/1. Notifying Manager...
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003539520778/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003646045828/7 -> -1003601049225/35
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003816497641/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003633412428/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/6 -> -1003601049225/35
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/4 -> -1003601049225/37
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768834039/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003529688950/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003830048503/4 -> -1003601049225/37
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/4 -> -1003601049225/37
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/4 -> -1003601049225/37
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768124152/6 -> -1003601049225/35
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003709069700/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003898476625/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003852412184/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/6 -> -1003601049225/35
+2026-04-28 02:14:31 PM | WARNING | auditor | ⚠️ No Explicit Route for -1003121725085/1. Notifying Manager...
+2026-04-28 02:14:31 PM | WARNING | auditor | ⚠️ No Explicit Route for -1003823820784/6. Notifying Manager...
+2026-04-28 02:14:31 PM | WARNING | auditor | ⚠️ No Explicit Route for -1003852412184/6. Notifying Manager...
+2026-04-28 02:14:31 PM | WARNING | auditor | ⚠️ No Explicit Route for -1003837115331/1. Notifying Manager...
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003871976559/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812325795/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | WARNING | auditor | ⚠️ No Explicit Route for -1003567788792/1. Notifying Manager...
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003760073283/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | WARNING | auditor | ⚠️ No Explicit Route for -1003731552887/20. Notifying Manager...
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003752062728/4 -> -1003601049225/37
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003494945433/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812868558/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003734659970/1 -> -1003601049225/1
+2026-04-28 02:14:31 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-04-28 02:14:31 PM | INFO | auditor | 📂 Auditing Batch: NNKW Bookstore (Topic 1) in Chat -1003780967023 (6 messages)
+2026-04-28 02:14:43 PM | INFO | auditor | 🔇 AI Ignored Group: [374, 380, 381, 382, 383, 393]
+2026-04-28 02:14:45 PM | INFO | auditor | 📂 Auditing Batch: AI Testing OS Gp (Topic 1) in Chat -1003539520778 (1 messages)
+2026-04-28 02:14:47 PM | INFO | auditor | 🔇 AI Ignored Group: [289]
+2026-04-28 02:14:49 PM | INFO | auditor | 📂 Auditing Batch: PoeMiMi Collection (Topic 1) in Chat -1003121725085 (1 messages)
+2026-04-28 02:14:50 PM | INFO | auditor | 🔇 AI Ignored Group: [126]
+2026-04-28 02:14:52 PM | INFO | auditor | 📂 Auditing Batch: BPink Girl (Topic 6) in Chat -1003823820784 (1 messages)
+2026-04-28 02:14:53 PM | INFO | auditor | 🔇 AI Ignored Group: [302]
+2026-04-28 02:14:55 PM | INFO | auditor | 📂 Auditing Batch: ITTC (Topic 6) in Chat -1003852412184 (1 messages)
+2026-04-28 02:15:06 PM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003852412184, topic=6, msg=408, force=False
+2026-04-28 02:15:06 PM | WARNING | auditor | ⚠️ No Explicit Route for -1003852412184/6. Notifying Manager...
+2026-04-28 02:15:06 PM | WARNING | auditor | ⚠️ No route found for ITTC (-1003852412184/6). Notifying Manager.
+2026-04-28 02:15:06 PM | INFO | auditor | 🔍 notify_manager_missing_route: shop=ITTC, msg_id=408, chat=-1003852412184
+2026-04-28 02:15:07 PM | INFO | auditor | 📲 Missing route notification sent to Manager for ITTC
+2026-04-28 02:15:09 PM | INFO | auditor | 📂 Auditing Batch: TTW (Topic 1) in Chat -1003837115331 (3 messages)
+2026-04-28 02:15:10 PM | INFO | auditor | 🔇 AI Ignored Group: [212, 213, 214]
+2026-04-28 02:15:12 PM | INFO | auditor | 📂 Auditing Batch: P 2 CarryMan (Topic 1) in Chat -1003567788792 (5 messages)
+2026-04-28 02:15:24 PM | INFO | auditor | 🔇 AI Ignored Group: [152, 161, 162, 163, 164]
+2026-04-28 02:15:26 PM | INFO | auditor | 📂 Auditing Batch: ChawSu Store (Topic 20) in Chat -1003731552887 (1 messages)
+2026-04-28 02:15:27 PM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003731552887, topic=20, msg=37, force=False
+2026-04-28 02:15:27 PM | WARNING | auditor | ⚠️ No Explicit Route for -1003731552887/20. Notifying Manager...
+2026-04-28 02:15:27 PM | WARNING | auditor | ⚠️ No route found for ChawSu Store (-1003731552887/20). Notifying Manager.
+2026-04-28 02:15:27 PM | INFO | auditor | 🔍 notify_manager_missing_route: shop=ChawSu Store, msg_id=37, chat=-1003731552887
+2026-04-28 02:15:27 PM | INFO | auditor | 📲 Missing route notification sent to Manager for ChawSu Store
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003672811205/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/4 -> -1003601049225/37
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003646045828/7 -> -1003601049225/35
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003816497641/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003633412428/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/6 -> -1003601049225/35
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/4 -> -1003601049225/37
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768834039/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003529688950/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003830048503/4 -> -1003601049225/37
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/4 -> -1003601049225/37
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/4 -> -1003601049225/37
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768124152/6 -> -1003601049225/35
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003709069700/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003898476625/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003852412184/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/6 -> -1003601049225/35
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003871976559/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812325795/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003760073283/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003752062728/4 -> -1003601049225/37
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003494945433/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812868558/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003734659970/1 -> -1003601049225/1
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-04-28 02:15:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/6 -> -1003601049225/35
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003672811205/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/4 -> -1003601049225/37
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003646045828/7 -> -1003601049225/35
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003816497641/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003633412428/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/6 -> -1003601049225/35
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/4 -> -1003601049225/37
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768834039/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003529688950/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003830048503/4 -> -1003601049225/37
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/4 -> -1003601049225/37
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/4 -> -1003601049225/37
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768124152/6 -> -1003601049225/35
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003709069700/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003898476625/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003852412184/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/6 -> -1003601049225/35
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003871976559/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812325795/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003760073283/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003752062728/4 -> -1003601049225/37
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003494945433/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812868558/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003734659970/1 -> -1003601049225/1
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-04-28 02:16:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/6 -> -1003601049225/35
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003672811205/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/4 -> -1003601049225/37
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003646045828/7 -> -1003601049225/35
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003816497641/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003633412428/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/6 -> -1003601049225/35
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/4 -> -1003601049225/37
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768834039/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003529688950/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003830048503/4 -> -1003601049225/37
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/4 -> -1003601049225/37
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/4 -> -1003601049225/37
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768124152/6 -> -1003601049225/35
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003709069700/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003898476625/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003852412184/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/6 -> -1003601049225/35
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003871976559/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812325795/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003760073283/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003752062728/4 -> -1003601049225/37
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003494945433/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812868558/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003734659970/1 -> -1003601049225/1
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-04-28 02:17:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/6 -> -1003601049225/35
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003672811205/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/4 -> -1003601049225/37
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003646045828/7 -> -1003601049225/35
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003816497641/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003633412428/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/6 -> -1003601049225/35
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/4 -> -1003601049225/37
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768834039/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003529688950/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003830048503/4 -> -1003601049225/37
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/4 -> -1003601049225/37
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/4 -> -1003601049225/37
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768124152/6 -> -1003601049225/35
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003709069700/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003898476625/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003852412184/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/6 -> -1003601049225/35
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003871976559/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812325795/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003760073283/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003752062728/4 -> -1003601049225/37
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003494945433/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812868558/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003734659970/1 -> -1003601049225/1
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-04-28 02:18:59 PM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/6 -> -1003601049225/35
+2026-04-28 02:19:36 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-28 02:19:36 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003672811205/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/4 -> -1003601049225/37
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003646045828/7 -> -1003601049225/35
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003816497641/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003633412428/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/6 -> -1003601049225/35
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/4 -> -1003601049225/37
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768834039/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003529688950/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003830048503/4 -> -1003601049225/37
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/4 -> -1003601049225/37
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/4 -> -1003601049225/37
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768124152/6 -> -1003601049225/35
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003709069700/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003898476625/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003852412184/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/6 -> -1003601049225/35
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003871976559/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812325795/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003760073283/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003752062728/4 -> -1003601049225/37
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003494945433/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812868558/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003734659970/1 -> -1003601049225/1
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-04-28 02:19:36 PM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/6 -> -1003601049225/35
+2026-04-28 02:19:57 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-28 02:19:57 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 02:19:57 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-28 02:19:57 PM | INFO | auditor | 🎯 Explicit Route Found: -1003672811205/1 -> -1003601049225/1
+2026-04-28 02:19:57 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/4 -> -1003601049225/37
+2026-04-28 02:19:57 PM | INFO | auditor | 🎯 Explicit Route Found: -1003646045828/7 -> -1003601049225/35
+2026-04-28 02:19:57 PM | INFO | auditor | 🎯 Explicit Route Found: -1003816497641/1 -> -1003601049225/1
+2026-04-28 02:19:57 PM | INFO | auditor | 🎯 Explicit Route Found: -1003633412428/1 -> -1003601049225/1
+2026-04-28 02:19:57 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/1 -> -1003601049225/1
+2026-04-28 02:19:57 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/6 -> -1003601049225/35
+2026-04-28 02:19:57 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/4 -> -1003601049225/37
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768834039/1 -> -1003601049225/1
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003529688950/1 -> -1003601049225/1
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/1 -> -1003601049225/1
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003830048503/4 -> -1003601049225/37
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/4 -> -1003601049225/37
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/4 -> -1003601049225/37
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768124152/6 -> -1003601049225/35
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003709069700/1 -> -1003601049225/1
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003898476625/1 -> -1003601049225/1
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003852412184/1 -> -1003601049225/1
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/6 -> -1003601049225/35
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003871976559/1 -> -1003601049225/1
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812325795/1 -> -1003601049225/1
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003760073283/1 -> -1003601049225/1
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/1 -> -1003601049225/1
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003752062728/4 -> -1003601049225/37
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/1 -> -1003601049225/1
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003494945433/1 -> -1003601049225/1
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812868558/1 -> -1003601049225/1
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003734659970/1 -> -1003601049225/1
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-04-28 02:19:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/6 -> -1003601049225/35
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003672811205/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003810399961/4 -> -1003601049225/37
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003646045828/7 -> -1003601049225/35
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003816497641/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003633412428/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003849260656/6 -> -1003601049225/35
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/4 -> -1003601049225/37
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768834039/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003529688950/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003830048503/4 -> -1003601049225/37
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/4 -> -1003601049225/37
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/4 -> -1003601049225/37
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003768124152/6 -> -1003601049225/35
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003709069700/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003898476625/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003852412184/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003723204023/6 -> -1003601049225/35
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003871976559/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812325795/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003760073283/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003819601608/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003752062728/4 -> -1003601049225/37
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003813366869/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003494945433/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003812868558/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003734659970/1 -> -1003601049225/1
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-04-28 02:20:58 PM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/6 -> -1003601049225/35
