@@ -732,6 +732,61 @@ def register_handlers(bot):
         else:
             bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
 
+    @bot.message_handler(commands=['unmute'])
+    def handle_unmute_command(message):
+        """ /unmute [user_id] command for Level 4 Admins """
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
+            text_parts = message.text.split()
+            if len(text_parts) < 2:
+                bot.reply_to(message, "⚠️ User ID ထည့်ပေးပါ အစ်ကို။\nဥပမာ - `/unmute 12345678`", parse_mode="Markdown")
+                return
+            
+            try:
+                target_user_id = int(text_parts[1].strip())
+                perform_unmute(bot, target_user_id, message.chat.id)
+            except ValueError:
+                bot.reply_to(message, "⚠️ User ID သည် ဂဏန်းဖြစ်ရပါမည်။")
+        else:
+            bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("unmute_user:"))
+    def callback_unmute_user(call):
+        """ Callback handler for [ 🔓 Unmute AI ] button """
+        if db_manager.get_user_level(call.from_user.id, call.message.chat.id) == 4:
+            try:
+                target_user_id = int(call.data.split(":")[1])
+                perform_unmute(bot, target_user_id, call.message.chat.id, call.message.message_id)
+                bot.answer_callback_query(call.id, "✅ User has been unmuted.")
+            except Exception as e:
+                log.error(f"Unmute Callback Error: {e}")
+                bot.answer_callback_query(call.id, "❌ Error occurred.")
+        else:
+            bot.answer_callback_query(call.id, "⚠️ Manager သာ လုပ်ဆောင်နိုင်ပါသည်။", show_alert=True)
+
+    def perform_unmute(bot, user_id, admin_chat_id, admin_msg_id=None):
+        """ Helper function to reset user state and notify both parties """
+        try:
+            # 1. DB Reset
+            db_manager.reset_user_state(user_id)
+            
+            # 2. Notify Admin
+            confirm_text = f"✅ User <code>{user_id}</code> has been unmuted. AI auto-reply is now active for them again."
+            if admin_msg_id:
+                bot.edit_message_text(confirm_text, admin_chat_id, admin_msg_id, parse_mode="HTML")
+            else:
+                bot.send_message(admin_chat_id, confirm_text, parse_mode="HTML")
+            
+            # 3. Notify User in Private Chat
+            try:
+                bot.send_message(user_id, "ဝန်ဆောင်မှုအတွက် ပြန်လည်မေးမြန်းနိုင်ပါပြီခင်ဗျာ။")
+            except Exception as ue:
+                log.warning(f"Could not notify user {user_id} about unmute: {ue}")
+                
+            log.info(f"🔓 User {user_id} unmuted by admin in chat {admin_chat_id}")
+        except Exception as e:
+            log.error(f"perform_unmute Error: {e}")
+            bot.send_message(admin_chat_id, f"❌ Error unmuting user {user_id}: {e}")
+
     @bot.message_handler(commands=['mapshops'])
     def handle_map_shops(message):
         """ Mapping မရှိသေးသော ဆိုင်များကို Manager ထံ ပို့ပေးခြင်း """

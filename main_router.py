@@ -146,8 +146,12 @@ def handle_ai_query(bot, message, is_automatic=False):
                 username = f"@{message.from_user.username}" if message.from_user.username else f"ID: {user_id}"
                 alert_text = f"⚠️ **Human Support Needed!**\nA user ({username}) has asked out-of-scope questions 3 times in Private Chat. AI auto-reply is now paused for them."
                 
+                from telebot import types
+                markup = types.InlineKeyboardMarkup()
+                markup.add(types.InlineKeyboardButton("🔓 Unmute AI", callback_data=f"unmute_user:{user_id}"))
+
                 try:
-                    bot.send_message(admin_chat, alert_text, message_thread_id=topic_id)
+                    bot.send_message(admin_chat, alert_text, message_thread_id=topic_id, reply_markup=markup)
                 except Exception as ae:
                     log.error(f"❌ Failed to send Strike 3 alert to admin: {ae}")
                     # Fallback to general if topic fails
