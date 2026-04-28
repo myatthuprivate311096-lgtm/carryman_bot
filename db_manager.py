@@ -201,8 +201,17 @@ def init_db():
         # ၃။ Default Settings
         c.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('bot_active', 'True')")
         c.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('env_mode', 'Sandbox')")
+        c.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('global_ai_answer', 'ON')")
+        c.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('global_auto_pickup', 'ON')")
+        c.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('global_alert_system', 'ON')")
 
-        # ၄။ Performance Indexes
+        # ၄။ New Tables (Version 4.0)
+        c.execute('''CREATE TABLE IF NOT EXISTS group_settings (
+                     chat_id INTEGER PRIMARY KEY,
+                     ai_status TEXT DEFAULT 'ON'
+                   )''')
+
+        # ၅။ Performance Indexes
         c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_status_time ON message_logs(status, timestamp)")
         c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_chat_topic_status ON message_logs(chat_id, topic_id, status)")
         c.execute("CREATE INDEX IF NOT EXISTS idx_os_groups_chat_topic ON os_groups(chat_id, topic_id)")
@@ -1247,35 +1256,45 @@ def get_waiting_confirm_order(chat_id):
     finally:
         conn.close()
 
-# --- [ AI Global Status Helpers ] ---
-def get_ai_global_status():
-    """ AI Global Status ကို settings table မှ ရယူခြင်း (Default: OFF) """
+# --- [ Version 4.0 Global & Group Settings Helpers ] ---
+def get_group_ai_status(chat_id):
+    """ Group တစ်ခုချင်းစီ၏ AI Status ကို ရယူခြင်း (Default: ON) """
+    conn = get_connection()
     try:
-        from db_manager import get_setting
-        return get_setting('AI_GLOBAL_STATUS', 'OFF')
-    except ImportError:
-        # Fallback if called within db_manager itself
-        import sqlite3
-        import os
-        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        DB_FILE = os.path.join(BASE_DIR, 'carryman.db')
-        conn = sqlite3.connect(DB_FILE)
-        res = conn.execute("SELECT value FROM settings WHERE key='AI_GLOBAL_STATUS'").fetchone()
+        res = conn.execute("SELECT ai_status FROM group_settings WHERE chat_id = ?", (chat_id,)).fetchone()
+        return res[0] if res else 'ON'
+    finally:
         conn.close()
-        return res[0] if res else 'OFF'
+
+def set_group_ai_status(chat_id, status):
+    """ Group တစ်ခုချင်းစီ၏ AI Status ကို Update လုပ်ခြင်း ('ON' or 'OFF') """
+    conn = get_connection()
+    try:
+        conn.execute("INSERT OR REPLACE INTO group_settings (chat_id, ai_status) VALUES (?, ?)", (chat_id, status))
+        conn.commit()
+    finally:
+        conn.close()
+
+def get_ai_global_status():
+    """ AI Global Status ကို settings table မှ ရယူခြင်း (Default: ON) """
+    return get_setting('global_ai_answer', 'ON')
 
 def set_ai_global_status(status):
     """ AI Global Status ကို settings table တွင် update လုပ်ခြင်း ('ON' or 'OFF') """
-    try:
-        from db_manager import set_setting
-        set_setting('AI_GLOBAL_STATUS', status)
-    except ImportError:
-        # Fallback if called within db_manager itself
-        import sqlite3
-        import os
-        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        DB_FILE = os.path.join(BASE_DIR, 'carryman.db')
-        conn = sqlite3.connect(DB_FILE)
-        conn.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('AI_GLOBAL_STATUS', ?)", (status,))
-        conn.commit()
-        conn.close()
+    set_setting('global_ai_answer', status)
+
+def get_auto_pickup_global_status():
+    """ Auto Pickup Global Status ကို settings table မှ ရယူခြင်း (Default: ON) """
+    return get_setting('global_auto_pickup', 'ON')
+
+def set_auto_pickup_global_status(status):
+    """ Auto Pickup Global Status ကို settings table တွင် update လုပ်ခြင်း ('ON' or 'OFF') """
+    set_setting('global_auto_pickup', status)
+
+def get_alert_system_global_status():
+    """ Alert System Global Status ကို settings table မှ ရယူခြင်း (Default: ON) """
+    return get_setting('global_alert_system', 'ON')
+
+def set_alert_system_global_status(status):
+    """ Alert System Global Status ကို settings table တွင် update လုပ်ခြင်း ('ON' or 'OFF') """
+    set_setting('global_alert_system', status)

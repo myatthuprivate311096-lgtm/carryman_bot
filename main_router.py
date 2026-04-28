@@ -13,6 +13,14 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 SANDBOX_CHAT_ID = -1003539520778
 
+def is_ai_office_hours():
+    """ AI Auto-Answer အလုပ်လုပ်မည့်အချိန် (09:00 AM - 08:00 PM) """
+    import pytz
+    from datetime import datetime
+    tz = pytz.timezone('Asia/Yangon')
+    now = datetime.now(tz)
+    return 9 <= now.hour < 20
+
 def handle_ai_query(bot, message, is_automatic=False):
     """
     Smart AI Support Logic (DB -> Maps -> AI)
@@ -87,7 +95,23 @@ def handle_ai_query(bot, message, is_automatic=False):
         if not answer:
             bot.reply_to(message, "⚠️ တောင်းပန်ပါတယ်ခင်ဗျာ။ အဖြေရှာနေစဉ် အမှားတစ်ခု ဖြစ်သွားလို့ပါ။")
             return
-        bot.reply_to(message, f"🤖 **CarryMan AI Agent**\n\n{answer}")
+        
+        # 🔇 AI Off Button (Phase 2)
+        from telebot import types
+        markup = types.InlineKeyboardMarkup()
+        markup.add(types.InlineKeyboardButton("🔇 AI ပိတ်မည်", callback_data=f"mute_ai:{message.chat.id}"))
+        
+        # Split message if too long (Telegram limit 4096)
+        full_response = f"🤖 **CarryMan AI Agent**\n\n{answer}"
+        if len(full_response) > 4000:
+            parts = [full_response[i:i+4000] for i in range(0, len(full_response), 4000)]
+            for idx, part in enumerate(parts):
+                if idx == 0:
+                    bot.reply_to(message, part, reply_markup=markup)
+                else:
+                    bot.send_message(message.chat.id, part)
+        else:
+            bot.reply_to(message, full_response, reply_markup=markup)
 
     except Exception as e:
         log.error(f"❌ AI Query Error: {e}")
@@ -104,13 +128,13 @@ def route_message(bot, message):
         if not text:
             return
 
-        # ၁။ Environment Mode စစ်ဆေးခြင်း
-        # 🛡️ AI Gatekeeper Logic (Phase 3)
-        global_status = db_manager.get_ai_global_status()
-        if chat_id != SANDBOX_CHAT_ID and global_status != 'ON':
-            return
-
-
+        # ၁။ Global & Group Status စစ်ဆေးခြင်း (Phase 2)
+        global_ai = db_manager.get_ai_global_status()
+        group_ai = db_manager.get_group_ai_status(chat_id)
+        global_pickup = db_manager.get_auto_pickup_global_status()
+        
+        is_sandbox = (chat_id == SANDBOX_CHAT_ID)
+        
         log.info(f"🧠 Routing message from {chat_id}: {text[:50]}...")
 
         # ၂။ AI Decision (Intent Detection)
@@ -146,7 +170,28 @@ def route_message(bot, message):
         if intent == "none":
             return
 
-        # ၃။ Dynamic Loader (importlib)
+        # ၃။ Gatekeeper Logic (Phase 2)
+        # Auto Pickup: ၂၄ နာရီ (Global ON ဖြစ်ရမည်)
+        # AI Answer (Support/Auditor): 09:00 AM - 08:00 PM (Global & Group ON ဖြစ်ရမည်)
+        
+        if intent == "auto_pickup":
+            if not is_sandbox and global_pickup != 'ON':
+                log.info(f"⏭️ Skipping Auto Pickup: Global Status is {global_pickup}")
+                return
+        else:
+            # Support သို့မဟုတ် Auditor (AI Answer) အတွက် စစ်ဆေးခြင်း
+            if not is_sandbox:
+                if global_ai != 'ON':
+                    log.info(f"⏭️ Skipping AI Answer: Global Status is {global_ai}")
+                    return
+                if group_ai != 'ON':
+                    log.info(f"⏭️ Skipping AI Answer: Group Status is {group_ai}")
+                    return
+                if not is_ai_office_hours():
+                    log.info("🌙 Skipping AI Answer: Outside Office Hours (09:00 AM - 08:00 PM)")
+                    return
+
+        # ၄။ Dynamic Loader (importlib)
         if intent == 'support':
             handle_ai_query(bot, message, is_automatic=True)
             return

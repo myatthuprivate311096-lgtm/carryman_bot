@@ -76,10 +76,30 @@ def register_handlers(bot):
         if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
             if message.text.startswith('/aion'):
                 db_manager.set_ai_global_status('ON')
-                bot.reply_to(message, '✅ **AI System (Global): ON**\nအခြား Group များတွင် AI ပုံမှန် အလုပ်လုပ်ပါမည်။')
+                bot.reply_to(message, '✅ **AI Answer (Global): ON**\nAI မှ စာပြန်ခြင်းစနစ်ကို ဖွင့်လိုက်ပါပြီ။')
             else:
                 db_manager.set_ai_global_status('OFF')
-                bot.reply_to(message, '❌ **AI System (Global): OFF**\nအခြား Group များတွင် AI အော်ဒါကောက်ခြင်းကို ရပ်နားထားပါမည်။')
+                bot.reply_to(message, '❌ **AI Answer (Global): OFF**\nAI မှ စာပြန်ခြင်းစနစ်ကို ပိတ်လိုက်ပါပြီ။')
+
+    @bot.message_handler(commands=['pickupon', 'pickupoff'])
+    def handle_pickup_global_toggle(message):
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
+            if message.text.startswith('/pickupon'):
+                db_manager.set_auto_pickup_global_status('ON')
+                bot.reply_to(message, '✅ **Auto Pickup (Global): ON**\nအော်ဒါအလိုအလျောက်ကောက်သည့်စနစ်ကို ဖွင့်လိုက်ပါပြီ။')
+            else:
+                db_manager.set_auto_pickup_global_status('OFF')
+                bot.reply_to(message, '❌ **Auto Pickup (Global): OFF**\nအော်ဒါအလိုအလျောက်ကောက်သည့်စနစ်ကို ပိတ်လိုက်ပါပြီ။')
+
+    @bot.message_handler(commands=['alerton', 'alertoff'])
+    def handle_alert_global_toggle(message):
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
+            if message.text.startswith('/alerton'):
+                db_manager.set_alert_system_global_status('ON')
+                bot.reply_to(message, '✅ **Alert System (Global): ON**\n၁၅ မိနစ် Alert ပေးသည့်စနစ်ကို ဖွင့်လိုက်ပါပြီ။')
+            else:
+                db_manager.set_alert_system_global_status('OFF')
+                bot.reply_to(message, '❌ **Alert System (Global): OFF**\n၁၅ မိနစ် Alert ပေးသည့်စနစ်ကို ပိတ်လိုက်ပါပြီ။')
 
     @bot.message_handler(commands=['start'])
     def send_welcome(message):
@@ -90,12 +110,19 @@ def register_handlers(bot):
     def handle_status(message):
         if is_manager(message.from_user.id) or db_manager.check_if_staff(message.from_user.id):
             staff_count = len(db_manager.get_all_staff())
+            ai_global = db_manager.get_ai_global_status()
+            pickup_global = db_manager.get_auto_pickup_global_status()
+            alert_global = db_manager.get_alert_system_global_status()
+            
             status_text = (
-                "🟢 **Bot Status: Online**\n"
+                "🤖 **CarryMan System v4.0 Status**\n"
                 "━━━━━━━━━━━━━━━━━━\n"
-                f"👥 ဝန်ထမ်းအရေအတွက်: {staff_count} ဦး\n"
-                "📡 SLA Watchdog: Active\n"
-                "━━━━━━━━━━━━━━━━━━"
+                f"👥 Staff Count: {staff_count} ဦး\n"
+                f"🧠 AI Answer: **{ai_global}**\n"
+                f"📦 Auto Pickup: **{pickup_global}**\n"
+                f"🚨 Alert System: **{alert_global}**\n"
+                "━━━━━━━━━━━━━━━━━━\n"
+                "📡 SLA Watchdog: Active"
             )
             bot.reply_to(message, status_text, parse_mode="Markdown")
 
@@ -204,6 +231,16 @@ def register_handlers(bot):
                        types.InlineKeyboardButton("🗓️ Month", callback_data="stat_month"),
                        types.InlineKeyboardButton("📊 All Time", callback_data="stat_all"))
             bot.send_message(message.chat.id, "📊 **Performance Report**\nကာလကို ရွေးချယ်ပါ-", reply_markup=markup, parse_mode="Markdown")
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("mute_ai:"))
+    def callback_mute_ai(call):
+        chat_id = int(call.data.split(":")[1])
+        # Manager သို့မဟုတ် Staff ဖြစ်မှ ပိတ်ခွင့်ပေးမည် (သို့မဟုတ် OS Group ထဲက ဘယ်သူမဆို ပိတ်ခွင့်ပေးမလား?)
+        # အစ်ကို့ရဲ့ လိုအပ်ချက်အရ OS Group ထဲက ဝန်ထမ်းတွေ စိတ်အနှောင့်အယှက်မဖြစ်အောင် ပိတ်ခွင့်ပေးလိုက်ပါမယ်။
+        db_manager.set_group_ai_status(chat_id, 'OFF')
+        bot.answer_callback_query(call.id, "🔇 ဤ Group အတွက် AI ကို ပိတ်လိုက်ပါပြီ။")
+        bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
+        bot.send_message(chat_id, "🔇 **AI System: OFF**\nဤ Group အတွက် AI အော်တိုစာပြန်ခြင်းကို ပိတ်လိုက်ပါပြီ။ ပြန်ဖွင့်လိုပါက Manager ကို အကြောင်းကြားပါ။")
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("stat_"))
     def callback_analytics(call):

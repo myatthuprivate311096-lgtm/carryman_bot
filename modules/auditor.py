@@ -487,17 +487,28 @@ def process_audits():
                 send_performance_report()
                 last_report_date = today_str
 
-            is_standard_office = True # Working hours restriction removed
-            global_status = db_manager.get_ai_global_status()
+            # Phase 2: AI Gatekeeper Logic for Auditor
+            import main_router
+            is_ai_time = main_router.is_ai_office_hours()
+            global_ai = db_manager.get_ai_global_status()
+            
             pending_topics = db_manager.get_pending_topics(minutes=15)
             
-            # 🛡️ AI Gatekeeper Logic (Phase 3)
             filtered_topics = []
             for c_id, t_id in pending_topics:
-                if c_id == TEST_GROUP_ID:
+                # Sandbox/Test Group always allowed
+                if c_id == TEST_GROUP_ID or c_id == main_router.SANDBOX_CHAT_ID:
                     filtered_topics.append((c_id, t_id))
-                elif global_status == 'ON':
+                    continue
+                
+                # Global & Group & Time Check
+                group_ai = db_manager.get_group_ai_status(c_id)
+                if global_ai == 'ON' and group_ai == 'ON' and is_ai_time:
                     filtered_topics.append((c_id, t_id))
+                else:
+                    # If AI is off, we don't audit, but we might still need to handle alerts manually?
+                    # For now, we just skip AI auditing if conditions aren't met.
+                    pass
             pending_topics = filtered_topics
 
             for chat_id, topic_id in pending_topics:
