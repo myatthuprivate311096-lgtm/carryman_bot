@@ -8,7 +8,7 @@ from telebot import types
 import db_manager
 from logger import log
 import ai_utils
-from modules import location_service
+from modules import location_service, auto_login
 
 def submit_pickup_order(target_date, os_name, remark, vehicle="Bicycle"):
     log.info("🚀 Auto Pickup စက်ရုပ် (Playwright) စတင်နေပါပြီ...")
@@ -28,6 +28,17 @@ def submit_pickup_order(target_date, os_name, remark, vehicle="Bicycle"):
             log.info(f"🔗 {order_url} သို့ သွားနေပါသည်...")
             page.goto(order_url)
             page.wait_for_load_state('domcontentloaded')
+            
+            # Check if redirected to login page
+            if "login" in page.url.lower():
+                log.warning("⚠️ Session expired. Re-logging in...")
+                success, msg = auto_login.auto_login(browser=browser)
+                if not success:
+                    return False, f"Login failed: {msg}"
+                # Retry going to order page
+                page.goto(order_url)
+                page.wait_for_load_state('domcontentloaded')
+
             time.sleep(2) # Page သေချာပွင့်သည်အထိ ခဏစောင့်မည်
 
             log.info("📝 အချက်အလက်များ ဖြည့်သွင်းနေပါသည်...")
@@ -199,14 +210,15 @@ def handle(bot, message):
         Message: "{text}"
 
         Decide the action:
-        1. 'PICKUP': If the user is requesting a new pickup or asking about pickup availability.
+        1. 'PICKUP': If the user is EXPLICITLY requesting a new pickup (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ", "မနက်ဖြန်အတွက် တင်ပေးပါ").
+           DO NOT trigger for casual mentions of pickup or questions about pickup status.
         2. 'LOOKUP_LOCATION': If the user is asking for the township of a specific location name (e.g., "Hledan က ဘယ်မြို့နယ်လဲ", "Junction City က ဘယ်မြို့နယ်ထဲမှာလဲ").
-        3. 'OTHER': If it's something else.
+        3. 'OTHER': If it's casual conversation, greetings, or unrelated to a new pickup request.
 
         Output ONLY a JSON object with:
         - action: "PICKUP", "LOOKUP_LOCATION", or "OTHER"
         - location_query: If action is 'LOOKUP_LOCATION', extract the location name they are asking about (e.g., "Hledan", "Junction City"). Otherwise null.
-        - is_new_request: boolean (True if action is 'PICKUP', False otherwise)
+        - is_new_request: boolean (True ONLY if action is 'PICKUP' and it's a clear request to start a new order)
         - vehicle: "Bicycle" or "Car" (Default to null if not mentioned)
         - date_type: "today" or "tomorrow" (If the user explicitly mentions "today" (ဒီနေ့) or "tomorrow" (မနက်ဖြန်), set accordingly. Otherwise, default to null)
         - clean_remark: Extract ONLY the additional instructions, notes, or specific details (like quantity, amount, location, or special requests) from the message in Burmese, EXCLUDING the core pickup request phrase (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ").
@@ -529,6 +541,22 @@ def run_queue_worker(bot):
             # ၁။ Shop Mapping ရှိမရှိ အရင်စစ်မည်
             mapped_name = db_manager.get_shop_mapping(chat_id)
             final_os_name = mapped_name if mapped_name else os_name
+
+            # Strict Validation: Ensure all required fields are present before calling scraper
+            if not all([target_date, final_os_name, vehicle]) or vehicle == "none":
+                log.error(f"❌ Strict Validation Failed for Queue {queue_id}: Missing required fields.")
+                db_manager.update_queue_status(queue_id, 'FAILED', error_msg="Missing required fields (Date, Shop, or Vehicle)")
+                update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Failed (Missing Data)")
+                
+                # Ask user again for missing vehicle if that's the case
+                if not vehicle or vehicle == "none":
+                    # We need to determine date_type from target_date
+                    tz = pytz.timezone('Asia/Yangon')
+                    now = datetime.now(tz)
+                    today_str = now.strftime("%d-%m-%Y")
+                    date_type = "today" if target_date == today_str else "tomorrow"
+                    ask_vehicle(bot, types.Message(message_id=orig_msg_id, from_user=None, date=None, chat=types.Chat(id=chat_id, type='group'), text=remark), date_type, orig_msg_id)
+                continue
 
             # Status ကို PROCESSING ပြောင်းမည်
             db_manager.update_queue_status(queue_id, 'PROCESSING')

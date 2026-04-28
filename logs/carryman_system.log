@@ -35115,3 +35115,41 @@ Call log:
 
 2026-04-28 06:30:45 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
 2026-04-28 06:35:45 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 06:36:29 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-28 06:36:29 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 06:36:30 PM | INFO | health_monitor | 🚀 Proactive Health Monitor started (5 min interval)
+2026-04-28 06:36:30 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-28 06:36:30 PM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-28 06:36:30 PM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-28 06:36:31 PM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-28 06:36:31 PM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-28 06:36:31 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-28 06:39:43 PM | ERROR | pickup_handler | ❌ Fix Mapping Callback Error: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: there is no text in the message to edit
+2026-04-28 06:41:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 06:42:39 PM | INFO | main_router | � Routing message from 8353570874: /ai_off...
+2026-04-28 06:42:40 PM | INFO | main_router | 🎯 AI Decision: none
+2026-04-28 06:42:50 PM | INFO | main_router | � Routing message from 8353570874: /pickup_off...
+2026-04-28 06:42:51 PM | INFO | main_router | 🎯 AI Decision: none
+2026-04-28 06:46:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 06:47:58 PM | INFO | main_router | � Routing message from -1003872160078: pick up လေးတင်ပေးထားပါတယ်ခင်ဗျ။
+ကျေးဇူးပါနော်...
+2026-04-28 06:47:59 PM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-28 06:47:59 PM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-28 06:51:30 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 06:56:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 07:01:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 07:06:31 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 07:06:43 PM | INFO | main_router | � Routing message from -1003121725085: Deli pick upလေးလာကောက်ပေးနော်...
+2026-04-28 07:06:45 PM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-28 07:06:45 PM | INFO | auto_pickup | 🚚 Auto Pickup module handling message: 129
+2026-04-28 07:07:05 PM | INFO | db_manager | ✓ Message 129 in -1003121725085 saved as PENDING
+2026-04-28 07:07:05 PM | INFO | message_handler | 📩 New Pending Message from 2025599336 in -1003121725085 (Topic: 1)
+2026-04-28 07:08:35 PM | INFO | main_router | � Routing message from -1003121725085: 09254203362ကိုပဲဆက်လိြကါနော်ပန်းဘဲတန်းမှာသွားယူရမှ...
+2026-04-28 07:08:35 PM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-28 07:08:35 PM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-28 07:08:36 PM | INFO | db_manager | ✓ Message 131 in -1003121725085 saved as PENDING
+2026-04-28 07:08:36 PM | INFO | message_handler | 📩 New Pending Message from 2025599336 in -1003121725085 (Topic: 1)
+2026-04-28 07:11:32 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 07:16:32 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 07:18:54 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-28 07:18:54 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.

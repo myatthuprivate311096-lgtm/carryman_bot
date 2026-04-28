@@ -1,6 +1,7 @@
 import os
 import time
 import subprocess
+import telebot
 import psutil
 import html
 from modules import auditor
@@ -800,17 +801,19 @@ def register_handlers(bot):
             
             for chat_id, shop_name in unmapped[:20]: # တစ်ခါတည်း အများကြီး မပို့မိစေရန် ၂၀ ခုစီ ကန့်သတ်မည်
                 clean_name = db_manager.clean_shop_name(shop_name)
+                shop_name_esc = telebot.util.escape(shop_name)
                 suggestions = db_manager.get_website_suggestions(clean_name[:5])
 
                 markup = types.InlineKeyboardMarkup(row_width=1)
                 for s in suggestions:
-                    markup.add(types.InlineKeyboardButton(f"✅ {s}", callback_data=f"ap_set_{chat_id}_{s}"))
+                    s_esc = telebot.util.escape(s)
+                    markup.add(types.InlineKeyboardButton(f"✅ {s_esc}", callback_data=f"ap_set_{chat_id}_{s}"))
                 
                 markup.add(types.InlineKeyboardButton("⌨️ Manual Type", callback_data=f"ap_manual_{chat_id}"))
 
                 bot.send_message(
                     message.chat.id,
-                    f"🏪 Telegram: <b>{shop_name}</b>\n\nမှန်ကန်တဲ့ Website ဆိုင်နာမည်ကို ရွေးပေးပါ-",
+                    f"🏪 Telegram: <b>{shop_name_esc}</b>\n\nမှန်ကန်တဲ့ Website ဆိုင်နာမည်ကို ရွေးပေးပါ-",
                     reply_markup=markup, parse_mode="HTML"
                 )
                 time.sleep(1) # Telegram Flood Limit မမိစေရန်

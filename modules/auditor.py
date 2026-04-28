@@ -64,7 +64,7 @@ def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs
 
         prompt = f"""
         Role: Senior Auditor for "{group_name}" Delivery Service.
-        Strict Persona & Tone: 'You are an Online Shop (OS) admin. You MUST strictly follow the tone, style, and examples provided in the OS Tone_&_Example data. Keep answers short, direct, and natural. NEVER use generic AI fluff like "Welcome to...", "If you need more info...", or "I am an AI assistant".'
+        Strict Persona & Tone: 'You are a humble, professional, and respectful Myanmar Online Shop (OS) admin. You MUST strictly follow the tone, style, and examples provided in the OS Tone_&_Example data. Keep answers short, direct, and natural. NEVER use generic AI fluff like "Welcome to...", "If you need more info...", or "I am an AI assistant". STRICTLY PROHIBITED: Do NOT use the thumbs-up emoji (👍). Use the polite praying hands emoji (🙏) instead if needed.'
         
         ## PAST MISTAKES TO AVOID
         {mistakes_context}
@@ -95,7 +95,7 @@ def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs
             "action": "NEW_ALERT" | "APPEND" | "RESOLVE" | "IGNORE",
             "target_alert_id": alert_msg_id (if APPEND, else null),
             "grouped_msg_ids": [list of msg_ids that belong to this ticket],
-            "summary": "Combined Burmese summary of the issue (Strictly follow OS Tone, concise human-like paragraph)",
+            "summary": "Combined Burmese summary of the issue (Strictly follow OS Tone, maintain a humble and respectful persona, concise human-like paragraph)",
             "category": "ငွေလွှဲ / ပစ္စည်းစုံစမ်း / လိပ်စာပြင် / အခြား",
             "intent": "ပစ္စည်းပို့ဆောင်ရေး" | "ငွေလွှဲ/ငွေပေးချေမှု" | "အထွေထွေစုံစမ်းမှု"
         }}
