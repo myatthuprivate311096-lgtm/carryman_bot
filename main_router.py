@@ -13,7 +13,7 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 SANDBOX_CHAT_ID = -1003539520778
 
-def handle_ai_query(bot, message):
+def handle_ai_query(bot, message, is_automatic=False):
     """
     Smart AI Support Logic (DB -> Maps -> AI)
     """
@@ -25,7 +25,7 @@ def handle_ai_query(bot, message):
         user_level = db_manager.get_user_level(user_id, chat_id)
         
         # ၂။ မေးခွန်းကို ရယူခြင်း
-        query = message.text.replace('/ai', '').strip()
+        query = message.text.replace('/ai', '').strip() if not is_automatic else (message.text or message.caption or '')
         if not query and message.reply_to_message:
             query = message.reply_to_message.text or message.reply_to_message.caption
             
@@ -105,20 +105,17 @@ def route_message(bot, message):
             return
 
         # ၁။ Environment Mode စစ်ဆေးခြင်း
-        env_mode = db_manager.get_setting('env_mode', 'Sandbox')
-        
-        if env_mode == 'Sandbox':
-            # Sandbox Mode ဖြစ်ပါက Whitelist စစ်မည်
-            if chat_id != SANDBOX_CHAT_ID:
-                # log.info(f"ℹ️ Message from {chat_id} ignored (Sandbox Mode Active)")
-                return
-        # Production Mode ဖြစ်ပါက Whitelist မစစ်ဘဲ အကုန်ပေးဝင်မည်
+        # 🛡️ AI Gatekeeper Logic (Phase 3)
+        global_status = db_manager.get_ai_global_status()
+        if chat_id != SANDBOX_CHAT_ID and global_status != 'ON':
+            return
+
 
         log.info(f"🧠 Routing message from {chat_id}: {text[:50]}...")
 
         # ၂။ AI Decision (Intent Detection)
         # လက်ရှိ modules folder ထဲမှာ ရှိတဲ့ module list ကို ယူမယ်
-        available_modules = ["auto_pickup", "check_order", "auditor"]
+        available_modules = ["auto_pickup", "check_order", "auditor", "support"]
         
         prompt = f"""
         Role: Central AI Router for a Logistics Bot.
@@ -128,6 +125,7 @@ def route_message(bot, message):
         - auto_pickup: Use for NEW pickup requests OR inquiries about pickup availability (e.g., "pick up လာယူပေးပါ", "ဒီနေ့ pickup ရဦးမလား", "မနက်ဖြန် pick up ရှိပါတယ်").
         - check_order: Use for checking order status, tracking numbers, or finding specific orders.
         - auditor: Use for complaints or when the user is asking about an ALREADY PLACED pickup (e.g., "pick up မလာသေးဘူးလား", "ဘယ်အချိန်လာမှာလဲ").
+        - support: Use if the user is asking a general question about CarryMan, office location, or logistics services.
         - none: Use if the message is just a greeting, spam, or irrelevant.
 
         User Message: "{text}"
@@ -149,6 +147,10 @@ def route_message(bot, message):
             return
 
         # ၃။ Dynamic Loader (importlib)
+        if intent == 'support':
+            handle_ai_query(bot, message, is_automatic=True)
+            return
+
         if intent in available_modules:
             try:
                 # modules.intent ပုံစံဖြင့် import လုပ်မည်

@@ -37,23 +37,7 @@ TEST_GROUP_ID = int(os.getenv('TEST_GROUP_ID', -1003539520778))
 bot = telebot.TeleBot(BOT_TOKEN)
 
 def is_office_hours(chat_id=None):
-    # အစ်ကို့တောင်းဆိုချက်အရ Test Group ကို အလုပ်ချိန်ပြင်ပလည်း Alert ပို့ရန်
-    if chat_id and int(chat_id) == TEST_GROUP_ID:
-        return True
-
-    tz = pytz.timezone('Asia/Yangon')
-    mm_time = datetime.now(tz)
-    
-    current_hour = mm_time.hour
-    current_minute = mm_time.minute
-    
-    total_minutes = current_hour * 60 + current_minute
-    start_minutes = 9 * 60 + 10 # 09:10 AM
-    end_minutes = 18 * 60 + 16 # 06:15 PM (Inclusive)
-    
-    if start_minutes <= total_minutes < end_minutes:
-        return True
-    return False
+    return True  # Working hours restriction removed by Roo
 
 def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs, subsequent_msgs, chat_id, topic_id):
     try:
@@ -503,20 +487,18 @@ def process_audits():
                 send_performance_report()
                 last_report_date = today_str
 
-            is_standard_office = is_office_hours()
+            is_standard_office = True # Working hours restriction removed
+            global_status = db_manager.get_ai_global_status()
             pending_topics = db_manager.get_pending_topics(minutes=15)
             
-            if not is_standard_office:
-                filtered_topics = []
-                for c_id, t_id in pending_topics:
-                    target_chat, _ = get_routing_data(c_id, t_id)
-                    if c_id == TEST_GROUP_ID or target_chat is None:
-                        filtered_topics.append((c_id, t_id))
-                pending_topics = filtered_topics
-            
-            if not pending_topics and not is_standard_office:
-                time.sleep(60)
-                continue
+            # 🛡️ AI Gatekeeper Logic (Phase 3)
+            filtered_topics = []
+            for c_id, t_id in pending_topics:
+                if c_id == TEST_GROUP_ID:
+                    filtered_topics.append((c_id, t_id))
+                elif global_status == 'ON':
+                    filtered_topics.append((c_id, t_id))
+            pending_topics = filtered_topics
 
             for chat_id, topic_id in pending_topics:
                 _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
