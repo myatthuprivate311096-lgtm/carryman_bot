@@ -1246,3 +1246,36 @@ def get_waiting_confirm_order(chat_id):
         return res
     finally:
         conn.close()
+
+# --- [ AI Global Status Helpers ] ---
+def get_ai_global_status():
+    """ AI Global Status ကို settings table မှ ရယူခြင်း (Default: OFF) """
+    try:
+        from db_manager import get_setting
+        return get_setting('AI_GLOBAL_STATUS', 'OFF')
+    except ImportError:
+        # Fallback if called within db_manager itself
+        import sqlite3
+        import os
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        DB_FILE = os.path.join(BASE_DIR, 'carryman.db')
+        conn = sqlite3.connect(DB_FILE)
+        res = conn.execute("SELECT value FROM settings WHERE key='AI_GLOBAL_STATUS'").fetchone()
+        conn.close()
+        return res[0] if res else 'OFF'
+
+def set_ai_global_status(status):
+    """ AI Global Status ကို settings table တွင် update လုပ်ခြင်း ('ON' or 'OFF') """
+    try:
+        from db_manager import set_setting
+        set_setting('AI_GLOBAL_STATUS', status)
+    except ImportError:
+        # Fallback if called within db_manager itself
+        import sqlite3
+        import os
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        DB_FILE = os.path.join(BASE_DIR, 'carryman.db')
+        conn = sqlite3.connect(DB_FILE)
+        conn.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('AI_GLOBAL_STATUS', ?)", (status,))
+        conn.commit()
+        conn.close()

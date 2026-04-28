@@ -71,6 +71,16 @@ def register_handlers(bot):
             db_manager.set_setting('bot_active', 'True')
             bot.reply_to(message, "🚀 **Bot Maintenance Mode: OFF**\n\nစနစ်ကို ပုံမှန်အတိုင်း ပြန်လည်ဖွင့်လှစ်လိုက်ပါပြီ။")
 
+    @bot.message_handler(commands=['aion', 'aioff'])
+    def handle_ai_global_toggle(message):
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
+            if message.text.startswith('/aion'):
+                db_manager.set_ai_global_status('ON')
+                bot.reply_to(message, '✅ **AI System (Global): ON**\nအခြား Group များတွင် AI ပုံမှန် အလုပ်လုပ်ပါမည်။')
+            else:
+                db_manager.set_ai_global_status('OFF')
+                bot.reply_to(message, '❌ **AI System (Global): OFF**\nအခြား Group များတွင် AI အော်ဒါကောက်ခြင်းကို ရပ်နားထားပါမည်။')
+
     @bot.message_handler(commands=['start'])
     def send_welcome(message):
         if is_manager(message.from_user.id) or db_manager.check_if_staff(message.from_user.id):
