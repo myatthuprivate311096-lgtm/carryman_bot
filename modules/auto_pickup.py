@@ -541,8 +541,8 @@ def run_queue_worker(bot):
                 db_manager.update_queue_status(queue_id, 'SUCCESS')
                 update_central_pickup_alert(bot, orig_msg_id, chat_id, "✅ Success (အောင်မြင်ပါသည်)")
                 
-                # Status Sync: message_logs မှာပါ RESOLVED သွားပြောင်းမည်
-                db_manager.resolve_message(orig_msg_id, chat_id, 'System (Auto-Pickup)', method='Auto')
+                # Status Sync: message_logs မှာပါ HANDLED_BY_AI သွားပြောင်းမည်
+                db_manager.resolve_message(orig_msg_id, chat_id, 'System (Auto-Pickup)', method='Auto', status='HANDLED_BY_AI')
                 
                 # Cleanup intermediate messages first
                 cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id)

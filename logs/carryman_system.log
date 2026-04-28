@@ -34983,3 +34983,135 @@ Chit Po Po Win
 2026-04-28 06:20:45 PM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
 2026-04-28 06:20:45 PM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
 2026-04-28 06:20:45 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-28 06:24:36 PM | INFO | main_router | � Routing message from -1003872160078: မနက်wayလာကောက်ပေးပါနောါ...
+2026-04-28 06:24:37 PM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-28 06:24:37 PM | INFO | auto_pickup | 🚚 Auto Pickup module handling message: 282
+2026-04-28 06:24:56 PM | WARNING | ai_utils | ⚠️ OpenRouter Error (1/3): Error code: 504 - {'error': {'message': 'The operation was aborted', 'code': 504, 'metadata': {'provider_name': 'Google'}}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-28 06:24:56 PM | ERROR | ai_utils | ❌ Gemini Direct Error: 429 - {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash\nPlease retry in 3.841273059s.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Learn more about Gemini API quotas",
+            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+        "violations": [
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.0-flash"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.0-flash"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count",
+            "quotaId": "GenerateContentInputTokensPerModelPerMinute-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.0-flash"
+            }
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "3s"
+      }
+    ]
+  }
+}
+
+2026-04-28 06:24:56 PM | INFO | ai_utils | ⚡ Groq Fallback used successfully.
+2026-04-28 06:24:56 PM | INFO | db_manager | ✓ Message 282 in -1003872160078 saved as PENDING
+2026-04-28 06:24:56 PM | INFO | message_handler | 📩 New Pending Message from 1436482655 in -1003872160078 (Topic: 1)
+2026-04-28 06:25:36 PM | INFO | main_router | � Routing message from -1003872160078: အရင်လာကောက်နေကြအတ်ုင်းပဲလာကောက်ပေးလို့ရပါတယ်...
+2026-04-28 06:25:37 PM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-28 06:25:37 PM | INFO | auto_pickup | 🚚 Auto Pickup module handling message: 284
+2026-04-28 06:25:44 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 06:25:56 PM | WARNING | ai_utils | ⚠️ OpenRouter Error (1/3): Error code: 429 - {'error': {'message': 'Provider returned error', 'code': 429, 'metadata': {'raw': 'google/gemini-2.0-flash-001 is temporarily rate-limited upstream. Please retry shortly, or add your own key to accumulate your rate limits: https://openrouter.ai/settings/integrations', 'provider_name': 'Google', 'is_byok': False}}, 'user_id': 'user_3A9FFcUf2vST4AdBcuLaxDDctrI'}
+2026-04-28 06:25:56 PM | ERROR | ai_utils | ❌ Gemini Direct Error: 429 - {
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 0, model: gemini-2.0-flash\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_input_token_count, limit: 0, model: gemini-2.0-flash\nPlease retry in 3.631520563s.",
+    "status": "RESOURCE_EXHAUSTED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.Help",
+        "links": [
+          {
+            "description": "Learn more about Gemini API quotas",
+            "url": "https://ai.google.dev/gemini-api/docs/rate-limits"
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+        "violations": [
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.0-flash"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+            "quotaId": "GenerateRequestsPerMinutePerProjectPerModel-FreeTier",
+            "quotaDimensions": {
+              "model": "gemini-2.0-flash",
+              "location": "global"
+            }
+          },
+          {
+            "quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_input_token_count",
+            "quotaId": "GenerateContentInputTokensPerModelPerMinute-FreeTier",
+            "quotaDimensions": {
+              "location": "global",
+              "model": "gemini-2.0-flash"
+            }
+          }
+        ]
+      },
+      {
+        "@type": "type.googleapis.com/google.rpc.RetryInfo",
+        "retryDelay": "3s"
+      }
+    ]
+  }
+}
+
+2026-04-28 06:25:56 PM | INFO | ai_utils | ⚡ Groq Fallback used successfully.
+2026-04-28 06:25:56 PM | INFO | db_manager | ✓ Message 284 in -1003872160078 saved as PENDING
+2026-04-28 06:25:56 PM | INFO | message_handler | 📩 New Pending Message from 1436482655 in -1003872160078 (Topic: 1)
+2026-04-28 06:26:29 PM | WARNING | auto_pickup | ⚠️ No alert tracking found for 284 in -1003872160078
+2026-04-28 06:26:42 PM | WARNING | auto_pickup | ⚠️ No alert tracking found for 284 in -1003872160078
+2026-04-28 06:26:46 PM | INFO | auto_pickup | 📦 Processing Queue Item 6 for Moe Collection
+2026-04-28 06:26:46 PM | WARNING | auto_pickup | ⚠️ No alert tracking found for 284 in -1003872160078
+2026-04-28 06:26:46 PM | INFO | auto_pickup | 🚀 Auto Pickup စက်ရုပ် (Playwright) စတင်နေပါပြီ...
+2026-04-28 06:26:46 PM | INFO | auto_pickup | 🔗 https://www.carrymanexpress.com/neworder သို့ သွားနေပါသည်...
+2026-04-28 06:26:50 PM | INFO | auto_pickup | 📝 အချက်အလက်များ ဖြည့်သွင်းနေပါသည်...
+2026-04-28 06:27:05 PM | ERROR | auto_pickup | ❌ Playwright Error: Locator.wait_for: Timeout 15000ms exceeded.
+Call log:
+  - waiting for locator("input[name='order.receivedDate']")
+
+2026-04-28 06:30:45 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-28 06:35:45 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.

@@ -537,13 +537,13 @@ def process_audits():
 
                 if action == "RESOLVE":
                     for mid in grouped_ids:
-                        db_manager.update_message_status(mid, chat_id, 'RESOLVED', topic_id=topic_id)
+                        db_manager.update_message_status(mid, chat_id, 'HANDLED_BY_AI', topic_id=topic_id)
                     resolve_and_cleanup(trigger_msg_id, chat_id, shop_name, trigger_text, "AI Auto-Resolve")
                     log.info(f"✨ AI Auto-Resolved Group: {grouped_ids}")
 
                 elif action == "IGNORE":
                     for mid in grouped_ids:
-                        db_manager.update_message_status(mid, chat_id, 'RESOLVED', topic_id=topic_id)
+                        db_manager.update_message_status(mid, chat_id, 'HANDLED_BY_AI', topic_id=topic_id)
                     log.info(f"🔇 AI Ignored Group: {grouped_ids}")
 
                 elif action == "APPEND" and ai_res.get("target_alert_id"):
@@ -591,7 +591,7 @@ def process_audits():
 
             conn = db_manager.get_connection()
             alerted_msgs = conn.execute(
-                "SELECT msg_id, chat_id, topic_id, text FROM message_logs WHERE status = 'ALERTED'"
+                "SELECT msg_id, chat_id, topic_id, text FROM message_logs WHERE status = 'ALERTED' AND status != 'HANDLED_BY_AI'"
             ).fetchall()
             conn.close()
             

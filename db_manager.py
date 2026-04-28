@@ -404,7 +404,7 @@ def set_manual_alert(msg_id, chat_id):
     finally:
         conn.close()
 
-def resolve_message(msg_id, chat_id, staff_name, method='Reply', topic_id=None):
+def resolve_message(msg_id, chat_id, staff_name, method='Reply', topic_id=None, status='RESOLVED'):
     """
     Message တစ်ခု သို့မဟုတ် Topic တစ်ခုလုံးကို Resolved အဖြစ် သတ်မှတ်ခြင်း။
     topic_id ပါလာလျှင် ထို topic ထဲက pending များကိုသာ resolve လုပ်မည်။
@@ -441,15 +441,15 @@ def resolve_message(msg_id, chat_id, staff_name, method='Reply', topic_id=None):
 
             # 💡 Update all messages in the group
             placeholders = ', '.join(['?'] * len(ids_to_resolve))
-            query = f"UPDATE message_logs SET status='RESOLVED', resolved_by=?, resolve_time=? WHERE msg_id IN ({placeholders}) AND chat_id=?"
-            params = [full_staff_info, now] + ids_to_resolve + [chat_id]
+            query = f"UPDATE message_logs SET status=?, resolved_by=?, resolve_time=? WHERE msg_id IN ({placeholders}) AND chat_id=?"
+            params = [status, full_staff_info, now] + ids_to_resolve + [chat_id]
             
             conn.execute(query, tuple(params))
             log.info(f"✅ Group Resolved: {ids_to_resolve} in {chat_id} by {full_staff_info}")
         else:
             # msg_id 0 ဖြစ်လျှင် chat_id (နှင့် topic_id ပါလျှင် topic_id) အလိုက် resolve လုပ်မည်
-            query = "UPDATE message_logs SET status='RESOLVED', resolved_by=?, resolve_time=? WHERE chat_id=? AND status IN ('PENDING', 'ALERTED', 'ESCALATED')"
-            params = [full_staff_info, now, chat_id]
+            query = "UPDATE message_logs SET status=?, resolved_by=?, resolve_time=? WHERE chat_id=? AND status IN ('PENDING', 'ALERTED', 'ESCALATED')"
+            params = [status, full_staff_info, now, chat_id]
             if topic_id is not None:
                 query += " AND topic_id=?"
                 params.append(topic_id)
@@ -511,7 +511,7 @@ def get_pending_topics(minutes=15, max_hours=48):
     res = conn.execute(
         """SELECT DISTINCT chat_id, topic_id
            FROM message_logs
-           WHERE status='PENDING' AND timestamp < ? AND timestamp > ?""",
+           WHERE status='PENDING' AND status != 'HANDLED_BY_AI' AND timestamp < ? AND timestamp > ?""",
         (threshold, lookback_limit)
     ).fetchall()
     conn.close()
@@ -528,10 +528,10 @@ def get_pending_messages(minutes=15, limit=10, max_hours=48, chat_id=None, topic
     lookback_limit = now - (max_hours * 3600)
     
     if all_pending:
-        query = "SELECT msg_id, chat_id, topic_id, text, timestamp, media_id FROM message_logs WHERE status='PENDING' AND timestamp > ?"
+        query = "SELECT msg_id, chat_id, topic_id, text, timestamp, media_id FROM message_logs WHERE status='PENDING' AND status != 'HANDLED_BY_AI' AND timestamp > ?"
         params = [lookback_limit]
     else:
-        query = "SELECT msg_id, chat_id, topic_id, text, timestamp, media_id FROM message_logs WHERE status='PENDING' AND timestamp < ? AND timestamp > ?"
+        query = "SELECT msg_id, chat_id, topic_id, text, timestamp, media_id FROM message_logs WHERE status='PENDING' AND status != 'HANDLED_BY_AI' AND timestamp < ? AND timestamp > ?"
         params = [threshold, lookback_limit]
     
     if chat_id is not None:
@@ -624,7 +624,7 @@ def get_topic_context(chat_id, topic_id):
     c = conn.cursor()
     c.execute("SELECT msg_id, text, timestamp FROM message_logs WHERE chat_id=? AND topic_id=? AND status='PENDING' ORDER BY timestamp ASC", (chat_id, topic_id))
     pending = c.fetchall()
-    c.execute("SELECT text FROM message_logs WHERE chat_id=? AND topic_id=? AND status='RESOLVED' ORDER BY timestamp DESC LIMIT 5", (chat_id, topic_id))
+    c.execute("SELECT text FROM message_logs WHERE chat_id=? AND topic_id=? AND status IN ('RESOLVED', 'HANDLED_BY_AI') ORDER BY timestamp DESC LIMIT 5", (chat_id, topic_id))
     resolved = [r[0] for r in c.fetchall()]
     c.execute("SELECT shop_name FROM os_groups WHERE chat_id=? LIMIT 1", (chat_id,))
     g_res = c.fetchone()
@@ -857,10 +857,10 @@ def get_pending_counts_by_shop():
     try:
         return conn.execute(
             """
-            SELECT o.shop_name, COUNT(m.msg_id) 
+            SELECT o.shop_name, COUNT(m.msg_id)
             FROM message_logs m
             JOIN os_groups o ON m.chat_id = o.chat_id
-            WHERE m.status='PENDING'
+            WHERE m.status='PENDING' AND m.status != 'HANDLED_BY_AI'
             GROUP BY m.chat_id
             """
         ).fetchall()

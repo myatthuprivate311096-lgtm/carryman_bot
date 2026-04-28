@@ -181,6 +181,9 @@ def handle_ai_query(bot, message, is_automatic=False):
                     bot.send_message(message.chat.id, part)
         else:
             bot.reply_to(message, full_response, reply_markup=markup)
+            
+        # Mark as Handled by AI to suppress escalations
+        db_manager.update_message_status(message.message_id, chat_id, 'HANDLED_BY_AI')
 
     except Exception as e:
         log.error(f"❌ AI Query Error: {e}")
