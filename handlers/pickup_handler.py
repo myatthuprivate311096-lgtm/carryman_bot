@@ -385,7 +385,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 )
     
                 auto_pickup.cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id)
-                bot.send_message(chat_id, "👨‍💼 **Admin ထံ အကြောင်းကြားလိုက်ပါပြီ။**\n\nManager များမှ စစ်ဆေးပြီး အကြောင်းပြန်ပေးပါလိမ့်မည်။", reply_to_message_id=orig_msg_id)
+                bot.send_message(chat_id, "တာဝန်ရှိသူထံ အကြောင်းကြားပြီးပါပြီ။ အမြန်ဆုံး ပြန်လည်အကြောင်းပြန်ပေးပါ့မယ်နော်", reply_to_message_id=orig_msg_id)
             bot.answer_callback_query(call.id)
         except Exception as e:
             log.error(f"❌ Pickup Admin Callback Error: {e}")

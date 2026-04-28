@@ -8,6 +8,7 @@ from telebot import types
 import db_manager
 from logger import log
 import ai_utils
+from modules import location_service
 
 def submit_pickup_order(target_date, os_name, remark, vehicle="Bicycle"):
     log.info("🚀 Auto Pickup စက်ရုပ် (Playwright) စတင်နေပါပြီ...")
@@ -183,13 +184,20 @@ def handle(bot, message):
         chat_title = message.chat.title or "Unknown Shop"
         os_name = db_manager.clean_shop_name(chat_title)
         
-        # ၂။ AI Extraction (Vehicle & Date)
+        # ၂။ AI Extraction (Action, Vehicle & Date)
         extract_prompt = f"""
-        Analyze the following message for a NEW pickup request or an inquiry about pickup availability.
+        Analyze the following message from a staff member.
         Message: "{text}"
 
+        Decide the action:
+        1. 'PICKUP': If the user is requesting a new pickup or asking about pickup availability.
+        2. 'LOOKUP_LOCATION': If the user is asking for the township of a specific location name (e.g., "Hledan က ဘယ်မြို့နယ်လဲ", "Junction City က ဘယ်မြို့နယ်ထဲမှာလဲ").
+        3. 'OTHER': If it's something else.
+
         Output ONLY a JSON object with:
-        - is_new_request: boolean (True if this is a request to pick up items OR an inquiry if pickup is available, False if it's a question about status of an existing order, complaint, or something else)
+        - action: "PICKUP", "LOOKUP_LOCATION", or "OTHER"
+        - location_query: If action is 'LOOKUP_LOCATION', extract the location name they are asking about (e.g., "Hledan", "Junction City"). Otherwise null.
+        - is_new_request: boolean (True if action is 'PICKUP', False otherwise)
         - vehicle: "Bicycle" or "Car" (Default to null if not mentioned)
         - date_type: "today" or "tomorrow" (If the user explicitly mentions "today" (ဒီနေ့) or "tomorrow" (မနက်ဖြန်), set accordingly. Otherwise, default to null)
         - clean_remark: Extract ONLY the additional instructions, notes, or specific details (like quantity, amount, location, or special requests) from the message in Burmese, EXCLUDING the core pickup request phrase (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ").
@@ -211,9 +219,30 @@ def handle(bot, message):
 
         extracted_data = json.loads(ai_res_content)
         
+        action = extracted_data.get("action", "OTHER")
+
+        # --- LOOKUP_LOCATION Action ---
+        if action == 'LOOKUP_LOCATION':
+            location_query = extracted_data.get("location_query")
+            if location_query:
+                log.info(f"🔍 Location Lookup triggered for: {location_query}")
+                township, source = location_service.get_location_with_fallback(location_query)
+                
+                if township:
+                    reply_text = f"📍 {location_query} သည် {township} အတွင်း တည်ရှိပါသည်။ (Source: {source})"
+                else:
+                    reply_text = f"📍 {location_query} ၏ မြို့နယ်ကို ရှာမတွေ့ပါခင်ဗျာ။"
+                
+                markup = types.InlineKeyboardMarkup()
+                markup.add(types.InlineKeyboardButton("💬 Admin နှင့်ပြောမည်", callback_data=f"ap_admin_0_{message.message_id}"))
+                bot.reply_to(message, reply_text, reply_markup=markup)
+                return
+            else:
+                log.warning("⚠️ LOOKUP_LOCATION action detected but no location_query found.")
+
         # ၃။ Validation: အကယ်၍ pickup အသစ်တင်တာမဟုတ်ရင် ရပ်တန့်မည်
-        if not extracted_data.get("is_new_request", True):
-            log.info(f"ℹ️ Message {message.message_id} is not a new pickup request. Skipping auto_pickup.")
+        if action != 'PICKUP' or not extracted_data.get("is_new_request", True):
+            log.info(f"ℹ️ Message {message.message_id} is not a pickup request (Action: {action}). Skipping auto_pickup.")
             return
 
         vehicle = extracted_data.get("vehicle")
