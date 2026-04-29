@@ -28,7 +28,7 @@ MANAGER_IDS = [int(i.strip()) for i in os.getenv('MANAGER_IDS', str(MANAGER_ID))
 def is_manager(user_id):
     return user_id in MANAGER_IDS
 
-RECORD_GROUP_ID = int(os.getenv('ARCHIVE_CHAT_ID', -1003601049225))
+RECORD_GROUP_ID = int(os.getenv('ARCHIVE_CHAT_ID', -1003906164269))
 HEALTHCHECK_URL = os.getenv('HEALTHCHECK_URL')
 
 # 🧪 Test Mode Configuration
@@ -302,7 +302,8 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
     tracking = db_manager.get_alert_tracking(msg_id, chat_id)
     
     if tracking:
-        alert_msg_id, alert_chat_id, _, esc_msg_id, linked_ids_json, linked_customer_ids_json = tracking
+        # alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids, esc_tier2_msg_id
+        alert_msg_id, alert_chat_id, _, esc_msg_id, linked_ids_json, linked_customer_ids_json, esc_tier2_msg_id = tracking
         try:
             bot.delete_message(alert_chat_id, alert_msg_id)
             log.info(f"🗑️ Deleted Level 1 alert {alert_msg_id}")
@@ -315,6 +316,14 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
                 log.info(f"🗑️ Deleted Level 2 escalation {esc_msg_id}")
             except Exception as e:
                 log.warning(f"⚠️ Failed to delete Level 2 escalation {esc_msg_id}: {e}")
+
+        if esc_tier2_msg_id:
+            try:
+                ESCALATION_GROUP_ID = -1003906164269
+                bot.delete_message(ESCALATION_GROUP_ID, esc_tier2_msg_id)
+                log.info(f"🗑️ Deleted Tier 2 escalation {esc_tier2_msg_id}")
+            except Exception as e:
+                log.warning(f"⚠️ Failed to delete Tier 2 escalation {esc_tier2_msg_id}: {e}")
             
         if linked_ids_json:
             linked_ids = json.loads(linked_ids_json)
@@ -334,8 +343,8 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
         
         log.info(f"ℹ️ No active alert tracking found for {msg_id} in {chat_id}.")
 
-    RESOLVED_GROUP_ID = int(os.getenv('RESOLVED_GROUP_ID', -1003601049225))
-    RESOLVED_TOPIC_ID = int(os.getenv('RESOLVED_TOPIC_ID', 4))
+    RESOLVED_GROUP_ID = int(os.getenv('RESOLVED_GROUP_ID', -1003906164269))
+    RESOLVED_TOPIC_ID = int(os.getenv('RESOLVED_TOPIC_ID', 3))
     
     clean_chat_id = str(chat_id).replace("-100", "")
     msg_link = f"tg://privatepost?channel={clean_chat_id}&post={msg_id}"
@@ -374,7 +383,8 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
 def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
     tracking = db_manager.get_alert_tracking(msg_id, chat_id)
     if tracking:
-        _, _, created_at, esc_msg_id, _, _ = tracking
+        # alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids, esc_tier2_msg_id
+        _, _, _, _, _, _, esc_tier2_msg_id = tracking
         conn = db_manager.get_connection()
         msg_data = conn.execute("SELECT timestamp FROM message_logs WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id)).fetchone()
         conn.close()
@@ -383,22 +393,27 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
             return
         
         orig_ts = msg_data[0]
-        
-        # 💡 Strictly check if difference is >= 15 minutes (900 seconds)
-        if not esc_msg_id and (int(time.time()) - orig_ts >= 900):
+        now = int(time.time())
+        diff = now - orig_ts
+
+        # 💡 30-Minute Critical SLA Alert (Tier 2 Escalation)
+        if not esc_tier2_msg_id and diff >= 1800:
             try:
+                ESCALATION_GROUP_ID = -1003906164269
+                ESCALATION_TOPIC_ID = 5
+                
                 tz = pytz.timezone('Asia/Yangon')
                 orig_time = datetime.fromtimestamp(orig_ts, tz).strftime('%I:%M %p')
                 safe_shop = html.escape(shop_name)
                 safe_text = html.escape(text)
 
                 esc_text = (
-                    f"🔥 <b>15-Minute SLA Alert!</b>\n"
-                    f"Customer စာပို့ထားသည်မှာ မိနစ် ၁၅ ပြည့်သွားပါပြီ။\n"
+                    f"🚨 <b>30-Minute Critical SLA Alert!</b>\n"
+                    f"တိုင်ကြားစာ/အော်ဒါ မိနစ် ၃၀ ပြည့်သည်အထိ မဖြေရှင်းရသေးပါ။\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
                     f"🏪 ဆိုင်: <b>{safe_shop}</b>\n"
                     f"💬 စာသား: {safe_text}\n"
-                    f"⏰ အချိန်: {orig_time}\n"
+                    f"⏰ မူရင်းအချိန်: {orig_time}\n"
                     f"━━━━━━━━━━━━━━━━━━"
                 )
                 
@@ -411,12 +426,11 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
                     telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{msg_id}_{chat_id}")
                 )
 
-                msg = bot.send_message(MANAGER_ID, esc_text, reply_markup=markup, parse_mode="HTML")
-                db_manager.update_alert_tracking_esc(msg_id, chat_id, msg.message_id)
-                db_manager.update_message_status(msg_id, chat_id, 'ESCALATED', topic_id=topic_id)
-                log.warning(f"🚨 Escalated {msg_id} to Manager")
+                msg = bot.send_message(ESCALATION_GROUP_ID, esc_text, message_thread_id=ESCALATION_TOPIC_ID, reply_markup=markup, parse_mode="HTML")
+                db_manager.update_alert_tracking_esc(msg_id, chat_id, msg.message_id, tier=2)
+                log.warning(f"🚨 Tier 2 Escalation sent for {msg_id} to Group")
             except Exception as e:
-                log.error(f"❌ Escalation failed: {e}")
+                log.error(f"❌ Tier 2 Escalation failed: {e}")
 
 def backup_database():
     try:

@@ -180,22 +180,17 @@ def handle_ai_query(bot, message, is_automatic=False):
             bot.reply_to(message, "⚠️ တောင်းပန်ပါတယ်ခင်ဗျာ။ အဖြေရှာနေစဉ် အမှားတစ်ခု ဖြစ်သွားလို့ပါ။")
             return
         
-        # 🔇 AI Off Button (Phase 2)
-        from telebot import types
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton("🔇 AI ပိတ်မည်", callback_data=f"mute_ai:{message.chat.id}"))
-        
         # Split message if too long (Telegram limit 4096)
         full_response = f"🤖 **CarryMan AI Agent**\n\n{answer}"
         if len(full_response) > 4000:
             parts = [full_response[i:i+4000] for i in range(0, len(full_response), 4000)]
             for idx, part in enumerate(parts):
                 if idx == 0:
-                    bot.reply_to(message, part, reply_markup=markup)
+                    bot.reply_to(message, part)
                 else:
                     bot.send_message(message.chat.id, part)
         else:
-            bot.reply_to(message, full_response, reply_markup=markup)
+            bot.reply_to(message, full_response)
             
         # Mark as Handled by AI to suppress escalations
         db_manager.update_message_status(message.message_id, chat_id, 'HANDLED_BY_AI')

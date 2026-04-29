@@ -116,6 +116,7 @@ def init_db():
                      alert_chat_id INTEGER,
                      created_at INTEGER,
                      esc_msg_id INTEGER,
+                     esc_tier2_msg_id INTEGER,
                      linked_msg_ids TEXT DEFAULT '[]',
                      linked_customer_ids TEXT DEFAULT '[]',
                      PRIMARY KEY (original_msg_id, chat_id)
@@ -200,7 +201,7 @@ def init_db():
             "staff": ["branch TEXT", "dept TEXT"],
             "message_logs": ["text TEXT", "resolved_by TEXT", "resolve_time INTEGER", "topic_id INTEGER", "media_id TEXT", "is_manual INTEGER DEFAULT 0", "category TEXT", "intent TEXT", "summary TEXT"],
             "os_groups": ["last_read_message_id INTEGER DEFAULT 0", "target_chat_id INTEGER", "target_topic_id INTEGER"],
-            "alert_tracking": ["created_at INTEGER", "esc_msg_id INTEGER", "linked_msg_ids TEXT DEFAULT '[]'", "linked_customer_ids TEXT DEFAULT '[]'"],
+            "alert_tracking": ["created_at INTEGER", "esc_msg_id INTEGER", "esc_tier2_msg_id INTEGER", "linked_msg_ids TEXT DEFAULT '[]'", "linked_customer_ids TEXT DEFAULT '[]'"],
             "feedback_logs": ["chat_id INTEGER", "topic_id INTEGER", "category TEXT", "original_text TEXT", "staff_id INTEGER"],
             "master_rules": ["chat_id INTEGER", "topic_id INTEGER", "rule_content TEXT"],
             "knowledge_base": ["category TEXT", "question TEXT", "answer TEXT", "tags TEXT", "level INTEGER DEFAULT 1", "last_updated INTEGER"]
@@ -669,11 +670,12 @@ def save_alert_tracking(original_msg_id, chat_id, alert_msg_id, alert_chat_id):
     finally:
         conn.close()
 
-def update_alert_tracking_esc(original_msg_id, chat_id, esc_msg_id):
+def update_alert_tracking_esc(original_msg_id, chat_id, esc_msg_id, tier=1):
     conn = get_connection()
     try:
+        column = "esc_msg_id" if tier == 1 else "esc_tier2_msg_id"
         conn.execute(
-            "UPDATE alert_tracking SET esc_msg_id = ? WHERE original_msg_id = ? AND chat_id = ?",
+            f"UPDATE alert_tracking SET {column} = ? WHERE original_msg_id = ? AND chat_id = ?",
             (esc_msg_id, original_msg_id, chat_id)
         )
         conn.commit()
@@ -696,7 +698,7 @@ def add_linked_msg_id(original_msg_id, chat_id, new_msg_id):
 def get_alert_tracking(original_msg_id, chat_id):
     conn = get_connection()
     res = conn.execute(
-        "SELECT alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ?",
+        "SELECT alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids, esc_tier2_msg_id FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ?",
         (original_msg_id, chat_id)
     ).fetchone()
     conn.close()
