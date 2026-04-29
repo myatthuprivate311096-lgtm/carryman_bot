@@ -113,8 +113,12 @@ def handle_ai_query(bot, message, is_automatic=False):
             Otherwise, proceed with the answer.'
             """
 
+        rag_instructions = ai_utils.get_rag_instructions(user_level)
+
         ai_prompt = f"""
         Strict Persona & Tone: 'You are an Online Shop (OS) admin. You MUST strictly follow the tone, style, and examples provided in the OS Tone_&_Example data. Keep answers short, direct, and natural. NEVER use generic AI fluff like "Welcome to...", "If you need more info...", or "I am an AI assistant".'
+
+        {rag_instructions}
 
         {scope_check_prompt}
 
