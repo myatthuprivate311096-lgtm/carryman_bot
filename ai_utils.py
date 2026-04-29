@@ -44,6 +44,11 @@ def get_rag_instructions(user_level):
         [USER_LEVEL: LEVEL 1 DATABASE READER]
         - ZERO HALLUCINATION POLICY: You are strictly a database reader.
         CRITICAL RULE: You are strictly forbidden from using your pre-trained knowledge. You MUST NOT make up or guess any addresses, phone numbers, delivery fees, or links. You must answer ONLY using the exact information found in the provided Context. If the Context does not contain the explicit answer to the user's query, you MUST reply EXACTLY with: 'တောင်းပန်ပါတယ်ခင်ဗျာ။ ဒီအချက်အလက်ကို ကျွန်တော် အတိအကျ မသိသေးပါဘူး။ အသေးစိတ်သိရှိလိုပါက Customer Service ကို ဆက်သွယ်မေးမြန်းနိုင်ပါတယ်ခင်ဗျာ။' and nothing else.
+
+        STRICT FORMATTING RULES (LEVEL 1):
+        - Pricing: You MUST use exact base weight and extra charge format (e.g., "1kg ထိ 2500 ကျပ်၊ အပို 1kg လျှင် 500 ကျပ်").
+        - NO RANGES: Never provide price ranges (e.g., "2000-3000 ကျပ်"). Use exact numbers from the context.
+        - Natural Tone: Keep the response short and natural in Burmese, but strictly factual.
         """
 
 def send_manager_notification(text):
@@ -113,7 +118,7 @@ def call_groq_direct(prompt, model="llama-3.3-70b-versatile", response_format=No
         log.error(f"❌ Groq Direct Exception: {e}")
         return None
 
-def get_ai_completion(prompt, model="google/gemini-3.1-flash-lite-preview", response_format=None, timeout=30.0):
+def get_ai_completion(prompt, model="google/gemini-3.1-flash-lite-preview", response_format=None, timeout=30.0, tools=None, tool_choice=None):
     """
     Centralized AI call with Auto-Recovery and Manager Notifications.
     Always tries OpenRouter first.
@@ -150,9 +155,43 @@ def get_ai_completion(prompt, model="google/gemini-3.1-flash-lite-preview", resp
             }
             if response_format:
                 kwargs["response_format"] = response_format
+            if tools:
+                kwargs["tools"] = tools
+            if tool_choice:
+                kwargs["tool_choice"] = tool_choice
 
             response = client.chat.completions.create(**kwargs)
-            content = response.choices[0].message.content.strip()
+            message_obj = response.choices[0].message
+            content = message_obj.content
+            
+            # Handle Tool Calls
+            if message_obj.tool_calls:
+                log.info(f"🔧 AI requested {len(message_obj.tool_calls)} tool calls.")
+                messages = [{"role": "user", "content": prompt}, message_obj]
+                
+                for tool_call in message_obj.tool_calls:
+                    # Get user_level from prompt context if possible, or pass it as an argument
+                    # For now, we'll assume user_level is handled by the caller or extracted
+                    # But since this is a centralized function, let's try to find user_level in prompt
+                    user_level = 1
+                    if "[USER_LEVEL: STAFF/MANAGER]" in prompt:
+                        user_level = 3
+                    
+                    tool_result = execute_tool_call(tool_call, user_level)
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "name": tool_call.function.name,
+                        "content": tool_result
+                    })
+                
+                # Second call to get the final answer
+                final_response = client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    timeout=timeout
+                )
+                content = final_response.choices[0].message.content
             
             # Success! Reset fail count
             _openrouter_fail_count = 0
@@ -163,7 +202,7 @@ def get_ai_completion(prompt, model="google/gemini-3.1-flash-lite-preview", resp
                 log.info("✅ OpenRouter recovered. Switching back to Primary API.")
                 send_manager_notification("✅ **AI System Recovery**\n\nOpenRouter API ပြန်လည်အဆင်ပြေသွားပါပြီ။ မူလ API ကို ပြန်လည်အသုံးပြုနေပါသည်။")
             
-            return content
+            return content.strip() if content else None
             
         except Exception as e:
             _openrouter_fail_count += 1
@@ -211,3 +250,153 @@ def get_ai_completion(prompt, model="google/gemini-3.1-flash-lite-preview", resp
         )
         
     return None
+
+def get_ai_tools(user_level):
+    """
+    Returns tool definitions based on user level.
+    Level 1: Only Database Retrieval.
+    Level 3+: Database + OSM.
+    """
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "search_database",
+                "description": "Search the CarryMan knowledge base for delivery fees, office info, and general logistics questions.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "The search query (e.g., 'မြစ်ကြီးနား deli ခ')",
+                        }
+                    },
+                    "required": ["query"],
+                },
+            },
+        }
+    ]
+
+    if user_level >= 3:
+        tools.append({
+            "type": "function",
+            "function": {
+                "name": "search_location",
+                "description": "Search for a location's township and city using OpenStreetMap (OSM). Use this for address verification or finding locations.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "The location name to search for.",
+                        }
+                    },
+                    "required": ["query"],
+                },
+            },
+        })
+    
+    return tools
+
+def execute_tool_call(tool_call, user_level):
+    """Executes a single tool call and returns the result as a string."""
+    import db_manager
+    from modules import location_service
+    
+    name = tool_call.function.name
+    args = json.loads(tool_call.function.arguments)
+    
+    if name == "search_database":
+        query = args.get("query")
+        log.info(f"🛠️ Tool Call: search_database('{query}', level={user_level})")
+        result = db_manager.search_knowledge(query, user_level)
+        if result:
+            category, question, answer = result
+            return f"Category: {category}\nQuestion: {question}\nAnswer: {answer}"
+        return "No information found in the database for this query."
+    
+    elif name == "search_location" and user_level >= 3:
+        query = args.get("query")
+        log.info(f"🛠️ Tool Call: search_location('{query}')")
+        township, source = location_service.get_location_with_fallback(query)
+        if township:
+            return f"Location Found: {township} (Source: {source})"
+        return "Location not found."
+    
+    return "Error: Unauthorized tool or unknown function."
+
+def get_ai_tools(user_level):
+    """
+    Returns tool definitions based on user level.
+    Level 1: Only Database Search
+    Level 3+: Database Search + OSM Maps
+    """
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "search_database",
+                "description": "Search the CarryMan knowledge base for delivery fees, office info, and general logistics questions.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {"type": "string", "description": "The search query in Burmese or English."}
+                    },
+                    "required": ["query"]
+                }
+            }
+        }
+    ]
+
+    if user_level >= 3:
+        tools.append({
+            "type": "function",
+            "function": {
+                "name": "search_location",
+                "description": "Search for a specific location or township using OSM Maps to find the correct City and Township name.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {"type": "string", "description": "The location name to search for."}
+                    },
+                    "required": ["query"]
+                }
+            }
+        })
+    
+    return tools
+
+def handle_tool_calls(tool_calls, user_level):
+    """Executes tool calls and returns results for the AI"""
+    import db_manager
+    from modules import location_service
+    
+    results = []
+    for tool_call in tool_calls:
+        func_name = tool_call.function.name
+        args = json.loads(tool_call.function.arguments)
+        
+        log.info(f"🛠 AI calling tool: {func_name} with args: {args}")
+        
+        result_content = ""
+        if func_name == "search_database":
+            # Enforce user_level restriction at the tool level
+            kb_result = db_manager.search_knowledge(args.get("query"), user_level)
+            if kb_result:
+                category, question, answer = kb_result
+                result_content = f"Category: {category}\nQuestion: {question}\nAnswer: {answer}"
+            else:
+                result_content = "No matching information found in the database."
+        
+        elif func_name == "search_location" and user_level >= 3:
+            loc_str, source = location_service.get_location_with_fallback(args.get("query"))
+            result_content = f"Location: {loc_str}\nSource: {source}" if loc_str else "Location not found."
+        
+        results.append({
+            "tool_call_id": tool_call.id,
+            "role": "tool",
+            "name": func_name,
+            "content": result_content
+        })
+    
+    return results

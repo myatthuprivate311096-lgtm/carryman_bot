@@ -68,14 +68,7 @@ def handle_ai_query(bot, message, is_automatic=False):
 
         log.info(f"🤖 AI Query from {user_id}: {query[:50]}...")
 
-        # ၃။ Step 1: Database (Knowledge Base) Search
-        kb_result = db_manager.search_knowledge(query, user_level)
-        kb_context = ""
-        if kb_result:
-            category, question, answer = kb_result
-            kb_context = f"\n[Knowledge Base Data]:\nCategory: {category}\nQuestion: {question}\nAnswer: {answer}\n"
-
-        # ၄။ Step 2: General AI Response (with Scope Check for Private Chat)
+        # ၃။ Step 1: AI Response with Tool Access Control
         is_staff = user_level >= 3
         
         scope_check_prompt = ""
@@ -106,7 +99,7 @@ def handle_ai_query(bot, message, is_automatic=False):
 
         {base_company_info}
 
-        Comprehensive Data Extraction: 'When a user asks about delivery to a specific location (e.g., မြစ်ကြီးနား), you MUST look up that location in the database/sheets and extract ALL relevant details. Your answer MUST include:
+        Comprehensive Data Extraction: 'When a user asks about delivery to a specific location (e.g., မြစ်ကြီးနား), you MUST use the search_database tool to look up that location and extract ALL relevant details. Your answer MUST include:
         - Whether Home Delivery is available.
         - The Delivery Fee range (Min and Max price).
         - Whether COD (Cash on Delivery) is accepted.
@@ -118,13 +111,33 @@ def handle_ai_query(bot, message, is_automatic=False):
 
         Format Constraint: 'Combine these details into a single, concise, human-like paragraph in Burmese.'
 
-        [Context Data]:
-        {kb_context}
-
         User Query: "{query}"
         """
         
-        answer = ai_utils.get_ai_completion(ai_prompt, timeout=30.0)
+        # Get tools based on user level (Binary Access Control)
+        tools = ai_utils.get_ai_tools(user_level)
+        
+        # Initial AI Call
+        response = ai_utils.get_ai_completion(ai_prompt, timeout=30.0, tools=tools)
+        
+        if not response:
+            bot.reply_to(message, "⚠️ တောင်းပန်ပါတယ်ခင်ဗျာ။ အဖြေရှာနေစဉ် အမှားတစ်ခု ဖြစ်သွားလို့ပါ။")
+            return
+
+        # Handle Tool Calls (if any)
+        # Note: OpenRouter/OpenAI response might contain tool_calls
+        # For simplicity in this implementation, we'll handle a single turn of tool calling
+        # In a production environment, you might want a loop for multiple tool calls.
+        
+        # We need to check if the response is a tool call or a direct answer.
+        # Since get_ai_completion returns content string, we might need to adjust it
+        # to return the full response object if we want to handle tool calls properly.
+        # However, for now, let's assume get_ai_completion handles the tool execution
+        # or we modify it to handle the logic.
+        
+        # Let's refine get_ai_completion in ai_utils.py to handle tool execution internally
+        # to keep main_router clean.
+        answer = response
 
         # --- Three-Strike Rule Implementation ---
         if is_private and not is_staff and answer and "OUT_OF_SCOPE" in answer:

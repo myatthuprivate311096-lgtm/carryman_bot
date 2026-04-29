@@ -38677,3 +38677,134 @@ Date - 29/Apr/2026
 2026-04-29 09:27:37 AM | INFO | auditor | ℹ️ Message 2901 was not an active alert. Skipping record.
 2026-04-29 09:27:37 AM | INFO | message_handler | ✅ Message 2901 marked as RESOLVED via Reply by Moe Pyae
 2026-04-29 09:28:19 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-04-29 09:28:41 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-29 09:28:41 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 09:28:41 AM | INFO | health_monitor | 🚀 Proactive Health Monitor started (5 min interval)
+2026-04-29 09:28:42 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-29 09:28:42 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-29 09:28:42 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-29 09:28:42 AM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-04-29 09:28:42 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-29 09:28:42 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-29 09:28:42 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-29 09:28:43 AM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-04-29 09:29:00 AM | INFO | main_router | � Routing message from 8353570874: ရုံးဖုန်းတွေပြောပေးပါ...
+2026-04-29 09:29:01 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 09:29:01 AM | INFO | main_router | 👑 Staff Exemption: Full AI access for user 8353570874
+2026-04-29 09:29:01 AM | INFO | main_router | 🤖 AI Query from 8353570874: ရုံးဖုန်းတွေပြောပေးပါ...
+2026-04-29 09:29:12 AM | INFO | main_router | � Routing message from 8353570874: ရုံးလိပ်စာကရော...
+2026-04-29 09:29:13 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 09:29:13 AM | INFO | main_router | 👑 Staff Exemption: Full AI access for user 8353570874
+2026-04-29 09:29:13 AM | INFO | main_router | 🤖 AI Query from 8353570874: ရုံးလိပ်စာကရော...
+2026-04-29 09:29:23 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 6559895943
+2026-04-29 09:29:41 AM | INFO | main_router | � Routing message from 8353570874: ကျိုက်ထိုကို အိမ်အရောက်ငွေချေရလား...
+2026-04-29 09:29:41 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 09:29:41 AM | INFO | main_router | 👑 Staff Exemption: Full AI access for user 8353570874
+2026-04-29 09:29:41 AM | INFO | main_router | 🤖 AI Query from 8353570874: ကျိုက်ထိုကို အိမ်အရောက်ငွေချေရလား...
+2026-04-29 09:30:11 AM | INFO | main_router | � Routing message from -1003852412184: 09783124510 ဒီနံပါတ်က တပ်ဆင်မထားတာလားရှင့်...
+2026-04-29 09:30:13 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 09:30:13 AM | INFO | main_router | 🔇 Blocking general intent 'check_order' in Group Chat -1003852412184. Bot will remain silent.
+2026-04-29 09:30:13 AM | INFO | db_manager | ✓ Message 425 in -1003852412184 saved as PENDING
+2026-04-29 09:30:13 AM | INFO | message_handler | 📩 New Pending Message from 5148432328 in -1003852412184 (Topic: 4)
+2026-04-29 09:30:18 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-04-29 09:30:25 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-04-29 09:30:44 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-04-29 09:30:52 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-04-29 09:31:02 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-04-29 09:31:04 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-04-29 09:31:49 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 6559895943
+2026-04-29 09:32:32 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-04-29 09:32:38 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5982912055
+2026-04-29 09:32:38 AM | INFO | db_manager | ✅ Group Resolved: [280] in -1003823820784 by Moe Pyae (Reply)
+2026-04-29 09:32:38 AM | INFO | auditor | ℹ️ No active alert tracking found for 280 in -1003823820784.
+2026-04-29 09:32:38 AM | INFO | auditor | ℹ️ Message 280 was not an active alert. Skipping record.
+2026-04-29 09:32:38 AM | INFO | message_handler | ✅ Message 280 marked as RESOLVED via Reply by Moe Pyae
+2026-04-29 09:32:42 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8784029703
+2026-04-29 09:33:13 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-04-29 09:33:42 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 09:33:48 AM | INFO | main_router | � Routing message from -1003920564574: သူကယူ​နေကြမို့အဲ့​​နေ့​လေးပို့​ပေးပါ ညီမ​လေး...
+2026-04-29 09:33:49 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 09:33:49 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 09:34:22 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5982912055
+2026-04-29 09:34:22 AM | INFO | db_manager | ✅ Group Resolved: [280] in -1003823820784 by Moe Pyae (Reply)
+2026-04-29 09:34:22 AM | INFO | auditor | ℹ️ No active alert tracking found for 280 in -1003823820784.
+2026-04-29 09:34:22 AM | INFO | auditor | ℹ️ Message 280 was not an active alert. Skipping record.
+2026-04-29 09:34:22 AM | INFO | message_handler | ✅ Message 280 marked as RESOLVED via Reply by Moe Pyae
+2026-04-29 09:34:47 AM | INFO | main_router | � Routing message from -1003823820784: Royal Scent Myanmar က ကားအမွှေးဆီလို့ပြောပေးပါရှင်...
+2026-04-29 09:34:47 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 09:34:48 AM | INFO | db_manager | ✓ Message 305 in -1003823820784 saved as PENDING
+2026-04-29 09:34:48 AM | INFO | message_handler | 📩 New Pending Message from 5082912204 in -1003823820784 (Topic: 4)
+2026-04-29 09:34:56 AM | INFO | main_router | � Routing message from -1003823820784: Bpink Girlဆိုမသိလို့ပါရှင့်...
+2026-04-29 09:34:57 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 09:34:57 AM | INFO | db_manager | ✓ Message 306 in -1003823820784 saved as PENDING
+2026-04-29 09:34:57 AM | INFO | message_handler | 📩 New Pending Message from 5082912204 in -1003823820784 (Topic: 4)
+2026-04-29 09:34:59 AM | INFO | auditor | ℹ️ No active alert tracking found for 73 in -1003920564574.
+2026-04-29 09:34:59 AM | INFO | auditor | ℹ️ Message 73 was not an active alert. Skipping record.
+2026-04-29 09:34:59 AM | INFO | db_manager | ✅ Group Resolved: [73] in -1003920564574 by Ei Pan Hmue (Reaction (❤))
+2026-04-29 09:34:59 AM | INFO | alert_handler | ✅ Message 73 marked as RESOLVED via Reaction (❤) by Ei Pan Hmue
+2026-04-29 09:35:16 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8784029703
+2026-04-29 09:35:27 AM | INFO | main_router | � Routing message from -1003823820784: Percelပေါ်မှာလဲ Royal Scent Myanmar လို့တော့ရေးထား...
+2026-04-29 09:35:29 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 09:35:29 AM | INFO | auditor | 🛡️ Auditor module handled message: 307
+2026-04-29 09:35:29 AM | INFO | db_manager | ✓ Message 307 in -1003823820784 saved as PENDING
+2026-04-29 09:35:29 AM | INFO | message_handler | 📩 New Pending Message from 5082912204 in -1003823820784 (Topic: 4)
+2026-04-29 09:35:41 AM | INFO | main_router | � Routing message from -1003823820784: ဒီလိုလေးပြောပေးပါရှင့်...
+2026-04-29 09:35:42 AM | INFO | auditor | 📂 Auditing Batch: Skylar collection ï½ï½ï½ï½ï (Topic 1) in Chat -1003709069700 (2 messages)
+2026-04-29 09:35:43 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003709069700, topic=1, msg=333, force=False
+2026-04-29 09:35:43 AM | INFO | auditor | 🎯 Explicit Route Found: -1003709069700/1 -> -1003601049225/1
+2026-04-29 09:35:43 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-04-29 09:35:52 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 09:35:52 AM | INFO | db_manager | ✓ Message 308 in -1003823820784 saved as PENDING
+2026-04-29 09:35:52 AM | INFO | message_handler | 📩 New Pending Message from 5082912204 in -1003823820784 (Topic: 4)
+2026-04-29 09:36:53 AM | INFO | main_router | � Routing message from -1003567788792: ygn pick up လေးရှိပါမယ်ရှင့်...
+2026-04-29 09:36:54 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 09:36:54 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 09:36:54 AM | INFO | db_manager | ✓ Message 171 in -1003567788792 saved as PENDING
+2026-04-29 09:36:54 AM | INFO | message_handler | 📩 New Pending Message from 7128781148 in -1003567788792 (Topic: 1)
+2026-04-29 09:37:16 AM | INFO | auditor | 📂 Auditing Batch: ITTC ï½ï½ï½ï½ï (Topic 6) in Chat -1003852412184 (1 messages)
+2026-04-29 09:37:17 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003852412184, topic=6, msg=423, force=False
+2026-04-29 09:37:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003852412184/6 -> -1003601049225/35
+2026-04-29 09:37:17 AM | INFO | auditor | 📢 Alert sent for 423 in ITTC ï½ï½ï½ï½ï to Central Group
+2026-04-29 09:37:22 AM | INFO | main_router | � Routing message from -1003567788792: ygn pick up လေးရှိပါမယ်ရှင့်...
+2026-04-29 09:37:24 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 09:37:24 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 09:37:24 AM | INFO | db_manager | ✓ Message 172 in -1003567788792 saved as PENDING
+2026-04-29 09:37:24 AM | INFO | message_handler | 📩 New Pending Message from 7128781148 in -1003567788792 (Topic: 1)
+2026-04-29 09:38:25 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-04-29 09:38:45 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8784029703
+2026-04-29 09:38:50 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 09:40:23 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-04-29 09:40:23 AM | INFO | db_manager | ✅ Group Resolved: [332] in -1003768834039 by Eaindra (Reply)
+2026-04-29 09:40:23 AM | INFO | auditor | ℹ️ No active alert tracking found for 332 in -1003768834039.
+2026-04-29 09:40:23 AM | INFO | auditor | ℹ️ Message 332 was not an active alert. Skipping record.
+2026-04-29 09:40:23 AM | INFO | message_handler | ✅ Message 332 marked as RESOLVED via Reply by Eaindra
+2026-04-29 09:40:27 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-04-29 09:41:45 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-04-29 09:42:41 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8610839178
+2026-04-29 09:42:41 AM | INFO | db_manager | ✅ Group Resolved: [333, 334] in -1003709069700 by Thet Wai Oo (Reply)
+2026-04-29 09:42:41 AM | INFO | auditor | 🔗 Found parent 333 for message 334. Retrying cleanup...
+2026-04-29 09:42:41 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1014
+2026-04-29 09:42:41 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-29 09:42:42 AM | INFO | message_handler | ✅ Message 334 marked as RESOLVED via Reply by Thet Wai Oo
+2026-04-29 09:42:43 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-04-29 09:42:43 AM | INFO | db_manager | ✅ Group Resolved: [228] in -1003881120872 by Eaindra (Reply)
+2026-04-29 09:42:43 AM | INFO | auditor | ℹ️ No active alert tracking found for 228 in -1003881120872.
+2026-04-29 09:42:43 AM | INFO | auditor | ℹ️ Message 228 was not an active alert. Skipping record.
+2026-04-29 09:42:43 AM | INFO | message_handler | ✅ Message 228 marked as RESOLVED via Reply by Eaindra
+2026-04-29 09:42:46 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-04-29 09:43:15 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1015
+2026-04-29 09:43:15 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-29 09:43:15 AM | INFO | db_manager | ✅ Group Resolved: [423] in -1003852412184 by Eaindra (Reaction (❤))
+2026-04-29 09:43:15 AM | INFO | alert_handler | ✅ Message 423 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-04-29 09:43:51 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 09:44:03 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-04-29 09:44:33 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8688437892
+2026-04-29 09:44:33 AM | INFO | db_manager | ✅ Group Resolved: [3254] in -1003798739565 by Myat Noe Paing (Reply)
+2026-04-29 09:44:33 AM | INFO | auditor | ℹ️ No active alert tracking found for 3254 in -1003798739565.
+2026-04-29 09:44:33 AM | INFO | auditor | ℹ️ Message 3254 was not an active alert. Skipping record.
+2026-04-29 09:44:33 AM | INFO | message_handler | ✅ Message 3254 marked as RESOLVED via Reply by Myat Noe Paing
+2026-04-29 09:44:34 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8610839178
+2026-04-29 09:44:35 AM | INFO | db_manager | ✅ Group Resolved: [333] in -1003709069700 by Thet Wai Oo (Reply)
+2026-04-29 09:44:35 AM | INFO | auditor | ℹ️ No active alert tracking found for 333 in -1003709069700.
+2026-04-29 09:44:35 AM | INFO | auditor | ℹ️ Message 333 was not an active alert. Skipping record.
+2026-04-29 09:44:35 AM | INFO | message_handler | ✅ Message 333 marked as RESOLVED via Reply by Thet Wai Oo
