@@ -281,10 +281,8 @@ def handle(bot, message):
         
         # 🧪 Test Group Bypass: အလုပ်ချိန်ပြင်ပလည်း ပုံမှန်အတိုင်း အလုပ်လုပ်ရန်
         if chat_id == TEST_GROUP_ID:
-            log.info(f"🧪 Test Group {chat_id} detected. Bypassing time restrictions.")
-            # Test group အတွက် အမြဲတမ်း Window 1 (Today) သို့မဟုတ် Window 2 (Staff Decision) အတိုင်းသွားရန်
-            # ညဘက်စမ်းရင်လည်း Staff Decision Alert တက်အောင် 1101 - 1500 ကြားထဲ ရောက်အောင် ခေတ္တပြောင်းပေးမည်
-            current_time = 1200
+            log.info(f"🧪 Test Group {chat_id} detected. Using real-time for logic verification.")
+            # Sandbox override removed to prevent incorrect "Past 11 AM" alerts.
 
         # Logic Windows:
         # 1. 12:01 AM - 11:00 AM (0001 - 1100) -> Today
@@ -297,8 +295,9 @@ def handle(bot, message):
         # အကယ်၍ User က "မနက်ဖြန်" လို့ အတိအလင်းပြောထားရင် Time Window မစစ်တော့ဘဲ Tomorrow Flow သွားမည်
         if ai_date_type == "tomorrow":
             date_type = "tomorrow"
-        elif 1100 <= current_time < 1500:
+        elif 1101 <= current_time < 1500:
             # Window 2: Staff Decision Alert (Only if not explicitly tomorrow)
+            # Trigger only if it's strictly AFTER 11:00 AM MMT (11:01 onwards)
             send_staff_decision_alert(bot, message, os_name, v_str)
             return
         elif current_time >= 1500:
