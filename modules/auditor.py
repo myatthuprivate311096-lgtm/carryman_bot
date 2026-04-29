@@ -166,7 +166,7 @@ def notify_manager_missing_route(chat_id, topic_id, shop_name, trigger_text, ori
     except Exception as e:
         log.error(f"❌ Failed to notify Manager for {shop_name} ({chat_id}): {e}")
 
-def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name, original_ts, category="အခြား", intent=None, media_id=None, title="⚠️ **Pending Alert (15 Mins)**", force=False):
+def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name, original_ts, category="အခြား", intent=None, media_id=None, title="⚠️ **15-Minute SLA Alert!**", force=False):
     chat_id = int(chat_id)
     topic_id = int(topic_id)
     original_msg_id = int(original_msg_id)
@@ -196,6 +196,7 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
 
     alert_text = (
         f"<b>{title}</b>\n"
+        f"Customer စာပို့ထားသည်မှာ မိနစ် ၁၅ ပြည့်သွားပါပြီ။\n"
         f"━━━━━━━━━━━━━━━━━━\n"
         f"🏪 ဆိုင်: <b>{safe_shop}</b>\n"
         f"💬 စာသား: {safe_text}\n"
@@ -383,7 +384,8 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
         
         orig_ts = msg_data[0]
         
-        if not esc_msg_id and (int(time.time()) - orig_ts >= 1800):
+        # 💡 Strictly check if difference is >= 15 minutes (900 seconds)
+        if not esc_msg_id and (int(time.time()) - orig_ts >= 900):
             try:
                 tz = pytz.timezone('Asia/Yangon')
                 orig_time = datetime.fromtimestamp(orig_ts, tz).strftime('%I:%M %p')
@@ -391,7 +393,8 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
                 safe_text = html.escape(text)
 
                 esc_text = (
-                    f"🔥 <b>Escalated Alert (30 Mins)</b>\n"
+                    f"🔥 <b>15-Minute SLA Alert!</b>\n"
+                    f"Customer စာပို့ထားသည်မှာ မိနစ် ၁၅ ပြည့်သွားပါပြီ။\n"
                     f"━━━━━━━━━━━━━━━━━━\n"
                     f"🏪 ဆိုင်: <b>{safe_shop}</b>\n"
                     f"💬 စာသား: {safe_text}\n"

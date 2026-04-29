@@ -2,6 +2,7 @@
 import sqlite3
 import time
 import os
+import pytz
 from datetime import datetime
 from contextlib import contextmanager
 from dotenv import load_dotenv
@@ -356,8 +357,18 @@ def add_function(name, description, module_path):
         conn.close()
 
 # --- [ Message & SLA Logging ] ---
+def get_mm_now():
+    """ Asia/Yangon timezone ဖြင့် လက်ရှိအချိန်ကို ရယူရန် """
+    tz = pytz.timezone('Asia/Yangon')
+    return datetime.now(tz)
+
+def get_mm_timestamp():
+    """ Asia/Yangon timezone ဖြင့် လက်ရှိ timestamp ကို ရယူရန် """
+    return int(get_mm_now().timestamp())
+
 def log_message(msg_id, chat_id, topic_id, user_id, text, timestamp=None, media_id=None):
-    if timestamp is None: timestamp = int(time.time())
+    if timestamp is None:
+        timestamp = get_mm_timestamp()
     # 💡 General Topic Fallback Patch
     safe_topic_id = topic_id if topic_id and topic_id != 0 else 1
     
@@ -896,17 +907,18 @@ def get_staff_stats(period="all"):
     conn = get_connection()
     query = "SELECT resolved_by, COUNT(*), AVG((resolve_time - timestamp)/60.0) FROM message_logs WHERE status = 'RESOLVED' AND resolved_by IS NOT NULL "
     
-    now = datetime.now()
+    tz = pytz.timezone('Asia/Yangon')
+    now = datetime.now(tz)
     if period == "today":
         # လွန်ခဲ့သော ၂၄ နာရီ
-        start_ts = int(now.replace(hour=0, minute=0, second=0).timestamp())
+        start_ts = int(now.replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
         query += f"AND resolve_time >= {start_ts} "
     elif period == "weekly":
         # လွန်ခဲ့သော ၇ ရက်
         start_ts = int((now - timedelta(days=7)).timestamp())
         query += f"AND resolve_time >= {start_ts} "
     elif period == "month":
-        start_ts = int(now.replace(day=1, hour=0, minute=0, second=0).timestamp())
+        start_ts = int(now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).timestamp())
         query += f"AND resolve_time >= {start_ts} "
         
     query += "GROUP BY resolved_by ORDER BY COUNT(*) DESC"

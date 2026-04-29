@@ -38144,3 +38144,46 @@ Date -  29/April/2026
 2026-04-29 08:21:23 AM | INFO | main_router | � Routing message from -1003946708392: ညီမလေး...
 2026-04-29 08:21:24 AM | INFO | main_router | 🎯 AI Decision: none
 2026-04-29 08:22:10 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 08:22:38 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-29 08:22:38 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 08:22:38 AM | INFO | health_monitor | 🚀 Proactive Health Monitor started (5 min interval)
+2026-04-29 08:22:39 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-29 08:22:39 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-29 08:22:39 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-29 08:22:39 AM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-04-29 08:22:39 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-29 08:22:39 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-29 08:22:39 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-29 08:22:40 AM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-04-29 08:24:18 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 6559895943
+2026-04-29 08:24:38 AM | INFO | auditor | 📂 Auditing Batch: Skylar collection ï½ï½ï½ï½ï (Topic 1) in Chat -1003709069700 (1 messages)
+2026-04-29 08:24:40 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003709069700, topic=1, msg=319, force=False
+2026-04-29 08:24:40 AM | INFO | auditor | 🎯 Explicit Route Found: -1003709069700/1 -> -1003601049225/1
+2026-04-29 08:24:40 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-04-29 08:25:25 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7261311241
+2026-04-29 08:25:25 AM | INFO | db_manager | ✅ Group Resolved: [420] in -1003852412184 by (60501) (Reply)
+2026-04-29 08:25:25 AM | INFO | auditor | ℹ️ No active alert tracking found for 420 in -1003852412184.
+2026-04-29 08:25:25 AM | INFO | auditor | ℹ️ Message 420 was not an active alert. Skipping record.
+2026-04-29 08:25:25 AM | INFO | message_handler | ✅ Message 420 marked as RESOLVED via Reply by (60501)
+2026-04-29 08:26:18 AM | INFO | auditor | ℹ️ No active alert tracking found for 320 in -1003709069700.
+2026-04-29 08:26:18 AM | INFO | auditor | ℹ️ Message 320 was not an active alert. Skipping record.
+2026-04-29 08:26:18 AM | INFO | db_manager | ✅ Group Resolved: [320] in -1003709069700 by Thida Hlaing (Reaction (❤))
+2026-04-29 08:26:18 AM | INFO | alert_handler | ✅ Message 320 marked as RESOLVED via Reaction (❤) by Thida Hlaing
+2026-04-29 08:26:20 AM | INFO | auditor | ℹ️ No active alert tracking found for 321 in -1003709069700.
+2026-04-29 08:26:20 AM | INFO | auditor | ℹ️ Message 321 was not an active alert. Skipping record.
+2026-04-29 08:26:20 AM | INFO | db_manager | ✅ Group Resolved: [321] in -1003709069700 by Thida Hlaing (Reaction (❤))
+2026-04-29 08:26:20 AM | INFO | alert_handler | ✅ Message 321 marked as RESOLVED via Reaction (❤) by Thida Hlaing
+2026-04-29 08:27:12 AM | INFO | auditor | 📂 Auditing Batch: Angel Lay ï½ï½ï½ï½ï (Topic 1) in Chat -1003881120872 (2 messages)
+2026-04-29 08:27:14 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003881120872, topic=1, msg=225, force=False
+2026-04-29 08:27:14 AM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-04-29 08:27:14 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-04-29 08:27:47 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 08:28:47 AM | INFO | auditor | 📂 Auditing Batch: Hotssic ï½ï½ï½ï½ï (Topic 4) in Chat -1003506710131 (1 messages)
+2026-04-29 08:28:49 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003506710131, topic=4, msg=638, force=False
+2026-04-29 08:28:49 AM | WARNING | auditor | ⚠️ No Explicit Route for -1003506710131/4. Notifying Manager...
+2026-04-29 08:28:49 AM | WARNING | auditor | ⚠️ No route found for Hotssic ï½ï½ï½ï½ï (-1003506710131/4). Notifying Manager.
+2026-04-29 08:28:49 AM | INFO | auditor | 🔍 notify_manager_missing_route: shop=Hotssic ï½ï½ï½ï½ï, msg_id=638, chat=-1003506710131
+2026-04-29 08:28:49 AM | INFO | auditor | 📲 Missing route notification sent to Manager for Hotssic ï½ï½ï½ï½ï
+2026-04-29 08:28:51 AM | INFO | auditor | 📂 Auditing Batch: Hotssic ï½ï½ï½ï½ï (Topic 1) in Chat -1003506710131 (1 messages)
+2026-04-29 08:28:53 AM | INFO | auditor | 🎯 Explicit Route Found: -1003506710131/1 -> -1003601049225/1
+2026-04-29 08:28:53 AM | INFO | auditor | ➕ Appended message 639 to alert 981 (Topic: 1)
