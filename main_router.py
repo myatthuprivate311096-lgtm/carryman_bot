@@ -242,7 +242,7 @@ def route_message(bot, message):
             group_ai = 'ON'
             global_pickup = 'ON'
         
-        log.info(f"� Routing message from {chat_id}: {text[:50]}...")
+        log.info(f"Routing message from {chat_id}: {text[:50]}...")
 
         # ၂။ AI Decision (Intent Detection)
         # လက်ရှိ modules folder ထဲမှာ ရှိတဲ့ module list ကို ယူမယ်
@@ -297,16 +297,15 @@ def route_message(bot, message):
         is_staff = user_level >= 3
 
         if intent == "auto_pickup":
-            # Rule #1: Works ONLY for Non-Staff.
+            # Rule: Pickup works ONLY in Group Chats for Non-Staff users.
+            if is_private:
+                log.info(f"⏭️ Skipping Auto Pickup: Private Chat detected. Pickup is Group-only.")
+                return
             if is_staff:
                 log.info(f"🛡️ Staff Safety Net: Blocking auto_pickup routing for staff {user_id}")
                 return
-            if is_private:
-                log.info(f"⏭️ Skipping Auto Pickup: Private Chat detected")
-                return
-            if not is_sandbox and global_pickup != 'ON':
-                log.info(f"⏭️ Skipping Auto Pickup: Global Status is {global_pickup}")
-                return
+            # Note: Notification is sent regardless of global_pickup status.
+            # Silent mode for groups (when OFF) is handled inside the module.
         elif intent == "auditor":
             if is_private and not is_staff:
                 log.info(f"⏭️ Skipping Auditor: Private Chat detected for non-staff")

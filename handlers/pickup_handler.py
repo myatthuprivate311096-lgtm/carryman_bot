@@ -8,6 +8,17 @@ from modules import auditor
 def register_pickup_handlers(bot: telebot.TeleBot):
     """ Auto Pickup Module အတွက် Callback များကို Register လုပ်ပေးသည် """
 
+    @bot.callback_query_handler(func=lambda call: call.data == 'pickup_done')
+    def handle_pickup_done_callback(call):
+        """ Admin မှ Pickup Notification ရှိ Done Button ကို နှိပ်လိုက်သည့်အခါ """
+        try:
+            bot.delete_message(call.message.chat.id, call.message.message_id)
+            bot.answer_callback_query(call.id, "✅ Pickup request marked as done.")
+        except Exception as e:
+            log.error(f"❌ Pickup Done Callback Error: {e}")
+            try: bot.answer_callback_query(call.id, "❌ Error deleting message")
+            except: pass
+
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_dt_') or call.data.startswith('ap_vh_'))
     def handle_auto_pickup_callback(call):
         """ Auto Pickup Module အတွက် Callback များ (Date/Vehicle Selection) """

@@ -234,6 +234,7 @@ def handle(bot, message):
     try:
         chat_id = message.chat.id
         user_id = message.from_user.id
+        is_private = chat_id > 0
         
         # 🛡️ Staff Safety Net (Rule #1): ဝန်ထမ်းများအတွက် Auto Pickup အလုပ်မလုပ်စေရ
         user_level = db_manager.get_user_level(user_id, chat_id)
@@ -241,7 +242,8 @@ def handle(bot, message):
             log.info(f"🛡️ Staff Safety Net: Skipping Auto Pickup for staff {user_id}")
             return
 
-        if chat_id > 0:
+        # Pickup is Group-only (Safety check in case router fails)
+        if is_private:
             log.info(f"⏭️ Skipping Auto Pickup: Private Chat detected ({chat_id})")
             return
 
@@ -251,6 +253,7 @@ def handle(bot, message):
 
         log.info(f"🚚 Auto Pickup module handling message: {message.message_id}")
 
+        # Check for waiting orders in group
         waiting_order = db_manager.get_waiting_confirm_order(chat_id)
         if waiting_order:
             created_at = waiting_order[8]
@@ -271,14 +274,14 @@ def handle(bot, message):
                     pickup_handler.show_pickup_reconfirmation(bot, chat_id, waiting_order[0])
                     return
 
+        # Get Group Title for Admin Notification
         chat_title = message.chat.title or "Unknown Shop"
-        # OS Name is always before the '🤝' emoji in the Group Title
+        
+        # Extract OS Name for internal logic (before 🤝)
         if '🤝' in chat_title:
             os_name = chat_title.split('🤝')[0].strip()
         else:
             os_name = db_manager.clean_shop_name(chat_title)
-
-        TEST_GROUP_ID = -1003539520778
 
         extract_prompt = f"""
         Analyze the following message.
@@ -347,6 +350,35 @@ def handle(bot, message):
         now = datetime.now(tz)
         current_time = now.hour * 100 + now.minute
         
+        is_system_off = db_manager.get_auto_pickup_global_status() == 'OFF'
+
+        # 1. Admin Group Notification (Always send regardless of ON/OFF)
+        admin_chat_id = -1003601049225
+        admin_topic_id = 878
+        
+        admin_alert_text = (
+            f"📦 **New Pickup Request**\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"🏪 Group: <b>{chat_title}</b>\n"
+            f"🏪 OS Name: <b>{os_name}</b>\n"
+            f"💬 Message: {text[:200]}\n"
+            f"━━━━━━━━━━━━━━━━━━"
+        )
+        
+        admin_markup = types.InlineKeyboardMarkup()
+        admin_markup.add(types.InlineKeyboardButton("✅ Done", callback_data="pickup_done"))
+        
+        try:
+            bot.send_message(admin_chat_id, admin_alert_text, parse_mode="HTML", message_thread_id=admin_topic_id, reply_markup=admin_markup)
+            log.info(f"🔔 Admin notification sent for pickup request from {chat_title}")
+        except Exception as e:
+            log.error(f"❌ Failed to send admin pickup notification: {e}")
+
+        # 2. Silent Mode for Group Chat when Pickup is OFF
+        if is_system_off:
+            log.info(f"🔇 Silent Mode: Pickup is OFF. Returning silently for group {chat_id}")
+            return
+
         if ai_date_type == "tomorrow":
             date_type = "tomorrow"
         elif 1101 <= current_time < 1500:
@@ -371,8 +403,8 @@ def handle(bot, message):
         if not vehicle:
             ask_vehicle(bot, message, date_type, message.message_id)
             return
-
-        ask_remark(bot, chat_id, date_type, vehicle, message.message_id)
+        else:
+            ask_remark(bot, chat_id, date_type, vehicle, message.message_id)
 
         if date_type in ["today", "tomorrow"]:
             central_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
@@ -563,17 +595,6 @@ def run_queue_worker(bot):
                 log.warning(f"🛑 System is OFF. Aborting order {queue_id} for {os_name}")
                 db_manager.update_queue_status(queue_id, 'CANCELLED', error_msg="System Shutdown (OFF)")
                 update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Aborted (System OFF)", show_done=False)
-                
-                tz = pytz.timezone('Asia/Yangon')
-                now_mmt = datetime.now(tz).strftime("%Y-%m-%d %I:%M:%S %p")
-                escaped_os_name = util.escape(os_name)
-                abort_msg = (
-                    f"<b>System Shutdown Alert</b>\n\n"
-                    f"The following order was in queue but was <b>ABORTED</b> because the system was turned OFF:\n\n"
-                    f"Shop/OS Name: {escaped_os_name}\n"
-                    f"Time: {now_mmt}"
-                )
-                asyncio.run(send_pickup_notification(abort_msg, is_alert=True))
                 continue
 
             log.info(f"📦 Processing Queue Item {queue_id} for {os_name}")
