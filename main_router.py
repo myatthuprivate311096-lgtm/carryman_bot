@@ -90,8 +90,11 @@ def handle_ai_query(bot, message, is_automatic=False):
         - Google Maps: https://maps.app.goo.gl/CarryManRealLocation (အစ်ကို့ရဲ့ တကယ့် Link ကို ဒီမှာ အစားထိုးနိုင်ပါတယ်)
         """
 
+        # Fetch Core Policies Dynamically from Database
+        core_policies = db_manager.get_core_policies()
+
         ai_prompt = f"""
-        Strict Persona & Tone: 'You are an Online Shop (OS) admin. You MUST strictly follow the tone, style, and examples provided in the OS Tone_&_Example data. Keep answers short, direct, and natural. NEVER use generic AI fluff like "Welcome to...", "If you need more info...", or "I am an AI assistant".'
+        Strict Persona & Tone: 'You are an Online Shop (OS) admin. You MUST strictly follow the tone, style, and examples provided in the OS Tone_&_Example data. Keep answers short, direct, and natural. NEVER use generic AI fluff.'
 
         {rag_instructions}
 
@@ -99,15 +102,22 @@ def handle_ai_query(bot, message, is_automatic=False):
 
         {base_company_info}
 
-        Comprehensive Data Extraction: 'When a user asks about delivery to a specific location (e.g., မြစ်ကြီးနား), you MUST use the search_database tool to look up that location and extract ALL relevant details. Your answer MUST include:
+        {core_policies}
+
+        RULE: You must apply LOGICAL REASONING using the Base Context (including the Dynamic Core Policies) and retrieved data.
+        If a user asks about an item (e.g., plates, guns, glass, liquid), evaluate it against the provided Terms and Conditions instead of looking for exact word matches.
+        - Example: If asked about 'plates' (ပန်းကန်), reason that it is a 'Fragile Item' and apply the fragile item rule found in the policies.
+        - Example: If asked about 'Kyaikto' (ကျိုက်ထို), use the 'search_database' tool to find the specific rules for that location.
+
+        CRITICAL: You MUST use the 'search_database' tool to look up specific details (locations, pricing) BEFORE deciding you don't know the answer.
+
+        Comprehensive Data Extraction: 'When a user asks about delivery to a specific location, you MUST use the search_database tool and extract:
         - Whether Home Delivery is available.
-        - The Delivery Fee range (Min and Max price).
+        - The Delivery Fee (Base weight and extra charge).
         - Whether COD (Cash on Delivery) is accepted.
         - Estimated Delivery Duration (Days).'
 
-        Location Labeling: 'Always clearly state the Township and City in your response (e.g., "Found in Insein, Yangon" or "အင်းစိန်မြို့နယ်၊ ရန်ကုန်မြို့တွင် တွေ့ရှိရပါသည်") to ensure the user knows exactly which area you are referring to.'
-
-        Ambiguity Handling: 'If you find that the same location or street name exists in multiple cities, ALWAYS mention the Yangon result first and add a small note that a similar name exists in another city (e.g., Mandalay) to ensure accuracy.'
+        Location Labeling: 'Always clearly state the Township and City in your response.'
 
         Format Constraint: 'Combine these details into a single, concise, human-like paragraph in Burmese.'
 
@@ -118,7 +128,7 @@ def handle_ai_query(bot, message, is_automatic=False):
         tools = ai_utils.get_ai_tools(user_level)
         
         # Initial AI Call
-        response = ai_utils.get_ai_completion(ai_prompt, timeout=30.0, tools=tools)
+        response = ai_utils.get_ai_completion(ai_prompt, timeout=30.0, tools=tools, user_level=user_level)
         
         if not response:
             bot.reply_to(message, "⚠️ တောင်းပန်ပါတယ်ခင်ဗျာ။ အဖြေရှာနေစဉ် အမှားတစ်ခု ဖြစ်သွားလို့ပါ။")

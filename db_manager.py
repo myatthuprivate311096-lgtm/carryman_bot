@@ -1031,17 +1031,74 @@ def search_knowledge(query, user_level):
     try:
         c = conn.cursor()
         search_query = f"%{query}%"
-        # level <= user_level ဖြစ်တဲ့ Data တွေကိုပဲ ရှာခွင့်ပေးမည်
+        # 💡 Broadened Search Logic: Search across question, answer, tags, and category
+        # This ensures Myanmar keywords match even if the question is in English but answer contains Myanmar.
+        # 💡 Broadened Search Logic: Search across question, answer, tags, and category
+        # Increased limit to 10 to provide more context for reasoning.
         c.execute('''SELECT category, question, answer FROM knowledge_base
-                     WHERE (question LIKE ? OR tags LIKE ? OR category LIKE ?)
+                     WHERE (question LIKE ? OR answer LIKE ? OR tags LIKE ? OR category LIKE ?)
                      AND level <= ?
-                     ORDER BY level DESC LIMIT 1''',
-                     (search_query, search_query, search_query, user_level))
+                     ORDER BY level DESC LIMIT 10''',
+                     (search_query, search_query, search_query, search_query, user_level))
         
-        return c.fetchone()
+        results = c.fetchall()
+        if results:
+            # Combine multiple results for better context
+            combined_context = ""
+            for cat, q, a in results:
+                combined_context += f"Category: {cat}\nQuestion: {q}\nAnswer: {a}\n---\n"
+            return combined_context
+        return None
     except Exception as e:
         log.error(f"❌ Search Knowledge Error: {e}")
         return None
+    finally:
+        conn.close()
+
+def get_core_policies():
+    """
+    Fetch core company policies, terms, and conditions dynamically from the database.
+    This data is injected into the AI's base context.
+    """
+    conn = get_connection()
+    try:
+        c = conn.cursor()
+        # Fetch categories that represent global rules and policies
+        # We use a broader search to ensure we catch all policy-related data
+        categories = [
+            'Returns & Liability (တာဝန်ယူမှု)',
+            'General Info (အထွေထွေ)',
+            'ပို့ဆောင်ရေး ဝန်ဆောင်မှု (Delivery Service)',
+            'Delivery Service (ပို့ဆောင်ရေး)',
+            'Terms_Condition_Myanmar'
+        ]
+        
+        placeholders = ', '.join(['?'] * len(categories))
+        # Also search for keywords in category names to be safe
+        query = f"""
+            SELECT category, question, answer FROM knowledge_base
+            WHERE category IN ({placeholders})
+            OR category LIKE '%Terms%'
+            OR category LIKE '%Condition%'
+            OR category LIKE '%Policy%'
+            OR tags LIKE '%policy%'
+            OR tags LIKE '%rule%'
+        """
+        
+        c.execute(query, tuple(categories))
+        rows = c.fetchall()
+        
+        if not rows:
+            return "No core policies found in database."
+            
+        policies_text = "[DYNAMIC CORE POLICIES & TERMS]\n"
+        for cat, q, a in rows:
+            policies_text += f"Category: {cat}\nQuestion: {q}\nAnswer: {a}\n---\n"
+            
+        return policies_text
+    except Exception as e:
+        log.error(f"❌ Error fetching core policies: {e}")
+        return "Error loading core policies."
     finally:
         conn.close()
 
