@@ -4,7 +4,7 @@ import os
 import json
 from datetime import datetime, timedelta
 import pytz
-from telebot import types
+from telebot import types, util
 import db_manager
 from logger import log
 import ai_utils
@@ -535,6 +535,40 @@ def run_queue_worker(bot):
                 continue
 
             queue_id, chat_id, orig_msg_id, target_date, os_name, remark, vehicle = item
+
+            # --- Pre-Flight Check: System Status ---
+            if db_manager.get_auto_pickup_global_status() == 'OFF':
+                log.warning(f"🛑 System is OFF. Aborting order {queue_id} for {os_name}")
+                
+                # 1. Update Queue Status
+                db_manager.update_queue_status(queue_id, 'CANCELLED', error_msg="System Shutdown (OFF)")
+                
+                # 2. Update Central Alert
+                update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Aborted (System OFF)", show_done=False)
+                
+                # 3. Send Abort Notification to Log Group
+                tz = pytz.timezone('Asia/Yangon')
+                now_mmt = datetime.now(tz).strftime("%Y-%m-%d %I:%M:%S %p")
+                
+                target_chat_id = -1003601049225
+                topic_id = 878
+                
+                escaped_os_name = util.escape(os_name)
+                
+                abort_msg = (
+                    f"⚠️ **System Shutdown Alert**\n\n"
+                    f"The following order was in queue but was **ABORTED** because the system was turned OFF:\n\n"
+                    f"Shop/OS Name: {escaped_os_name}\n"
+                    f"Time: {now_mmt}"
+                )
+                
+                try:
+                    bot.send_message(target_chat_id, abort_msg, parse_mode="Markdown", message_thread_id=topic_id)
+                except Exception as e:
+                    log.error(f"❌ Failed to send abort notification: {e}")
+                
+                continue
+
             log.info(f"📦 Processing Queue Item {queue_id} for {os_name}")
 
             # ၁။ Shop Mapping ရှိမရှိ အရင်စစ်မည်

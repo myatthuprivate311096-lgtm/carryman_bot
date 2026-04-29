@@ -35968,3 +35968,83 @@ Date -  28/April/2026
 2026-04-29 03:56:14 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
 2026-04-29 03:56:15 AM | INFO | db_manager | ✓ Message 467 in -1003868121514 saved as PENDING
 2026-04-29 03:56:15 AM | INFO | message_handler | 📩 New Pending Message from 1828417786 in -1003868121514 (Topic: 1)
+2026-04-29 03:56:54 AM | INFO | main_router | � Routing message from -1003798966794: ဟုတ်ကဲ့ rider လေးလွှတ်လိုက်ပါမယ်ခင်ဗျ။...
+2026-04-29 03:56:55 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 03:56:55 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 03:57:06 AM | INFO | auditor | ℹ️ No active alert tracking found for 467 in -1003868121514.
+2026-04-29 03:57:06 AM | INFO | auditor | ℹ️ Message 467 was not an active alert. Skipping record.
+2026-04-29 03:57:06 AM | INFO | db_manager | ✅ Group Resolved: [467] in -1003868121514 by (60501) (Reaction (❤))
+2026-04-29 03:57:06 AM | INFO | alert_handler | ✅ Message 467 marked as RESOLVED via Reaction (❤) by (60501)
+2026-04-29 03:57:27 AM | INFO | main_router | � Routing message from -1003868121514: ဟုတ်ကဲ့ မနေ့က စာရင်းလေးလားခင်ဗျ။...
+2026-04-29 03:57:28 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 03:57:28 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 03:58:05 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 923
+2026-04-29 03:58:05 AM | INFO | auditor | 🗑️ Deleted Level 2 escalation 1795
+2026-04-29 03:58:05 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-29 03:58:06 AM | INFO | db_manager | ✅ Group Resolved: [284] in -1003872160078 by Myat Thu (Done Button)
+2026-04-29 03:59:18 AM | INFO | main_router | � Routing message from -1003796096237: ကျန်ကျောင်းအိတ်တလုံးစာပါ...
+2026-04-29 03:59:19 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 03:59:19 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 03:59:19 AM | INFO | db_manager | ✓ Message 326 in -1003796096237 saved as PENDING
+2026-04-29 03:59:19 AM | INFO | message_handler | 📩 New Pending Message from 5482295505 in -1003796096237 (Topic: 1)
+2026-04-29 04:01:09 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 04:01:15 AM | INFO | main_router | � Routing message from -1003529688950: 29/4/26 RTစာရင်းလေးပါရှင့်ဒီနေ့လေးစက်ဘီးသမားလေးနဲ့...
+2026-04-29 04:01:16 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 04:01:16 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 04:01:26 AM | INFO | auditor | ℹ️ No active alert tracking found for 735 in -1003745970988.
+2026-04-29 04:01:26 AM | INFO | auditor | ℹ️ Message 735 was not an active alert. Skipping record.
+2026-04-29 04:01:26 AM | INFO | db_manager | ✅ Group Resolved: [735] in -1003745970988 by Eaindra (Reaction (❤))
+2026-04-29 04:01:26 AM | INFO | alert_handler | ✅ Message 735 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-04-29 04:01:53 AM | INFO | auditor | ℹ️ No active alert tracking found for 17 in -1003861331021.
+2026-04-29 04:01:53 AM | INFO | auditor | ℹ️ Message 17 was not an active alert. Skipping record.
+2026-04-29 04:01:53 AM | INFO | db_manager | ✅ Group Resolved: [17] in -1003861331021 by (60501) (Reaction (❤))
+2026-04-29 04:01:53 AM | INFO | alert_handler | ✅ Message 17 marked as RESOLVED via Reaction (❤) by (60501)
+2026-04-29 04:02:34 AM | INFO | main_router | � Routing message from -1003798739565: မမရေဒီပါဆယ်လေး က cus ကိုဆက်သွယ်ရမယ့် ဖုန်းနံပါတ်လေ...
+2026-04-29 04:02:34 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 04:02:34 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 04:03:05 AM | INFO | main_router | � Routing message from -1003734659970: ၂ရက်နေ့အရောက်ပို့ရမယ့်ပုသိမ် အထုပ်ပါလို့...
+2026-04-29 04:03:05 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 04:03:05 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 04:03:05 AM | INFO | db_manager | ✓ Message 231 in -1003734659970 saved as PENDING
+2026-04-29 04:03:05 AM | INFO | message_handler | 📩 New Pending Message from 7154027121 in -1003734659970 (Topic: 1)
+2026-04-29 04:03:09 AM | INFO | auditor | ℹ️ No active alert tracking found for 18 in -1003861331021.
+2026-04-29 04:03:09 AM | INFO | auditor | ℹ️ Message 18 was not an active alert. Skipping record.
+2026-04-29 04:03:09 AM | INFO | db_manager | ✅ Group Resolved: [18] in -1003861331021 by (60501) (Reaction (❤))
+2026-04-29 04:03:09 AM | INFO | alert_handler | ✅ Message 18 marked as RESOLVED via Reaction (❤) by (60501)
+2026-04-29 04:03:11 AM | INFO | auditor | ℹ️ No active alert tracking found for 18 in -1003861331021.
+2026-04-29 04:03:11 AM | INFO | auditor | ℹ️ Message 18 was not an active alert. Skipping record.
+2026-04-29 04:03:11 AM | INFO | db_manager | ✅ Group Resolved: [18] in -1003861331021 by (60501) (Reaction (👍))
+2026-04-29 04:03:11 AM | INFO | alert_handler | ✅ Message 18 marked as RESOLVED via Reaction (👍) by (60501)
+2026-04-29 04:03:26 AM | INFO | main_router | � Routing message from -1003780967023: RT ပြန်ပေးလိုက်နော်...
+2026-04-29 04:03:27 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 04:03:27 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 04:03:27 AM | INFO | db_manager | ✓ Message 404 in -1003780967023 saved as PENDING
+2026-04-29 04:03:27 AM | INFO | message_handler | 📩 New Pending Message from 8755095351 in -1003780967023 (Topic: 1)
+2026-04-29 04:03:30 AM | INFO | auditor | ℹ️ No active alert tracking found for 18 in -1003861331021.
+2026-04-29 04:03:30 AM | INFO | auditor | ℹ️ Message 18 was not an active alert. Skipping record.
+2026-04-29 04:03:30 AM | INFO | db_manager | ✅ Group Resolved: [18] in -1003861331021 by (60501) (Reaction (❤))
+2026-04-29 04:03:30 AM | INFO | alert_handler | ✅ Message 18 marked as RESOLVED via Reaction (❤) by (60501)
+2026-04-29 04:03:34 AM | INFO | main_router | � Routing message from -1003552853303: Pick up ရှိပါတယ်ဗျာ...
+2026-04-29 04:03:35 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 04:03:35 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 04:03:35 AM | INFO | db_manager | ✓ Message 271 in -1003552853303 saved as PENDING
+2026-04-29 04:03:35 AM | INFO | message_handler | 📩 New Pending Message from 1997281067 in -1003552853303 (Topic: 1)
+2026-04-29 04:03:57 AM | INFO | main_router | � Routing message from -1003552853303: စက်ဘီးနဲ့ရပါတယ်...
+2026-04-29 04:03:58 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 04:03:58 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 04:03:58 AM | INFO | db_manager | ✓ Message 272 in -1003552853303 saved as PENDING
+2026-04-29 04:03:58 AM | INFO | message_handler | 📩 New Pending Message from 1997281067 in -1003552853303 (Topic: 1)
+2026-04-29 04:04:33 AM | INFO | main_router | � Routing message from -1003552853303: @cmsod1 @cmmarketing1...
+2026-04-29 04:04:34 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 04:04:34 AM | INFO | db_manager | ✓ Message 273 in -1003552853303 saved as PENDING
+2026-04-29 04:04:34 AM | INFO | message_handler | 📩 New Pending Message from 1997281067 in -1003552853303 (Topic: 1)
+2026-04-29 04:04:38 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-29 04:04:38 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 04:04:39 AM | WARNING | auditor | 🚨 Escalated 292 to Manager
+2026-04-29 04:04:39 AM | INFO | health_monitor | 🚀 Proactive Health Monitor started (5 min interval)
+2026-04-29 04:04:39 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-29 04:04:39 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-29 04:04:39 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-29 04:04:40 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-29 04:04:40 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-29 04:04:40 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
