@@ -14,12 +14,11 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 SANDBOX_CHAT_ID = -1003539520778
 
 def is_ai_office_hours():
-    """ AI Auto-Answer အလုပ်လုပ်မည့်အချိန် (09:00 AM - 08:00 PM) """
-    import pytz
-    from datetime import datetime
-    tz = pytz.timezone('Asia/Yangon')
-    now = datetime.now(tz)
-    return 9 <= now.hour < 20
+    """
+    AI Auto-Answer အလုပ်လုပ်မည့်အချိန် (၂၄ နာရီ ဖွင့်ထားသည်)
+    အစ်ကို့တောင်းဆိုချက်အရ Private Chat AI Reply အတွက် ၂၄ နာရီ ဖွင့်ပေးထားခြင်း ဖြစ်ပါသည်။
+    """
+    return True
 
 def handle_ai_query(bot, message, is_automatic=False):
     """

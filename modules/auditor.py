@@ -37,7 +37,22 @@ TEST_GROUP_ID = int(os.getenv('TEST_GROUP_ID', -1003539520778))
 bot = telebot.TeleBot(BOT_TOKEN)
 
 def is_office_hours(chat_id=None):
-    return True  # Working hours restriction removed by Roo
+    """
+    အလုပ်ချိန်အတွင်းဖြစ်မဖြစ် စစ်ဆေးခြင်း (09:00 AM - 06:15 PM MMT)
+    """
+    import pytz
+    from datetime import datetime
+    tz = pytz.timezone('Asia/Yangon')
+    now = datetime.now(tz)
+    current_time = now.hour * 100 + now.minute
+    
+    # 09:00 AM (900) to 06:15 PM (1815)
+    is_office = 900 <= current_time < 1815
+    
+    if not is_office:
+        log.info(f"🌙 Outside Office Hours: {now.strftime('%I:%M %p')} MMT. Alerts are paused.")
+    
+    return is_office
 
 def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs, subsequent_msgs, chat_id, topic_id):
     try:
@@ -507,7 +522,8 @@ def process_audits():
 
             # Phase 2: AI Gatekeeper Logic for Auditor
             import main_router
-            is_ai_time = main_router.is_ai_office_hours()
+            # SLA Alerts & Group Auditing should follow Office Hours (6:15 PM limit)
+            is_office = is_office_hours()
             global_ai = db_manager.get_ai_global_status()
             global_alert = db_manager.get_alert_system_global_status()
             
@@ -523,7 +539,7 @@ def process_audits():
                 
                 # Global & Group & Time Check
                 group_ai = db_manager.get_group_ai_status(c_id)
-                if global_ai == 'ON' and group_ai == 'ON' and global_alert == 'ON' and is_ai_time:
+                if global_ai == 'ON' and group_ai == 'ON' and global_alert == 'ON' and is_office:
                     filtered_topics.append((c_id, t_id))
                 else:
                     # If AI is off, we don't audit, but we might still need to handle alerts manually?
@@ -616,7 +632,8 @@ def process_audits():
                 # Sandbox bypass for escalation
                 is_sandbox = (c_id == TEST_GROUP_ID or c_id == main_router.SANDBOX_CHAT_ID)
                 
-                if not is_ai_time and not is_sandbox:
+                # Escalations also follow Office Hours
+                if not is_office and not is_sandbox:
                     continue
                 
                 if global_alert != 'ON' and not is_sandbox:
