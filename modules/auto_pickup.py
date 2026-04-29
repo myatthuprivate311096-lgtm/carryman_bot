@@ -375,7 +375,8 @@ def handle(bot, message):
             log.error(f"❌ Failed to send admin pickup notification: {e}")
 
         # 2. Silent Mode for Group Chat when Pickup is OFF
-        if is_system_off:
+        # 2. Silent Mode for Group Chat when Pickup is OFF (Whitelist Group -1003539520778 bypasses this)
+        if is_system_off and chat_id != -1003539520778:
             log.info(f"🔇 Silent Mode: Pickup is OFF. Returning silently for group {chat_id}")
             return
 
@@ -591,7 +592,7 @@ def run_queue_worker(bot):
 
             queue_id, chat_id, orig_msg_id, target_date, os_name, remark, vehicle = item
 
-            if db_manager.get_auto_pickup_global_status() == 'OFF':
+            if db_manager.get_auto_pickup_global_status() == 'OFF' and chat_id != -1003539520778:
                 log.warning(f"🛑 System is OFF. Aborting order {queue_id} for {os_name}")
                 db_manager.update_queue_status(queue_id, 'CANCELLED', error_msg="System Shutdown (OFF)")
                 update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Aborted (System OFF)", show_done=False)
@@ -643,12 +644,36 @@ def run_queue_worker(bot):
             
             if success:
                 db_manager.update_queue_status(queue_id, 'SUCCESS')
-                update_central_pickup_alert(bot, orig_msg_id, chat_id, "✅ Success (အောင်မြင်ပါသည်)")
+                
+                # 1. ဆိုင် Group ထဲသို့ အောင်မြင်ကြောင်း စာပို့ခြင်း
+                try:
+                    bot.send_message(chat_id, "✅ Pickup တင်ခြင်း အောင်မြင်ပါသည်။", reply_to_message_id=orig_msg_id)
+                except Exception as e:
+                    log.error(f"❌ Failed to send success message to shop group: {e}")
+
+                # 2. Admin Group ရှိ Alert Message အဟောင်းကို ဖျက်ခြင်း
+                try:
+                    tracking = db_manager.get_alert_tracking(orig_msg_id, chat_id)
+                    if tracking:
+                        alert_msg_id = tracking[0]
+                        central_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
+                        bot.delete_message(central_chat, alert_msg_id)
+                except Exception as e:
+                    log.warning(f"⚠️ Failed to delete old alert message: {e}")
+
                 db_manager.resolve_message(orig_msg_id, chat_id, 'System (Auto-Pickup)', method='Auto', status='HANDLED_BY_AI')
                 cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id)
                 
+                # 3. Admin Group (Topic 878) သို့ Success Notification ပို့ခြင်း (Group Title ပါဝင်ရမည်)
+                group_title = "Unknown Group"
+                try:
+                    chat_info = bot.get_chat(chat_id)
+                    group_title = chat_info.title if chat_info.title else "Unknown Group"
+                except: pass
+
                 success_msg = (
                     f"<b>Auto Pickup Success</b>\n"
+                    f"👥 Group: <b>{group_title}</b>\n"
                     f"🏪 ဆိုင်: {final_os_name}\n"
                     f"📅 ရက်စွဲ: {target_date}\n"
                     f"📝 မှတ်ချက်: {remark if remark else '-'}"
