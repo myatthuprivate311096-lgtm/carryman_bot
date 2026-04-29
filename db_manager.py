@@ -1116,11 +1116,14 @@ def add_to_pickup_queue(chat_id, orig_msg_id, target_date, os_name, remark, vehi
     finally:
         conn.close()
 
-def confirm_pickup_order(queue_id):
+def confirm_pickup_order(queue_id, shop_msg_id=None):
     """ WAITING_CONFIRM ဖြစ်နေသော order ကို PENDING ပြောင်း၍ စက်ရုပ်ကို အလုပ်လုပ်ခိုင်းခြင်း """
     conn = get_connection()
     try:
-        conn.execute("UPDATE pickup_queue SET status = 'PENDING' WHERE id = ?", (queue_id,))
+        if shop_msg_id:
+            conn.execute("UPDATE pickup_queue SET status = 'PENDING', shop_msg_id = ? WHERE id = ?", (shop_msg_id, queue_id))
+        else:
+            conn.execute("UPDATE pickup_queue SET status = 'PENDING' WHERE id = ?", (queue_id,))
         conn.commit()
     finally:
         conn.close()
@@ -1147,6 +1150,13 @@ def get_next_queued_pickup():
 def update_queue_status(queue_id, status, error_msg=None):
     conn = get_connection()
     try:
+        if status == 'SUCCESS':
+            # When marked as SUCCESS, we also want to ensure it's resolved in message_logs
+            order = conn.execute("SELECT orig_msg_id, chat_id FROM pickup_queue WHERE id = ?", (queue_id,)).fetchone()
+            if order:
+                orig_msg_id, chat_id = order
+                conn.execute("UPDATE message_logs SET status = 'HANDLED_BY_AI' WHERE msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id))
+        
         conn.execute(
             "UPDATE pickup_queue SET status = ?, error_msg = ? WHERE id = ?",
             (status, error_msg, queue_id)

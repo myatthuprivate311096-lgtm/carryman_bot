@@ -8,12 +8,28 @@ from modules import auditor
 def register_pickup_handlers(bot: telebot.TeleBot):
     """ Auto Pickup Module အတွက် Callback များကို Register လုပ်ပေးသည် """
 
-    @bot.callback_query_handler(func=lambda call: call.data == 'pickup_done')
+    @bot.callback_query_handler(func=lambda call: call.data.startswith('done_'))
     def handle_pickup_done_callback(call):
         """ Admin မှ Pickup Notification ရှိ Done Button ကို နှိပ်လိုက်သည့်အခါ """
         try:
+            from modules import auto_pickup
+            # format: done_{orig_msg_id}_{chat_id}
+            parts = call.data.split('_')
+            if len(parts) == 3:
+                orig_msg_id = int(parts[1])
+                chat_id = int(parts[2])
+                
+                # 1. Success Group သို့ Report ပို့ခြင်း
+                auto_pickup.send_success_report(bot, orig_msg_id, chat_id, handled_by=f"ဝန်ထမ်း ({call.from_user.first_name})")
+
+                # 2. ဆိုင် Group ကို Success ပြောင်းရန်
+                auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "✅ Success (ဝန်ထမ်းမှ အတည်ပြုပြီး)", show_done=False)
+                
+                db_manager.resolve_message(orig_msg_id, chat_id, call.from_user.first_name, method='Manual', status='DONE')
+            
+            # 3. Admin Group ထဲက Alert စာကို ဖျက်ခြင်း
             bot.delete_message(call.message.chat.id, call.message.message_id)
-            bot.answer_callback_query(call.id, "✅ Pickup request marked as done.")
+            bot.answer_callback_query(call.id, "✅ Pickup request marked as success.")
         except Exception as e:
             log.error(f"❌ Pickup Done Callback Error: {e}")
             try: bot.answer_callback_query(call.id, "❌ Error deleting message")
@@ -22,6 +38,9 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_dt_') or call.data.startswith('ap_vh_'))
     def handle_auto_pickup_callback(call):
         """ Auto Pickup Module အတွက် Callback များ (Date/Vehicle Selection) """
+        if db_manager.check_if_staff(call.from_user.id):
+            bot.answer_callback_query(call.id, "⚠️ Staff Account မှဖြေပေးလို့မရပါ", show_alert=True)
+            return
         try:
             from modules import auto_pickup
             # format: ap_dt_{msg_id}_{date_type}_{vehicle}
@@ -93,6 +112,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 )
                 db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, sent_msg.message_id)
                 bot.edit_message_text(f"✅ **Tomorrow** အတွက် Customer ထံ ခွင့်ပြုချက် တောင်းခံထားပါသည် အစ်ကို။", call.message.chat.id, call.message.message_id)
+                auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "📅 Tomorrow (Waiting Customer)")
 
         except Exception as e:
             log.error(f"❌ Staff Pickup Decision Error: {e}")
@@ -105,6 +125,9 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_cs_'))
     def handle_customer_pickup_decision(call):
         """ Customer မှ OK/Admin ရွေးချယ်မှုအား ကိုင်တွယ်ခြင်း """
+        if db_manager.check_if_staff(call.from_user.id):
+            bot.answer_callback_query(call.id, "⚠️ Staff Account မှဖြေပေးလို့မရပါ", show_alert=True)
+            return
         try:
             from modules import auto_pickup
             # format: ap_cs_{orig_msg_id}_{chat_id}_{action}_{vehicle}
@@ -142,6 +165,9 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_cancel_'))
     def handle_pickup_cancel_callback(call):
         """ AI မှ Pickup ဟု မှားယွင်းယူဆမိပါက Rider မှ ပယ်ဖျက်ခြင်း """
+        if db_manager.check_if_staff(call.from_user.id):
+            bot.answer_callback_query(call.id, "⚠️ Staff Account မှဖြေပေးလို့မရပါ", show_alert=True)
+            return
         try:
             from modules import auto_pickup
             orig_msg_id = int(call.data.split('_')[2])
@@ -163,6 +189,9 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_rm_'))
     def handle_remark_selection(call):
         """ မှတ်ချက်ရေးမည်/မရှိပါ ရွေးချယ်မှုအား ကိုင်တွယ်ခြင်း """
+        if db_manager.check_if_staff(call.from_user.id):
+            bot.answer_callback_query(call.id, "⚠️ Staff Account မှဖြေပေးလို့မရပါ", show_alert=True)
+            return
         try:
             from modules import auto_pickup
             # format: ap_rm_{orig_msg_id}_{date_type}_{vehicle}_{action}
@@ -282,17 +311,42 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_conf_'))
     def handle_pickup_confirm_callback(call):
         """ Rider မှ အချက်အလက်မှန်ကန်ကြောင်း အတည်ပြုသည့်အခါ """
+        if db_manager.check_if_staff(call.from_user.id):
+            bot.answer_callback_query(call.id, "⚠️ Staff Account မှဖြေပေးလို့မရပါ", show_alert=True)
+            return
         try:
             queue_id = int(call.data.split('_')[2])
-            db_manager.confirm_pickup_order(queue_id)
-            bot.edit_message_text("✅ **အတည်ပြုပြီးပါပြီ!**\n\nစက်ရုပ်မှ အော်ဒါတင်ပေးနေပါပြီ၊ ခဏစောင့်ပေးပါခင်ဗျာ။", call.message.chat.id, call.message.message_id)
-            
-            # Ensure this message is tracked for cleanup
             order = db_manager.get_pickup_order(queue_id)
-            if order:
-                from modules import auto_pickup
-                db_manager.add_pickup_intermediate_msg(call.message.chat.id, order[2], call.message.message_id)
-                auto_pickup.update_central_pickup_alert(bot, order[2], call.message.chat.id, "✅ Confirmed (Waiting for Robot)")
+            if not order:
+                bot.answer_callback_query(call.id, "❌ Order not found")
+                return
+
+            chat_id = call.message.chat.id
+            orig_msg_id = order[2]
+            target_date = order[3]
+            shop_name = order[4]
+            remark = order[5]
+            vehicle = order[6]
+
+            # Detailed Status Message for Shop Group
+            status_text = (
+                f"✅ **အတည်ပြုပြီးပါပြီ!**\n\n"
+                f"🏪 ဆိုင်: <b>{shop_name}</b>\n"
+                f"📅 ရက်စွဲ: <b>{target_date}</b>\n"
+                f"🚲 ယာဉ်: <b>{vehicle}</b>\n"
+                f"📝 မှတ်ချက်: {remark if remark else '-'}\n"
+                f"📊 Status: <b>⏳ Pending</b>\n\n"
+                f"Pick up လေးတင်ပေးထားပါတယ်နော်"
+            )
+
+            bot.edit_message_text(status_text, chat_id, call.message.message_id, parse_mode="HTML")
+            
+            # Update status and save shop_msg_id
+            db_manager.confirm_pickup_order(queue_id, shop_msg_id=call.message.message_id)
+
+            from modules import auto_pickup
+            db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, call.message.message_id)
+            auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "⏳ Pending")
                 
         except Exception as e:
             log.error(f"❌ Pickup Confirm Callback Error: {e}")
@@ -303,6 +357,9 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_edit_'))
     def handle_pickup_edit_callback(call):
         """ Rider မှ ပြန်ပြင်ချသည့်အခါ (ဘယ်အချက်အလက်ကို ပြင်မလဲ ရွေးခိုင်းမည်) """
+        if db_manager.check_if_staff(call.from_user.id):
+            bot.answer_callback_query(call.id, "⚠️ Staff Account မှဖြေပေးလို့မရပါ", show_alert=True)
+            return
         try:
             queue_id = int(call.data.split('_')[2])
             pickup = db_manager.get_pickup_order(queue_id)
@@ -340,6 +397,9 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_ed_date_'))
     def handle_edit_date_callback(call):
         """ ရက်စွဲပြင်ရန် ရွေးချယ်မှုပြခြင်း """
+        if db_manager.check_if_staff(call.from_user.id):
+            bot.answer_callback_query(call.id, "⚠️ Staff Account မှဖြေပေးလို့မရပါ", show_alert=True)
+            return
         try:
             queue_id = int(call.data.split('_')[3])
             markup = telebot.types.InlineKeyboardMarkup()
@@ -358,6 +418,9 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_ed_v_'))
     def handle_edit_vehicle_callback(call):
         """ ယာဉ်အမျိုးအစားပြင်ရန် ရွေးချယ်မှုပြခြင်း """
+        if db_manager.check_if_staff(call.from_user.id):
+            bot.answer_callback_query(call.id, "⚠️ Staff Account မှဖြေပေးလို့မရပါ", show_alert=True)
+            return
         try:
             queue_id = int(call.data.split('_')[3])
             markup = telebot.types.InlineKeyboardMarkup()
@@ -376,6 +439,9 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_ed_rem_'))
     def handle_edit_remark_callback(call):
         """ မှတ်ချက်ပြင်ရန် ForceReply ပြခြင်း """
+        if db_manager.check_if_staff(call.from_user.id):
+            bot.answer_callback_query(call.id, "⚠️ Staff Account မှဖြေပေးလို့မရပါ", show_alert=True)
+            return
         try:
             from modules import auto_pickup
             queue_id = int(call.data.split('_')[3])
@@ -396,6 +462,9 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_upd_'))
     def handle_update_field_callback(call):
         """ Field များကို Update လုပ်ပြီး Confirmation ပြန်ပြခြင်း """
+        if db_manager.check_if_staff(call.from_user.id):
+            bot.answer_callback_query(call.id, "⚠️ Staff Account မှဖြေပေးလို့မရပါ", show_alert=True)
+            return
         try:
             parts = call.data.split('_')
             field_type = parts[2] # date or v
@@ -421,6 +490,9 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_ed_back_'))
     def handle_back_to_conf_callback(call):
         """ ပြင်ဆင်မှုမလုပ်ဘဲ မူလ Confirmation သို့ ပြန်သွားခြင်း """
+        if db_manager.check_if_staff(call.from_user.id):
+            bot.answer_callback_query(call.id, "⚠️ Staff Account မှဖြေပေးလို့မရပါ", show_alert=True)
+            return
         try:
             # format: ap_ed_back_{queue_id}
             parts = call.data.split('_')
@@ -437,6 +509,9 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_admin_'))
     def handle_pickup_admin_callback(call):
         """ Rider မှ Admin နှင့်ပြောရန် ရွေးချယ်သည့်အခါ """
+        if db_manager.check_if_staff(call.from_user.id):
+            bot.answer_callback_query(call.id, "⚠️ Staff Account မှဖြေပေးလို့မရပါ", show_alert=True)
+            return
         try:
             from modules import auto_pickup
             parts = call.data.split('_')
