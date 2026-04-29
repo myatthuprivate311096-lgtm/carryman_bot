@@ -233,6 +233,14 @@ def handle(bot, message):
     _bot = bot
     try:
         chat_id = message.chat.id
+        user_id = message.from_user.id
+        
+        # 🛡️ Staff Safety Net (Rule #1): ဝန်ထမ်းများအတွက် Auto Pickup အလုပ်မလုပ်စေရ
+        user_level = db_manager.get_user_level(user_id, chat_id)
+        if user_level >= 3:
+            log.info(f"🛡️ Staff Safety Net: Skipping Auto Pickup for staff {user_id}")
+            return
+
         if chat_id > 0:
             log.info(f"⏭️ Skipping Auto Pickup: Private Chat detected ({chat_id})")
             return
@@ -273,17 +281,18 @@ def handle(bot, message):
         TEST_GROUP_ID = -1003539520778
 
         extract_prompt = f"""
-        Analyze the following message from a staff member.
+        Analyze the following message.
         Message: "{text}"
 
         Decide the action:
-        1. 'PICKUP': If the user is EXPLICITLY requesting a new pickup (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ", "မနက်ဖြန်အတွက် တင်ပေးပါ").
-           DO NOT trigger for casual mentions of pickup or questions about pickup status.
+        1. 'PICKUP': If the user is EXPLICITLY requesting a new pickup order (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ", "မနက်ဖြန်အတွက် တင်ပေးပါ").
+           CRITICAL: If the message is just sharing a list (e.g., "စာရင်းလေးပါ", "pickup စာရင်း"), discussing a past order, or mentioning "pickup" without requesting a new one, set action to 'OTHER'.
         2. 'LOOKUP_LOCATION': If the user is asking for the township of a specific location name (e.g., "Hledan က ဘယ်မြို့နယ်လဲ", "Junction City က ဘယ်မြို့နယ်ထဲမှာလဲ").
-        3. 'OTHER': If it's casual conversation, greetings, or unrelated to a new pickup request.
+        3. 'OTHER': If it's casual conversation, greetings, sharing a list, or unrelated to a new pickup request.
 
         Output ONLY a JSON object with:
         - action: "PICKUP", "LOOKUP_LOCATION", or "OTHER"
+        - is_pickup_request: boolean (True ONLY if this is a request to place a NEW pickup order. If it's just sharing a list or info, set to false)
         - location_query: If action is 'LOOKUP_LOCATION', extract the location name they are asking about (e.g., "Hledan", "Junction City"). Otherwise null.
         - is_new_request: boolean (True ONLY if action is 'PICKUP' and it's a clear request to start a new order)
         - vehicle: "Bicycle" or "Car" (Default to null if not mentioned)
@@ -323,7 +332,7 @@ def handle(bot, message):
                 bot.reply_to(message, reply_text, reply_markup=markup)
                 return
 
-        if action != 'PICKUP' or not extracted_data.get("is_new_request", True):
+        if action != 'PICKUP' or not extracted_data.get("is_new_request", True) or not extracted_data.get("is_pickup_request", True):
             log.info(f"ℹ️ Message {message.message_id} is not a pickup request (Action: {action}). Skipping auto_pickup.")
             return
 

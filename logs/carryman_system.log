@@ -36605,3 +36605,976 @@ Wai Wai Khat ပါရှင်...
 2026-04-29 05:00:46 AM | INFO | message_handler | ✅ Message 3620 marked as RESOLVED via Reply by Myat Noe Paing
 2026-04-29 05:01:05 AM | INFO | main_router | � Routing message from -1003897065464: ဒီလိုပဲ ရေးထားပါတယ်အကို...
 2026-04-29 05:01:05 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 05:01:19 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-29 05:01:19 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 05:01:19 AM | INFO | health_monitor | 🚀 Proactive Health Monitor started (5 min interval)
+2026-04-29 05:01:20 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-29 05:01:20 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-29 05:01:20 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-29 05:01:20 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-29 05:01:20 AM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-04-29 05:01:20 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-29 05:01:20 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-29 05:01:20 AM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-04-29 05:01:39 AM | INFO | main_router | � Routing message from -1003646045828: မမရှင့် ဒီပါဆယ်လေး အကြောင်းလေးပြန်ပေးပါအုန်းရှင့် ...
+2026-04-29 05:01:40 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 05:01:40 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 05:01:40 AM | INFO | db_manager | ✅ Group Resolved: [561] in -1003646045828 by Moe Pyae (Reply)
+2026-04-29 05:01:40 AM | INFO | auditor | ℹ️ No active alert tracking found for 561 in -1003646045828.
+2026-04-29 05:01:40 AM | INFO | auditor | ℹ️ Message 561 was not an active alert. Skipping record.
+2026-04-29 05:01:40 AM | INFO | message_handler | ✅ Message 561 marked as RESOLVED via Reply by Moe Pyae
+2026-04-29 05:01:51 AM | INFO | auditor | ℹ️ No active alert tracking found for 1128 in -1003721882616.
+2026-04-29 05:01:51 AM | INFO | auditor | ℹ️ Message 1128 was not an active alert. Skipping record.
+2026-04-29 05:01:51 AM | INFO | db_manager | ✅ Group Resolved: [1128] in -1003721882616 by Htet Htet (Reaction (❤))
+2026-04-29 05:01:51 AM | INFO | alert_handler | ✅ Message 1128 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 05:02:16 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 933
+2026-04-29 05:02:16 AM | INFO | auditor | 🗑️ Deleted Level 2 escalation 1803
+2026-04-29 05:02:16 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-29 05:02:17 AM | INFO | db_manager | ✅ Group Resolved: [427] in -1003819601608 by Myat Thu (Done Button)
+2026-04-29 05:02:18 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 930
+2026-04-29 05:02:18 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-29 05:02:19 AM | INFO | db_manager | ✅ Group Resolved: [109] in -1003650157592 by Myat Thu (Done Button)
+2026-04-29 05:02:21 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 929
+2026-04-29 05:02:21 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-29 05:02:21 AM | INFO | db_manager | ✅ Group Resolved: [152] in -1003727765180 by Myat Thu (Done Button)
+2026-04-29 05:02:22 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 928
+2026-04-29 05:02:22 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-29 05:02:23 AM | INFO | db_manager | ✅ Group Resolved: [318] in -1003702835668 by Myat Thu (Done Button)
+2026-04-29 05:02:24 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 925
+2026-04-29 05:02:24 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-29 05:02:24 AM | INFO | db_manager | ✅ Group Resolved: [398] in -1003529688950 by Myat Thu (Done Button)
+2026-04-29 05:02:26 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 924
+2026-04-29 05:02:27 AM | INFO | auditor | 🗑️ Deleted Level 2 escalation 1796
+2026-04-29 05:02:27 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-29 05:02:27 AM | INFO | db_manager | ✅ Group Resolved: [411] in -1003812868558 by Myat Thu (Done Button)
+2026-04-29 05:02:45 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 931
+2026-04-29 05:02:45 AM | INFO | auditor | 🗑️ Deleted Level 2 escalation 1806
+2026-04-29 05:02:45 AM | INFO | auditor | 🗑️ Deleted 1 linked messages
+2026-04-29 05:02:45 AM | INFO | db_manager | ✅ Group Resolved: [292] in -1003539520778 by Myat Thu (Done Button)
+2026-04-29 05:02:50 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 922
+2026-04-29 05:02:50 AM | INFO | auditor | 🗑️ Deleted Level 2 escalation 1786
+2026-04-29 05:02:50 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-04-29 05:02:50 AM | INFO | db_manager | ✅ Group Resolved: [290] in -1003539520778 by Myat Thu (Done Button)
+2026-04-29 05:03:22 AM | INFO | main_router | � Routing message from -1003798739565: သတ်မှတ်ရက်လေးကလဲကျော်နေလို့ rt ပြန်ချလိုက်ပါတယ်ရှင...
+2026-04-29 05:03:23 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:03:23 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:03:23 AM | INFO | db_manager | ✅ Group Resolved: [2101] in -1003798739565 by Moe Pyae (Reply)
+2026-04-29 05:03:23 AM | INFO | auditor | ℹ️ No active alert tracking found for 2101 in -1003798739565.
+2026-04-29 05:03:23 AM | INFO | auditor | ℹ️ Message 2101 was not an active alert. Skipping record.
+2026-04-29 05:03:23 AM | INFO | message_handler | ✅ Message 2101 marked as RESOLVED via Reply by Moe Pyae
+2026-04-29 05:06:19 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 05:08:46 AM | INFO | main_router | � Routing message from -1003709069700: မဟာစီရပ်ကွက်ဗိုလ်မင်းယောင်လမ်း
+မိတ္ထီလာ 
+ကိုပို့ပေ...
+2026-04-29 05:08:47 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 05:08:47 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 05:08:47 AM | INFO | db_manager | ✓ Message 291 in -1003709069700 saved as PENDING
+2026-04-29 05:08:47 AM | INFO | message_handler | 📩 New Pending Message from 1831579231 in -1003709069700 (Topic: 4)
+2026-04-29 05:08:51 AM | INFO | main_router | � Routing message from -1003819601608: ဟုတ်ကဲ့...
+2026-04-29 05:08:52 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 05:08:53 AM | INFO | db_manager | ✓ Message 435 in -1003819601608 saved as PENDING
+2026-04-29 05:08:53 AM | INFO | message_handler | 📩 New Pending Message from 5800003331 in -1003819601608 (Topic: 6)
+2026-04-29 05:11:20 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 05:11:39 AM | INFO | main_router | � Routing message from -1003796096237: ဒါလေးပို့ပြီးပြီလားနော်။...
+2026-04-29 05:11:40 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 05:11:40 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 05:11:40 AM | INFO | db_manager | ✓ Message 328 in -1003796096237 saved as PENDING
+2026-04-29 05:11:40 AM | INFO | message_handler | 📩 New Pending Message from 5482295505 in -1003796096237 (Topic: 4)
+2026-04-29 05:11:55 AM | INFO | main_router | � Routing message from -1003796096237: သူရောဆက်သွယ်လို့ရလားရှင့်။...
+2026-04-29 05:11:56 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:11:56 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:11:56 AM | INFO | db_manager | ✓ Message 329 in -1003796096237 saved as PENDING
+2026-04-29 05:11:56 AM | INFO | message_handler | 📩 New Pending Message from 5482295505 in -1003796096237 (Topic: 4)
+2026-04-29 05:12:06 AM | INFO | main_router | � Routing message from -1003646045828: ဒီပါဆယ်ရဲ့ cus ဖုန်းလေးက စက်ပိတ်ထားလို့ပါတဲ့ရှင့် ...
+2026-04-29 05:12:07 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:12:07 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:12:22 AM | INFO | auditor | ℹ️ No active alert tracking found for 328 in -1003796096237.
+2026-04-29 05:12:22 AM | INFO | auditor | ℹ️ Message 328 was not an active alert. Skipping record.
+2026-04-29 05:12:22 AM | INFO | db_manager | ✅ Group Resolved: [328] in -1003796096237 by Ei Pan Hmue (Reaction (❤))
+2026-04-29 05:12:22 AM | INFO | alert_handler | ✅ Message 328 marked as RESOLVED via Reaction (❤) by Ei Pan Hmue
+2026-04-29 05:12:24 AM | INFO | auditor | ℹ️ No active alert tracking found for 329 in -1003796096237.
+2026-04-29 05:12:24 AM | INFO | auditor | ℹ️ Message 329 was not an active alert. Skipping record.
+2026-04-29 05:12:24 AM | INFO | db_manager | ✅ Group Resolved: [329] in -1003796096237 by Ei Pan Hmue (Reaction (❤))
+2026-04-29 05:12:24 AM | INFO | alert_handler | ✅ Message 329 marked as RESOLVED via Reaction (❤) by Ei Pan Hmue
+2026-04-29 05:12:47 AM | INFO | main_router | � Routing message from -1003702835668: ကျွန်တော်လဲဆက်မရလို့...
+2026-04-29 05:12:47 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:12:47 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:12:48 AM | INFO | db_manager | ✓ Message 327 in -1003702835668 saved as PENDING
+2026-04-29 05:12:48 AM | INFO | message_handler | 📩 New Pending Message from 5669529378 in -1003702835668 (Topic: 1)
+2026-04-29 05:13:57 AM | INFO | main_router | � Routing message from -1003796096237: 26ရက်နေ့လေကပို့ဆောင်ပီးပါပီရှင့်မမ...
+2026-04-29 05:13:59 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 05:13:59 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 05:13:59 AM | INFO | db_manager | ✅ Group Resolved: [328] in -1003796096237 by Ei Pan Hmue (Reply)
+2026-04-29 05:13:59 AM | INFO | auditor | ℹ️ No active alert tracking found for 328 in -1003796096237.
+2026-04-29 05:13:59 AM | INFO | auditor | ℹ️ Message 328 was not an active alert. Skipping record.
+2026-04-29 05:13:59 AM | INFO | message_handler | ✅ Message 328 marked as RESOLVED via Reply by Ei Pan Hmue
+2026-04-29 05:14:01 AM | INFO | main_router | � Routing message from -1003726664983: ငွေလွှဲလေးပါရှင့်။...
+2026-04-29 05:14:01 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 05:14:01 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 05:14:03 AM | INFO | auditor | ℹ️ No active alert tracking found for 291 in -1003709069700.
+2026-04-29 05:14:03 AM | INFO | auditor | ℹ️ Message 291 was not an active alert. Skipping record.
+2026-04-29 05:14:03 AM | INFO | db_manager | ✅ Group Resolved: [291] in -1003709069700 by Thet Wai Oo (Reaction (❤))
+2026-04-29 05:14:03 AM | INFO | alert_handler | ✅ Message 291 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 05:14:06 AM | INFO | main_router | � Routing message from -1003702835668: ဟုတ်ကဲ့အကို...
+2026-04-29 05:14:07 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 05:14:20 AM | INFO | auditor | ℹ️ No active alert tracking found for 291 in -1003709069700.
+2026-04-29 05:14:20 AM | INFO | auditor | ℹ️ Message 291 was not an active alert. Skipping record.
+2026-04-29 05:14:20 AM | INFO | db_manager | ✅ Group Resolved: [291] in -1003709069700 by Thet Wai Oo (Reaction (❤))
+2026-04-29 05:14:20 AM | INFO | alert_handler | ✅ Message 291 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 05:14:38 AM | INFO | auditor | ℹ️ No active alert tracking found for 433 in -1003819601608.
+2026-04-29 05:14:38 AM | INFO | auditor | ℹ️ Message 433 was not an active alert. Skipping record.
+2026-04-29 05:14:38 AM | INFO | db_manager | ✅ Group Resolved: [433] in -1003819601608 by Thet Wai Oo (Reaction (❤))
+2026-04-29 05:14:38 AM | INFO | alert_handler | ✅ Message 433 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 05:14:48 AM | INFO | main_router | � Routing message from -1003819601608: ဟုတ်ကဲ့ပါခင်ဗျ။...
+2026-04-29 05:14:50 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 05:16:20 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 05:17:59 AM | INFO | main_router | � Routing message from -1003796096237: ပြန်ဆက်သွယ်ကြည့်လိုက်ပါ့မယ်ရှငိ့မမ...
+2026-04-29 05:18:00 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 05:18:00 AM | INFO | db_manager | ✅ Group Resolved: [329] in -1003796096237 by CS 2 (Reply)
+2026-04-29 05:18:00 AM | INFO | auditor | ℹ️ No active alert tracking found for 329 in -1003796096237.
+2026-04-29 05:18:00 AM | INFO | auditor | ℹ️ Message 329 was not an active alert. Skipping record.
+2026-04-29 05:18:00 AM | INFO | message_handler | ✅ Message 329 marked as RESOLVED via Reply by CS 2
+2026-04-29 05:18:10 AM | INFO | main_router | � Routing message from -1003709069700: ဟုတ်ကဲ့မမ ညီမလေးတိုကလသာမြိုနယ်လေးကို ကြိုလေးရှင်းထ...
+2026-04-29 05:18:11 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:18:11 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:18:19 AM | INFO | main_router | � Routing message from -1003837671590: 260428488 ရွှေကျင်မြို့ပြောင်းပေးရန်...
+2026-04-29 05:18:20 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:18:20 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:18:43 AM | INFO | main_router | � Routing message from -1003852412184: 28/4/26 pick upစာရင်းလေးပါရှင့်။...
+2026-04-29 05:18:44 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 05:18:44 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 05:20:19 AM | INFO | main_router | � Routing message from -1003646045828: အဝင်ရှိလားရှင့်...
+2026-04-29 05:20:20 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 05:20:20 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 05:20:20 AM | INFO | db_manager | ✓ Message 592 in -1003646045828 saved as PENDING
+2026-04-29 05:20:20 AM | INFO | message_handler | 📩 New Pending Message from 6021571681 in -1003646045828 (Topic: 5)
+2026-04-29 05:20:27 AM | INFO | auditor | ℹ️ No active alert tracking found for 291 in -1003709069700.
+2026-04-29 05:20:27 AM | INFO | auditor | ℹ️ Message 291 was not an active alert. Skipping record.
+2026-04-29 05:20:27 AM | INFO | auditor | ℹ️ No active alert tracking found for 592 in -1003646045828.
+2026-04-29 05:20:27 AM | INFO | auditor | ℹ️ Message 592 was not an active alert. Skipping record.
+2026-04-29 05:20:27 AM | INFO | db_manager | ✅ Group Resolved: [291] in -1003709069700 by Ei Pan Hmue (Reaction (❤))
+2026-04-29 05:20:27 AM | INFO | alert_handler | ✅ Message 291 marked as RESOLVED via Reaction (❤) by Ei Pan Hmue
+2026-04-29 05:20:27 AM | INFO | db_manager | ✅ Group Resolved: [592] in -1003646045828 by Ei Pan Hmue (Reaction (❤))
+2026-04-29 05:20:27 AM | INFO | alert_handler | ✅ Message 592 marked as RESOLVED via Reaction (❤) by Ei Pan Hmue
+2026-04-29 05:21:17 AM | INFO | main_router | � Routing message from -1003798739565: 09661309122...
+2026-04-29 05:21:18 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 05:21:18 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 05:21:21 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 05:22:51 AM | INFO | main_router | � Routing message from -1003646045828: ပါဆယ်အဝင်လေးးမတွေ့လို့ပါဆယ်အပ်တဲ့ရက်လေးသိလို့ရမလား...
+2026-04-29 05:22:52 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 05:22:52 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 05:23:18 AM | INFO | main_router | � Routing message from -1003727765180: OS Name - Khine Trendy Shop
+Date - 6/Apr/2026
+
+စုစ...
+2026-04-29 05:23:18 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 05:23:18 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 05:23:19 AM | INFO | db_manager | ✓ Message 160 in -1003727765180 saved as PENDING
+2026-04-29 05:23:19 AM | INFO | message_handler | 📩 New Pending Message from 6869170635 in -1003727765180 (Topic: 1)
+2026-04-29 05:23:55 AM | INFO | main_router | � Routing message from -1003727765180: ဟုတ်ကဲ့ မနေ့က စာရင်းလေးပို့ပေးတာလားခင်ဗျ။...
+2026-04-29 05:23:56 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:23:56 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:24:13 AM | INFO | main_router | � Routing message from -1003852412184: ငွေလွှဲလေးပါရှင့်။...
+2026-04-29 05:24:14 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:24:14 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:24:14 AM | INFO | db_manager | ✅ Group Resolved: [418] in -1003852412184 by Thida Hlaing (Reply)
+2026-04-29 05:24:14 AM | INFO | auditor | ℹ️ No active alert tracking found for 418 in -1003852412184.
+2026-04-29 05:24:14 AM | INFO | auditor | ℹ️ Message 418 was not an active alert. Skipping record.
+2026-04-29 05:24:14 AM | INFO | message_handler | ✅ Message 418 marked as RESOLVED via Reply by Thida Hlaing
+2026-04-29 05:24:55 AM | INFO | main_router | � Routing message from -1003881120872: Pick up လာကောက်ပေးပါအုံးရှင်...
+2026-04-29 05:24:56 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 05:24:56 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 05:24:56 AM | INFO | db_manager | ✓ Message 221 in -1003881120872 saved as PENDING
+2026-04-29 05:24:56 AM | INFO | message_handler | 📩 New Pending Message from 8313250010 in -1003881120872 (Topic: 1)
+2026-04-29 05:25:08 AM | INFO | main_router | � Routing message from -1003897065464: မြစ်ကြီးနား က ၂ ပတ် အထက် ကြာပါတယ်...
+2026-04-29 05:25:09 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:25:09 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:25:10 AM | INFO | auditor | ℹ️ No active alert tracking found for 221 in -1003881120872.
+2026-04-29 05:25:10 AM | INFO | auditor | ℹ️ Message 221 was not an active alert. Skipping record.
+2026-04-29 05:25:10 AM | INFO | db_manager | ✅ Group Resolved: [221] in -1003881120872 by Thet Wai Oo (Reaction (❤))
+2026-04-29 05:25:10 AM | INFO | alert_handler | ✅ Message 221 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 05:25:17 AM | INFO | main_router | � Routing message from -1003723204023: 28/4/26pickup စာရင်းလေးပါရှင့်။...
+2026-04-29 05:25:18 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 05:25:18 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 05:25:27 AM | INFO | main_router | � Routing message from -1003881120872: ဟုတ်ကဲ့ rider လေးလွှတ်လိုက်ပါမယ်ခင်ဗျ။...
+2026-04-29 05:25:27 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:25:27 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:25:27 AM | INFO | db_manager | ✅ Group Resolved: [221] in -1003881120872 by Thet Wai Oo (Reply)
+2026-04-29 05:25:27 AM | INFO | auditor | ℹ️ No active alert tracking found for 221 in -1003881120872.
+2026-04-29 05:25:27 AM | INFO | auditor | ℹ️ Message 221 was not an active alert. Skipping record.
+2026-04-29 05:25:27 AM | INFO | message_handler | ✅ Message 221 marked as RESOLVED via Reply by Thet Wai Oo
+2026-04-29 05:26:07 AM | INFO | main_router | � Routing message from -1003750066427: ဒီပါဆယ်လေးက ဖုန်းလေးစက်ပိတ်ထားလို့ပါတဲ့ရှင့် ဆက်သွ...
+2026-04-29 05:26:07 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:26:07 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:26:21 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 05:27:11 AM | INFO | db_manager | ✓ Message 58 in -1003569233047 saved as PENDING
+2026-04-29 05:27:11 AM | INFO | message_handler | 📩 New Pending Message from 1658332977 in -1003569233047 (Topic: 1)
+2026-04-29 05:27:33 AM | INFO | main_router | � Routing message from -1003750066427: cus လေးမမှာထားဘူးပြောပါတယ်ရှင့် မမ...
+2026-04-29 05:27:34 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:27:34 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:28:08 AM | INFO | main_router | � Routing message from -1003723204023: ငွေလွှဲလေးပါရှင့်။...
+2026-04-29 05:28:09 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 05:28:09 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 05:28:09 AM | INFO | db_manager | ✅ Group Resolved: [334] in -1003723204023 by Thida Hlaing (Reply)
+2026-04-29 05:28:09 AM | INFO | auditor | ℹ️ No active alert tracking found for 334 in -1003723204023.
+2026-04-29 05:28:09 AM | INFO | auditor | ℹ️ Message 334 was not an active alert. Skipping record.
+2026-04-29 05:28:09 AM | INFO | message_handler | ✅ Message 334 marked as RESOLVED via Reply by Thida Hlaing
+2026-04-29 05:29:08 AM | INFO | main_router | � Routing message from -1003798739565: cus 30ရက်နေ့ရက်ချိန်း‌ေလးပါရှငိ့မမ 09661309122...
+2026-04-29 05:29:09 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:29:09 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:29:22 AM | INFO | main_router | � Routing message from -1003798739565: 09887560564...
+2026-04-29 05:29:22 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 05:29:22 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 05:29:22 AM | INFO | db_manager | ✓ Message 3700 in -1003798739565 saved as PENDING
+2026-04-29 05:29:22 AM | INFO | message_handler | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 1)
+2026-04-29 05:31:22 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 05:32:04 AM | INFO | main_router | � Routing message from -1003569233047: ဟုတ်ကဲ့ ကျွန်တော်တို့ရုံးမှာသိမ်းပေးထားးပါမယ်ခင်ဗျ...
+2026-04-29 05:32:05 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 05:32:14 AM | INFO | main_router | � Routing message from -1003646045828: ဒီပါဆယ်လေး အကြောင်းလေးပြန်ပေးပါအုန်းရှင့် မမ...
+2026-04-29 05:32:15 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 05:32:15 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 05:32:15 AM | INFO | db_manager | ✅ Group Resolved: [497] in -1003646045828 by Moe Pyae (Reply)
+2026-04-29 05:32:15 AM | INFO | auditor | ℹ️ No active alert tracking found for 497 in -1003646045828.
+2026-04-29 05:32:15 AM | INFO | auditor | ℹ️ Message 497 was not an active alert. Skipping record.
+2026-04-29 05:32:15 AM | INFO | message_handler | ✅ Message 497 marked as RESOLVED via Reply by Moe Pyae
+2026-04-29 05:35:31 AM | INFO | main_router | � Routing message from -1003121725085: ၁၈လမ်းနဲ့ရွှေဘုံသာအထက်အနော်ရထားထိပ်အိမ်နားမှာနယူးဒ...
+2026-04-29 05:35:32 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 05:35:32 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 05:35:32 AM | INFO | db_manager | ✓ Message 133 in -1003121725085 saved as PENDING
+2026-04-29 05:35:32 AM | INFO | message_handler | 📩 New Pending Message from 2025599336 in -1003121725085 (Topic: 1)
+2026-04-29 05:36:22 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 05:36:38 AM | INFO | main_router | � Routing message from -1003727765180: ဘာစာရင်းလဲ...
+2026-04-29 05:36:38 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:36:38 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:36:38 AM | INFO | db_manager | ✓ Message 162 in -1003727765180 saved as PENDING
+2026-04-29 05:36:38 AM | INFO | message_handler | 📩 New Pending Message from 6869170635 in -1003727765180 (Topic: 1)
+2026-04-29 05:36:46 AM | INFO | main_router | � Routing message from -1003837671590: 260428008 အေးသာဃာမြို့ပြောင်းပေးရန်...
+2026-04-29 05:36:47 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:36:47 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:37:39 AM | INFO | main_router | � Routing message from -1003709069700: အမည်ဘယ်သူလဲ...
+2026-04-29 05:37:41 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 05:37:41 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 05:37:41 AM | INFO | db_manager | ✓ Message 293 in -1003709069700 saved as PENDING
+2026-04-29 05:37:41 AM | INFO | message_handler | 📩 New Pending Message from 7224757067 in -1003709069700 (Topic: 1)
+2026-04-29 05:40:44 AM | INFO | main_router | � Routing message from -1003672811205: ဗိုလ်အောင်ကျော်လမ်း၊ရွာကောက်မြို့သစ်ရပ်ကွက်၊ပျဉ်းမ...
+2026-04-29 05:40:45 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 05:40:45 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 05:40:45 AM | INFO | db_manager | ✓ Message 195 in -1003672811205 saved as PENDING
+2026-04-29 05:40:45 AM | INFO | message_handler | 📩 New Pending Message from 7877359327 in -1003672811205 (Topic: 1)
+2026-04-29 05:41:22 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 05:41:26 AM | INFO | db_manager | ✓ Message 93 in -1003849260656 saved as PENDING
+2026-04-29 05:41:26 AM | INFO | message_handler | 📩 New Pending Message from 8263230205 in -1003849260656 (Topic: 1)
+2026-04-29 05:41:42 AM | INFO | main_router | � Routing message from -1003849260656: ပါဆယ်တထုပ်ပါရှင့်...
+2026-04-29 05:41:43 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 05:41:43 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 05:41:43 AM | INFO | db_manager | ✓ Message 94 in -1003849260656 saved as PENDING
+2026-04-29 05:41:43 AM | INFO | message_handler | 📩 New Pending Message from 8263230205 in -1003849260656 (Topic: 1)
+2026-04-29 05:42:01 AM | INFO | main_router | � Routing message from -1003849260656: ကျိူက်ထို deliခ ကိုငွေကောက်ထဲကယူပေးပါနော်...
+2026-04-29 05:42:02 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:42:02 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:42:02 AM | INFO | db_manager | ✓ Message 95 in -1003849260656 saved as PENDING
+2026-04-29 05:42:02 AM | INFO | message_handler | 📩 New Pending Message from 8263230205 in -1003849260656 (Topic: 1)
+2026-04-29 05:43:50 AM | INFO | db_manager | ✓ Message 329 in -1003702835668 saved as PENDING
+2026-04-29 05:43:50 AM | INFO | message_handler | 📩 New Pending Message from 5669529378 in -1003702835668 (Topic: 1)
+2026-04-29 05:46:23 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 05:46:27 AM | INFO | db_manager | ✓ Message 294 in -1003709069700 saved as PENDING
+2026-04-29 05:46:27 AM | INFO | message_handler | 📩 New Pending Message from 7224757067 in -1003709069700 (Topic: 1)
+2026-04-29 05:50:15 AM | INFO | main_router | � Routing message from -1003709069700: 29/4/26 pick up စာရင်းလေးပါရှင့်။...
+2026-04-29 05:50:16 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 05:50:16 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 05:51:03 AM | INFO | main_router | � Routing message from -1003881120872: အာ့လေးပို့ပေးပါအုံးဗျ
+လက်ခံသူက ဂိတ်ဘောင်ချာတောင်းန...
+2026-04-29 05:51:04 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 05:51:04 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 05:51:04 AM | INFO | db_manager | ✓ Message 223 in -1003881120872 saved as PENDING
+2026-04-29 05:51:04 AM | INFO | message_handler | 📩 New Pending Message from 5453401661 in -1003881120872 (Topic: 1)
+2026-04-29 05:51:23 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 05:51:49 AM | INFO | main_router | � Routing message from -1003808909519: Hello...
+2026-04-29 05:51:50 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 05:52:02 AM | INFO | main_router | � Routing message from -1003808909519: Pick up ခေါ်ချင်လို့ပါ...
+2026-04-29 05:52:02 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 05:52:02 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 05:56:24 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 05:57:52 AM | INFO | main_router | � Routing message from -1003506710131: ဖုန်းနံပါတ်ကမမှားဘူးတဲ့ရှင့်
+deliကိုဆက်သွယ်လို့ရမဲ...
+2026-04-29 05:57:53 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:57:53 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:57:53 AM | INFO | db_manager | ✓ Message 629 in -1003506710131 saved as PENDING
+2026-04-29 05:57:53 AM | INFO | message_handler | 📩 New Pending Message from 5337692120 in -1003506710131 (Topic: 4)
+2026-04-29 05:58:30 AM | INFO | auditor | ℹ️ No active alert tracking found for 329 in -1003702835668.
+2026-04-29 05:58:30 AM | INFO | auditor | ℹ️ Message 329 was not an active alert. Skipping record.
+2026-04-29 05:58:30 AM | INFO | db_manager | ✅ Group Resolved: [329] in -1003702835668 by Myat Noe Paing (Reaction (❤))
+2026-04-29 05:58:30 AM | INFO | alert_handler | ✅ Message 329 marked as RESOLVED via Reaction (❤) by Myat Noe Paing
+2026-04-29 05:58:47 AM | INFO | main_router | � Routing message from -1003702835668: ဖုန်းအဆက်သွယ်လေးရပါတယ်ရှင့်...
+2026-04-29 05:58:47 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 05:58:47 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 05:59:40 AM | INFO | main_router | � Routing message from -1003506710131: ဟုတ်ကဲ့ရှင့်...
+2026-04-29 05:59:40 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 05:59:40 AM | INFO | db_manager | ✅ Group Resolved: [629] in -1003506710131 by Myat Noe Paing (Reply)
+2026-04-29 05:59:40 AM | INFO | auditor | ℹ️ No active alert tracking found for 629 in -1003506710131.
+2026-04-29 05:59:40 AM | INFO | auditor | ℹ️ Message 629 was not an active alert. Skipping record.
+2026-04-29 05:59:40 AM | INFO | message_handler | ✅ Message 629 marked as RESOLVED via Reply by Myat Noe Paing
+2026-04-29 05:59:46 AM | INFO | main_router | � Routing message from -1003808909519: @cmmarketing1...
+2026-04-29 05:59:47 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:01:14 AM | INFO | main_router | � Routing message from -1003764407042: ဒီပါဆယ် ဒီနေ့အရောက်ပို့ပေးပါဗျ...
+2026-04-29 06:01:15 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 06:01:15 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 06:01:15 AM | INFO | db_manager | ✓ Message 261 in -1003764407042 saved as PENDING
+2026-04-29 06:01:15 AM | INFO | message_handler | 📩 New Pending Message from 1696726926 in -1003764407042 (Topic: 6)
+2026-04-29 06:01:24 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 06:03:27 AM | INFO | main_router | � Routing message from -1003513582211: OS Name - PiggyKitKit
+Date -29/April/2026
+
+စုစုပေါ...
+2026-04-29 06:03:28 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 06:03:28 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 06:03:28 AM | INFO | db_manager | ✓ Message 272 in -1003513582211 saved as PENDING
+2026-04-29 06:03:28 AM | INFO | message_handler | 📩 New Pending Message from 2002162722 in -1003513582211 (Topic: 1)
+2026-04-29 06:04:53 AM | INFO | main_router | � Routing message from -1003506710131: 09765661009 
+တောင်ကြီး royalဖုန်းနံပါတ်လေးပါရှင့်...
+2026-04-29 06:04:54 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 06:04:54 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 06:04:54 AM | INFO | db_manager | ✅ Group Resolved: [629] in -1003506710131 by Myat Noe Paing (Reply)
+2026-04-29 06:04:54 AM | INFO | auditor | ℹ️ No active alert tracking found for 629 in -1003506710131.
+2026-04-29 06:04:54 AM | INFO | auditor | ℹ️ Message 629 was not an active alert. Skipping record.
+2026-04-29 06:04:54 AM | INFO | message_handler | ✅ Message 629 marked as RESOLVED via Reply by Myat Noe Paing
+2026-04-29 06:06:25 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 06:09:35 AM | INFO | main_router | � Routing message from -1003121725085: ဟုတ်ကဲ့ rider လေးလွှတ်ပေးထားပါတယ်ခင်ဗျ။...
+2026-04-29 06:09:35 AM | INFO | auditor | ℹ️ No active alert tracking found for 133 in -1003121725085.
+2026-04-29 06:09:35 AM | INFO | auditor | ℹ️ Message 133 was not an active alert. Skipping record.
+2026-04-29 06:09:35 AM | INFO | db_manager | ✅ Group Resolved: [133] in -1003121725085 by Thet Wai Oo (Reaction (❤))
+2026-04-29 06:09:35 AM | INFO | alert_handler | ✅ Message 133 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 06:09:36 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 06:09:36 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 06:10:42 AM | INFO | auditor | ℹ️ No active alert tracking found for 160 in -1003727765180.
+2026-04-29 06:10:42 AM | INFO | auditor | ℹ️ Message 160 was not an active alert. Skipping record.
+2026-04-29 06:10:42 AM | INFO | db_manager | ✅ Group Resolved: [160] in -1003727765180 by Thet Wai Oo (Reaction (❤))
+2026-04-29 06:10:42 AM | INFO | alert_handler | ✅ Message 160 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 06:11:12 AM | INFO | main_router | � Routing message from -1003727765180: ဒီစာရင်းလေးကိုပြောတာပါခင်ဗျ။ 6 ရက်နေ့လေးဖြစ်နေလို့...
+2026-04-29 06:11:13 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 06:11:13 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 06:11:13 AM | INFO | db_manager | ✅ Group Resolved: [160] in -1003727765180 by Thet Wai Oo (Reply)
+2026-04-29 06:11:13 AM | INFO | auditor | ℹ️ No active alert tracking found for 160 in -1003727765180.
+2026-04-29 06:11:13 AM | INFO | auditor | ℹ️ Message 160 was not an active alert. Skipping record.
+2026-04-29 06:11:13 AM | INFO | message_handler | ✅ Message 160 marked as RESOLVED via Reply by Thet Wai Oo
+2026-04-29 06:11:24 AM | INFO | auditor | ℹ️ No active alert tracking found for 261 in -1003764407042.
+2026-04-29 06:11:24 AM | INFO | auditor | ℹ️ Message 261 was not an active alert. Skipping record.
+2026-04-29 06:11:24 AM | INFO | db_manager | ✅ Group Resolved: [261] in -1003764407042 by Ei Pan Hmue (Reaction (❤))
+2026-04-29 06:11:24 AM | INFO | alert_handler | ✅ Message 261 marked as RESOLVED via Reaction (❤) by Ei Pan Hmue
+2026-04-29 06:11:25 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 06:13:38 AM | INFO | auditor | ℹ️ No active alert tracking found for 195 in -1003672811205.
+2026-04-29 06:13:38 AM | INFO | auditor | ℹ️ Message 195 was not an active alert. Skipping record.
+2026-04-29 06:13:38 AM | INFO | db_manager | ✅ Group Resolved: [195] in -1003672811205 by Thet Wai Oo (Reaction (❤))
+2026-04-29 06:13:38 AM | INFO | alert_handler | ✅ Message 195 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 06:13:51 AM | INFO | main_router | � Routing message from -1003672811205: ဟုတ်ကဲ့ ဝန်ဆောင်မှုလေးရပါတယ်ခင်ဗျ။...
+2026-04-29 06:13:52 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:15:31 AM | INFO | main_router | � Routing message from -1003849260656: ဟုတ်ကဲ့ပါခင်ဗျ။...
+2026-04-29 06:15:31 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:16:26 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 06:18:07 AM | INFO | main_router | � Routing message from -1003881120872: ဂိတ်ဘောင်ချာလေးပါခင်ဗျ။...
+2026-04-29 06:18:09 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 06:18:09 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 06:21:00 AM | INFO | main_router | � Routing message from -1003766245638: Rpပြန်ကြဦးလေအကျိုးအကြောင်းး...
+2026-04-29 06:21:02 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 06:21:02 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 06:21:02 AM | INFO | db_manager | ✓ Message 309 in -1003766245638 saved as PENDING
+2026-04-29 06:21:02 AM | INFO | message_handler | 📩 New Pending Message from 7544386925 in -1003766245638 (Topic: 1)
+2026-04-29 06:21:09 AM | INFO | main_router | � Routing message from -1003766245638: အလုပ်လုပ်နေကြတာ လေ...
+2026-04-29 06:21:10 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:21:10 AM | INFO | db_manager | ✓ Message 310 in -1003766245638 saved as PENDING
+2026-04-29 06:21:10 AM | INFO | message_handler | 📩 New Pending Message from 7544386925 in -1003766245638 (Topic: 1)
+2026-04-29 06:21:17 AM | INFO | main_router | � Routing message from -1003766245638: လွန်လွန်းအားကြီးတယ်...
+2026-04-29 06:21:18 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 06:21:18 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 06:21:18 AM | INFO | db_manager | ✓ Message 311 in -1003766245638 saved as PENDING
+2026-04-29 06:21:18 AM | INFO | message_handler | 📩 New Pending Message from 7544386925 in -1003766245638 (Topic: 1)
+2026-04-29 06:21:25 AM | INFO | main_router | � Routing message from -1003723204023: ထူးကြီး
+မအူပင်
+ကျောက်ဆည်
+ရေး
+ငွေဆောင်
+၀န်ဆောင်မှုရ...
+2026-04-29 06:21:26 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 06:21:26 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 06:21:26 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 06:21:26 AM | INFO | db_manager | ✓ Message 336 in -1003723204023 saved as PENDING
+2026-04-29 06:21:26 AM | INFO | message_handler | 📩 New Pending Message from 1604241630 in -1003723204023 (Topic: 1)
+2026-04-29 06:21:38 AM | INFO | main_router | � Routing message from -1003766245638: ကိုယ့်အလုပ်ကို အလေးနက်လေးထားကြဦး...
+2026-04-29 06:21:38 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 06:21:38 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 06:21:39 AM | INFO | db_manager | ✓ Message 312 in -1003766245638 saved as PENDING
+2026-04-29 06:21:39 AM | INFO | message_handler | 📩 New Pending Message from 7544386925 in -1003766245638 (Topic: 1)
+2026-04-29 06:21:41 AM | INFO | main_router | � Routing message from -1003808909519: ဟုတ်ကဲ့ rider လေးလွှတ်ပေးထားပါတယ်ခင်ဗျ။...
+2026-04-29 06:21:42 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 06:21:42 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 06:21:59 AM | INFO | main_router | � Routing message from -1003766245638: Returnထုတ်တွေ စာရင်းလုပ်ပေးခိုင်းတာလဲမလုပ်ပေးဖူး...
+2026-04-29 06:22:00 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 06:22:00 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 06:22:00 AM | INFO | db_manager | ✓ Message 313 in -1003766245638 saved as PENDING
+2026-04-29 06:22:00 AM | INFO | message_handler | 📩 New Pending Message from 7544386925 in -1003766245638 (Topic: 1)
+2026-04-29 06:23:16 AM | INFO | main_router | � Routing message from -1003764407042: ဟုတ်ကဲ့ ဒီနေ့လေးပို့ဆောင်ပေးနေပါတယ်ခင်ဗျ။...
+2026-04-29 06:23:17 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:23:17 AM | INFO | db_manager | ✅ Group Resolved: [261] in -1003764407042 by Thet Wai Oo (Reply)
+2026-04-29 06:23:17 AM | INFO | auditor | ℹ️ No active alert tracking found for 261 in -1003764407042.
+2026-04-29 06:23:17 AM | INFO | auditor | ℹ️ Message 261 was not an active alert. Skipping record.
+2026-04-29 06:23:17 AM | INFO | message_handler | ✅ Message 261 marked as RESOLVED via Reply by Thet Wai Oo
+2026-04-29 06:23:22 AM | INFO | auditor | ℹ️ No active alert tracking found for 272 in -1003513582211.
+2026-04-29 06:23:22 AM | INFO | auditor | ℹ️ Message 272 was not an active alert. Skipping record.
+2026-04-29 06:23:22 AM | INFO | db_manager | ✅ Group Resolved: [272] in -1003513582211 by Thet Wai Oo (Reaction (❤))
+2026-04-29 06:23:22 AM | INFO | alert_handler | ✅ Message 272 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 06:23:28 AM | INFO | main_router | � Routing message from -1003513582211: ဟုတ်ကဲ့ပါခင်ဗျ။...
+2026-04-29 06:23:30 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:24:18 AM | INFO | auditor | ℹ️ No active alert tracking found for 309 in -1003766245638.
+2026-04-29 06:24:18 AM | INFO | auditor | ℹ️ Message 309 was not an active alert. Skipping record.
+2026-04-29 06:24:18 AM | INFO | db_manager | ✅ Group Resolved: [309] in -1003766245638 by Thida Hlaing (Reaction (❤))
+2026-04-29 06:24:18 AM | INFO | alert_handler | ✅ Message 309 marked as RESOLVED via Reaction (❤) by Thida Hlaing
+2026-04-29 06:24:18 AM | INFO | main_router | � Routing message from -1003812325795: ဟုတ်...
+2026-04-29 06:24:19 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:24:19 AM | INFO | db_manager | ✓ Message 148 in -1003812325795 saved as PENDING
+2026-04-29 06:24:19 AM | INFO | message_handler | 📩 New Pending Message from 1976889162 in -1003812325795 (Topic: 1)
+2026-04-29 06:24:21 AM | INFO | auditor | ℹ️ No active alert tracking found for 310 in -1003766245638.
+2026-04-29 06:24:21 AM | INFO | auditor | ℹ️ Message 310 was not an active alert. Skipping record.
+2026-04-29 06:24:21 AM | INFO | db_manager | ✅ Group Resolved: [310] in -1003766245638 by Thida Hlaing (Reaction (❤))
+2026-04-29 06:24:21 AM | INFO | alert_handler | ✅ Message 310 marked as RESOLVED via Reaction (❤) by Thida Hlaing
+2026-04-29 06:24:23 AM | INFO | auditor | ℹ️ No active alert tracking found for 311 in -1003766245638.
+2026-04-29 06:24:23 AM | INFO | auditor | ℹ️ Message 311 was not an active alert. Skipping record.
+2026-04-29 06:24:23 AM | INFO | db_manager | ✅ Group Resolved: [311] in -1003766245638 by Thida Hlaing (Reaction (❤))
+2026-04-29 06:24:23 AM | INFO | alert_handler | ✅ Message 311 marked as RESOLVED via Reaction (❤) by Thida Hlaing
+2026-04-29 06:24:25 AM | INFO | auditor | ℹ️ No active alert tracking found for 312 in -1003766245638.
+2026-04-29 06:24:25 AM | INFO | auditor | ℹ️ Message 312 was not an active alert. Skipping record.
+2026-04-29 06:24:25 AM | INFO | db_manager | ✅ Group Resolved: [312] in -1003766245638 by Thida Hlaing (Reaction (❤))
+2026-04-29 06:24:25 AM | INFO | alert_handler | ✅ Message 312 marked as RESOLVED via Reaction (❤) by Thida Hlaing
+2026-04-29 06:24:27 AM | INFO | auditor | ℹ️ No active alert tracking found for 313 in -1003766245638.
+2026-04-29 06:24:27 AM | INFO | auditor | ℹ️ Message 313 was not an active alert. Skipping record.
+2026-04-29 06:24:27 AM | INFO | db_manager | ✅ Group Resolved: [313] in -1003766245638 by Thida Hlaing (Reaction (❤))
+2026-04-29 06:24:27 AM | INFO | alert_handler | ✅ Message 313 marked as RESOLVED via Reaction (❤) by Thida Hlaing
+2026-04-29 06:25:23 AM | INFO | main_router | � Routing message from -1003766245638: RTစာရင်းလေးကဒီစာရင်းလေးပဲကျန်ပါတော့တယ်ရှင့်။...
+2026-04-29 06:25:25 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 06:25:25 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 06:25:32 AM | INFO | main_router | � Routing message from -1003871976559: OS Name - Leo&Aries
+Date -28/4/2026
+
+စုစုပေါင်း ပါ...
+2026-04-29 06:25:33 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 06:25:33 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 06:25:33 AM | INFO | db_manager | ✓ Message 424 in -1003871976559 saved as PENDING
+2026-04-29 06:25:33 AM | INFO | message_handler | 📩 New Pending Message from 5155997913 in -1003871976559 (Topic: 1)
+2026-04-29 06:25:38 AM | INFO | main_router | � Routing message from -1003766245638: မနက်ဖြန်လေးစက်ဘီးသမားလေးနဲ့ထည့်ပေးလိုက်ပါမယ်ရှင့်။...
+2026-04-29 06:25:39 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 06:25:39 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 06:26:07 AM | INFO | auditor | ℹ️ No active alert tracking found for 148 in -1003812325795.
+2026-04-29 06:26:07 AM | INFO | auditor | ℹ️ Message 148 was not an active alert. Skipping record.
+2026-04-29 06:26:07 AM | INFO | db_manager | ✅ Group Resolved: [148] in -1003812325795 by Thet Wai Oo (Reaction (❤))
+2026-04-29 06:26:07 AM | INFO | alert_handler | ✅ Message 148 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 06:26:26 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 06:26:28 AM | INFO | main_router | � Routing message from -1003723204023: ဟုတ်ကဲ့ ဒီမြို့နယ်လေးတွေအကုန်ဝန်ဆောင်မှုရပါတယ်ခဗျ...
+2026-04-29 06:26:30 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 06:26:30 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 06:26:30 AM | INFO | db_manager | ✅ Group Resolved: [336] in -1003723204023 by (60501) (Reply)
+2026-04-29 06:26:30 AM | INFO | auditor | ℹ️ No active alert tracking found for 336 in -1003723204023.
+2026-04-29 06:26:30 AM | INFO | auditor | ℹ️ Message 336 was not an active alert. Skipping record.
+2026-04-29 06:26:30 AM | INFO | message_handler | ✅ Message 336 marked as RESOLVED via Reply by (60501)
+2026-04-29 06:26:54 AM | INFO | main_router | � Routing message from -1003812325795: ဟုတ်ကဲ့ပါခင်ဗျ။...
+2026-04-29 06:26:54 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:26:54 AM | INFO | db_manager | ✅ Group Resolved: [148] in -1003812325795 by Thet Wai Oo (Reply)
+2026-04-29 06:26:54 AM | INFO | auditor | ℹ️ No active alert tracking found for 148 in -1003812325795.
+2026-04-29 06:26:54 AM | INFO | auditor | ℹ️ Message 148 was not an active alert. Skipping record.
+2026-04-29 06:26:54 AM | INFO | message_handler | ✅ Message 148 marked as RESOLVED via Reply by Thet Wai Oo
+2026-04-29 06:26:57 AM | INFO | main_router | � Routing message from -1003766245638: အဲ့returnထုတ်အတွက်ဘာလုပ်ပေးမှာလဲရှင့် င်္သကြန်အမှီ...
+2026-04-29 06:26:57 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 06:26:57 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 06:26:57 AM | INFO | db_manager | ✓ Message 316 in -1003766245638 saved as PENDING
+2026-04-29 06:26:57 AM | INFO | message_handler | 📩 New Pending Message from 7544386925 in -1003766245638 (Topic: 1)
+2026-04-29 06:27:01 AM | INFO | auditor | ℹ️ No active alert tracking found for 424 in -1003871976559.
+2026-04-29 06:27:01 AM | INFO | auditor | ℹ️ Message 424 was not an active alert. Skipping record.
+2026-04-29 06:27:01 AM | INFO | db_manager | ✅ Group Resolved: [424] in -1003871976559 by Thet Wai Oo (Reaction (❤))
+2026-04-29 06:27:01 AM | INFO | alert_handler | ✅ Message 424 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 06:27:13 AM | INFO | main_router | � Routing message from -1003871976559: ဟုတ်ကဲ့ကျေးဇူးပါခင်ဗျ။...
+2026-04-29 06:27:14 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:27:21 AM | INFO | main_router | � Routing message from -1003345675653: 29.4.26
+Thoon Hsu
+ပါဆယ်4
+ငွေကောက်ရန်92500
+ကြိုရှင်...
+2026-04-29 06:27:23 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 06:27:23 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 06:27:23 AM | INFO | db_manager | ✓ Message 207 in -1003345675653 saved as PENDING
+2026-04-29 06:27:23 AM | INFO | message_handler | 📩 New Pending Message from 5759882120 in -1003345675653 (Topic: 6)
+2026-04-29 06:27:48 AM | INFO | main_router | � Routing message from -1003345675653: 92500ရှင်းပြီး...
+2026-04-29 06:27:49 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 06:27:49 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 06:27:49 AM | INFO | db_manager | ✓ Message 208 in -1003345675653 saved as PENDING
+2026-04-29 06:27:49 AM | INFO | message_handler | 📩 New Pending Message from 5759882120 in -1003345675653 (Topic: 6)
+2026-04-29 06:28:57 AM | INFO | auditor | ℹ️ No active alert tracking found for 207 in -1003345675653.
+2026-04-29 06:28:57 AM | INFO | auditor | ℹ️ Message 207 was not an active alert. Skipping record.
+2026-04-29 06:28:57 AM | INFO | db_manager | ✅ Group Resolved: [207] in -1003345675653 by Thet Wai Oo (Reaction (❤))
+2026-04-29 06:28:57 AM | INFO | alert_handler | ✅ Message 207 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 06:29:02 AM | INFO | main_router | � Routing message from -1003345675653: ဟုတ်ကဲ့ပါခင်ဗျ။...
+2026-04-29 06:29:03 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:29:41 AM | INFO | main_router | � Routing message from -1003837115331: ငွေလွဲ လက်ခံ ရရှိပါတယ်...
+2026-04-29 06:29:42 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:29:42 AM | INFO | db_manager | ✓ Message 223 in -1003837115331 saved as PENDING
+2026-04-29 06:29:42 AM | INFO | message_handler | 📩 New Pending Message from 5542320516 in -1003837115331 (Topic: 1)
+2026-04-29 06:29:44 AM | INFO | main_router | � Routing message from -1003837115331: Hi...
+2026-04-29 06:29:45 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:29:45 AM | INFO | db_manager | ✓ Message 224 in -1003837115331 saved as PENDING
+2026-04-29 06:29:45 AM | INFO | message_handler | 📩 New Pending Message from 5542320516 in -1003837115331 (Topic: 1)
+2026-04-29 06:29:58 AM | INFO | db_manager | ✓ Message 225 in -1003837115331 saved as PENDING
+2026-04-29 06:29:58 AM | INFO | message_handler | 📩 New Pending Message from 5542320516 in -1003837115331 (Topic: 1)
+2026-04-29 06:31:09 AM | INFO | db_manager | ✓ Message 226 in -1003837115331 saved as PENDING
+2026-04-29 06:31:09 AM | INFO | message_handler | 📩 New Pending Message from 5542320516 in -1003837115331 (Topic: 1)
+2026-04-29 06:31:14 AM | INFO | main_router | � Routing message from -1003837115331: လာယူပေးပါအုံ...
+2026-04-29 06:31:15 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 06:31:15 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 06:31:15 AM | INFO | db_manager | ✓ Message 227 in -1003837115331 saved as PENDING
+2026-04-29 06:31:15 AM | INFO | message_handler | 📩 New Pending Message from 5542320516 in -1003837115331 (Topic: 1)
+2026-04-29 06:31:17 AM | INFO | auditor | ℹ️ No active alert tracking found for 227 in -1003837115331.
+2026-04-29 06:31:17 AM | INFO | auditor | ℹ️ Message 227 was not an active alert. Skipping record.
+2026-04-29 06:31:17 AM | INFO | db_manager | ✅ Group Resolved: [227] in -1003837115331 by Thet Wai Oo (Reaction (❤))
+2026-04-29 06:31:17 AM | INFO | alert_handler | ✅ Message 227 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 06:31:25 AM | INFO | main_router | � Routing message from -1003898476625: ပစ္စည်း အပ်စရာလေးရှိလိူ့ လာကောက်ပေးပါအုံးရှင့်။...
+2026-04-29 06:31:26 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 06:31:26 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 06:31:26 AM | INFO | db_manager | ✓ Message 614 in -1003898476625 saved as PENDING
+2026-04-29 06:31:26 AM | INFO | message_handler | 📩 New Pending Message from 7414410530 in -1003898476625 (Topic: 1)
+2026-04-29 06:31:27 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 06:31:29 AM | INFO | main_router | � Routing message from -1003837115331: ဟုတ်ကဲ့ rider လေးလွှတ်လိုက်ပါမယ်ခင်ဗျ။...
+2026-04-29 06:31:30 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:32:28 AM | INFO | main_router | � Routing message from -1003745970988: U Than Tun Kpay စစ်ရန်...
+2026-04-29 06:32:29 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 06:32:29 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 06:32:34 AM | INFO | auditor | ℹ️ No active alert tracking found for 208 in -1003345675653.
+2026-04-29 06:32:34 AM | INFO | auditor | ℹ️ Message 208 was not an active alert. Skipping record.
+2026-04-29 06:32:34 AM | INFO | db_manager | ✅ Group Resolved: [208] in -1003345675653 by Myat Noe Paing (Reaction (❤))
+2026-04-29 06:32:34 AM | INFO | alert_handler | ✅ Message 208 marked as RESOLVED via Reaction (❤) by Myat Noe Paing
+2026-04-29 06:32:39 AM | INFO | auditor | ℹ️ No active alert tracking found for 207 in -1003345675653.
+2026-04-29 06:32:39 AM | INFO | auditor | ℹ️ Message 207 was not an active alert. Skipping record.
+2026-04-29 06:32:39 AM | INFO | db_manager | ✅ Group Resolved: [207] in -1003345675653 by Myat Noe Paing (Reaction (❤))
+2026-04-29 06:32:39 AM | INFO | alert_handler | ✅ Message 207 marked as RESOLVED via Reaction (❤) by Myat Noe Paing
+2026-04-29 06:32:46 AM | INFO | main_router | � Routing message from -1003709069700: အကောင့်ပေး...
+2026-04-29 06:32:47 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 06:32:47 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 06:32:47 AM | INFO | db_manager | ✓ Message 296 in -1003709069700 saved as PENDING
+2026-04-29 06:32:47 AM | INFO | message_handler | 📩 New Pending Message from 1831579231 in -1003709069700 (Topic: 4)
+2026-04-29 06:32:54 AM | INFO | main_router | � Routing message from -1003709069700: ဂိတ်ဘောက်ချာ...
+2026-04-29 06:32:54 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 06:32:54 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 06:32:54 AM | INFO | db_manager | ✓ Message 297 in -1003709069700 saved as PENDING
+2026-04-29 06:32:54 AM | INFO | message_handler | 📩 New Pending Message from 1831579231 in -1003709069700 (Topic: 4)
+2026-04-29 06:32:59 AM | INFO | main_router | � Routing message from -1003709069700: ပို့ပေးပါ...
+2026-04-29 06:33:00 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 06:33:00 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 06:33:00 AM | INFO | db_manager | ✓ Message 298 in -1003709069700 saved as PENDING
+2026-04-29 06:33:00 AM | INFO | message_handler | 📩 New Pending Message from 1831579231 in -1003709069700 (Topic: 4)
+2026-04-29 06:33:19 AM | INFO | main_router | � Routing message from -1003898476625: ရူံးပိတ်ရက်တွေရှိရင် ကြိူပြောပေးထားပါအုံးနော်...
+2026-04-29 06:33:20 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 06:33:20 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 06:33:20 AM | INFO | db_manager | ✓ Message 615 in -1003898476625 saved as PENDING
+2026-04-29 06:33:20 AM | INFO | message_handler | 📩 New Pending Message from 7414410530 in -1003898476625 (Topic: 1)
+2026-04-29 06:33:55 AM | INFO | main_router | � Routing message from -1003745970988: @cmfinance1 @cmfinance2...
+2026-04-29 06:33:56 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:34:14 AM | INFO | main_router | � Routing message from -1003709069700: ဒီနေ့ဂိတ်ရအောင်ဂိတ်ချပေးပါ...
+2026-04-29 06:34:15 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 06:34:15 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 06:34:15 AM | INFO | db_manager | ✓ Message 299 in -1003709069700 saved as PENDING
+2026-04-29 06:34:15 AM | INFO | message_handler | 📩 New Pending Message from 7224757067 in -1003709069700 (Topic: 4)
+2026-04-29 06:34:34 AM | INFO | main_router | � Routing message from -1003898476625: ဟုတ်ကဲ့ Rider လေးလွှတ်ပေးပါမယ်ခဗျ...
+2026-04-29 06:34:35 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 06:34:35 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 06:36:27 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 06:36:31 AM | INFO | main_router | � Routing message from -1003709069700: 09-750073800
+Daw Lwin Lwin Maw kpayလေးပါရှင့်မမ...
+2026-04-29 06:36:33 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 06:36:33 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 06:36:33 AM | INFO | db_manager | ✅ Group Resolved: [296] in -1003709069700 by Ei Pan Hmue (Reply)
+2026-04-29 06:36:33 AM | INFO | auditor | ℹ️ No active alert tracking found for 296 in -1003709069700.
+2026-04-29 06:36:33 AM | INFO | auditor | ℹ️ Message 296 was not an active alert. Skipping record.
+2026-04-29 06:36:33 AM | INFO | message_handler | ✅ Message 296 marked as RESOLVED via Reply by Ei Pan Hmue
+2026-04-29 06:37:39 AM | INFO | main_router | � Routing message from -1003633412428: ဒီနေ့ pickup လေးလာကောက်ပေးရမလားခင်ဗျ။...
+2026-04-29 06:37:39 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 06:37:39 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 06:37:39 AM | INFO | db_manager | ✅ Group Resolved: [138] in -1003633412428 by Thet Wai Oo (Reply)
+2026-04-29 06:37:40 AM | INFO | auditor | ℹ️ No active alert tracking found for 138 in -1003633412428.
+2026-04-29 06:37:40 AM | INFO | auditor | ℹ️ Message 138 was not an active alert. Skipping record.
+2026-04-29 06:37:40 AM | INFO | message_handler | ✅ Message 138 marked as RESOLVED via Reply by Thet Wai Oo
+2026-04-29 06:37:40 AM | INFO | main_router | � Routing message from -1003709069700: ဟုတ်ကဲ့ပါရှင့်မမဂိတ်လေးချပီးရင်ဂိတ်ဘောင်ချာလေးပို့...
+2026-04-29 06:37:41 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:37:41 AM | INFO | db_manager | ✅ Group Resolved: [297] in -1003709069700 by Ei Pan Hmue (Reply)
+2026-04-29 06:37:41 AM | INFO | auditor | ℹ️ No active alert tracking found for 297 in -1003709069700.
+2026-04-29 06:37:41 AM | INFO | auditor | ℹ️ Message 297 was not an active alert. Skipping record.
+2026-04-29 06:37:41 AM | INFO | message_handler | ✅ Message 297 marked as RESOLVED via Reply by Ei Pan Hmue
+2026-04-29 06:37:44 AM | INFO | auditor | ℹ️ No active alert tracking found for 296 in -1003709069700.
+2026-04-29 06:37:44 AM | INFO | auditor | ℹ️ Message 296 was not an active alert. Skipping record.
+2026-04-29 06:37:44 AM | INFO | db_manager | ✅ Group Resolved: [296] in -1003709069700 by Ei Pan Hmue (Reaction (❤))
+2026-04-29 06:37:44 AM | INFO | alert_handler | ✅ Message 296 marked as RESOLVED via Reaction (❤) by Ei Pan Hmue
+2026-04-29 06:37:46 AM | INFO | auditor | ℹ️ No active alert tracking found for 297 in -1003709069700.
+2026-04-29 06:37:46 AM | INFO | auditor | ℹ️ Message 297 was not an active alert. Skipping record.
+2026-04-29 06:37:46 AM | INFO | db_manager | ✅ Group Resolved: [297] in -1003709069700 by Ei Pan Hmue (Reaction (❤))
+2026-04-29 06:37:46 AM | INFO | alert_handler | ✅ Message 297 marked as RESOLVED via Reaction (❤) by Ei Pan Hmue
+2026-04-29 06:37:47 AM | INFO | auditor | ℹ️ No active alert tracking found for 298 in -1003709069700.
+2026-04-29 06:37:47 AM | INFO | auditor | ℹ️ Message 298 was not an active alert. Skipping record.
+2026-04-29 06:37:47 AM | INFO | db_manager | ✅ Group Resolved: [298] in -1003709069700 by Ei Pan Hmue (Reaction (❤))
+2026-04-29 06:37:47 AM | INFO | alert_handler | ✅ Message 298 marked as RESOLVED via Reaction (❤) by Ei Pan Hmue
+2026-04-29 06:37:50 AM | INFO | auditor | ℹ️ No active alert tracking found for 299 in -1003709069700.
+2026-04-29 06:37:50 AM | INFO | auditor | ℹ️ Message 299 was not an active alert. Skipping record.
+2026-04-29 06:37:50 AM | INFO | db_manager | ✅ Group Resolved: [299] in -1003709069700 by Ei Pan Hmue (Reaction (❤))
+2026-04-29 06:37:50 AM | INFO | alert_handler | ✅ Message 299 marked as RESOLVED via Reaction (❤) by Ei Pan Hmue
+2026-04-29 06:38:11 AM | INFO | auditor | ℹ️ No active alert tracking found for 299 in -1003709069700.
+2026-04-29 06:38:11 AM | INFO | auditor | ℹ️ Message 299 was not an active alert. Skipping record.
+2026-04-29 06:38:11 AM | INFO | db_manager | ✅ Group Resolved: [299] in -1003709069700 by Ei Pan Hmue (Reaction (❤))
+2026-04-29 06:38:11 AM | INFO | alert_handler | ✅ Message 299 marked as RESOLVED via Reaction (❤) by Ei Pan Hmue
+2026-04-29 06:39:06 AM | INFO | main_router | � Routing message from -1003721882616: Way မ doneသူစာရင်း
+မရှိပါ။...
+2026-04-29 06:39:16 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 06:39:16 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 06:41:28 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 06:41:47 AM | INFO | main_router | � Routing message from -1003709069700: ဟုတ်မမဒီနေ့လေးကဂိတ်ကားလေးထွက်သွားပီမို့မနက်ဖြန်လေး...
+2026-04-29 06:41:48 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 06:41:48 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 06:41:48 AM | INFO | db_manager | ✅ Group Resolved: [299] in -1003709069700 by Ei Pan Hmue (Reply)
+2026-04-29 06:41:48 AM | INFO | auditor | ℹ️ No active alert tracking found for 299 in -1003709069700.
+2026-04-29 06:41:48 AM | INFO | auditor | ℹ️ Message 299 was not an active alert. Skipping record.
+2026-04-29 06:41:48 AM | INFO | message_handler | ✅ Message 299 marked as RESOLVED via Reply by Ei Pan Hmue
+2026-04-29 06:41:50 AM | INFO | auditor | ℹ️ No active alert tracking found for 299 in -1003709069700.
+2026-04-29 06:41:50 AM | INFO | auditor | ℹ️ Message 299 was not an active alert. Skipping record.
+2026-04-29 06:41:50 AM | INFO | db_manager | ✅ Group Resolved: [299] in -1003709069700 by Ei Pan Hmue (Reaction (❤))
+2026-04-29 06:41:50 AM | INFO | alert_handler | ✅ Message 299 marked as RESOLVED via Reaction (❤) by Ei Pan Hmue
+2026-04-29 06:46:28 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 06:46:58 AM | INFO | main_router | � Routing message from -1003709069700: ငွေလွှဲလေးပါရှင့်။...
+2026-04-29 06:46:59 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 06:46:59 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 06:46:59 AM | INFO | db_manager | ✅ Group Resolved: [295] in -1003709069700 by Thida Hlaing (Reply)
+2026-04-29 06:46:59 AM | INFO | auditor | ℹ️ No active alert tracking found for 295 in -1003709069700.
+2026-04-29 06:46:59 AM | INFO | auditor | ℹ️ Message 295 was not an active alert. Skipping record.
+2026-04-29 06:46:59 AM | INFO | message_handler | ✅ Message 295 marked as RESOLVED via Reply by Thida Hlaing
+2026-04-29 06:47:07 AM | INFO | main_router | � Routing message from -1003798739565: @dataentrycm1...
+2026-04-29 06:47:07 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:47:07 AM | INFO | db_manager | ✅ Group Resolved: [3700] in -1003798739565 by Ei Pan Hmue (Reply)
+2026-04-29 06:47:07 AM | INFO | auditor | ℹ️ No active alert tracking found for 3700 in -1003798739565.
+2026-04-29 06:47:07 AM | INFO | auditor | ℹ️ Message 3700 was not an active alert. Skipping record.
+2026-04-29 06:47:07 AM | INFO | message_handler | ✅ Message 3700 marked as RESOLVED via Reply by Ei Pan Hmue
+2026-04-29 06:47:40 AM | INFO | main_router | � Routing message from -1003798739565: 09683030638
+30ရက်နေ့cusရက်ချိန်းလေးပါရှင့်မမ...
+2026-04-29 06:47:41 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 06:47:41 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 06:49:26 AM | INFO | main_router | � Routing message from -1003506710131: cus ကခေါ်တာဖုန်းမကိုင်ဖူးတဲ့ရှင့်အဲဒါတချက်ပြောပေးပ...
+2026-04-29 06:49:27 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 06:49:27 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 06:49:27 AM | INFO | db_manager | ✓ Message 632 in -1003506710131 saved as PENDING
+2026-04-29 06:49:27 AM | INFO | message_handler | 📩 New Pending Message from 5627501190 in -1003506710131 (Topic: 4)
+2026-04-29 06:50:07 AM | INFO | db_manager | ✓ Message 633 in -1003506710131 saved as PENDING
+2026-04-29 06:50:07 AM | INFO | message_handler | 📩 New Pending Message from 5627501190 in -1003506710131 (Topic: 1)
+2026-04-29 06:50:25 AM | INFO | db_manager | ✓ Message 634 in -1003506710131 saved as PENDING
+2026-04-29 06:50:25 AM | INFO | message_handler | 📩 New Pending Message from 5627501190 in -1003506710131 (Topic: 1)
+2026-04-29 06:50:32 AM | INFO | main_router | � Routing message from -1003506710131: အဲလိုပြောပါတယ်ရှင့်...
+2026-04-29 06:50:33 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:50:33 AM | INFO | db_manager | ✓ Message 635 in -1003506710131 saved as PENDING
+2026-04-29 06:50:33 AM | INFO | message_handler | 📩 New Pending Message from 5627501190 in -1003506710131 (Topic: 1)
+2026-04-29 06:51:29 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 06:52:24 AM | INFO | main_router | � Routing message from -1003506710131: ဒီနေ့ပစ္စည်းလေးလာပေးပါရှင့်ကားသမားနဲ့ပါ...
+2026-04-29 06:52:25 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 06:52:25 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 06:52:25 AM | INFO | db_manager | ✓ Message 636 in -1003506710131 saved as PENDING
+2026-04-29 06:52:25 AM | INFO | message_handler | 📩 New Pending Message from 5627501190 in -1003506710131 (Topic: 1)
+2026-04-29 06:52:37 AM | INFO | auditor | ℹ️ No active alert tracking found for 636 in -1003506710131.
+2026-04-29 06:52:37 AM | INFO | auditor | ℹ️ Message 636 was not an active alert. Skipping record.
+2026-04-29 06:52:37 AM | INFO | db_manager | ✅ Group Resolved: [636] in -1003506710131 by Thet Wai Oo (Reaction (❤))
+2026-04-29 06:52:37 AM | INFO | alert_handler | ✅ Message 636 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 06:53:41 AM | INFO | auditor | ℹ️ No active alert tracking found for 632 in -1003506710131.
+2026-04-29 06:53:41 AM | INFO | auditor | ℹ️ Message 632 was not an active alert. Skipping record.
+2026-04-29 06:53:41 AM | INFO | db_manager | ✅ Group Resolved: [632] in -1003506710131 by Myat Noe Paing (Reaction (❤))
+2026-04-29 06:53:41 AM | INFO | alert_handler | ✅ Message 632 marked as RESOLVED via Reaction (❤) by Myat Noe Paing
+2026-04-29 06:53:42 AM | INFO | main_router | � Routing message from -1003709069700: ကျန်ငွေ500000လေးထဲကကြိုရှင်းသတ်မှတ်ကကျော်နေတဲ့1610...
+2026-04-29 06:53:44 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 06:53:44 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 06:54:12 AM | INFO | main_router | � Routing message from -1003938793102: pick up လေးလာမယူသေးလို့ရှင့်...
+2026-04-29 06:54:13 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 06:54:13 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 06:54:26 AM | INFO | main_router | � Routing message from -1003709069700: 161000-1500 os paid=159500 os ရရန်ကျန်ပါရှင့်။...
+2026-04-29 06:54:27 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 06:54:27 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 06:56:09 AM | INFO | main_router | � Routing message from -1003709069700: ဒါကဘာပြောတာလဲနာမလညါဘူး...
+2026-04-29 06:56:10 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 06:56:10 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 06:56:10 AM | INFO | db_manager | ✓ Message 306 in -1003709069700 saved as PENDING
+2026-04-29 06:56:10 AM | INFO | message_handler | 📩 New Pending Message from 7224757067 in -1003709069700 (Topic: 6)
+2026-04-29 06:56:29 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 06:59:08 AM | INFO | main_router | � Routing message from -1003938793102: ဟုတ်ကဲ့ ဒီနေ့ pickup ခေါ်ထားတဲ့စာလေးကို မမြင်လိုက်...
+2026-04-29 06:59:09 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 06:59:09 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 06:59:29 AM | INFO | main_router | � Routing message from -1003506710131: ဟုတ်ကဲ့ ကားသမားလေးလွှတ်လိုက်ပါမယ်ခင်ဗျ။...
+2026-04-29 06:59:30 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 06:59:30 AM | INFO | db_manager | ✅ Group Resolved: [636] in -1003506710131 by (60501) (Reply)
+2026-04-29 06:59:30 AM | INFO | auditor | ℹ️ No active alert tracking found for 636 in -1003506710131.
+2026-04-29 06:59:30 AM | INFO | auditor | ℹ️ Message 636 was not an active alert. Skipping record.
+2026-04-29 06:59:30 AM | INFO | message_handler | ✅ Message 636 marked as RESOLVED via Reply by (60501)
+2026-04-29 07:00:38 AM | INFO | main_router | � Routing message from -1003938793102: ဟုတ်ကဲ့ ဒီနေ့ pickup ခေါ်ထားတဲ့စာလေးကို မမြင်လိုက်...
+2026-04-29 07:00:39 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 07:00:39 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 07:00:44 AM | INFO | main_router | � Routing message from -1003709069700: ၁၆၁၀၀၀နုတ်ရတဲ့စာရင်းပြပါ...
+2026-04-29 07:00:45 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 07:00:45 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:00:45 AM | INFO | db_manager | ✓ Message 307 in -1003709069700 saved as PENDING
+2026-04-29 07:00:45 AM | INFO | message_handler | 📩 New Pending Message from 1831579231 in -1003709069700 (Topic: 6)
+2026-04-29 07:01:02 AM | INFO | main_router | � Routing message from -1003938793102: မနက်ဖြန်တော့ စောစောလေးလာယူပေးပါနော်...
+2026-04-29 07:01:04 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 07:01:04 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 07:01:27 AM | INFO | main_router | � Routing message from -1003938793102: customer ဘက်ကို ညီမလဲ ကြာချိန်လေးပြောထားပြိးသားမို...
+2026-04-29 07:01:29 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 07:01:29 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 07:01:30 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 07:01:59 AM | INFO | main_router | � Routing message from -1003806753663: 09973635617
+30ရက်နေ့cusရက်ချိန်းလေးပါရှင့်မမ...
+2026-04-29 07:02:00 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 07:02:00 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 07:02:06 AM | INFO | main_router | � Routing message from -1003938793102: ဟုတ်ကဲ့ပါခင်ဗျ နားလည်ပေးလို့ ကျေးဇူးပါခင်ဗျ။ မနက်ဖ...
+2026-04-29 07:02:07 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 07:02:07 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 07:02:18 AM | INFO | main_router | � Routing message from -1003938793102: pick up တင်ပေးဖို့ format လေးတွေဘာတွေရှိလားရှင့်...
+2026-04-29 07:02:18 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 07:02:18 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:02:23 AM | INFO | auditor | ℹ️ No active alert tracking found for 33 in -1003938793102.
+2026-04-29 07:02:23 AM | INFO | auditor | ℹ️ Message 33 was not an active alert. Skipping record.
+2026-04-29 07:02:23 AM | INFO | db_manager | ✅ Group Resolved: [33] in -1003938793102 by Thet Wai Oo (Reaction (❤))
+2026-04-29 07:02:23 AM | INFO | alert_handler | ✅ Message 33 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 07:02:26 AM | INFO | main_router | � Routing message from -1003938793102: ဘလိုလေးတွေတင်ပေးရင်ရမလဲရှင့်...
+2026-04-29 07:02:27 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 07:02:27 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:02:30 AM | INFO | auditor | ℹ️ No active alert tracking found for 34 in -1003938793102.
+2026-04-29 07:02:30 AM | INFO | auditor | ℹ️ Message 34 was not an active alert. Skipping record.
+2026-04-29 07:02:30 AM | INFO | db_manager | ✅ Group Resolved: [34] in -1003938793102 by Thet Wai Oo (Reaction (❤))
+2026-04-29 07:02:30 AM | INFO | alert_handler | ✅ Message 34 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 07:03:36 AM | INFO | main_router | � Routing message from -1003938793102: ဟုတ်ကဲ့ အခု အမဖက်က ခေါ်တာ ပြည့်စုံပါတယ်ခင်ဗျ။ ကျွန...
+2026-04-29 07:03:37 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 07:04:02 AM | INFO | main_router | � Routing message from -1003938793102: ဟုတ်ကဲ့အခုလိုလေးရှင်းပြပေးတာကျေးဇူးပါရှင့်...
+2026-04-29 07:04:03 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 07:04:24 AM | INFO | main_router | � Routing message from -1003798739565: 09796631696
+30ရက်နေ့cusရက်ချိန်းလေးပါရှင့်မမ...
+2026-04-29 07:04:25 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 07:04:25 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 07:04:47 AM | INFO | main_router | � Routing message from -1003709069700: @cmfinance2...
+2026-04-29 07:04:48 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 07:04:48 AM | INFO | db_manager | ✓ Message 308 in -1003709069700 saved as PENDING
+2026-04-29 07:04:48 AM | INFO | message_handler | 📩 New Pending Message from 1831579231 in -1003709069700 (Topic: 1)
+2026-04-29 07:05:22 AM | INFO | main_router | � Routing message from -1003745970988: 185900 - 400000(Kpayဝင်) = 214,100 Ko MT cash  ပေး...
+2026-04-29 07:05:23 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 07:05:23 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 07:05:45 AM | INFO | auditor | ℹ️ No active alert tracking found for 36 in -1003938793102.
+2026-04-29 07:05:45 AM | INFO | auditor | ℹ️ Message 36 was not an active alert. Skipping record.
+2026-04-29 07:05:45 AM | INFO | db_manager | ✅ Group Resolved: [36] in -1003938793102 by Thet Wai Oo (Reaction (❤))
+2026-04-29 07:05:45 AM | INFO | alert_handler | ✅ Message 36 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 07:06:00 AM | INFO | main_router | � Routing message from -1003938793102: ဟုတ်ကဲ့ရပါတယ်ခင်ဗျ။...
+2026-04-29 07:06:01 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 07:06:11 AM | INFO | main_router | � Routing message from -1003822695947: ရောက်ရှိပါ...
+2026-04-29 07:06:12 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 07:06:12 AM | INFO | db_manager | ✓ Message 157 in -1003822695947 saved as PENDING
+2026-04-29 07:06:12 AM | INFO | message_handler | 📩 New Pending Message from 6788381224 in -1003822695947 (Topic: 1)
+2026-04-29 07:06:30 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 07:07:00 AM | INFO | main_router | � Routing message from -1003801802038: မြို့နယ်အလိုက်
+deliခလေးတွေသိချင်ပါတယ်ရှင့်...
+2026-04-29 07:07:00 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 07:07:00 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:07:01 AM | INFO | db_manager | ✓ Message 247 in -1003801802038 saved as PENDING
+2026-04-29 07:07:01 AM | INFO | message_handler | 📩 New Pending Message from 6858436718 in -1003801802038 (Topic: 1)
+2026-04-29 07:07:03 AM | INFO | auditor | ℹ️ No active alert tracking found for 307 in -1003709069700.
+2026-04-29 07:07:03 AM | INFO | auditor | ℹ️ Message 307 was not an active alert. Skipping record.
+2026-04-29 07:07:03 AM | INFO | db_manager | ✅ Group Resolved: [307] in -1003709069700 by Eaindra (Reaction (❤))
+2026-04-29 07:07:03 AM | INFO | alert_handler | ✅ Message 307 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-04-29 07:07:04 AM | INFO | auditor | ℹ️ No active alert tracking found for 306 in -1003709069700.
+2026-04-29 07:07:04 AM | INFO | auditor | ℹ️ Message 306 was not an active alert. Skipping record.
+2026-04-29 07:07:04 AM | INFO | db_manager | ✅ Group Resolved: [306] in -1003709069700 by Eaindra (Reaction (❤))
+2026-04-29 07:07:04 AM | INFO | alert_handler | ✅ Message 306 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-04-29 07:08:12 AM | INFO | main_router | � Routing message from -1003709069700: Mar Lar Khin ပါဆယ်လေးက 361000 ဆိုတော့ သတ်မှတ်ကြိုရ...
+2026-04-29 07:08:13 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 07:08:13 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 07:08:33 AM | INFO | main_router | � Routing message from -1003801802038: price list & T&C လေးပါခင်ဗျ။...
+2026-04-29 07:08:33 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 07:08:33 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:08:47 AM | INFO | auditor | ℹ️ No active alert tracking found for 157 in -1003822695947.
+2026-04-29 07:08:47 AM | INFO | auditor | ℹ️ Message 157 was not an active alert. Skipping record.
+2026-04-29 07:08:47 AM | INFO | db_manager | ✅ Group Resolved: [157] in -1003822695947 by Thet Wai Oo (Reaction (❤))
+2026-04-29 07:08:47 AM | INFO | alert_handler | ✅ Message 157 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 07:08:52 AM | INFO | main_router | � Routing message from -1003822695947: ဟုတ်ကဲ့ပါခင်ဗျ။...
+2026-04-29 07:08:52 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 07:09:04 AM | INFO | main_router | � Routing message from -1003709069700: Awwပို့ပြီးမှ ၁၆၁၀၀၀ပြန်လွဲမှာလားအဲ့လိုလား...
+2026-04-29 07:09:05 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 07:09:05 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 07:09:05 AM | INFO | db_manager | ✓ Message 310 in -1003709069700 saved as PENDING
+2026-04-29 07:09:05 AM | INFO | message_handler | 📩 New Pending Message from 1831579231 in -1003709069700 (Topic: 6)
+2026-04-29 07:10:49 AM | INFO | main_router | � Routing message from -1003709069700: ဟုတ်ပါတယ်ရှင့်။...
+2026-04-29 07:10:49 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 07:11:10 AM | INFO | main_router | � Routing message from -1003801802038: ဟုတ်ကျေးဇူးပါ...
+2026-04-29 07:11:11 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 07:11:11 AM | INFO | db_manager | ✓ Message 250 in -1003801802038 saved as PENDING
+2026-04-29 07:11:11 AM | INFO | message_handler | 📩 New Pending Message from 6858436718 in -1003801802038 (Topic: 1)
+2026-04-29 07:11:12 AM | INFO | main_router | � Routing message from -1003709069700: မြန်မြန်လေးပို့လိုက်နော်...
+2026-04-29 07:11:13 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 07:11:13 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 07:11:13 AM | INFO | db_manager | ✓ Message 312 in -1003709069700 saved as PENDING
+2026-04-29 07:11:13 AM | INFO | message_handler | 📩 New Pending Message from 1831579231 in -1003709069700 (Topic: 6)
+2026-04-29 07:11:26 AM | INFO | auditor | ℹ️ No active alert tracking found for 250 in -1003801802038.
+2026-04-29 07:11:26 AM | INFO | auditor | ℹ️ Message 250 was not an active alert. Skipping record.
+2026-04-29 07:11:26 AM | INFO | db_manager | ✅ Group Resolved: [250] in -1003801802038 by Thet Wai Oo (Reaction (❤))
+2026-04-29 07:11:26 AM | INFO | alert_handler | ✅ Message 250 marked as RESOLVED via Reaction (❤) by Thet Wai Oo
+2026-04-29 07:11:30 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 07:11:38 AM | INFO | main_router | � Routing message from -1003801802038: ဟုတ်ကဲ့ပါခင်ဗျ။...
+2026-04-29 07:11:39 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 07:13:10 AM | INFO | main_router | � Routing message from -1003798739565: 09452243778
+3ရက်နေ့cusရက်ချိန်းလေးပါရှင့်မမ...
+2026-04-29 07:13:10 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 07:13:10 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 07:13:36 AM | INFO | main_router | � Routing message from -1003837671590: ကိုယ့်ဘက်ကဝန်ထမ်းပြောတာကို ai က pickup တင်ပေးဖို့လ...
+2026-04-29 07:13:37 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 07:13:37 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 07:15:55 AM | INFO | main_router | � Routing message from -1003837671590: @carrymanhr2026 @cmmarketing1...
+2026-04-29 07:15:56 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 07:16:31 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 07:17:05 AM | INFO | main_router | � Routing message from -1003837671590: Sport House...
+2026-04-29 07:17:06 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 07:17:37 AM | INFO | auditor | ℹ️ No active alert tracking found for 1136 in -1003721882616.
+2026-04-29 07:17:37 AM | INFO | auditor | ℹ️ Message 1136 was not an active alert. Skipping record.
+2026-04-29 07:17:37 AM | INFO | db_manager | ✅ Group Resolved: [1136] in -1003721882616 by Htet Htet (Reaction (❤))
+2026-04-29 07:17:37 AM | INFO | alert_handler | ✅ Message 1136 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 07:17:46 AM | INFO | auditor | ℹ️ No active alert tracking found for 95 in -1003897065464.
+2026-04-29 07:17:46 AM | INFO | auditor | ℹ️ Message 95 was not an active alert. Skipping record.
+2026-04-29 07:17:46 AM | INFO | db_manager | ✅ Group Resolved: [95] in -1003897065464 by Htet Htet (Reaction (❤))
+2026-04-29 07:17:46 AM | INFO | alert_handler | ✅ Message 95 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 07:18:45 AM | INFO | main_router | � Routing message from -1003798739565: 09777558847
+30ရက်နေ့cusရက်ချိန်းလေးပါရှင့်မမ...
+2026-04-29 07:18:45 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 07:18:45 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 07:21:31 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 07:22:12 AM | INFO | main_router | � Routing message from -1003806753663: 09779222607
+30ရက်နေ့cusရက်ချိန်းလေးပါရှင့်မမ...
+2026-04-29 07:22:13 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 07:22:13 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 07:23:06 AM | INFO | main_router | � Routing message from -1003798966794: ဖြေပေးပါအုန်း...
+2026-04-29 07:23:06 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 07:23:06 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:23:06 AM | INFO | db_manager | ✓ Message 191 in -1003798966794 saved as PENDING
+2026-04-29 07:23:06 AM | INFO | message_handler | 📩 New Pending Message from 5989936352 in -1003798966794 (Topic: 1)
+2026-04-29 07:23:35 AM | INFO | main_router | � Routing message from -1003798966794: Customer ကိုပြန်ပြောရမှာမလို့...
+2026-04-29 07:23:36 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 07:23:36 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:23:36 AM | INFO | db_manager | ✓ Message 192 in -1003798966794 saved as PENDING
+2026-04-29 07:23:36 AM | INFO | message_handler | 📩 New Pending Message from 5989936352 in -1003798966794 (Topic: 1)
+2026-04-29 07:24:12 AM | INFO | main_router | � Routing message from -1003796096237: 09978464096
+30ရက်နေ့cusရက်ချိန်းလေးပါရှင့်မမ...
+2026-04-29 07:24:12 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 07:24:12 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 07:26:32 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 07:27:05 AM | INFO | main_router | � Routing message from -1003723204023: Today pick up ရှိပါတယ်...
+2026-04-29 07:27:06 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 07:27:06 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 07:27:06 AM | INFO | db_manager | ✓ Message 338 in -1003723204023 saved as PENDING
+2026-04-29 07:27:06 AM | INFO | message_handler | 📩 New Pending Message from 1604241630 in -1003723204023 (Topic: 1)
+2026-04-29 07:27:28 AM | INFO | main_router | � Routing message from -1003723204023: Car deli လွှတ်ပေးပါရှင့်...
+2026-04-29 07:27:29 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 07:27:29 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 07:27:29 AM | INFO | db_manager | ✓ Message 339 in -1003723204023 saved as PENDING
+2026-04-29 07:27:29 AM | INFO | message_handler | 📩 New Pending Message from 1604241630 in -1003723204023 (Topic: 1)
+2026-04-29 07:27:32 AM | INFO | main_router | � Routing message from -1003798739565: 09407740808
+30ရက်နေ့cusရက်ချိန်းလေးပါရှင့်မမ...
+2026-04-29 07:27:32 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 07:27:32 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 07:28:06 AM | INFO | main_router | � Routing message from -1003752062728: cus phလေးမှားနေလို့ပါရှငိ့မမ 09791399920...
+2026-04-29 07:28:07 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 07:28:07 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 07:28:41 AM | INFO | main_router | � Routing message from -1003752062728: Return...
+2026-04-29 07:28:41 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 07:28:41 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 07:28:41 AM | INFO | db_manager | ✓ Message 196 in -1003752062728 saved as PENDING
+2026-04-29 07:28:41 AM | INFO | message_handler | 📩 New Pending Message from 1632962963 in -1003752062728 (Topic: 1)
+2026-04-29 07:29:19 AM | INFO | auditor | ℹ️ No active alert tracking found for 338 in -1003723204023.
+2026-04-29 07:29:19 AM | INFO | auditor | ℹ️ Message 338 was not an active alert. Skipping record.
+2026-04-29 07:29:19 AM | INFO | db_manager | ✅ Group Resolved: [338] in -1003723204023 by (60501) (Reaction (❤))
+2026-04-29 07:29:19 AM | INFO | alert_handler | ✅ Message 338 marked as RESOLVED via Reaction (❤) by (60501)
+2026-04-29 07:29:21 AM | INFO | auditor | ℹ️ No active alert tracking found for 339 in -1003723204023.
+2026-04-29 07:29:21 AM | INFO | auditor | ℹ️ Message 339 was not an active alert. Skipping record.
+2026-04-29 07:29:21 AM | INFO | db_manager | ✅ Group Resolved: [339] in -1003723204023 by (60501) (Reaction (❤))
+2026-04-29 07:29:21 AM | INFO | alert_handler | ✅ Message 339 marked as RESOLVED via Reaction (❤) by (60501)
+2026-04-29 07:31:07 AM | INFO | main_router | � Routing message from -1003723204023: ဟုတ်ကဲ့ ကားလွှတ်ပေးထားပါတယ်ခဗျ ခဏနေကားရောက်မယ်လို့...
+2026-04-29 07:31:08 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 07:31:08 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 07:31:08 AM | INFO | db_manager | ✅ Group Resolved: [339] in -1003723204023 by (60501) (Reply)
+2026-04-29 07:31:08 AM | INFO | auditor | ℹ️ No active alert tracking found for 339 in -1003723204023.
+2026-04-29 07:31:08 AM | INFO | auditor | ℹ️ Message 339 was not an active alert. Skipping record.
+2026-04-29 07:31:08 AM | INFO | message_handler | ✅ Message 339 marked as RESOLVED via Reply by (60501)
+2026-04-29 07:31:32 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 07:32:08 AM | INFO | main_router | � Routing message from -1003798966794: ဟုတ်ကဲ့သက်ဆိုင်ရာ ရုံးဖက်ကိုမေးပြီးပြန်ပြောပေးပါမယ...
+2026-04-29 07:32:09 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 07:32:09 AM | INFO | db_manager | ✅ Group Resolved: [192] in -1003798966794 by Thet Wai Oo (Reply)
+2026-04-29 07:32:09 AM | INFO | auditor | ℹ️ No active alert tracking found for 192 in -1003798966794.
+2026-04-29 07:32:09 AM | INFO | auditor | ℹ️ Message 192 was not an active alert. Skipping record.
+2026-04-29 07:32:09 AM | INFO | message_handler | ✅ Message 192 marked as RESOLVED via Reply by Thet Wai Oo
+2026-04-29 07:33:08 AM | INFO | main_router | � Routing message from 8353570874: /ai တိုင်းရင်းသားကျေးရွာကဘယ်မြို့နယ်မှာရှိတာလဲ...
+2026-04-29 07:33:09 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 07:33:09 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:33:21 AM | INFO | main_router | � Routing message from -1003752062728: ဟုတ်ကဲ့ရှငိ့မမ...
+2026-04-29 07:33:22 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 07:34:04 AM | INFO | main_router | � Routing message from -1003723204023: တန့်ယန်း ၀န်ဆောင်မှုရှိလား...
+2026-04-29 07:34:06 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 07:34:06 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:34:06 AM | INFO | db_manager | ✓ Message 341 in -1003723204023 saved as PENDING
+2026-04-29 07:34:06 AM | INFO | message_handler | 📩 New Pending Message from 1604241630 in -1003723204023 (Topic: 1)
+2026-04-29 07:35:19 AM | INFO | main_router | � Routing message from -1003798966794: ဟုတ်ကဲ့ မနက်ဖြန် way လမ်းကြောင်းလေးနဲ့မှပါမယ်လို့ ...
+2026-04-29 07:35:20 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 07:35:20 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 07:35:20 AM | INFO | db_manager | ✅ Group Resolved: [191] in -1003798966794 by Thet Wai Oo (Reply)
+2026-04-29 07:35:20 AM | INFO | auditor | ℹ️ No active alert tracking found for 191 in -1003798966794.
+2026-04-29 07:35:20 AM | INFO | auditor | ℹ️ Message 191 was not an active alert. Skipping record.
+2026-04-29 07:35:20 AM | INFO | message_handler | ✅ Message 191 marked as RESOLVED via Reply by Thet Wai Oo
+2026-04-29 07:35:47 AM | INFO | main_router | � Routing message from -1003723204023: ဟုတ်ကဲ့ တန့်ယန်းမြို့နယ်လေးက ဝန်ဆောင်မှုလေးမရပါဘူး...
+2026-04-29 07:35:48 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 07:35:48 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:36:33 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 07:36:44 AM | INFO | main_router | � Routing message from -1003541168810: cus 2ရက်နေ့ရက်ချိန်းလေးပါရှငိ့မမ 09693125734...
+2026-04-29 07:36:45 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 07:36:45 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 07:38:55 AM | INFO | main_router | � Routing message from -1003637399650: 29/4/26 ပို့ဆောင်ပြီးနယ်စာရင်းလေးပါရှင့်။...
+2026-04-29 07:38:56 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 07:38:56 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:39:20 AM | INFO | auditor | ℹ️ No active alert tracking found for 718 in -1003745970988.
+2026-04-29 07:39:20 AM | INFO | auditor | ℹ️ Message 718 was not an active alert. Skipping record.
+2026-04-29 07:39:20 AM | INFO | db_manager | ✅ Group Resolved: [718] in -1003745970988 by Htet Htet (Reaction (❤))
+2026-04-29 07:39:20 AM | INFO | alert_handler | ✅ Message 718 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 07:39:33 AM | INFO | main_router | � Routing message from -1003897065464: Ni Used Clothing 
+Pretty Kit
+Hope Vintage 
+
+RT ငွေ...
+2026-04-29 07:39:34 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 07:39:34 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 07:39:51 AM | INFO | main_router | � Routing message from -1003897065464: @atmyo220...
+2026-04-29 07:39:52 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 07:41:33 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 07:43:37 AM | INFO | main_router | � Routing message from -1003798739565: 09444359328
+30ရက်နေ့cusရက်ချိန်လေးပါရှင့်မမ...
+2026-04-29 07:43:38 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 07:43:38 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 07:44:18 AM | INFO | main_router | � Routing message from -1003637399650: Deli fees စာရင်းလေးပါရှင့်။...
+2026-04-29 07:44:19 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 07:44:19 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:44:52 AM | INFO | main_router | � Routing message from -1003637399650: Total - 244000 - 3500 = 240,500 (OS ရရန်)...
+2026-04-29 07:44:53 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 07:44:53 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:45:37 AM | INFO | main_router | � Routing message from -1003837115331: 11 way 
+Total 856000...
+2026-04-29 07:45:38 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 07:45:38 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:45:38 AM | INFO | db_manager | ✓ Message 229 in -1003837115331 saved as PENDING
+2026-04-29 07:45:38 AM | INFO | message_handler | 📩 New Pending Message from 5542320516 in -1003837115331 (Topic: 1)
+2026-04-29 07:45:46 AM | INFO | main_router | � Routing message from -1003637399650: ငွေလွှဲလေးပါရှင့်။...
+2026-04-29 07:45:47 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 07:45:47 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:46:21 AM | INFO | main_router | � Routing message from -1003810399961: ဒီပါဆယ်လေးက ဖုန်းလေးဆက်သွယ်မရလို့ ဆက်သွယ်လို့ရမဲ့န...
+2026-04-29 07:46:21 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 07:46:21 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 07:46:34 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 07:48:24 AM | INFO | db_manager | ✓ Message 313 in -1003709069700 saved as PENDING
+2026-04-29 07:48:24 AM | INFO | message_handler | 📩 New Pending Message from 1831579231 in -1003709069700 (Topic: 1)
+2026-04-29 07:48:40 AM | INFO | main_router | � Routing message from -1003709069700: မိတ္ထီလာတွက်...
+2026-04-29 07:48:41 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-04-29 07:48:41 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
+2026-04-29 07:48:41 AM | INFO | db_manager | ✓ Message 314 in -1003709069700 saved as PENDING
+2026-04-29 07:48:41 AM | INFO | message_handler | 📩 New Pending Message from 1831579231 in -1003709069700 (Topic: 1)

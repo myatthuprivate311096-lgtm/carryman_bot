@@ -201,6 +201,16 @@ def route_message(bot, message):
         chat_id = message.chat.id
         user_id = message.from_user.id
         
+        # 🛑 Strict Staff Exclusion: Group Chat တွင် ဝန်ထမ်းဖြစ်ပါက AI ဆီသို့ လုံးဝမပို့ဘဲ ချက်ချင်းရပ်မည်
+        # Private Chat တွင်မူ Staff များ AI မေးခွန်းမေးမြန်းနိုင်ရန် ခွင့်ပြုမည် (Rule #2)
+        user_level = db_manager.get_user_level(user_id, chat_id)
+        is_staff = user_level >= 3
+        is_private = chat_id > 0
+
+        if not is_private and is_staff:
+            log.info(f"🛡️ Staff Exclusion (Group): Skipping AI routing for staff {user_id}")
+            return
+
         text = message.text or message.caption
         
         if not text:
@@ -231,18 +241,20 @@ def route_message(bot, message):
         Task: Analyze the user message and decide which module should handle it.
         
         Available Modules:
-        - auto_pickup: Use ONLY for EXPLICIT NEW pickup requests (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ", "မနက်ဖြန်အတွက် တင်ပေးပါ"). DO NOT use for casual mentions or questions about pickup status.
+        - auto_pickup: Use ONLY for EXPLICIT NEW pickup requests (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ", "မနက်ဖြန်အတွက် တင်ပေးပါ").
+          CRITICAL: If the message is just sharing a list (e.g., "စာရင်းလေးပါ", "pickup စာရင်းလေးပါ"), discussing a past order, or mentioning "pickup" without requesting a new one, output 'none'.
         - check_order: Use for checking order status, tracking numbers, or finding specific orders.
         - auditor: Use for complaints or when the user is asking about an ALREADY PLACED pickup (e.g., "pick up မလာသေးဘူးလား", "ဘယ်အချိန်လာမှာလဲ").
         - support: Use if the user is asking a general question about CarryMan, office location, or logistics services.
-        - none: Use if the message is just a greeting, spam, or irrelevant.
+        - none: Use if the message is just a greeting, spam, sharing a list, or irrelevant.
 
         User Message: "{text}"
 
         Output Rules:
         1. Output ONLY the module name in lowercase.
-        2. If unsure, output 'auditor'.
-        3. If irrelevant, output 'none'.
+        2. If the message is just sharing a list or info (e.g., "စာရင်းလေးပါ") without requesting a new pickup, output 'none'.
+        3. If unsure, output 'auditor'.
+        4. If irrelevant, output 'none'.
         """
 
         intent = ai_utils.get_ai_completion(prompt, timeout=30.0)
@@ -265,6 +277,10 @@ def route_message(bot, message):
         is_staff = user_level >= 3
 
         if intent == "auto_pickup":
+            # Rule #1: Works ONLY for Non-Staff.
+            if is_staff:
+                log.info(f"🛡️ Staff Safety Net: Blocking auto_pickup routing for staff {user_id}")
+                return
             if is_private:
                 log.info(f"⏭️ Skipping Auto Pickup: Private Chat detected")
                 return
