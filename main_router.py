@@ -29,6 +29,13 @@ def handle_ai_query(bot, message, is_automatic=False):
         user_id = message.from_user.id
         chat_id = message.chat.id
         is_private = chat_id > 0
+        is_sandbox = (chat_id == SANDBOX_CHAT_ID)
+
+        # 🛑 Group Chat Restriction: AI Auto-Answer is DISABLED in Groups.
+        # Only allowed in Private Chats or Sandbox.
+        if not is_private and not is_sandbox:
+            log.info(f"🔇 AI Auto-Answer is disabled in Group Chat {chat_id}. Returning silently.")
+            return
 
         # ၁။ User Level သတ်မှတ်ခြင်း
         user_level = db_manager.get_user_level(user_id, chat_id)
@@ -266,6 +273,14 @@ def route_message(bot, message):
 
         if intent == "none":
             return
+
+        # 🛑 Group Chat Restriction: ONLY allow auto_pickup and auditor.
+        # Block support, check_order, and any other general AI routing in Groups.
+        if not is_private and not is_sandbox:
+            allowed_group_intents = ["auto_pickup", "auditor"]
+            if intent not in allowed_group_intents:
+                log.info(f"🔇 Blocking general intent '{intent}' in Group Chat {chat_id}. Bot will remain silent.")
+                return
 
         # ၃။ Gatekeeper Logic (Phase 2)
         # Auto Pickup: ၂၄ နာရီ (Global ON ဖြစ်ရမည်)

@@ -37578,3 +37578,127 @@ Total 856000...
 2026-04-29 07:48:41 AM | INFO | main_router | ⏭️ Skipping AI Answer: Global Status is OFF
 2026-04-29 07:48:41 AM | INFO | db_manager | ✓ Message 314 in -1003709069700 saved as PENDING
 2026-04-29 07:48:41 AM | INFO | message_handler | 📩 New Pending Message from 1831579231 in -1003709069700 (Topic: 1)
+2026-04-29 07:49:36 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-29 07:49:36 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 07:49:36 AM | INFO | health_monitor | 🚀 Proactive Health Monitor started (5 min interval)
+2026-04-29 07:49:37 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-29 07:49:37 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-29 07:49:37 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-29 07:49:37 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-29 07:49:37 AM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-04-29 07:49:37 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-29 07:49:37 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-29 07:49:38 AM | INFO | auditor | ℹ️ No active alert tracking found for 314 in -1003709069700.
+2026-04-29 07:49:38 AM | INFO | auditor | ℹ️ Message 314 was not an active alert. Skipping record.
+2026-04-29 07:49:38 AM | INFO | db_manager | ✅ Group Resolved: [314] in -1003709069700 by Ei Pan Hmue (Reaction (❤))
+2026-04-29 07:49:38 AM | INFO | alert_handler | ✅ Message 314 marked as RESOLVED via Reaction (❤) by Ei Pan Hmue
+2026-04-29 07:49:38 AM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-04-29 07:50:54 AM | INFO | main_router | 🧪 Sandbox Mode: Bypassing all global/group/time restrictions for chat -1003539520778
+2026-04-29 07:50:54 AM | INFO | main_router | � Routing message from -1003539520778: တိုင်းရင်းသားကျေးရွာကဘယ်မှာရှိတာလဲ...
+2026-04-29 07:50:55 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 07:50:55 AM | INFO | main_router | 🤖 AI Query from 8047375926: တိုင်းရင်းသားကျေးရွာကဘယ်မှာရှိတာလဲ...
+2026-04-29 07:50:56 AM | INFO | db_manager | ✓ Message 294 in -1003539520778 saved as PENDING
+2026-04-29 07:50:56 AM | INFO | message_handler | 📩 New Pending Message from 8047375926 in -1003539520778 (Topic: 1)
+2026-04-29 07:52:43 AM | INFO | main_router | � Routing message from -1003898476625: မနေ့ကစရင်းလေးတွေက ဘယ်တော့လောက်လုပ်ပေးမှာလဲညီမလေး...
+2026-04-29 07:52:44 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 07:52:44 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 07:52:44 AM | INFO | db_manager | ✓ Message 617 in -1003898476625 saved as PENDING
+2026-04-29 07:52:44 AM | INFO | message_handler | 📩 New Pending Message from 7586720708 in -1003898476625 (Topic: 6)
+2026-04-29 07:53:34 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8784029703
+2026-04-29 07:54:37 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 07:55:00 AM | INFO | main_router | � Routing message from -1003750066427: Rt ပါဗျ...
+2026-04-29 07:55:01 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 07:59:37 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 08:00:09 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-04-29 08:00:09 AM | INFO | db_manager | ✅ Group Resolved: [299] in -1003709069700 by Thida Hlaing (Reply)
+2026-04-29 08:00:09 AM | INFO | auditor | ℹ️ No active alert tracking found for 299 in -1003709069700.
+2026-04-29 08:00:09 AM | INFO | auditor | ℹ️ Message 299 was not an active alert. Skipping record.
+2026-04-29 08:00:09 AM | INFO | message_handler | ✅ Message 299 marked as RESOLVED via Reply by Thida Hlaing
+2026-04-29 08:00:17 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-04-29 08:00:28 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-04-29 08:02:36 AM | INFO | main_router | � Routing message from -1003637399650: ဟုတ်ကဲ့ပါရှင့်...
+2026-04-29 08:02:37 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 08:03:05 AM | INFO | auditor | ℹ️ No active alert tracking found for 719 in -1003745970988.
+2026-04-29 08:03:05 AM | INFO | auditor | ℹ️ Message 719 was not an active alert. Skipping record.
+2026-04-29 08:03:05 AM | INFO | db_manager | ✅ Group Resolved: [719] in -1003745970988 by Htet Htet (Reaction (❤))
+2026-04-29 08:03:05 AM | INFO | alert_handler | ✅ Message 719 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 08:03:12 AM | INFO | auditor | ℹ️ No active alert tracking found for 720 in -1003745970988.
+2026-04-29 08:03:12 AM | INFO | auditor | ℹ️ Message 720 was not an active alert. Skipping record.
+2026-04-29 08:03:12 AM | INFO | db_manager | ✅ Group Resolved: [720] in -1003745970988 by Htet Htet (Reaction (❤))
+2026-04-29 08:03:12 AM | INFO | alert_handler | ✅ Message 720 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 08:03:17 AM | INFO | auditor | ℹ️ No active alert tracking found for 721 in -1003745970988.
+2026-04-29 08:03:17 AM | INFO | auditor | ℹ️ Message 721 was not an active alert. Skipping record.
+2026-04-29 08:03:17 AM | INFO | db_manager | ✅ Group Resolved: [721] in -1003745970988 by Htet Htet (Reaction (❤))
+2026-04-29 08:03:17 AM | INFO | alert_handler | ✅ Message 721 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 08:03:30 AM | INFO | auditor | ℹ️ No active alert tracking found for 722 in -1003745970988.
+2026-04-29 08:03:30 AM | INFO | auditor | ℹ️ Message 722 was not an active alert. Skipping record.
+2026-04-29 08:03:30 AM | INFO | db_manager | ✅ Group Resolved: [722] in -1003745970988 by Htet Htet (Reaction (❤))
+2026-04-29 08:03:30 AM | INFO | alert_handler | ✅ Message 722 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 08:03:41 AM | INFO | auditor | ℹ️ No active alert tracking found for 723 in -1003745970988.
+2026-04-29 08:03:41 AM | INFO | auditor | ℹ️ Message 723 was not an active alert. Skipping record.
+2026-04-29 08:03:41 AM | INFO | db_manager | ✅ Group Resolved: [723] in -1003745970988 by Htet Htet (Reaction (❤))
+2026-04-29 08:03:41 AM | INFO | alert_handler | ✅ Message 723 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 08:03:50 AM | INFO | auditor | ℹ️ No active alert tracking found for 725 in -1003745970988.
+2026-04-29 08:03:50 AM | INFO | auditor | ℹ️ Message 725 was not an active alert. Skipping record.
+2026-04-29 08:03:50 AM | INFO | db_manager | ✅ Group Resolved: [725] in -1003745970988 by Htet Htet (Reaction (❤))
+2026-04-29 08:03:50 AM | INFO | alert_handler | ✅ Message 725 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 08:03:54 AM | INFO | auditor | ℹ️ No active alert tracking found for 724 in -1003745970988.
+2026-04-29 08:03:54 AM | INFO | auditor | ℹ️ Message 724 was not an active alert. Skipping record.
+2026-04-29 08:03:54 AM | INFO | db_manager | ✅ Group Resolved: [724] in -1003745970988 by Htet Htet (Reaction (❤))
+2026-04-29 08:03:54 AM | INFO | alert_handler | ✅ Message 724 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 08:04:18 AM | INFO | auditor | ℹ️ No active alert tracking found for 726 in -1003745970988.
+2026-04-29 08:04:18 AM | INFO | auditor | ℹ️ Message 726 was not an active alert. Skipping record.
+2026-04-29 08:04:18 AM | INFO | db_manager | ✅ Group Resolved: [726] in -1003745970988 by Htet Htet (Reaction (❤))
+2026-04-29 08:04:18 AM | INFO | alert_handler | ✅ Message 726 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 08:04:25 AM | INFO | auditor | ℹ️ No active alert tracking found for 727 in -1003745970988.
+2026-04-29 08:04:25 AM | INFO | auditor | ℹ️ Message 727 was not an active alert. Skipping record.
+2026-04-29 08:04:25 AM | INFO | db_manager | ✅ Group Resolved: [727] in -1003745970988 by Htet Htet (Reaction (❤))
+2026-04-29 08:04:25 AM | INFO | alert_handler | ✅ Message 727 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 08:04:34 AM | INFO | auditor | ℹ️ No active alert tracking found for 728 in -1003745970988.
+2026-04-29 08:04:34 AM | INFO | auditor | ℹ️ Message 728 was not an active alert. Skipping record.
+2026-04-29 08:04:34 AM | INFO | db_manager | ✅ Group Resolved: [728] in -1003745970988 by Htet Htet (Reaction (❤))
+2026-04-29 08:04:34 AM | INFO | alert_handler | ✅ Message 728 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 08:04:38 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 08:04:38 AM | INFO | auditor | ℹ️ No active alert tracking found for 729 in -1003745970988.
+2026-04-29 08:04:38 AM | INFO | auditor | ℹ️ Message 729 was not an active alert. Skipping record.
+2026-04-29 08:04:38 AM | INFO | db_manager | ✅ Group Resolved: [729] in -1003745970988 by Htet Htet (Reaction (❤))
+2026-04-29 08:04:38 AM | INFO | alert_handler | ✅ Message 729 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 08:04:45 AM | INFO | auditor | ℹ️ No active alert tracking found for 730 in -1003745970988.
+2026-04-29 08:04:45 AM | INFO | auditor | ℹ️ Message 730 was not an active alert. Skipping record.
+2026-04-29 08:04:45 AM | INFO | db_manager | ✅ Group Resolved: [730] in -1003745970988 by Htet Htet (Reaction (❤))
+2026-04-29 08:04:45 AM | INFO | alert_handler | ✅ Message 730 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 08:04:49 AM | INFO | auditor | ℹ️ No active alert tracking found for 731 in -1003745970988.
+2026-04-29 08:04:49 AM | INFO | auditor | ℹ️ Message 731 was not an active alert. Skipping record.
+2026-04-29 08:04:49 AM | INFO | db_manager | ✅ Group Resolved: [731] in -1003745970988 by Htet Htet (Reaction (❤))
+2026-04-29 08:04:49 AM | INFO | alert_handler | ✅ Message 731 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-04-29 08:05:05 AM | INFO | main_router | � Routing message from -1003798739565: No 67
+စုမြတ်နှင်းဆီ
+09768983821
+
+ရွှေပုန်းညက်အိမ်ရ...
+2026-04-29 08:05:06 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 08:05:06 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 08:05:06 AM | INFO | db_manager | ✓ Message 3709 in -1003798739565 saved as PENDING
+2026-04-29 08:05:06 AM | INFO | message_handler | 📩 New Pending Message from 5254267634 in -1003798739565 (Topic: 1)
+2026-04-29 08:05:14 AM | INFO | main_router | � Routing message from -1003837547495: OS Name - 
+Date -  29/April/2026
+
+စုစုပေါင်း ပါဆယ်...
+2026-04-29 08:05:15 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 08:05:15 AM | INFO | db_manager | ✓ Message 192 in -1003837547495 saved as PENDING
+2026-04-29 08:05:15 AM | INFO | message_handler | 📩 New Pending Message from 7832992762 in -1003837547495 (Topic: 1)
+2026-04-29 08:05:33 AM | INFO | main_router | � Routing message from -1003798739565: ညနေ 5နာရီရုံးဆင်းမှာမို့ အဲ့မတိုင်ခင်ပို့ပေးပါအူံး...
+2026-04-29 08:05:34 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 08:05:34 AM | INFO | main_router | ⏭️ Skipping Auditor: Restrictions applied
+2026-04-29 08:05:34 AM | INFO | db_manager | ✓ Message 3710 in -1003798739565 saved as PENDING
+2026-04-29 08:05:34 AM | INFO | message_handler | 📩 New Pending Message from 5254267634 in -1003798739565 (Topic: 1)
+2026-04-29 08:05:49 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 6559895943
+2026-04-29 08:05:49 AM | INFO | db_manager | ✅ Group Resolved: [278] in -1003709069700 by CS 2 (Reply)
+2026-04-29 08:05:49 AM | INFO | auditor | ℹ️ No active alert tracking found for 278 in -1003709069700.
+2026-04-29 08:05:49 AM | INFO | auditor | ℹ️ Message 278 was not an active alert. Skipping record.
+2026-04-29 08:05:49 AM | INFO | message_handler | ✅ Message 278 marked as RESOLVED via Reply by CS 2
+2026-04-29 08:06:08 AM | INFO | auditor | 🧪 Sandbox Audit: Bypassing restrictions for chat -1003539520778
+2026-04-29 08:06:08 AM | INFO | auditor | 📂 Auditing Batch: AI Testing OS Gp (Topic 1) in Chat -1003539520778 (1 messages)
+2026-04-29 08:06:09 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003539520778, topic=1, msg=294, force=False
+2026-04-29 08:06:09 AM | INFO | auditor | 🎯 Explicit Route Found: -1003539520778/1 -> -1003601049225/1
+2026-04-29 08:06:09 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
