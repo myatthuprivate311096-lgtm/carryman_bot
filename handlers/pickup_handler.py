@@ -184,28 +184,43 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             # ၁။ Permission Check (Admin Level 3 or 4 only)
             user_level = db_manager.get_user_level(call.from_user.id, call.message.chat.id)
             if user_level < 3:
-                try: bot.answer_callback_query(call.id, "⚠️ ဤလုပ်ဆောင်ချက်ကို Admin များသာ အသုံးပြုနိုင်ပါသည်။", show_alert=True)
-                except: pass
+                bot.answer_callback_query(call.id, "⚠️ ဤလုပ်ဆောင်ချက်ကို Admin များသာ အသုံးပြုနိုင်ပါသည်။", show_alert=True)
                 return
 
             chat_id = int(call.data.split('_')[2])
-            with db_manager.connection_scope() as conn:
-                shop_data = conn.execute("SELECT shop_name FROM os_groups WHERE chat_id = ?", (chat_id,)).fetchone()
+            from modules import auto_pickup
             
-            raw_shop_name = db_manager.clean_shop_name(shop_data[0]) if shop_data else "Unknown"
-            shop_name_esc = telebot.util.escape(raw_shop_name)
-            
-            # ၂။ Fetch Suggestions
+            # ၂။ Extract OS Name from Title (Source of Truth)
+            chat_title = call.message.chat.title or ""
+            if '🤝' in chat_title:
+                raw_shop_name = chat_title.split('🤝')[0].strip()
+            else:
+                with db_manager.connection_scope() as conn:
+                    shop_data = conn.execute("SELECT shop_name FROM os_groups WHERE chat_id = ?", (chat_id,)).fetchone()
+                raw_shop_name = db_manager.clean_shop_name(shop_data[0]) if shop_data else "Unknown"
+
+            # ၃။ Website မှ ဆိုင်စာရင်းများကို Browser ဖြင့် Sync လုပ်ခြင်း
+            bot.answer_callback_query(call.id, "⏳ Website မှ ဆိုင်စာရင်းများကို Sync လုပ်နေပါသည်...")
+            success, sync_msg = auto_pickup.sync_shops_from_website()
+            if not success:
+                log.warning(f"⚠️ Shop Sync during Fix Mapping: {sync_msg}")
+
+            # ၄။ Fetch Suggestions (Sync ပြီးသား Data ထဲမှ ရှာမည်)
             suggestions = db_manager.get_website_suggestions(raw_shop_name[:5])
+            shop_name_esc = telebot.util.escape(raw_shop_name)
 
             markup = telebot.types.InlineKeyboardMarkup(row_width=1)
             for s in suggestions:
                 s_esc = telebot.util.escape(s)
-                markup.add(telebot.types.InlineKeyboardButton(f"✅ {s_esc}", callback_data=f"ap_set_{chat_id}_{s}"))
+                # Generate a short temp ID for the shop name to avoid callback data length limit (64 bytes)
+                import hashlib
+                temp_id = hashlib.md5(s.encode()).hexdigest()[:8]
+                db_manager.save_temp_data(f"shop_{temp_id}", s)
+                markup.add(telebot.types.InlineKeyboardButton(f"✅ {s_esc}", callback_data=f"ap_set_{chat_id}_{temp_id}"))
             
             markup.add(telebot.types.InlineKeyboardButton("⌨️ Manual Type (ကိုယ်တိုင်ရိုက်မည်)", callback_data=f"ap_manual_{chat_id}"))
 
-            # ၃။ Edit Message with HTML Escaping
+            # ၅။ Edit Message with HTML Escaping
             bot.edit_message_text(
                 f"🔍 **Shop Mapping Fix**\n━━━━━━━━━━━━━━━━━━\n"
                 f"🏪 Telegram: <b>{shop_name_esc}</b>\n\n"
@@ -214,11 +229,8 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 reply_markup=markup, parse_mode="HTML"
             )
         except Exception as e:
-            log.error(f"❌ Fix Mapping Callback Error: {e}")
-            try: bot.answer_callback_query(call.id, "❌ အမှားတစ်ခု ဖြစ်သွားပါသည်။")
-            except: pass
-        finally:
-            try: bot.answer_callback_query(call.id)
+            log.error(f"❌ Fix Mapping Callback Error: {e}", exc_info=True)
+            try: bot.answer_callback_query(call.id, "❌ အမှားတစ်ခု ဖြစ်သွားပါသည်။", show_alert=True)
             except: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_set_'))
@@ -227,8 +239,13 @@ def register_pickup_handlers(bot: telebot.TeleBot):
         try:
             parts = call.data.split('_')
             chat_id = int(parts[2])
-            website_name = "_".join(parts[3:])
+            temp_id = parts[3]
             
+            website_name = db_manager.get_temp_data(f"shop_{temp_id}")
+            if not website_name:
+                bot.answer_callback_query(call.id, "⚠️ Session expired. Please try 'Fix Shop Mapping' again.", show_alert=True)
+                return
+
             db_manager.set_shop_mapping(chat_id, website_name)
             db_manager.retry_failed_pickups(chat_id)
             bot.edit_message_text(f"✅ **Mapping သိမ်းဆည်းပြီးပါပြီ!**\n\n`{website_name}` အဖြစ် သတ်မှတ်လိုက်ပါသည်။ ကျရှုံးခဲ့သော Pickup များကို ပြန်လည်တင်ပေးနေပါပြီ။", call.message.chat.id, call.message.message_id)

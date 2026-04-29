@@ -10,6 +10,63 @@ from logger import log
 import ai_utils
 from modules import location_service, auto_login, browser_manager
 
+_bot = None
+
+async def send_pickup_notification(text, is_alert=False):
+    """
+    Centralized notification helper for Topic 878 (Pickup Command Center)
+    """
+    if not _bot:
+        log.error("❌ send_pickup_notification: Bot instance not initialized.")
+        return
+
+    target_chat_id = -1003601049225
+    topic_id = 878
+    emoji = "⚠️" if is_alert else "✅"
+    
+    # Formatting
+    formatted_text = f"{emoji} {text}"
+    
+    try:
+        # Use asyncio.to_thread for sync telebot calls
+        await asyncio.to_thread(
+            _bot.send_message,
+            target_chat_id,
+            formatted_text,
+            parse_mode="HTML",
+            message_thread_id=topic_id
+        )
+    except Exception as e:
+        log.error(f"❌ Failed to send centralized notification: {e}")
+
+async def _sync_shops_task(page):
+    """Website မှ OS Name စာရင်းများကို ဆွဲယူရန် Async Task"""
+    order_url = "https://www.carrymanexpress.com/neworder"
+    log.info(f"🔗 Syncing shops from {order_url}...")
+    await page.goto(order_url)
+    await page.wait_for_load_state('domcontentloaded')
+    
+    if "login" in page.url.lower():
+        success, msg = auto_login.auto_login()
+        if not success: return []
+        await page.goto(order_url)
+        await page.wait_for_load_state('networkidle')
+
+    # OS Name dropdown ကို နှိပ်၍ စာရင်းပေါ်လာအောင်လုပ်ခြင်း
+    os_input = page.locator("(//label[contains(text(), 'Os Name')]/following::input)[1]")
+    await os_input.click()
+    await asyncio.sleep(2)
+    
+    options = page.locator(".ant-select-item-option-content, .select-option, [role='option']")
+    count = await options.count()
+    shops = []
+    for i in range(count):
+        text = await options.nth(i).inner_text()
+        if text: shops.append(text.strip())
+    
+    log.info(f"✅ Found {len(shops)} shops on website.")
+    return shops
+
 async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
     """Async task for pickup submission logic"""
     # --- ၁။ Order Page သို့ သွားခြင်း ---
@@ -80,12 +137,6 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
                 log.info(f"   ✅ OS Name အတိအကျတူသည်ကို တွေ့ရှိ၍ ရွေးချယ်လိုက်ပါသည် ({opt_text})")
                 break
         
-        if not found:
-            first_opt = (await options.nth(0).inner_text()).strip()
-            await options.nth(0).click()
-            log.warning(f"   ⚠️ OS Name အတိအကျမတူသော်လည်း အနီးစပ်ဆုံး ({first_opt}) ကို ရွေးချယ်လိုက်ပါသည်")
-            found = True
-    
     if not found:
         log.error(f"   ❌ OS Name ({os_name}) ကို Website ထဲတွင် ရှာမတွေ့ပါ။")
         return False, f"Website ထဲတွင် ဆိုင်နာမည် ({os_name}) ကို ရှာမတွေ့ပါ။"
@@ -149,6 +200,20 @@ def submit_pickup_order(target_date, os_name, remark, vehicle="Bicycle"):
         log.error(f"❌ Playwright Error: {e}")
         return False, str(e)
 
+def sync_shops_from_website():
+    """Website မှ ဆိုင်စာရင်းများကို Browser ဖြင့် Sync လုပ်ခြင်း (Sync Wrapper)"""
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    state_path = os.path.join(base_dir, "state.json")
+    try:
+        shops = browser_manager.browser_manager.run_task(_sync_shops_task, storage_state=state_path)
+        if shops:
+            count = db_manager.sync_website_shops(shops)
+            return True, f"Synced {count} shops."
+        return False, "No shops found."
+    except Exception as e:
+        log.error(f"❌ Sync Shops Error: {e}")
+        return False, str(e)
+
 def run(data, event):
     if event == "submit_pickup":
         target_date = data.get("target_date")
@@ -164,6 +229,8 @@ def run(data, event):
     return False, f"Unknown event: {event}"
 
 def handle(bot, message):
+    global _bot
+    _bot = bot
     try:
         chat_id = message.chat.id
         if chat_id > 0:
@@ -197,7 +264,12 @@ def handle(bot, message):
                     return
 
         chat_title = message.chat.title or "Unknown Shop"
-        os_name = db_manager.clean_shop_name(chat_title)
+        # OS Name is always before the '🤝' emoji in the Group Title
+        if '🤝' in chat_title:
+            os_name = chat_title.split('🤝')[0].strip()
+        else:
+            os_name = db_manager.clean_shop_name(chat_title)
+
         TEST_GROUP_ID = -1003539520778
 
         extract_prompt = f"""
@@ -214,13 +286,11 @@ def handle(bot, message):
         - action: "PICKUP", "LOOKUP_LOCATION", or "OTHER"
         - location_query: If action is 'LOOKUP_LOCATION', extract the location name they are asking about (e.g., "Hledan", "Junction City"). Otherwise null.
         - is_new_request: boolean (True ONLY if action is 'PICKUP' and it's a clear request to start a new order)
-        - os_name: Extract the actual Shop/OS Name mentioned in the message.
-          CRITICAL: The words 'Os', 'Os Name', 'Pickup', 'Pick up' are often actions or task names, NOT the Shop Name itself.
-          Look for proper nouns (e.g., 'Honey Accessories', 'Akari') following or preceding these keywords.
-          If no specific shop name is found in the text, return null.
         - vehicle: "Bicycle" or "Car" (Default to null if not mentioned)
         - date_type: "today" or "tomorrow" (If the user explicitly mentions "today" (ဒီနေ့) or "tomorrow" (မနက်ဖြန်), set accordingly. Otherwise, default to null)
-        - clean_remark: Extract ONLY the additional instructions, notes, or specific details (like quantity, amount, location, or special requests) from the message in Burmese, EXCLUDING the core pickup request phrase (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ") and the Shop Name.
+        - clean_remark: Extract ONLY the additional instructions, notes, or specific details (like quantity, amount, location, or special requests) from the message in Burmese, EXCLUDING the core pickup request phrase (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ").
+        
+        Note: You DO NOT need to extract the Shop/OS Name. We already have it from the group title.
         """
 
         ai_res_content = ai_utils.get_ai_completion(
@@ -236,14 +306,6 @@ def handle(bot, message):
 
         extracted_data = json.loads(ai_res_content)
         action = extracted_data.get("action", "OTHER")
-
-        # OS Name Extraction Logic
-        ai_os_name = extracted_data.get("os_name")
-        if ai_os_name and ai_os_name.lower() not in ['os', 'pickup', 'pick up', 'os name']:
-            os_name = db_manager.clean_shop_name(ai_os_name)
-            log.info(f"🤖 AI extracted OS Name: {os_name}")
-        else:
-            log.info(f"ℹ️ AI failed to extract valid OS Name. Using Group Title: {os_name}")
 
         if action == 'LOOKUP_LOCATION':
             location_query = extracted_data.get("location_query")
@@ -268,13 +330,6 @@ def handle(bot, message):
         vehicle = extracted_data.get("vehicle")
         clean_remark = extracted_data.get("clean_remark")
         ai_date_type = extracted_data.get("date_type")
-        ai_os_name = extracted_data.get("os_name")
-
-        # OS Name Logic: AI extracted > Group Title
-        os_name = default_os_name
-        if ai_os_name and ai_os_name.lower() not in ['os', 'pickup', 'pick up', 'unknown']:
-            os_name = db_manager.clean_shop_name(ai_os_name)
-            log.info(f"🎯 AI extracted Shop Name: {os_name} (Original: {ai_os_name})")
 
         if clean_remark:
             db_manager.update_message_status(message.message_id, chat_id, 'PENDING', summary=clean_remark)
@@ -312,7 +367,7 @@ def handle(bot, message):
 
         if date_type in ["today", "tomorrow"]:
             central_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
-            pickup_topic = -878
+            pickup_topic = 878
             clean_chat_id = str(chat_id).replace("-100", "")
             msg_link = f"https://t.me/c/{clean_chat_id}/{message.message_id}"
             
@@ -376,7 +431,7 @@ def ask_remark(bot, chat_id, date_type, vehicle, orig_msg_id):
 def send_staff_decision_alert(bot, message, os_name, vehicle):
     try:
         central_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
-        pickup_topic = -878
+        pickup_topic = 878
         chat_id = message.chat.id
         orig_msg_id = message.message_id
         
@@ -483,6 +538,8 @@ def cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id):
         log.error(f"❌ Cleanup Pickup Intermediate Messages Error: {e}")
 
 def run_queue_worker(bot):
+    global _bot
+    _bot = bot
     log.info("🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...")
     while True:
         try:
@@ -500,24 +557,41 @@ def run_queue_worker(bot):
                 
                 tz = pytz.timezone('Asia/Yangon')
                 now_mmt = datetime.now(tz).strftime("%Y-%m-%d %I:%M:%S %p")
-                target_chat_id = -1003601049225
-                topic_id = 878
                 escaped_os_name = util.escape(os_name)
                 abort_msg = (
-                    f"⚠️ **System Shutdown Alert**\n\n"
-                    f"The following order was in queue but was **ABORTED** because the system was turned OFF:\n\n"
+                    f"<b>System Shutdown Alert</b>\n\n"
+                    f"The following order was in queue but was <b>ABORTED</b> because the system was turned OFF:\n\n"
                     f"Shop/OS Name: {escaped_os_name}\n"
                     f"Time: {now_mmt}"
                 )
-                try:
-                    bot.send_message(target_chat_id, abort_msg, parse_mode="Markdown", message_thread_id=topic_id)
-                except Exception as e:
-                    log.error(f"❌ Failed to send abort notification: {e}")
+                asyncio.run(send_pickup_notification(abort_msg, is_alert=True))
                 continue
 
             log.info(f"📦 Processing Queue Item {queue_id} for {os_name}")
+            
+            # --- Strict Mapping Logic ---
             mapped_name = db_manager.get_shop_mapping(chat_id)
-            final_os_name = mapped_name if mapped_name else os_name
+            final_os_name = None
+            
+            if mapped_name:
+                final_os_name = mapped_name
+                log.info(f"🎯 Using saved mapping: {final_os_name}")
+            else:
+                # Check if the current os_name exists exactly on the website
+                if db_manager.is_website_shop_exists(os_name):
+                    final_os_name = os_name
+                    db_manager.set_shop_mapping(chat_id, os_name)
+                    log.info(f"✨ Self-learned: Exact match found for {os_name}. Saved to mapping.")
+                else:
+                    log.warning(f"🛑 No mapping found for {os_name} and no exact match in website_shops.")
+                    db_manager.update_queue_status(queue_id, 'FAILED', error_msg="Shop Mapping Missing")
+                    update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Failed (Mapping Missing)")
+                    
+                    alert_msg = f"<b>Shop Mapping Missing</b>\n🏪 ဆိုင်: {os_name}\n⚠️ ဆိုင်နာမည် Mapping မရှိသေးပါ။ Manager မှ Fix Shop Mapping ကိုနှိပ်၍ အရင်ပြင်ပေးပါရန်။"
+                    asyncio.run(send_pickup_notification(alert_msg, is_alert=True))
+                    
+                    handle_pickup_error(bot, chat_id, orig_msg_id, os_name, target_date, "ဆိုင်နာမည် Mapping မရှိသေးပါ။ Manager မှ Fix Shop Mapping ကိုနှိပ်၍ အရင်ပြင်ပေးပါရန်။")
+                    continue
 
             if not all([target_date, final_os_name, vehicle]) or vehicle == "none":
                 log.error(f"❌ Strict Validation Failed for Queue {queue_id}: Missing required fields.")
@@ -542,13 +616,24 @@ def run_queue_worker(bot):
                 update_central_pickup_alert(bot, orig_msg_id, chat_id, "✅ Success (အောင်မြင်ပါသည်)")
                 db_manager.resolve_message(orig_msg_id, chat_id, 'System (Auto-Pickup)', method='Auto', status='HANDLED_BY_AI')
                 cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id)
-                bot.send_message(chat_id, f"✅ **Auto Pickup အောင်မြင်ပါသည်!**\n🏪 ဆိုင်: {final_os_name}\n📅 Pick Up Date: {target_date}\n📝 မှတ်ချက်: {remark if remark else '-'}", reply_to_message_id=orig_msg_id)
+                
+                success_msg = (
+                    f"<b>Auto Pickup Success</b>\n"
+                    f"🏪 ဆိုင်: {final_os_name}\n"
+                    f"📅 ရက်စွဲ: {target_date}\n"
+                    f"📝 မှတ်ချက်: {remark if remark else '-'}"
+                )
+                asyncio.run(send_pickup_notification(success_msg, is_alert=False))
 
                 if not mapped_name and final_os_name != os_name:
                     db_manager.set_shop_mapping(chat_id, final_os_name)
                     log.info(f"📝 Auto-mapped {chat_id} to {final_os_name}")
             else:
                 db_manager.update_queue_status(queue_id, 'FAILED', error_msg=msg)
+                
+                error_log = f"<b>Browser/Execution Error</b>\n🏪 ဆိုင်: {final_os_name}\n📅 ရက်စွဲ: {target_date}\n⚠️ အမှား: {msg}"
+                asyncio.run(send_pickup_notification(error_log, is_alert=True))
+                
                 handle_pickup_error(bot, chat_id, orig_msg_id, final_os_name, target_date, msg)
 
             time.sleep(10)
@@ -560,7 +645,7 @@ def run_queue_worker(bot):
 def handle_pickup_error(bot, chat_id, orig_msg_id, os_name, target_date, error_msg):
     try:
         central_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
-        pickup_topic = -878
+        pickup_topic = 878
         
         alert_text = (
             f"❌ **AUTO PICKUP ERROR**\n"

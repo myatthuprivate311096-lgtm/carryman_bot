@@ -17,7 +17,7 @@ load_dotenv(ENV_FILE)
 
 def clean_shop_name(raw_name):
     """
-    Shop name မှ emoji/non-ascii noise များကိုဖြတ်၍ base name ပြန်ပေးမည်။
+    Shop name မှ emoji/noise များကိုဖြတ်၍ base name ပြန်ပေးမည်။ (Burmese Support)
     🤝 ပါဝင်ပါက ၎င်း၏ ရှေ့က အမည်ကိုသာ ယူမည်။
     (***) ပါဝင်ပါက ၎င်းကို ဖယ်ရှားမည်။
     """
@@ -36,11 +36,13 @@ def clean_shop_name(raw_name):
     import re
     base = re.sub(r'\(.*?\)', '', base)
         
-    # Emoji နှင့် Non-ASCII များကို ဖယ်ရှားခြင်း
-    ascii_only = base.encode('ascii', 'ignore').decode('utf-8')
+    # Emoji များကို ဖယ်ရှားခြင်း (Burmese characters များကို ချန်ထားမည်)
+    # Unicode range for Burmese: \u1000-\u109F
+    # We keep alphanumeric, spaces, and Burmese range.
+    cleaned_base = re.sub(r'[^\w\s\u1000-\u109F]', '', base)
     
     # ပိုနေသော space များကို ရှင်းလင်းခြင်း
-    cleaned = " ".join(ascii_only.split()).strip()
+    cleaned = " ".join(cleaned_base.split()).strip()
     
     return cleaned or "Unknown Shop"
 
@@ -161,6 +163,12 @@ def init_db():
                      created_at INTEGER
                    )''')
 
+        c.execute('''CREATE TABLE IF NOT EXISTS temp_data (
+                     id TEXT PRIMARY KEY,
+                     value TEXT,
+                     created_at INTEGER
+                   )''')
+
         c.execute('''CREATE TABLE IF NOT EXISTS feedback_logs (
                      id INTEGER PRIMARY KEY AUTOINCREMENT,
                      message_id INTEGER,
@@ -177,6 +185,12 @@ def init_db():
                      rule_content TEXT,
                      chat_id INTEGER,
                      topic_id INTEGER,
+                     created_at INTEGER
+                   )''')
+
+        c.execute('''CREATE TABLE IF NOT EXISTS temp_data (
+                     id TEXT PRIMARY KEY,
+                     value TEXT,
                      created_at INTEGER
                    )''')
         
@@ -1147,6 +1161,24 @@ def get_all_website_shops():
     finally:
         conn.close()
 
+def is_website_shop_exists(name):
+    """ Website shops ထဲတွင် အမည်အတိအကျ ရှိမရှိ စစ်ဆေးခြင်း """
+    conn = get_connection()
+    try:
+        res = conn.execute("SELECT 1 FROM website_shops WHERE name = ?", (name,)).fetchone()
+        return res is not None
+    finally:
+        conn.close()
+
+def is_website_shop_exists(shop_name):
+    """ Website shops ထဲတွင် အမည်အတိအကျ ရှိမရှိ စစ်ဆေးခြင်း """
+    conn = get_connection()
+    try:
+        res = conn.execute("SELECT 1 FROM website_shops WHERE name = ?", (shop_name,)).fetchone()
+        return res is not None
+    finally:
+        conn.close()
+
 def get_unmapped_os_groups():
     """ Mapping မရှိသေးသော OS Group များကို ရှာပေးခြင်း """
     conn = get_connection()
@@ -1237,6 +1269,23 @@ def get_pickup_intermediate_msgs(chat_id, orig_msg_id):
     finally:
         conn.close()
 
+def save_temp_data(key, value):
+    """ ယာယီ data သိမ်းဆည်းရန် (Callback length limit ကျော်လွှားရန်) """
+    conn = get_connection()
+    try:
+        conn.execute("INSERT OR REPLACE INTO temp_data (id, value, created_at) VALUES (?, ?, ?)", (key, value, int(time.time())))
+        conn.commit()
+    finally:
+        conn.close()
+
+def get_temp_data(key):
+    """ ယာယီ data ပြန်ယူရန် """
+    conn = get_connection()
+    try:
+        res = conn.execute("SELECT value FROM temp_data WHERE id = ?", (key,)).fetchone()
+        return res[0] if res else None
+    finally:
+        conn.close()
 
 def get_pickup_order(queue_id):
     """ queue_id ဖြင့် pickup order အချက်အလက်များကို ယူခြင်း """
