@@ -38630,3 +38630,50 @@ Kbz Pay : 0979540...
 2026-04-29 09:17:52 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
 2026-04-29 09:18:11 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8688437892
 2026-04-29 09:19:22 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8784029703
+2026-04-29 09:20:15 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-04-29 09:20:15 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 09:20:16 AM | INFO | health_monitor | 🚀 Proactive Health Monitor started (5 min interval)
+2026-04-29 09:20:17 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-04-29 09:20:17 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-04-29 09:20:17 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-04-29 09:20:17 AM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-04-29 09:20:17 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-04-29 09:20:17 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-04-29 09:20:17 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-04-29 09:20:18 AM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-04-29 09:20:18 AM | INFO | main_router | � Routing message from -1003709069700: ဒါလေးကို ဒီနေ့မဟုတ်တောင်မနက်ဖြန်အရောက်ပို့ပေးပါ...
+2026-04-29 09:20:19 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-04-29 09:20:19 AM | INFO | main_router | ⏭️ Skipping Auto Pickup: Global Status is OFF
+2026-04-29 09:20:19 AM | INFO | db_manager | ✓ Message 333 in -1003709069700 saved as PENDING
+2026-04-29 09:20:19 AM | INFO | message_handler | 📩 New Pending Message from 1831579231 in -1003709069700 (Topic: 1)
+2026-04-29 09:20:32 AM | INFO | main_router | � Routing message from -1003709069700: မနက်ဖြန်တော့အရောက်ချပေးပါ...
+2026-04-29 09:20:32 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-04-29 09:20:32 AM | INFO | auditor | 🛡️ Auditor module handled message: 334
+2026-04-29 09:20:33 AM | INFO | db_manager | ✓ Message 334 in -1003709069700 saved as PENDING
+2026-04-29 09:20:33 AM | INFO | message_handler | 📩 New Pending Message from 1831579231 in -1003709069700 (Topic: 1)
+2026-04-29 09:21:16 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8353570874
+2026-04-29 09:22:12 AM | INFO | main_router | � Routing message from -1003852412184: OS Name - ITTC
+Date - 29/Apr/2026
+
+စုစုပေါင်း ပါဆယ...
+2026-04-29 09:22:13 AM | INFO | main_router | 🎯 AI Decision: none
+2026-04-29 09:22:13 AM | INFO | db_manager | ✓ Message 423 in -1003852412184 saved as PENDING
+2026-04-29 09:22:13 AM | INFO | message_handler | 📩 New Pending Message from 5148432328 in -1003852412184 (Topic: 6)
+2026-04-29 09:22:18 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5982912055
+2026-04-29 09:22:22 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 6559895943
+2026-04-29 09:22:25 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-04-29 09:22:25 AM | INFO | main_router | � Routing message from 8353570874: ရုံးကဘယ်မှာရှိတာလဲ...
+2026-04-29 09:22:26 AM | INFO | main_router | 🎯 AI Decision: support
+2026-04-29 09:22:26 AM | INFO | main_router | 👑 Staff Exemption: Full AI access for user 8353570874
+2026-04-29 09:22:26 AM | INFO | main_router | 🤖 AI Query from 8353570874: ရုံးကဘယ်မှာရှိတာလဲ...
+2026-04-29 09:23:26 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8784029703
+2026-04-29 09:25:01 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8784029703
+2026-04-29 09:25:16 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-04-29 09:25:25 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 6559895943
+2026-04-29 09:27:16 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8784029703
+2026-04-29 09:27:37 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5982912055
+2026-04-29 09:27:37 AM | INFO | db_manager | ✅ Group Resolved: [2901] in -1003798739565 by Moe Pyae (Reply)
+2026-04-29 09:27:37 AM | INFO | auditor | ℹ️ No active alert tracking found for 2901 in -1003798739565.
+2026-04-29 09:27:37 AM | INFO | auditor | ℹ️ Message 2901 was not an active alert. Skipping record.
+2026-04-29 09:27:37 AM | INFO | message_handler | ✅ Message 2901 marked as RESOLVED via Reply by Moe Pyae
+2026-04-29 09:28:19 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255

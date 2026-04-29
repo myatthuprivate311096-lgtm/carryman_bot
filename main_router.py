@@ -75,34 +75,7 @@ def handle_ai_query(bot, message, is_automatic=False):
             category, question, answer = kb_result
             kb_context = f"\n[Knowledge Base Data]:\nCategory: {category}\nQuestion: {question}\nAnswer: {answer}\n"
 
-        # ၄။ Step 2: AI Intent Detection (Address vs General)
-        intent_prompt = f"""
-        Analyze the user query and decide if they are asking for the office address, location, or how to get there.
-        User Query: "{query}"
-        
-        Output ONLY 'address' if they ask for location/address.
-        Output 'general' for anything else.
-        """
-        
-        intent = ai_utils.get_ai_completion(intent_prompt, timeout=15.0)
-        if not intent:
-            bot.reply_to(message, "😔 စိတ်မရှိပါနဲ့ခင်ဗျာ။ AI စနစ် ခေတ္တချို့ယွင်းနေလို့ပါ။")
-            return
-        intent = intent.strip().lower()
-
-        if 'address' in intent:
-            # Google Maps Link Logic
-            maps_link = "https://maps.app.goo.gl/CarryManLocationPlaceholder" # အစ်ကို့ရဲ့ တကယ့် Link ထည့်ပေးရပါမယ်
-            address_text = (
-                "📍 **CarryMan Office Location**\n\n"
-                "ကျွန်တော်တို့ရုံးချုပ် လိပ်စာမှာ အောက်ပါအတိုင်းဖြစ်ပါတယ်ခင်ဗျာ-\n"
-                "🏢 အမှတ် (၁၂၃)၊ လမ်း ၄၀၊ ရန်ကုန်မြို့။\n\n"
-                f"🗺 **Google Maps Link:**\n{maps_link}"
-            )
-            bot.reply_to(message, address_text, parse_mode="Markdown")
-            return
-
-        # ၅။ Step 3: General AI Response (with Scope Check for Private Chat)
+        # ၄။ Step 2: General AI Response (with Scope Check for Private Chat)
         is_staff = user_level >= 3
         
         scope_check_prompt = ""
@@ -115,12 +88,23 @@ def handle_ai_query(bot, message, is_automatic=False):
 
         rag_instructions = ai_utils.get_rag_instructions(user_level)
 
+        # Permanent Base Context (Company Info)
+        base_company_info = """
+        [Base Company Info]:
+        - Office Address: အမှတ်(၁)၊ ဇေယျသုခလမ်း၊ နှင်းဆီကုန်းဘူတာအနီး၊ သင်္ဃန်းကျွန်းမြို့နယ်၊ ရန်ကုန်မြို့။
+        - Office Hours: နေ့စဉ် မနက် ၉ နာရီမှ ညနေ ၆ နာရီအထိ (အခါကြီးရက်ကြီးများသာ ပိတ်ပါသည်)။
+        - Contact Numbers: 09789102234, 09899065899
+        - Google Maps: https://maps.app.goo.gl/CarryManRealLocation (အစ်ကို့ရဲ့ တကယ့် Link ကို ဒီမှာ အစားထိုးနိုင်ပါတယ်)
+        """
+
         ai_prompt = f"""
         Strict Persona & Tone: 'You are an Online Shop (OS) admin. You MUST strictly follow the tone, style, and examples provided in the OS Tone_&_Example data. Keep answers short, direct, and natural. NEVER use generic AI fluff like "Welcome to...", "If you need more info...", or "I am an AI assistant".'
 
         {rag_instructions}
 
         {scope_check_prompt}
+
+        {base_company_info}
 
         Comprehensive Data Extraction: 'When a user asks about delivery to a specific location (e.g., မြစ်ကြီးနား), you MUST look up that location in the database/sheets and extract ALL relevant details. Your answer MUST include:
         - Whether Home Delivery is available.

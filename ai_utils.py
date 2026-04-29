@@ -43,31 +43,7 @@ def get_rag_instructions(user_level):
         return """
         [USER_LEVEL: LEVEL 1 DATABASE READER]
         - ZERO HALLUCINATION POLICY: You are strictly a database reader.
-        - If the exact answer is NOT found in the provided [Context Data] or [Knowledge Base Data], you MUST NOT use your pre-trained general knowledge to guess or write an answer.
-        - FALLBACK RESPONSE: If the info is missing from the DB, you MUST immediately reply with exactly this polite fallback: 'တောင်းပန်ပါတယ်ခင်ဗျာ။ ဒီအချက်အလက်ကို ကျွန်တော် အတိအကျ မသိသေးပါဘူး။ အသေးစိတ်သိရှိလိုပါက Customer Service ကို ဆက်သွယ်မေးမြန်းနိုင်ပါတယ်ခင်ဗျာ။'
-        - Never invent prices, links, or facts.
-        """
-
-def get_rag_instructions(user_level):
-    """
-    Returns strict RAG instructions based on user level.
-    Level 3 & 4: Staff/Manager (Full Access)
-    Level 1 & 2: Customer/OS (Strict RAG)
-    """
-    if user_level >= 3:
-        return """
-        [USER_LEVEL: STAFF/MANAGER]
-        - You have FULL access to all database tables and Map tools.
-        - Assist the user fully and analyze data for them.
-        - You can use your general knowledge to supplement database info if needed.
-        """
-    else:
-        return """
-        [USER_LEVEL: LEVEL 1 DATABASE READER]
-        - ZERO HALLUCINATION POLICY: You are strictly a database reader.
-        - If the exact answer is NOT found in the provided [Context Data] or [Knowledge Base Data], you MUST NOT guess or use your pre-trained general knowledge.
-        - FALLBACK RULE: If the information is missing from the context, you MUST immediately reply with exactly this text: 'တောင်းပန်ပါတယ်ခင်ဗျာ။ ဒီအချက်အလက်ကို ကျွန်တော် အတိအကျ မသိသေးပါဘူး။ အသေးစိတ်သိရှိလိုပါက Customer Service ကို ဆက်သွယ်မေးမြန်းနိုင်ပါတယ်ခင်ဗျာ။'
-        - Never invent prices, links, or facts.
+        CRITICAL RULE: You are strictly forbidden from using your pre-trained knowledge. You MUST NOT make up or guess any addresses, phone numbers, delivery fees, or links. You must answer ONLY using the exact information found in the provided Context. If the Context does not contain the explicit answer to the user's query, you MUST reply EXACTLY with: 'တောင်းပန်ပါတယ်ခင်ဗျာ။ ဒီအချက်အလက်ကို ကျွန်တော် အတိအကျ မသိသေးပါဘူး။ အသေးစိတ်သိရှိလိုပါက Customer Service ကို ဆက်သွယ်မေးမြန်းနိုင်ပါတယ်ခင်ဗျာ။' and nothing else.
         """
 
 def send_manager_notification(text):
