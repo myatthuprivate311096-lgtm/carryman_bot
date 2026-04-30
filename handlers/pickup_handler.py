@@ -633,6 +633,8 @@ def register_pickup_handlers(bot: telebot.TeleBot):
         try:
             # format: ap_wrong_{orig_msg_id}_{chat_id}
             parts = call.data.split('_')
+            if parts[2] == "back":
+                return # Handled by handle_wrong_pickup_back_callback
             orig_msg_id = int(parts[2])
             chat_id = int(parts[3])
 
@@ -641,13 +643,41 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 telebot.types.InlineKeyboardButton("📋 စာရင်းပေးရုံသာ (List only)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_LIST"),
                 telebot.types.InlineKeyboardButton("💬 စကားပြောရုံသာ (Casual)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_CASUAL"),
                 telebot.types.InlineKeyboardButton("❓ စုံစမ်းမေးမြန်းခြင်း (Inquiry)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_INQUIRY"),
-                telebot.types.InlineKeyboardButton("🚫 အခြား (Other)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_OTHER")
+                telebot.types.InlineKeyboardButton("🚫 အခြား (Other)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_OTHER"),
+                telebot.types.InlineKeyboardButton("🔙 Back", callback_data=f"ap_wrong_back_{orig_msg_id}_{chat_id}")
             )
             
             bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
             bot.answer_callback_query(call.id, "AI ကို သင်ယူစေရန် အကြောင်းရင်း ရွေးပေးပါ အစ်ကို")
         except Exception as e:
             log.error(f"❌ Wrong Pickup Callback Error: {e}")
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_wrong_back_'))
+    def handle_wrong_pickup_back_callback(call):
+        """ Wrong Pickup ရွေးချယ်မှုမှ နောက်ပြန်ဆုတ်ခြင်း """
+        try:
+            # format: ap_wrong_back_{orig_msg_id}_{chat_id}
+            parts = call.data.split('_')
+            orig_msg_id = int(parts[3])
+            chat_id = int(parts[4])
+
+            msg_link = f"https://t.me/c/{str(chat_id)[4:]}/{orig_msg_id}" if str(chat_id).startswith("-100") else None
+            
+            markup = telebot.types.InlineKeyboardMarkup(row_width=1)
+            if msg_link:
+                markup.add(telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link))
+            
+            markup.add(
+                telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_msg_id}_{chat_id}"),
+                telebot.types.InlineKeyboardButton("❌ Wrong Pickup", callback_data=f"ap_wrong_{orig_msg_id}_{chat_id}")
+            )
+            
+            bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
+        except Exception as e:
+            log.error(f"❌ Wrong Pickup Back Callback Error: {e}")
+        finally:
+            try: bot.answer_callback_query(call.id)
+            except: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_fb_'))
     def handle_pickup_feedback_callback(call):
@@ -675,25 +705,13 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 # ၄။ Shop Group ရှိ Bot စာများကို ရှင်းလင်းခြင်း
                 auto_pickup.cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id)
                 
-                # ၅။ Admin Alert ကို Update လုပ်ခြင်း (သို့မဟုတ် ဖျက်ခြင်း)
-                new_text = (call.message.caption or call.message.text or "") + f"\n\n❌ **Wrong Pickup** ({category})\nAI ကို သင်ယူခိုင်းလိုက်ပါပြီ အစ်ကို။"
+                # ၅။ Admin Alert ကို ဖျက်ခြင်း
                 try:
-                    bot.edit_message_caption(
-                        caption=new_text,
-                        chat_id=call.message.chat.id,
-                        message_id=call.message.message_id,
-                        parse_mode="HTML",
-                        reply_markup=None
-                    )
-                except:
-                    bot.edit_message_text(
-                        text=new_text,
-                        chat_id=call.message.chat.id,
-                        message_id=call.message.message_id,
-                        parse_mode="HTML",
-                        reply_markup=None
-                    )
-                bot.answer_callback_query(call.id, "✅ AI သင်ယူပြီးပါပြီ။ ကျေးဇူးပါ အစ်ကို။")
+                    bot.delete_message(call.message.chat.id, call.message.message_id)
+                except Exception as e:
+                    log.error(f"❌ Error deleting feedback message: {e}")
+                
+                bot.answer_callback_query(call.id, f"✅ AI သင်ယူပြီးပါပြီ ({category})။ ကျေးဇူးပါ အစ်ကို။")
             else:
                 bot.answer_callback_query(call.id, "⚠️ မူရင်းစာသား ရှာမတွေ့တော့ပါ")
         except Exception as e:
@@ -751,8 +769,9 @@ def finalize_pickup_queue(bot, chat_id, orig_msg_id, date_type, vehicle, manual_
         orig_text = msg_data[0] if msg_data else "Auto Pickup Request"
         ai_summary = msg_data[1] if msg_data and msg_data[1] else None
         
-        # Priority: Manual Remark > AI Summary (Clean Remark) > Original Text
-        final_remark = manual_remark if manual_remark else (ai_summary if ai_summary else orig_text)
+        # Priority: Manual Remark > AI Summary (Clean Remark)
+        # If no specific remark, use "-" instead of falling back to original text (which might be just "Pick up")
+        final_remark = manual_remark if manual_remark else (ai_summary if ai_summary else "-")
         _, _, shop_name = db_manager.get_topic_context(chat_id, 1)
         
         # Strict Validation: No vehicle = No queue

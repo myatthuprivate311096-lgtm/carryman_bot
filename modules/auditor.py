@@ -378,15 +378,36 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
                 tz = pytz.timezone('Asia/Yangon')
                 orig_time_str = datetime.fromtimestamp(orig_ts, tz).strftime('%Y-%m-%d %I:%M %p') if 'orig_ts' in locals() else datetime.now(tz).strftime('%Y-%m-%d %I:%M %p')
 
-                record_text = (
-                    f"✅ **RESOLVED RECORD**\n"
-                    f"━━━━━━━━━━━━━━━━━━\n"
-                    f"🏪 ဆိုင်: {shop_name}\n"
-                    f"💬 မူရင်းစာ: {text if text != '[Unknown]' else 'စာသားရှာမတွေ့ပါ'}\n"
-                    f"👤 ဖြေရှင်းသူ: {staff_name}\n"
-                    f"⏳ ကြာချိန်: {duration_str if duration_str != 'Unknown' else 'ချက်ချင်း'}\n"
-                    f"📅 အချိန်: {orig_time_str}"
-                )
+                if topic_id == 1:
+                    # Fetch pickup details from DB
+                    with db_manager.get_connection() as conn:
+                        pickup = conn.execute("SELECT target_date, remark FROM pickup_queue WHERE orig_msg_id = ? AND chat_id = ?", (msg_id, chat_id)).fetchone()
+                    
+                    p_date = pickup[0] if pickup else "-"
+                    p_remark = pickup[1] if pickup else "-"
+                    
+                    record_text = (
+                        f"✅ **Pick Up Record**\n"
+                        f"━━━━━━━━━━━━━━━━━━\n"
+                        f"🏪 ဆိုင်: {shop_name}\n"
+                        f"📅 Pick Up Date: <b>{p_date}</b>\n"
+                        f"📝 မှတ်ချက်: {p_remark}\n"
+                        f"━━━━━━━━━━━━━━━━━━\n"
+                        f"💬 မူရင်းစာ: {text if text != '[Unknown]' else 'စာသားရှာမတွေ့ပါ'}\n"
+                        f"👤 ဖြေရှင်းသူ: {staff_name}\n"
+                        f"⏳ ကြာချိန်: {duration_str if duration_str != 'Unknown' else 'ချက်ချင်း'}\n"
+                        f"📅 အချိန်: {orig_time_str}"
+                    )
+                else:
+                    record_text = (
+                        f"✅ **RESOLVED RECORD**\n"
+                        f"━━━━━━━━━━━━━━━━━━\n"
+                        f"🏪 ဆိုင်: {shop_name}\n"
+                        f"💬 မူရင်းစာ: {text if text != '[Unknown]' else 'စာသားရှာမတွေ့ပါ'}\n"
+                        f"👤 ဖြေရှင်းသူ: {staff_name}\n"
+                        f"⏳ ကြာချိန်: {duration_str if duration_str != 'Unknown' else 'ချက်ချင်း'}\n"
+                        f"📅 အချိန်: {orig_time_str}"
+                    )
                 bot.send_message(
                     RESOLVED_GROUP_ID,
                     record_text,

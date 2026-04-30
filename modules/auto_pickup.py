@@ -91,14 +91,29 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
         """SweetAlert သို့မဟုတ် အခြား Popup များရှိပါက ပိတ်ခြင်း"""
         try:
             # SweetAlert buttons (OK, Confirm, Cancel)
-            popups = p.locator(".swal-button--confirm, .swal-button--cancel, .ant-modal-close, .ant-btn-primary")
+            popups = p.locator(".swal-button--confirm, .swal-button--cancel, .swal-button, .ant-modal-close, .ant-btn-primary, .ant-btn")
             count = await popups.count()
             if count > 0:
-                log.info(f"🛡️ Found {count} popup buttons. Attempting to close...")
                 for i in range(count):
-                    if await popups.nth(i).is_visible():
-                        await popups.nth(i).click(timeout=2000)
-                        await asyncio.sleep(1)
+                    try:
+                        if await popups.nth(i).is_visible():
+                            log.info(f"🛡️ Attempting to click popup button {i+1}/{count}...")
+                            await popups.nth(i).click(timeout=3000)
+                            await asyncio.sleep(1)
+                    except:
+                        continue
+            
+            # Wait for overlay to disappear or force remove it
+            overlay = p.locator(".swal-overlay, .ant-modal-mask, .ant-modal-wrap")
+            o_count = await overlay.count()
+            if o_count > 0:
+                log.info(f"🛡️ Found {o_count} popup overlays. Waiting for them to hide...")
+                try:
+                    await overlay.first.wait_for(state="hidden", timeout=5000)
+                except:
+                    log.warning("⚠️ Overlay still present, attempting force removal via JS...")
+                    await p.evaluate("() => { document.querySelectorAll('.swal-overlay, .ant-modal-mask, .ant-modal-wrap').forEach(el => el.remove()); document.body.classList.remove('swal-shown', 'ant-scrolling-effect'); }")
+                    await asyncio.sleep(1)
         except Exception as e:
             log.debug(f"Popup handling skip: {e}")
 
@@ -166,13 +181,51 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
 
     # (ဂ) Vehicle
     vehicle_input = page.locator("(//label[contains(text(), 'Vehicle')]/following::input)[1]")
+    await handle_popups(page)
     await vehicle_input.click()
     await asyncio.sleep(1)
+    
+    # Clear and type vehicle name
     await vehicle_input.fill("")
     await vehicle_input.press_sequentially(vehicle, delay=100)
     await asyncio.sleep(2)
-    await page.keyboard.press("ArrowDown")
-    await page.keyboard.press("Enter")
+    
+    # More robust dropdown selection for Ant Design
+    v_found = False
+    try:
+        # Ant Design options are usually in a div with class ant-select-item-option
+        # We wait for the dropdown to be visible first
+        dropdown_list = page.locator(".ant-select-dropdown:not(.ant-select-dropdown-hidden)")
+        
+        v_options = page.locator(".ant-select-item-option")
+        v_count = await v_options.count()
+        for i in range(v_count):
+            v_text = await v_options.nth(i).inner_text()
+            if vehicle.lower() in v_text.lower():
+                log.info(f"   🎯 Found vehicle option: {v_text.strip()}. Clicking...")
+                await v_options.nth(i).click(timeout=5000)
+                v_found = True
+                # Wait for dropdown to close
+                await asyncio.sleep(1)
+                break
+    except Exception as ve:
+        log.debug(f"Vehicle dropdown click failed: {ve}")
+
+    if not v_found:
+        log.warning(f"⚠️ Vehicle option '{vehicle}' not found via direct click. Trying keyboard fallback...")
+        await page.keyboard.press("ArrowDown")
+        await asyncio.sleep(1)
+        await page.keyboard.press("Enter")
+        await asyncio.sleep(1)
+
+    # Final check: If dropdown is still open, force close it with Escape
+    try:
+        if await page.locator(".ant-select-dropdown:not(.ant-select-dropdown-hidden)").count() > 0:
+            log.warning("⚠️ Dropdown still open. Forcing close with Escape...")
+            await page.keyboard.press("Escape")
+            await asyncio.sleep(0.5)
+    except: pass
+    
     log.info(f"   ✅ ယာဉ်ရွေးပြီးပါပြီ ({vehicle})")
 
     # (ဃ) Remark
@@ -189,10 +242,15 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
     log.info(f"📸 SAVE ခလုတ်မနှိပ်မီ မျက်နှာပြင်ကို '{screenshot_path}' အဖြစ် မှတ်တမ်းတင်ထားပါသည်။")
 
     # --- ၃။ Save ခလုတ်နှိပ်ခြင်း ---
-    save_button = page.locator("//button[descendant::span[contains(text(), 'SAVE') or contains(text(), 'Save')]]")
+    await handle_popups(page)
+    await asyncio.sleep(1)
+    
+    # Try multiple selectors for the Save button
+    save_button = page.locator("button.ant-btn-primary, button:has-text('SAVE'), button:has-text('Save'), //button[descendant::span[contains(text(), 'SAVE') or contains(text(), 'Save')]]")
+    
     if await save_button.count() > 0:
-        await save_button.first.click()
         log.info("💾 SAVE ခလုတ်ကို နှိပ်လိုက်ပါပြီ။")
+        await save_button.first.click(force=True)
     else:
         log.error("❌ Save button ကို ရှာမတွေ့ပါ။")
         return False, "Save button ကို ရှာမတွေ့ပါ။"
@@ -342,7 +400,12 @@ def handle(bot, message, force_pickup=False):
         - is_new_request: boolean (True if action is 'PICKUP' and it's a clear request to start a new order or an inquiry about availability)
         - vehicle: "Bicycle" or "Car" (Default to null if not mentioned)
         - date_type: "today" or "tomorrow" (If the user explicitly mentions "today" (ဒီနေ့) or "tomorrow" (မနက်ဖြန်), set accordingly. Otherwise, default to null)
-        - clean_remark: Extract ONLY the additional instructions, notes, or specific details (like quantity, amount, location, or special requests) from the message in Burmese, EXCLUDING the core pickup request phrase (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ").
+        - clean_remark: Extract ONLY the additional instructions, notes, or specific details (like quantity, amount, location, or special requests) from the message in Burmese.
+          CRITICAL EXCLUSIONS:
+          1. EXCLUDE the core pickup request phrases (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ", "တင်ပေးပါ", "ခေါ်ပေးပါ", "လာခဲ့ပေးပါ").
+          2. EXCLUDE vehicle mentions (e.g., "စက်ဘီးနဲ့", "ကားနဲ့", "Bicycle", "Car") as they are already captured in the 'vehicle' field.
+          3. EXCLUDE date mentions (e.g., "ဒီနေ့", "မနက်ဖြန်") as they are already captured in 'date_type'.
+          If NO additional instructions remain after these exclusions, set clean_remark to null.
         
         Note: You DO NOT need to extract the Shop/OS Name. We already have it from the group title.
         """
@@ -358,7 +421,14 @@ def handle(bot, message, force_pickup=False):
             log.error("❌ AI Extraction failed in auto_pickup.")
             return
 
-        extracted_data = json.loads(ai_res_content)
+        try:
+            cleaned_json = ai_utils.clean_ai_json(ai_res_content)
+            extracted_data = json.loads(cleaned_json)
+        except Exception as je:
+            log.error(f"❌ JSON Parsing Error in auto_pickup: {je}")
+            log.error(f"📝 Raw AI Response: {ai_res_content}")
+            return
+
         action = extracted_data.get("action", "OTHER")
 
         if action == 'LOOKUP_LOCATION':

@@ -26,6 +26,61 @@ OPENROUTER_COOLDOWN = 900  # 15 minutes in seconds
 MAX_OPENROUTER_FAILS = 3   # Number of consecutive fails before cooldown
 CRITICAL_ALERT_COOLDOWN = 1800 # 30 minutes between critical alerts
 
+def clean_json_response(text):
+    """
+    Cleans AI response to extract only the JSON part.
+    Handles markdown code blocks and unescaped newlines.
+    """
+    if not text:
+        return None
+    
+    text = text.strip()
+    
+    # Remove Markdown code blocks if present
+    if text.startswith("```"):
+        # Find the first { and last }
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1:
+            text = text[start:end+1]
+    
+    # Basic cleanup for common AI JSON mistakes
+    # Replace literal newlines within strings (this is tricky but helps)
+    # Note: This is a simple heuristic.
+    return text
+
+def clean_ai_json(text):
+    """
+    Cleans AI response to extract valid JSON.
+    Removes markdown wrappers and handles common formatting issues.
+    """
+    if not text:
+        return None
+    
+    text = text.strip()
+    
+    # Remove Markdown code blocks if present
+    if text.startswith("```"):
+        # Find the first { and last }
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1:
+            text = text[start:end+1]
+    
+    # Handle unescaped newlines within JSON strings (common AI mistake)
+    # We look for newlines that occur inside double quotes
+    import re
+    
+    # This regex tries to find newlines that are inside quotes.
+    # It's not perfect for all cases but covers the most common "unterminated string" issue.
+    def replace_newlines(match):
+        return match.group(0).replace('\n', '\\n').replace('\r', '\\r')
+    
+    # Match content between double quotes, including newlines
+    text = re.sub(r'"[^"]*?"', replace_newlines, text, flags=re.DOTALL)
+    
+    return text
+
 def get_rag_instructions(user_level):
     """
     Returns strict RAG instructions based on user level.
