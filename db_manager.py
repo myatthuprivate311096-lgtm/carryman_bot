@@ -132,7 +132,8 @@ def init_db():
                      vehicle TEXT,
                      status TEXT DEFAULT 'PENDING',
                      error_msg TEXT,
-                     created_at INTEGER
+                     created_at INTEGER,
+                     shop_msg_id INTEGER
                    )''')
 
         c.execute('''CREATE TABLE IF NOT EXISTS shop_mappings (
@@ -147,14 +148,14 @@ def init_db():
                    )''')
 
         c.execute('''CREATE TABLE IF NOT EXISTS knowledge_base (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        category TEXT,
-                        question TEXT,
-                        answer TEXT,
-                        tags TEXT,
-                        level INTEGER DEFAULT 1,
-                        last_updated INTEGER
-                    )''')
+                         id INTEGER PRIMARY KEY AUTOINCREMENT,
+                         category TEXT,
+                         question TEXT,
+                         answer TEXT,
+                         tags TEXT,
+                         level INTEGER DEFAULT 1,
+                         last_updated INTEGER
+                     )''')
 
         # Feedback & AI Learning Tables
         c.execute('''CREATE TABLE IF NOT EXISTS pickup_intermediate_messages (
@@ -204,7 +205,8 @@ def init_db():
             "alert_tracking": ["created_at INTEGER", "esc_msg_id INTEGER", "esc_tier2_msg_id INTEGER", "linked_msg_ids TEXT DEFAULT '[]'", "linked_customer_ids TEXT DEFAULT '[]'"],
             "feedback_logs": ["chat_id INTEGER", "topic_id INTEGER", "category TEXT", "original_text TEXT", "staff_id INTEGER"],
             "master_rules": ["chat_id INTEGER", "topic_id INTEGER", "rule_content TEXT"],
-            "knowledge_base": ["category TEXT", "question TEXT", "answer TEXT", "tags TEXT", "level INTEGER DEFAULT 1", "last_updated INTEGER"]
+            "knowledge_base": ["category TEXT", "question TEXT", "answer TEXT", "tags TEXT", "level INTEGER DEFAULT 1", "last_updated INTEGER"],
+            "pickup_queue": ["shop_msg_id INTEGER"]
         }
         
         for table, columns in migrations.items():
@@ -1117,6 +1119,42 @@ def add_to_pickup_queue(chat_id, orig_msg_id, target_date, os_name, remark, vehi
     finally:
         conn.close()
 
+def get_pickup_order_by_msg(orig_msg_id, chat_id):
+    """ orig_msg_id နှင့် chat_id ဖြင့် pickup order ကို ရှာဖွေရန် """
+    conn = get_connection()
+    try:
+        res = conn.execute(
+            "SELECT id, chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status, created_at FROM pickup_queue WHERE orig_msg_id = ? AND chat_id = ?",
+            (orig_msg_id, chat_id)
+        ).fetchone()
+        return res
+    finally:
+        conn.close()
+
+def upsert_pickup_queue(chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status='PENDING'):
+    """ Pickup Queue ထဲသို့ အချက်အလက်များ ထည့်သွင်းခြင်း သို့မဟုတ် ရှိပြီးသားကို Update လုပ်ခြင်း """
+    conn = get_connection()
+    try:
+        # Check if exists
+        res = conn.execute("SELECT id FROM pickup_queue WHERE orig_msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id)).fetchone()
+        if res:
+            queue_id = res[0]
+            conn.execute(
+                "UPDATE pickup_queue SET target_date = ?, os_name = ?, remark = COALESCE(?, remark), vehicle = COALESCE(?, vehicle), status = ? WHERE id = ?",
+                (target_date, os_name, remark, vehicle, status, queue_id)
+            )
+            conn.commit()
+            return queue_id
+        else:
+            cursor = conn.execute(
+                "INSERT INTO pickup_queue (chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status, int(time.time()))
+            )
+            conn.commit()
+            return cursor.lastrowid
+    finally:
+        conn.close()
+
 def confirm_pickup_order(queue_id, shop_msg_id=None):
     """ WAITING_CONFIRM ဖြစ်နေသော order ကို PENDING ပြောင်း၍ စက်ရုပ်ကို အလုပ်လုပ်ခိုင်းခြင်း """
     conn = get_connection()
@@ -1294,7 +1332,7 @@ def update_pickup_field(queue_id, field, value):
     conn = get_connection()
     try:
         # SQL Injection ကာကွယ်ရန် field name ကို whitelist စစ်မည်
-        allowed_fields = ['target_date', 'vehicle', 'remark', 'status']
+        allowed_fields = ['target_date', 'vehicle', 'remark', 'status', 'shop_msg_id']
         if field not in allowed_fields:
             log.error(f"❌ Invalid field name: {field}")
             return False
@@ -1506,4 +1544,3 @@ def reset_user_state(user_id):
         conn.commit()
     finally:
         conn.close()
-

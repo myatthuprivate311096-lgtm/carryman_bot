@@ -58,7 +58,6 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             
             if not msg_data:
                 log.warning(f"⚠️ Message {orig_msg_id} not found in logs for chat {chat_id}")
-                # မူရင်းစာ မရှိတော့ပါကလည်း ဆက်သွားနိုင်ရန် (သို့မဟုတ် error ပြရန်)
             
             if action == "dt" or not vehicle:
                 if not vehicle:
@@ -88,12 +87,9 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             date_type = parts[4]
             vehicle = parts[5] if parts[5] != "none" else None
 
-            _, _, shop_name = db_manager.get_topic_context(chat_id, 1)
-
             if date_type == "today":
-                sent_msg = bot.send_message(chat_id, "ဒီနေ့ရက်စွဲလေးနဲ့ pick up လေးတင်ပေးလိုက်ပါတယ်နော်", reply_to_message_id=orig_msg_id)
-                db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, sent_msg.message_id)
-                auto_pickup.ask_remark(bot, chat_id, date_type, vehicle, orig_msg_id, show_cancel=False)
+                # Unified Interactive Message for Today
+                auto_pickup.show_interactive_setup(bot, chat_id, orig_msg_id, "today", vehicle=vehicle)
                 bot.edit_message_text(f"✅ **Today** အဖြစ် သတ်မှတ်ပြီး Group ထဲသို့ အကြောင်းကြားလိုက်ပါပြီ။", call.message.chat.id, call.message.message_id)
                 auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "📅 Today (Staff Decision)")
             else:
@@ -103,7 +99,6 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                     telebot.types.InlineKeyboardButton("✅ OK", callback_data=f"ap_cs_{orig_msg_id}_{chat_id}_ok_{v_str}"),
                     telebot.types.InlineKeyboardButton("💬 Admin နှင့်ပြောမည်", callback_data=f"ap_cs_{orig_msg_id}_{chat_id}_admin_{v_str}")
                 )
-                # Removed "❌ Pickup မဟုတ်ပါ" button as per requirement (only in first reply)
                 sent_msg = bot.send_message(
                     chat_id,
                     "ဒီနေ့ rider လေးကဝေးလမ်းကြောင်းလေးကျော်သွားပြီမို့လို့ မနက်ဖြန်လေးကောက်ပေးလို့ရမလားရှင့်",
@@ -121,6 +116,85 @@ def register_pickup_handlers(bot: telebot.TeleBot):
         finally:
             try: bot.answer_callback_query(call.id)
             except: pass
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_tconf_'))
+    def handle_tomorrow_confirm_callback(call):
+        """ ညနေ ၃ နာရီနောက်ပိုင်း မနက်ဖြန်အတွက် OK နှိပ်လိုက်သည့်အခါ """
+        try:
+            from modules import auto_pickup
+            # format: ap_tconf_{orig_msg_id}
+            orig_msg_id = int(call.data.split('_')[2])
+            chat_id = call.message.chat.id
+            
+            # Show interactive setup (Tomorrow)
+            auto_pickup.show_interactive_setup(bot, chat_id, orig_msg_id, "tomorrow", edit_msg_id=call.message.message_id)
+            bot.answer_callback_query(call.id)
+        except Exception as e:
+            log.error(f"❌ Tomorrow Confirm Callback Error: {e}")
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_ivh_'))
+    def handle_interactive_vehicle_callback(call):
+        """ Interactive Setup: Vehicle Selection """
+        try:
+            from modules import auto_pickup
+            # format: ap_ivh_{orig_msg_id}_{date_type}_{vehicle}
+            parts = call.data.split('_')
+            orig_msg_id = int(parts[2])
+            date_type = parts[3]
+            vehicle = parts[4]
+            chat_id = call.message.chat.id
+
+            # Update DB state
+            tz = pytz.timezone('Asia/Yangon')
+            now = datetime.now(tz)
+            target_date = (now if date_type == "today" else now + timedelta(days=1)).strftime("%d-%m-%Y")
+            _, _, shop_name = db_manager.get_topic_context(chat_id, 1)
+            
+            db_manager.upsert_pickup_queue(chat_id, orig_msg_id, target_date, shop_name, None, vehicle, status='WAITING_SETUP')
+            
+            # Refresh Interactive Message
+            auto_pickup.show_interactive_setup(bot, chat_id, orig_msg_id, date_type, vehicle=vehicle, edit_msg_id=call.message.message_id)
+            bot.answer_callback_query(call.id, f"✅ {vehicle} ကို ရွေးချယ်လိုက်ပါသည်")
+        except Exception as e:
+            log.error(f"❌ Interactive Vehicle Callback Error: {e}")
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_irm_'))
+    def handle_interactive_remark_callback(call):
+        """ Interactive Setup: Remark Request """
+        try:
+            # format: ap_irm_{orig_msg_id}_{date_type}_write
+            parts = call.data.split('_')
+            orig_msg_id = int(parts[2])
+            date_type = parts[3]
+            
+            msg = bot.send_message(call.message.chat.id, "📝 ထည့်ချင်တဲ့ **မှတ်ချက်** ကို ရိုက်ထည့်ပေးပါခင်ဗျာ။", reply_markup=telebot.types.ForceReply())
+            db_manager.add_pickup_intermediate_msg(call.message.chat.id, orig_msg_id, msg.message_id)
+            bot.register_next_step_handler(msg, save_manual_remark_interactive, bot, orig_msg_id, date_type, call.message.message_id)
+            bot.answer_callback_query(call.id)
+        except Exception as e:
+            log.error(f"❌ Interactive Remark Callback Error: {e}")
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_isb_'))
+    def handle_interactive_submit_callback(call):
+        """ Interactive Setup: Final Submit """
+        try:
+            # format: ap_isb_{orig_msg_id}_{date_type}
+            parts = call.data.split('_')
+            orig_msg_id = int(parts[2])
+            date_type = parts[3]
+            chat_id = call.message.chat.id
+
+            order = db_manager.get_pickup_order_by_msg(orig_msg_id, chat_id)
+            if not order or not order[6]: # No vehicle
+                bot.answer_callback_query(call.id, "⚠️ ယာဉ်အမျိုးအစား အရင်ရွေးပေးပါဦး", show_alert=True)
+                return
+
+            # Finalize
+            finalize_pickup_queue(bot, chat_id, orig_msg_id, date_type, order[6], order[5])
+            bot.delete_message(chat_id, call.message.message_id)
+            bot.answer_callback_query(call.id, "✅ Pickup တင်ရန် အတည်ပြုလိုက်ပါပြီ")
+        except Exception as e:
+            log.error(f"❌ Interactive Submit Callback Error: {e}")
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_cs_'))
     def handle_customer_pickup_decision(call):
@@ -542,6 +616,30 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             except: pass
 
 # --- Helper Functions ---
+
+def save_manual_remark_interactive(message, bot, orig_msg_id, date_type, edit_msg_id):
+    """ Interactive Setup အတွက် မှတ်ချက်ကို သိမ်းဆည်းပြီး မူလစာကို Update လုပ်ခြင်း """
+    try:
+        from modules import auto_pickup
+        remark = message.text.strip()
+        chat_id = message.chat.id
+        
+        # Update DB state
+        tz = pytz.timezone('Asia/Yangon')
+        now = datetime.now(tz)
+        target_date = (now if date_type == "today" else now + timedelta(days=1)).strftime("%d-%m-%Y")
+        _, _, shop_name = db_manager.get_topic_context(chat_id, 1)
+        
+        db_manager.upsert_pickup_queue(chat_id, orig_msg_id, target_date, shop_name, remark, None, status='WAITING_SETUP')
+        
+        # Refresh Interactive Message
+        auto_pickup.show_interactive_setup(bot, chat_id, orig_msg_id, date_type, remark=remark, edit_msg_id=edit_msg_id)
+        
+        # Cleanup the reply message
+        try: bot.delete_message(chat_id, message.message_id)
+        except: pass
+    except Exception as e:
+        log.error(f"❌ Save Manual Remark Interactive Error: {e}")
 
 def save_manual_remark(message, bot, orig_msg_id, date_type, vehicle):
     """ User ရိုက်လိုက်သော မှတ်ချက်ကို သိမ်းဆည်းပြီး Queue ထဲထည့်ခြင်း """
