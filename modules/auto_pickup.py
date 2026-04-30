@@ -124,7 +124,7 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
             await p.wait_for_selector(".ant-spin, .loading-spinner, .spinner", state="hidden", timeout=10000)
         except:
             pass
-        await p.wait_for_selector("form, .ant-form, input[name='order.receivedDate']", state="visible", timeout=15000)
+        await p.wait_for_selector("form, .ant-form, input[id*='receivedDate'], label:has-text('Received Date')", state="visible", timeout=15000)
 
     try:
         await wait_for_page_ready(page)
@@ -135,17 +135,26 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
     await handle_popups(page)
 
     # (က) Date
-    date_input = page.locator("input[name='order.receivedDate']")
+    # 💡 Use a more robust label-based selector for the date field
+    date_input = page.locator("//label[contains(text(), 'Received Date')]/following::input[1]")
+    
     try:
-        await date_input.wait_for(state="attached", timeout=10000)
+        await date_input.wait_for(state="visible", timeout=15000)
     except Exception:
         log.warning("⚠️ Date field မတွေ့ပါ။ Page ကို Refresh လုပ်ပြီး တစ်ကြိမ် ထပ်ကြိုးစားကြည့်ပါမည်...")
         await page.reload()
-        await page.wait_for_load_state('networkidle')
+        await page.wait_for_load_state('domcontentloaded')
         await wait_for_page_ready(page)
-        await date_input.wait_for(state="attached", timeout=15000)
+        await date_input.wait_for(state="visible", timeout=20000)
 
-    await date_input.evaluate(f"(el) => {{ el.value = '{target_date}'; el.dispatchEvent(new Event('input', {{ bubbles: true }})); el.dispatchEvent(new Event('change', {{ bubbles: true }})); }}")
+    # Set date using multiple methods to ensure it sticks (especially for readonly fields)
+    log.info(f"📅 ရက်စွဲ သတ်မှတ်နေပါသည်: {target_date}")
+    await date_input.evaluate("""(el, val) => {
+        el.value = val;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+    }""", target_date)
+    await asyncio.sleep(1)
     await page.locator("body").click(force=True)
     log.info(f"   ✅ ရက်စွဲဖြည့်ပြီးပါပြီ ({target_date})")
 
@@ -179,14 +188,18 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
         return False, f"Website ထဲတွင် ဆိုင်နာမည် ({os_name}) ကို ရှာမတွေ့ပါ။"
 
     log.info(f"   ✅ OS Name ရွေးပြီးပါပြီ")
+    
+    # 💡 Website Auto-fill ကို စောင့်ခြင်း (ဆိုင်ရွေးပြီးရင် အချက်အလက်အဟောင်းတွေ တက်လာတတ်လို့)
+    log.info("⏳ Website auto-fill လုပ်ဆောင်ချက်ကို (၅) စက္ကန့် စောင့်နေပါသည်...")
+    await asyncio.sleep(5)
 
     # (ဂ) Vehicle
     vehicle_input = page.locator("(//label[contains(text(), 'Vehicle')]/following::input)[1]")
     await handle_popups(page)
+    
+    log.info(f"🚲 ယာဉ်အမျိုးအစား ရွေးချယ်နေပါသည် ({vehicle})...")
     await vehicle_input.click()
     await asyncio.sleep(1)
-    
-    # Clear and type vehicle name
     await vehicle_input.fill("")
     await vehicle_input.press_sequentially(vehicle, delay=100)
     await asyncio.sleep(2)
@@ -194,19 +207,16 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
     # More robust dropdown selection for Ant Design
     v_found = False
     try:
-        # Ant Design options are usually in a div with class ant-select-item-option
-        # We wait for the dropdown to be visible first
-        dropdown_list = page.locator(".ant-select-dropdown:not(.ant-select-dropdown-hidden)")
-        
+        # Wait for dropdown to be visible
+        await page.wait_for_selector(".ant-select-dropdown:not(.ant-select-dropdown-hidden)", timeout=5000)
         v_options = page.locator(".ant-select-item-option")
         v_count = await v_options.count()
         for i in range(v_count):
             v_text = await v_options.nth(i).inner_text()
             if vehicle.lower() in v_text.lower():
                 log.info(f"   🎯 Found vehicle option: {v_text.strip()}. Clicking...")
-                await v_options.nth(i).click(timeout=5000)
+                await v_options.nth(i).click(force=True)
                 v_found = True
-                # Wait for dropdown to close
                 await asyncio.sleep(1)
                 break
     except Exception as ve:
@@ -224,15 +234,19 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
         if await page.locator(".ant-select-dropdown:not(.ant-select-dropdown-hidden)").count() > 0:
             log.warning("⚠️ Dropdown still open. Forcing close with Escape...")
             await page.keyboard.press("Escape")
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(1)
     except: pass
     
     log.info(f"   ✅ ယာဉ်ရွေးပြီးပါပြီ ({vehicle})")
 
-    # (ဃ) Remark
+    # (ဃ) Remark (Fill this LAST to ensure it's not overwritten by website auto-fill)
+    log.info(f"📝 မှတ်ချက် နောက်ဆုံးမှ ထပ်မံဖြည့်သွင်းနေပါသည် ({remark})...")
     remark_input = page.locator("textarea[name='order.remark']")
+    await remark_input.click(click_count=3) # Select all existing text
+    await page.keyboard.press("Backspace")
     await remark_input.fill(remark)
-    log.info(f"   ✅ မှတ်ချက်ဖြည့်ပြီးပါပြီ ({remark})")
+    await asyncio.sleep(1)
+    log.info(f"   ✅ မှတ်ချက်ဖြည့်ပြီးပါပြီ")
 
     await page.locator("body").click(force=True)
     await asyncio.sleep(2) 
@@ -247,11 +261,26 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
     await asyncio.sleep(1)
     
     # Try multiple selectors for the Save button
-    save_button = page.locator("button.ant-btn-primary, button:has-text('SAVE'), button:has-text('Save'), //button[descendant::span[contains(text(), 'SAVE') or contains(text(), 'Save')]]")
+    save_selectors = [
+        "button.ant-btn-primary",
+        "button:has-text('SAVE')",
+        "button:has-text('Save')",
+        "//button[descendant::span[contains(text(), 'SAVE') or contains(text(), 'Save')]]"
+    ]
     
-    if await save_button.count() > 0:
+    save_btn = None
+    for selector in save_selectors:
+        try:
+            loc = page.locator(selector).first
+            if await loc.is_visible():
+                save_btn = loc
+                break
+        except:
+            continue
+
+    if save_btn:
         log.info("💾 SAVE ခလုတ်ကို နှိပ်လိုက်ပါပြီ။")
-        await save_button.first.click(force=True)
+        await save_btn.click(force=True)
     else:
         log.error("❌ Save button ကို ရှာမတွေ့ပါ။")
         return False, "Save button ကို ရှာမတွေ့ပါ။"

@@ -431,7 +431,19 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             db_manager.confirm_pickup_order(queue_id, shop_msg_id=call.message.message_id)
 
             from modules import auto_pickup
-            db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, call.message.message_id)
+            
+            # 💡 အတည်ပြုပြီးသည်နှင့် ကြားဖြတ်စာများကို ချက်ချင်းရှင်းလင်းမည် (Status Message ကိုတော့ ချန်ထားမည်)
+            try:
+                msg_ids = db_manager.get_pickup_intermediate_msgs(chat_id, orig_msg_id)
+                for mid in msg_ids:
+                    if mid != call.message.message_id: # လက်ရှိ Status ပြနေတဲ့စာကို မဖျက်ပါ
+                        try: bot.delete_message(chat_id, mid)
+                        except: pass
+                # DB ထဲက စာရင်းကို ရှင်းမည်
+                db_manager.delete_pickup_intermediate_msgs(chat_id, orig_msg_id)
+            except Exception as ce:
+                log.error(f"❌ Cleanup during confirm error: {ce}")
+
             auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "⏳ Pending")
                 
         except Exception as e:

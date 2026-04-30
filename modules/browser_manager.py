@@ -44,10 +44,15 @@ class BrowserManager:
             raise Exception("Browser initialization timed out.")
 
         future = asyncio.run_coroutine_threadsafe(
-            self._execute_with_resource_guard(coro_func, *args, **kwargs), 
+            self._execute_with_resource_guard(coro_func, *args, **kwargs),
             self.loop
         )
-        return future.result()
+        # 💡 Safety Timeout: 5 minutes max for any browser task
+        try:
+            return future.result(timeout=300)
+        except TimeoutError:
+            log.error(f"❌ Browser task timed out after 5 minutes: {coro_func.__name__}")
+            raise Exception("Browser task timed out.")
 
     async def _execute_with_resource_guard(self, coro_func, storage_state=None, *args, **kwargs):
         """Wait for semaphore and execute the task in a new tab"""

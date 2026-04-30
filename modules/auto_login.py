@@ -19,7 +19,7 @@ async def _auto_login_task(page, **kwargs):
     login_url = "https://www.carrymanexpress.com/login"
     log.info(f"🔗 {login_url} သို့ သွားနေပါသည်...")
     await page.goto(login_url)
-    await page.wait_for_load_state('networkidle')
+    await page.wait_for_load_state('domcontentloaded')
 
     log.info("🔑 Login အချက်အလက်များ ရိုက်ထည့်နေပါသည်...")
     await page.fill("//input[@type='text']", username)
@@ -30,7 +30,7 @@ async def _auto_login_task(page, **kwargs):
 
     log.info("⏳ Login အောင်မြင်သည်အထိ စောင့်နေပါသည်...")
     await asyncio.sleep(5)
-    await page.wait_for_load_state('networkidle')
+    await page.wait_for_load_state('domcontentloaded')
 
     if "login" in page.url.lower():
         log.error("❌ Login မအောင်မြင်ပါ။")
