@@ -262,7 +262,7 @@ def handle(bot, message):
         if user_level >= 3:
             log.info(f"🛡️ Staff Safety Net: Skipping Auto Pickup for staff {user_id}")
             return
-
+ 
         # Pickup is Group-only (Safety check in case router fails)
         if is_private:
             log.info(f"⏭️ Skipping Auto Pickup: Private Chat detected ({chat_id})")
@@ -464,10 +464,10 @@ def handle(bot, message):
             return
 
         if not vehicle:
-            ask_vehicle(bot, message, date_type, message.message_id)
+            ask_vehicle(bot, message, date_type, message.message_id, show_cancel=True)
             return
         else:
-            ask_remark(bot, chat_id, date_type, vehicle, message.message_id)
+            ask_remark(bot, chat_id, date_type, vehicle, message.message_id, show_cancel=True)
 
         if date_type in ["today", "tomorrow"]:
             update_central_pickup_alert(bot, message.message_id, chat_id, "⏳ Pending")
@@ -483,7 +483,7 @@ def show_duplicate_alert(bot, message, target_date, orig_msg_id):
     msg = bot.reply_to(message, text, reply_markup=markup)
     db_manager.add_pickup_intermediate_msg(message.chat.id, orig_msg_id, msg.message_id)
 
-def ask_vehicle(bot, message, date_type, orig_msg_id):
+def ask_vehicle(bot, message, date_type, orig_msg_id, show_cancel=True):
     text = "ဒီနေ့ pick up လေးရပါတယ်နော်။ pick up တင်ပေးနိုင်ရန် ****လိုတဲ့အချက် (စက်ဘီး၊ကား)*** ကိုပြောပေးပါဦး"
     if date_type == "tomorrow":
         text = "မနက်ဖြန်အတွက် pick up တင်ပေးနိုင်ရန် ****လိုတဲ့အချက် (စက်ဘီး၊ကား)*** ကိုပြောပေးပါဦး"
@@ -493,18 +493,20 @@ def ask_vehicle(bot, message, date_type, orig_msg_id):
         types.InlineKeyboardButton("🚲 စက်ဘီး (Bicycle)", callback_data=f"ap_vh_{orig_msg_id}_{date_type}_Bicycle"),
         types.InlineKeyboardButton("🚗 ကား (Car)", callback_data=f"ap_vh_{orig_msg_id}_{date_type}_Car")
     )
-    markup.add(types.InlineKeyboardButton("❌ Pickup မဟုတ်ပါ", callback_data=f"ap_cancel_{orig_msg_id}"))
+    if show_cancel:
+        markup.add(types.InlineKeyboardButton("❌ Pickup မဟုတ်ပါ", callback_data=f"ap_cancel_{orig_msg_id}"))
     msg = bot.reply_to(message, text, reply_markup=markup)
     db_manager.add_pickup_intermediate_msg(message.chat.id, orig_msg_id, msg.message_id)
 
-def ask_remark(bot, chat_id, date_type, vehicle, orig_msg_id):
+def ask_remark(bot, chat_id, date_type, vehicle, orig_msg_id, show_cancel=True):
     text = "pick up အချက်အလက်စုံရင် Pick up တင်ပေးပါတော့မယ်၊ ထည့်ချင်တဲ့မှတ်ချက်ရှိရင် ရေးပေးပါခင်ဗျ"
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(
         types.InlineKeyboardButton("📝 မှတ်ချက်ရေးမည်", callback_data=f"ap_rm_{orig_msg_id}_{date_type}_{vehicle}_write"),
         types.InlineKeyboardButton("❌ မှတ်ချက်မရှိပါ", callback_data=f"ap_rm_{orig_msg_id}_{date_type}_{vehicle}_none")
     )
-    markup.add(types.InlineKeyboardButton("❌ Pickup မဟုတ်ပါ", callback_data=f"ap_cancel_{orig_msg_id}"))
+    if show_cancel:
+        markup.add(types.InlineKeyboardButton("❌ Pickup မဟုတ်ပါ", callback_data=f"ap_cancel_{orig_msg_id}"))
     msg = bot.send_message(chat_id, text, reply_to_message_id=orig_msg_id, reply_markup=markup)
     db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, msg.message_id)
 

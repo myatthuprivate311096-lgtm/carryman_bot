@@ -62,10 +62,10 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             
             if action == "dt" or not vehicle:
                 if not vehicle:
-                    auto_pickup.ask_vehicle(bot, call.message, date_type, orig_msg_id)
+                    auto_pickup.ask_vehicle(bot, call.message, date_type, orig_msg_id, show_cancel=False)
                     return
             
-            auto_pickup.ask_remark(bot, chat_id, date_type, vehicle, orig_msg_id)
+            auto_pickup.ask_remark(bot, chat_id, date_type, vehicle, orig_msg_id, show_cancel=False)
             bot.delete_message(chat_id, call.message.message_id)
 
         except Exception as e:
@@ -93,7 +93,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             if date_type == "today":
                 sent_msg = bot.send_message(chat_id, "ဒီနေ့ရက်စွဲလေးနဲ့ pick up လေးတင်ပေးလိုက်ပါတယ်နော်", reply_to_message_id=orig_msg_id)
                 db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, sent_msg.message_id)
-                auto_pickup.ask_remark(bot, chat_id, date_type, vehicle, orig_msg_id)
+                auto_pickup.ask_remark(bot, chat_id, date_type, vehicle, orig_msg_id, show_cancel=False)
                 bot.edit_message_text(f"✅ **Today** အဖြစ် သတ်မှတ်ပြီး Group ထဲသို့ အကြောင်းကြားလိုက်ပါပြီ။", call.message.chat.id, call.message.message_id)
                 auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "📅 Today (Staff Decision)")
             else:
@@ -103,7 +103,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                     telebot.types.InlineKeyboardButton("✅ OK", callback_data=f"ap_cs_{orig_msg_id}_{chat_id}_ok_{v_str}"),
                     telebot.types.InlineKeyboardButton("💬 Admin နှင့်ပြောမည်", callback_data=f"ap_cs_{orig_msg_id}_{chat_id}_admin_{v_str}")
                 )
-                markup.add(telebot.types.InlineKeyboardButton("❌ Pickup မဟုတ်ပါ", callback_data=f"ap_cancel_{orig_msg_id}"))
+                # Removed "❌ Pickup မဟုတ်ပါ" button as per requirement (only in first reply)
                 sent_msg = bot.send_message(
                     chat_id,
                     "ဒီနေ့ rider လေးကဝေးလမ်းကြောင်းလေးကျော်သွားပြီမို့လို့ မနက်ဖြန်လေးကောက်ပေးလို့ရမလားရှင့်",
@@ -138,7 +138,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             vehicle = parts[5] if parts[5] != "none" else "Bicycle"
 
             if action == "ok":
-                auto_pickup.ask_remark(bot, chat_id, "tomorrow", vehicle, orig_msg_id)
+                auto_pickup.ask_remark(bot, chat_id, "tomorrow", vehicle, orig_msg_id, show_cancel=False)
                 bot.edit_message_text("✅ မနက်ဖြန်အတွက် pick up တင်ပေးထားပါ့မယ်ရှင်။", chat_id, call.message.message_id)
                 auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "📅 Tomorrow (Customer OK)")
             else:
