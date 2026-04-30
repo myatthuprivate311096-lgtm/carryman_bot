@@ -726,6 +726,9 @@ def save_manual_remark_interactive(message, bot, orig_msg_id, date_type, edit_ms
         remark = message.text.strip()
         chat_id = message.chat.id
         
+        # 💡 User ရိုက်လိုက်သော စာကိုပါ ဖျက်ရန်အတွက် intermediate messages ထဲထည့်မည်
+        db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, message.message_id)
+        
         # Update DB state
         tz = pytz.timezone('Asia/Yangon')
         now = datetime.now(tz)
@@ -748,6 +751,10 @@ def save_manual_remark(message, bot, orig_msg_id, date_type, vehicle):
     try:
         remark = message.text.strip()
         chat_id = message.chat.id
+        
+        # 💡 User ရိုက်လိုက်သော စာကိုပါ ဖျက်ရန်အတွက် intermediate messages ထဲထည့်မည်
+        db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, message.message_id)
+        
         if not remark:
             sent_msg = bot.reply_to(message, "⚠️ မှတ်ချက် အလွတ်ဖြစ်နေလို့ မူရင်းစာသားအတိုင်းပဲ တင်ပေးလိုက်ပါမယ်။")
             db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, sent_msg.message_id)

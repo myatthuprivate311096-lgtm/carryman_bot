@@ -7,7 +7,7 @@ from modules.browser_manager import browser_manager
 # Load environment variables
 load_dotenv()
 
-async def _auto_login_task(page):
+async def _auto_login_task(page, **kwargs):
     """Async task for login logic"""
     username = os.getenv("WEB_USERNAME")
     password = os.getenv("WEB_PASSWORD")
@@ -45,11 +45,21 @@ def auto_login():
     state_path = os.path.join(base_dir, "state.json")
     
     try:
+        # Use run_task which handles the thread safety
         success, msg = browser_manager.run_task(_auto_login_task, save_state_path=state_path)
         return success, msg
     except Exception as e:
         log.error(f"❌ Auto Login Error: {str(e)}")
         return False, str(e)
+
+async def perform_login_on_page(page):
+    """Helper to perform login on an existing page object (to avoid deadlocks)"""
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    state_path = os.path.join(base_dir, "state.json")
+    success, msg = await _auto_login_task(page)
+    if success:
+        await page.context.storage_state(path=state_path)
+    return success, msg
 
 if __name__ == "__main__":
     success, msg = auto_login()

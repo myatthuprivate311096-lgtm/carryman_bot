@@ -78,7 +78,8 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
     # Check if redirected to login page
     if "login" in page.url.lower():
         log.warning("⚠️ Session expired. Re-logging in...")
-        success, msg = auto_login.auto_login()
+        # 💡 Use perform_login_on_page to avoid deadlock
+        success, msg = await auto_login.perform_login_on_page(page)
         if not success:
             return False, f"Login failed: {msg}"
         
@@ -600,9 +601,11 @@ def ask_tomorrow_confirmation(bot, message, orig_msg_id):
         log.error(f"❌ ask_tomorrow_confirmation Error: {e}")
 
 def ask_vehicle(bot, message, date_type, orig_msg_id, show_cancel=True):
-    text = "ဒီနေ့ pick up လေးရပါတယ်နော်။ pick up တင်ပေးနိုင်ရန် ****လိုတဲ့အချက် (စက်ဘီး၊ကား)*** ကိုပြောပေးပါဦး"
-    if date_type == "tomorrow":
-        text = "မနက်ဖြန်အတွက် pick up တင်ပေးနိုင်ရန် ****လိုတဲ့အချက် (စက်ဘီး၊ကား)*** ကိုပြောပေးပါဦး"
+    tz = pytz.timezone('Asia/Yangon')
+    now = datetime.now(tz)
+    target_date = (now if date_type == "today" else now + timedelta(days=1)).strftime("%d-%m-%Y")
+    
+    text = f"{target_date} pick up လေးရပါတယ်နော်။ pick up တင်ပေးနိုင်ရန် ****လိုတဲ့အချက် (စက်ဘီး၊ကား)*** ကိုပြောပေးပါဦး"
         
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(
@@ -900,6 +903,16 @@ def run_queue_worker(bot):
     global _bot
     _bot = bot
     log.info("🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...")
+    
+    # 💡 Recovery Logic: Reset stuck 'PROCESSING' orders to 'PENDING' on startup
+    try:
+        with db_manager.get_connection() as conn:
+            res = conn.execute("UPDATE pickup_queue SET status = 'PENDING' WHERE status = 'PROCESSING'")
+            if res.rowcount > 0:
+                log.warning(f"🔄 Recovered {res.rowcount} stuck 'PROCESSING' orders to 'PENDING'.")
+    except Exception as re:
+        log.error(f"❌ Recovery Logic Error: {re}")
+
     while True:
         try:
             item = db_manager.get_next_queued_pickup()
