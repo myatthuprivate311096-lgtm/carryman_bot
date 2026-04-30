@@ -732,6 +732,41 @@ def register_handlers(bot):
             log.error(f"perform_unmute Error: {e}")
             bot.send_message(admin_chat_id, f"❌ Error unmuting user {user_id}: {e}")
 
+    @bot.message_handler(commands=['misspk', 'pk'])
+    def handle_missing_pickup(message):
+        """ AI လွတ်သွားသော Pickup စာများကို လက်ဖြင့် Trigger လုပ်ခြင်း """
+        if not message.reply_to_message:
+            bot.reply_to(message, "⚠️ Pickup ဖြစ်စေလိုသော စာကို Reply ဆွဲပြီးမှ `/misspk` ဟု ရိုက်ပေးပါဗျာ။")
+            return
+
+        orig_msg = message.reply_to_message
+        chat_id = message.chat.id
+        user_id = message.from_user.id
+        
+        # OS Group ဟုတ်မဟုတ် စစ်ဆေးခြင်း
+        if not db_manager.check_if_os_group(chat_id):
+            bot.reply_to(message, "⚠️ ဤ Command ကို OS Group များအတွင်းသာ အသုံးပြုနိုင်ပါသည်။")
+            return
+
+        try:
+            from modules import auto_pickup
+            # ၁။ Feedback သိမ်းဆည်းခြင်း (AI သင်ယူရန်)
+            text = orig_msg.text or orig_msg.caption or "📦 Media Content"
+            topic_id = orig_msg.message_thread_id if orig_msg.is_topic_message else 1
+            db_manager.save_feedback(orig_msg.message_id, chat_id, topic_id, 'MISSING_PICKUP', text, user_id)
+            
+            # ၂။ Pickup Flow ကို Force Trigger လုပ်ခြင်း
+            # handle function ကို force_pickup=True ဖြင့် ခေါ်နိုင်ရန် ပြင်ဆင်ရမည်
+            auto_pickup.handle(bot, orig_msg, force_pickup=True)
+            
+            # ၃။ Command စာသားကို ဖျက်ခြင်း
+            bot.delete_message(chat_id, message.message_id)
+            log.info(f"🚀 Manual Pickup Triggered by {user_id} for msg {orig_msg.message_id}")
+            
+        except Exception as e:
+            log.error(f"❌ Missing Pickup Command Error: {e}")
+            bot.reply_to(message, "⚠️ Pickup Trigger လုပ်ဆောင်စဉ် အမှားတစ်ခု ဖြစ်သွားပါသည်။")
+
     @bot.message_handler(commands=['mapshops'])
     def handle_map_shops(message):
         """ Mapping မရှိသေးသော ဆိုင်များကို Manager ထံ ပို့ပေးခြင်း """

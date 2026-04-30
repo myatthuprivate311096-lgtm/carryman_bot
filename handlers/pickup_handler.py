@@ -1,5 +1,6 @@
 import telebot
 import pytz
+import os
 from datetime import datetime, timedelta
 from logger import log
 import db_manager
@@ -247,13 +248,24 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             orig_msg_id = int(call.data.split('_')[2])
             chat_id = call.message.chat.id
             
-            # Status Sync: message_logs မှာပါ CANCELLED သွားပြောင်းမည်
-            db_manager.cancel_message(orig_msg_id, chat_id, reason='Rider: Not a Pickup')
+            # 1. Admin Group ရှိ Notification ကို ဖျက်ခြင်း
+            tracking = db_manager.get_alert_tracking(orig_msg_id, chat_id)
+            if tracking:
+                alert_msg_id = tracking[0]
+                central_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
+                try:
+                    bot.delete_message(central_chat, alert_msg_id)
+                except: pass
+                db_manager.delete_alert_tracking(orig_msg_id, chat_id)
+
+            # 2. Status ကို PENDING သို့ ပြန်ပြောင်းခြင်း (15 mins alert ပြန်တက်စေရန်)
+            db_manager.update_message_status(orig_msg_id, chat_id, 'PENDING')
             
+            # 3. Shop Group ရှိ Bot စာများကို ရှင်းလင်းခြင်း
             bot.delete_message(chat_id, call.message.message_id)
             auto_pickup.cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id)
-            auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Cancelled (Not a Pickup)")
-            bot.answer_callback_query(call.id, "❌ Pickup မဟုတ်ကြောင်း မှတ်သားလိုက်ပါပြီ။")
+            
+            bot.answer_callback_query(call.id, "✅ Pickup မဟုတ်ကြောင်း မှတ်သားပြီး ပုံမှန်စာအဖြစ် ပြန်ပြောင်းလိုက်ပါပြီ။")
         except Exception as e:
             log.error(f"❌ Pickup Cancel Callback Error: {e}")
         finally:
@@ -614,6 +626,78 @@ def register_pickup_handlers(bot: telebot.TeleBot):
         finally:
             try: bot.answer_callback_query(call.id)
             except: pass
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_wrong_'))
+    def handle_wrong_pickup_callback(call):
+        """ AI မှ Pickup ဟု မှားယွင်းယူဆမိပါက Admin မှ Feedback ပေးခြင်း """
+        try:
+            # format: ap_wrong_{orig_msg_id}_{chat_id}
+            parts = call.data.split('_')
+            orig_msg_id = int(parts[2])
+            chat_id = int(parts[3])
+
+            markup = telebot.types.InlineKeyboardMarkup(row_width=1)
+            markup.add(
+                telebot.types.InlineKeyboardButton("📋 စာရင်းပေးရုံသာ (List only)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_LIST"),
+                telebot.types.InlineKeyboardButton("💬 စကားပြောရုံသာ (Casual)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_CASUAL"),
+                telebot.types.InlineKeyboardButton("❓ စုံစမ်းမေးမြန်းခြင်း (Inquiry)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_INQUIRY"),
+                telebot.types.InlineKeyboardButton("🚫 အခြား (Other)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_OTHER")
+            )
+            
+            bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
+            bot.answer_callback_query(call.id, "AI ကို သင်ယူစေရန် အကြောင်းရင်း ရွေးပေးပါ အစ်ကို")
+        except Exception as e:
+            log.error(f"❌ Wrong Pickup Callback Error: {e}")
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_fb_'))
+    def handle_pickup_feedback_callback(call):
+        """ Admin မှ ရွေးချယ်လိုက်သော Feedback ကို သိမ်းဆည်းခြင်း """
+        try:
+            from modules import auto_pickup
+            # format: ap_fb_{orig_msg_id}_{chat_id}_{category}
+            parts = call.data.split('_')
+            orig_msg_id = int(parts[2])
+            chat_id = int(parts[3])
+            category = parts[4]
+
+            # ၁။ မူရင်းစာသားကို ယူခြင်း
+            with db_manager.connection_scope() as conn:
+                msg_data = conn.execute("SELECT text, topic_id FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id)).fetchone()
+            
+            if msg_data:
+                orig_text, topic_id = msg_data
+                # ၂။ Feedback သိမ်းခြင်း
+                db_manager.save_feedback(orig_msg_id, chat_id, topic_id, category, orig_text, call.from_user.id)
+                
+                # ၃။ Status ကို CANCELLED ပြောင်းခြင်း
+                db_manager.update_message_status(orig_msg_id, chat_id, 'CANCELLED')
+                
+                # ၄။ Shop Group ရှိ Bot စာများကို ရှင်းလင်းခြင်း
+                auto_pickup.cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id)
+                
+                # ၅။ Admin Alert ကို Update လုပ်ခြင်း (သို့မဟုတ် ဖျက်ခြင်း)
+                new_text = (call.message.caption or call.message.text or "") + f"\n\n❌ **Wrong Pickup** ({category})\nAI ကို သင်ယူခိုင်းလိုက်ပါပြီ အစ်ကို။"
+                try:
+                    bot.edit_message_caption(
+                        caption=new_text,
+                        chat_id=call.message.chat.id,
+                        message_id=call.message.message_id,
+                        parse_mode="HTML",
+                        reply_markup=None
+                    )
+                except:
+                    bot.edit_message_text(
+                        text=new_text,
+                        chat_id=call.message.chat.id,
+                        message_id=call.message.message_id,
+                        parse_mode="HTML",
+                        reply_markup=None
+                    )
+                bot.answer_callback_query(call.id, "✅ AI သင်ယူပြီးပါပြီ။ ကျေးဇူးပါ အစ်ကို။")
+            else:
+                bot.answer_callback_query(call.id, "⚠️ မူရင်းစာသား ရှာမတွေ့တော့ပါ")
+        except Exception as e:
+            log.error(f"❌ Pickup Feedback Callback Error: {e}")
 
 # --- Helper Functions ---
 

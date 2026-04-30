@@ -249,7 +249,7 @@ def run(data, event):
     
     return False, f"Unknown event: {event}"
 
-def handle(bot, message):
+def handle(bot, message, force_pickup=False):
     global _bot
     _bot = bot
     try:
@@ -304,7 +304,28 @@ def handle(bot, message):
         else:
             os_name = db_manager.clean_shop_name(chat_title)
 
+        # Fetch recent feedback for AI learning
+        feedbacks = db_manager.get_isolated_feedback(chat_id, 1, limit=10)
+        not_pickup_examples = []
+        is_pickup_examples = []
+        for cat, txt in feedbacks:
+            if cat == 'MISSING_PICKUP':
+                is_pickup_examples.append(txt)
+            else:
+                not_pickup_examples.append(f"{cat}: {txt}")
+
+        feedback_context = ""
+        if not_pickup_examples:
+            feedback_context += "\n[Examples of messages that are NOT Pickups (Mistakes you made before)]:\n"
+            for txt in not_pickup_examples:
+                feedback_context += f"- {txt}\n"
+        if is_pickup_examples:
+            feedback_context += "\n[Examples of messages that ARE Pickups (You missed these before)]:\n"
+            for txt in is_pickup_examples:
+                feedback_context += f"- {txt}\n"
+
         extract_prompt = f"""
+        {feedback_context}
         Analyze the following message.
         Message: "{text}"
 
@@ -356,9 +377,10 @@ def handle(bot, message):
                 bot.reply_to(message, reply_text, reply_markup=markup)
                 return
 
-        if action != 'PICKUP' or not extracted_data.get("is_new_request", True) or not extracted_data.get("is_pickup_request", True):
-            log.info(f"ℹ️ Message {message.message_id} is not a pickup request (Action: {action}). Skipping auto_pickup.")
-            return
+        if not force_pickup:
+            if action != 'PICKUP' or not extracted_data.get("is_new_request", True) or not extracted_data.get("is_pickup_request", True):
+                log.info(f"ℹ️ Message {message.message_id} is not a pickup request (Action: {action}). Skipping auto_pickup.")
+                return
 
         vehicle = extracted_data.get("vehicle")
         clean_remark = extracted_data.get("clean_remark")
@@ -397,13 +419,15 @@ def handle(bot, message):
             f"🚲 ယာဉ်: <b>{vehicle if vehicle else '-'}</b>\n"
             f"📝 မှတ်ချက်: {clean_remark if clean_remark else '-'}\n"
             f"📊 Status: <b>⏳ Pending</b>\n"
-            f"━━━━━━━━━━━━━━━━━━"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"💬 မူရင်းစာ: <i>{util.escape(text[:200])}{'...' if len(text) > 200 else ''}</i>"
         )
         
         admin_markup = types.InlineKeyboardMarkup()
         admin_markup.add(
             types.InlineKeyboardButton("🔗 View Message", url=msg_link),
-            types.InlineKeyboardButton("✅ Done", callback_data=f"done_{message.message_id}_{chat_id}")
+            types.InlineKeyboardButton("✅ Done", callback_data=f"done_{message.message_id}_{chat_id}"),
+            types.InlineKeyboardButton("❌ Wrong Pickup", callback_data=f"ap_wrong_{message.message_id}_{chat_id}")
         )
         
         try:
@@ -680,6 +704,12 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
             return
 
         alert_msg_id = tracking[0]
+        
+        # Get original text for the caption
+        with db_manager.get_connection() as conn:
+            orig_data = conn.execute("SELECT text FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id)).fetchone()
+        orig_text = orig_data[0] if orig_data else "-"
+
         new_caption = (
             f"🚚 **Pick Up alert**\n"
             f"━━━━━━━━━━━━━━━━━━\n"
@@ -688,7 +718,8 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
             f"🚲 ယာဉ်: <b>{vehicle}</b>\n"
             f"📝 မှတ်ချက်: {remark}\n"
             f"📊 Status: <b>{status_text}</b>\n"
-            f"━━━━━━━━━━━━━━━━━━"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"💬 မူရင်းစာ: <i>{util.escape(orig_text[:200])}{'...' if len(orig_text) > 200 else ''}</i>"
         )
 
         if custom_markup:
@@ -705,7 +736,8 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
             markup = types.InlineKeyboardMarkup()
             markup.add(
                 types.InlineKeyboardButton("🔗 View Message", url=msg_link),
-                types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_msg_id}_{chat_id}")
+                types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_msg_id}_{chat_id}"),
+                types.InlineKeyboardButton("❌ Wrong Pickup", callback_data=f"ap_wrong_{orig_msg_id}_{chat_id}")
             )
 
         try:
