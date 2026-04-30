@@ -537,7 +537,8 @@ def get_pending_topics(minutes=15, max_hours=48):
     res = conn.execute(
         """SELECT DISTINCT chat_id, topic_id
            FROM message_logs
-           WHERE status='PENDING' AND status != 'HANDLED_BY_AI' AND timestamp < ? AND timestamp > ?""",
+           WHERE status='PENDING' AND status != 'HANDLED_BY_AI' AND timestamp < ? AND timestamp > ?
+           AND topic_id != 1""",
         (threshold, lookback_limit)
     ).fetchall()
     conn.close()

@@ -309,16 +309,16 @@ def handle(bot, message):
         Message: "{text}"
 
         Decide the action:
-        1. 'PICKUP': If the user is EXPLICITLY requesting a new pickup order (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ", "မနက်ဖြန်အတွက် တင်ပေးပါ").
-           CRITICAL: If the message is just sharing a list (e.g., "စာရင်းလေးပါ", "pickup စာရင်း"), discussing a past order, or mentioning "pickup" without requesting a new one, set action to 'OTHER'.
+        1. 'PICKUP': If the user is EXPLICITLY requesting a new pickup order OR inquiring about pickup availability (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ", "မနက်ဖြန်အတွက် တင်ပေးပါ", "pick up ရဦးမလား", "ဒီနေ့ pickup ရှိလား").
+           CRITICAL: If the message is just sharing a list (e.g., "စာရင်းလေးပါ", "pickup စာရင်း"), discussing a past order, or mentioning "pickup" without requesting a new one or inquiring about availability, set action to 'OTHER'.
         2. 'LOOKUP_LOCATION': If the user is asking for the township of a specific location name (e.g., "Hledan က ဘယ်မြို့နယ်လဲ", "Junction City က ဘယ်မြို့နယ်ထဲမှာလဲ").
         3. 'OTHER': If it's casual conversation, greetings, sharing a list, or unrelated to a new pickup request.
 
         Output ONLY a JSON object with:
         - action: "PICKUP", "LOOKUP_LOCATION", or "OTHER"
-        - is_pickup_request: boolean (True ONLY if this is a request to place a NEW pickup order. If it's just sharing a list or info, set to false)
+        - is_pickup_request: boolean (True if this is a request to place a NEW pickup order OR an inquiry about pickup availability. If it's just sharing a list or info, set to false)
         - location_query: If action is 'LOOKUP_LOCATION', extract the location name they are asking about (e.g., "Hledan", "Junction City"). Otherwise null.
-        - is_new_request: boolean (True ONLY if action is 'PICKUP' and it's a clear request to start a new order)
+        - is_new_request: boolean (True if action is 'PICKUP' and it's a clear request to start a new order or an inquiry about availability)
         - vehicle: "Bicycle" or "Car" (Default to null if not mentioned)
         - date_type: "today" or "tomorrow" (If the user explicitly mentions "today" (ဒီနေ့) or "tomorrow" (မနက်ဖြန်), set accordingly. Otherwise, default to null)
         - clean_remark: Extract ONLY the additional instructions, notes, or specific details (like quantity, amount, location, or special requests) from the message in Burmese, EXCLUDING the core pickup request phrase (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ").
@@ -430,6 +430,7 @@ def handle(bot, message):
 
             if alert_msg:
                 db_manager.save_alert_tracking(message.message_id, chat_id, alert_msg.message_id, admin_chat_id)
+                # 💡 Pick up request ကို Auditor က ၁၅ မိနစ် alert ထပ်မပို့အောင် ALERTED status ကို ချက်ချင်းပြောင်းပါမည်
                 db_manager.update_message_status(message.message_id, chat_id, 'ALERTED')
             log.info(f"🔔 Unified Admin notification sent for pickup request from {chat_title}")
         except Exception as e:

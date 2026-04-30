@@ -359,8 +359,13 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
         log.info(f"ℹ️ No active alert tracking found for {msg_id} in {chat_id}.")
 
     RESOLVED_GROUP_ID = int(os.getenv('RESOLVED_GROUP_ID', -1003906164269))
-    RESOLVED_TOPIC_ID = int(os.getenv('RESOLVED_TOPIC_ID', 3))
     
+    # 💡 Pick Up (Topic 1) ဖြစ်ပါက Topic 28 သို့ ပို့မည်၊ အခြားစာများကို Topic 3 သို့ ပို့မည်
+    if topic_id == 1:
+        RESOLVED_TOPIC_ID = 28
+    else:
+        RESOLVED_TOPIC_ID = int(os.getenv('RESOLVED_TOPIC_ID', 3))
+
     clean_chat_id = str(chat_id).replace("-100", "")
     msg_link = f"tg://privatepost?channel={clean_chat_id}&post={msg_id}"
     
@@ -396,6 +401,10 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
         log.info(f"ℹ️ Message {msg_id} was not an active alert. Skipping record.")
 
 def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
+    # 💡 Pick up (Topic 1) အတွက် Escalation Alert မပို့စေရန်
+    if topic_id == 1:
+        return
+        
     tracking = db_manager.get_alert_tracking(msg_id, chat_id)
     if tracking:
         # alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids, esc_tier2_msg_id
@@ -512,7 +521,7 @@ def process_audits():
             now_mm = datetime.now(tz)
             today_str = now_mm.strftime('%Y-%m-%d')
             
-            if now_mm.hour == 9 and now_mm.minute < 10 and last_backup_date != today_str:
+            if now_mm.hour == 0 and now_mm.minute < 10 and last_backup_date != today_str:
                 backup_database()
                 last_backup_date = today_str
                 

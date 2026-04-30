@@ -253,8 +253,8 @@ def route_message(bot, message):
         Task: Analyze the user message and decide which module should handle it.
         
         Available Modules:
-        - auto_pickup: Use ONLY for EXPLICIT NEW pickup requests (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ", "မနက်ဖြန်အတွက် တင်ပေးပါ").
-          CRITICAL: If the message is just sharing a list (e.g., "စာရင်းလေးပါ", "pickup စာရင်းလေးပါ"), discussing a past order, or mentioning "pickup" without requesting a new one, output 'none'.
+        - auto_pickup: Use for NEW pickup requests OR inquiries about pickup availability (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ", "မနက်ဖြန်အတွက် တင်ပေးပါ", "pick up ရဦးမလား", "ဒီနေ့ pickup ရှိလား").
+          CRITICAL: If the message is just sharing a list (e.g., "စာရင်းလေးပါ", "pickup စာရင်းလေးပါ"), discussing a past order, or mentioning "pickup" without requesting a new one or inquiring about availability, output 'none'.
         - check_order: Use for checking order status, tracking numbers, or finding specific orders.
         - auditor: Use for complaints or when the user is asking about an ALREADY PLACED pickup (e.g., "pick up မလာသေးဘူးလား", "ဘယ်အချိန်လာမှာလဲ").
         - support: Use if the user is asking a general question about CarryMan, office location, or logistics services.
