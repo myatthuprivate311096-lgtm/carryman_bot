@@ -568,8 +568,7 @@ def process_audits():
                     continue
                 
                 # Global & Group & Time Check
-                group_ai = db_manager.get_group_ai_status(c_id)
-                if global_ai == 'ON' and group_ai == 'ON' and global_alert == 'ON' and is_office:
+                if global_alert == 'ON' and is_office:
                     filtered_topics.append((c_id, t_id))
                 else:
                     # If AI is off, we don't audit, but we might still need to handle alerts manually?

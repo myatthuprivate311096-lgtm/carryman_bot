@@ -539,8 +539,7 @@ def get_pending_topics(minutes=15, max_hours=48):
     res = conn.execute(
         """SELECT DISTINCT chat_id, topic_id
            FROM message_logs
-           WHERE status='PENDING' AND status != 'HANDLED_BY_AI' AND timestamp < ? AND timestamp > ?
-           AND topic_id != 1""",
+           WHERE status='PENDING' AND status != 'HANDLED_BY_AI' AND timestamp < ? AND timestamp > ?""",
         (threshold, lookback_limit)
     ).fetchall()
     conn.close()
@@ -1542,5 +1541,44 @@ def reset_user_state(user_id):
             (int(time.time()), user_id)
         )
         conn.commit()
+    finally:
+        conn.close()
+
+def reset_today_pickups(chat_id):
+    """
+    သတ်မှတ်ထားသော chat_id အတွက် ယနေ့ရက်စွဲဖြင့် ရှိနေသော pickup များကို ဖျက်ခြင်းနှင့်
+    message_logs status ကို PENDING ပြန်ချခြင်း
+    """
+    conn = get_connection()
+    try:
+        tz = pytz.timezone('Asia/Yangon')
+        today_str = datetime.now(tz).strftime("%d-%m-%Y")
+        
+        # ၁။ pickup_queue မှ ယနေ့ record များကို ဖျက်ခြင်း
+        res_queue = conn.execute(
+            "DELETE FROM pickup_queue WHERE chat_id = ? AND target_date = ?",
+            (chat_id, today_str)
+        )
+        queue_count = res_queue.rowcount
+        
+        # ၂။ message_logs မှ ယနေ့စာများကို PENDING ပြန်ချခြင်း (HANDLED_BY_AI သို့မဟုတ် SUCCESS ဖြစ်နေလျှင်)
+        # ယနေ့ timestamp range ကို တွက်ချက်ခြင်း
+        now = datetime.now(tz)
+        start_of_day = int(now.replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
+        
+        res_logs = conn.execute(
+            "UPDATE message_logs SET status = 'PENDING', resolved_by = NULL, resolve_time = NULL "
+            "WHERE chat_id = ? AND timestamp >= ? AND status IN ('HANDLED_BY_AI', 'RESOLVED')",
+            (chat_id, start_of_day)
+        )
+        logs_count = res_logs.rowcount
+        
+        conn.commit()
+        log.info(f"♻️ Reset Today's Pickups for {chat_id}: {queue_count} queue items deleted, {logs_count} logs reset.")
+        return queue_count, logs_count
+    except Exception as e:
+        log.error(f"❌ reset_today_pickups Error: {e}")
+        conn.rollback()
+        raise
     finally:
         conn.close()

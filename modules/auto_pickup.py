@@ -345,6 +345,12 @@ def handle(bot, message, force_pickup=False):
         user_id = message.from_user.id
         is_private = chat_id > 0
         
+        # 🛡️ Global Toggle Check (Early Exit)
+        # Whitelist Group -1003539520778 bypasses this
+        if db_manager.get_auto_pickup_global_status() == 'OFF' and chat_id != -1003539520778:
+            log.info(f"🔇 Auto Pickup is OFF. Skipping module for group {chat_id}")
+            return
+
         # 🛡️ Staff Safety Net (Rule #1): ဝန်ထမ်းများအတွက် Auto Pickup အလုပ်မလုပ်စေရ
         user_level = db_manager.get_user_level(user_id, chat_id)
         if user_level >= 3:
@@ -518,6 +524,13 @@ def handle(bot, message, force_pickup=False):
                 date_type = "tomorrow"
                 log.info(f"🕒 Time {current_time}: AI suggested TOMORROW")
             else:
+                # 🛡️ ၁၁ နာရီကျော်သော်လည်း ဒီနေ့အတွက် ရှိပြီးသားဆိုရင် Staff Decision မတောင်းတော့ဘဲ Duplicate ပြမည်
+                today_str = now.strftime("%d-%m-%Y")
+                if db_manager.check_existing_pickup(chat_id, today_str):
+                    log.info(f"⚠️ Duplicate pickup detected for {chat_id} on {today_str} (Late Morning). Skipping Staff Decision.")
+                    show_duplicate_alert(bot, message, today_str, message.message_id)
+                    return
+                
                 send_staff_decision_alert(bot, message, os_name, vehicle if vehicle else "none")
                 return
 

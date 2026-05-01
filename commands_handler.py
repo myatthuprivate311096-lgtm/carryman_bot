@@ -186,7 +186,11 @@ def register_handlers(bot):
             msg = bot.reply_to(message, "⏳ **System Updating...**\nGit Pull လုပ်နေပါသည်...")
             try:
                 output = subprocess.check_output(["git", "pull"]).decode('utf-8')
-                bot.edit_message_text(f"✅ **Git Pull Success!**\n\n`{output}`\n\n🔄 စနစ်ကို Restart ချနေပါပြီ...", msg.chat.id, msg.message_id)
+                bot.edit_message_text(f"✅ **Git Pull Success!**\n\n`{output}`\n\n🔄 စနစ်ကို Deep Restart ချနေပါပြီ...", msg.chat.id, msg.message_id)
+                
+                # 💡 Deep Restart Logic
+                os.system('pkill -9 -f "main_bot.py" || true')
+                os.system('pkill -9 -f "auditor.py" || true')
                 time.sleep(2)
                 os.system("pm2 restart all")
             except Exception as e:
@@ -304,9 +308,14 @@ def register_handlers(bot):
     @bot.callback_query_handler(func=lambda call: call.data == "sys_restart_all")
     def callback_sys_restart_all(call):
         if db_manager.get_user_level(call.from_user.id, call.message.chat.id) == 4:
-            bot.edit_message_text("🔄 **Restarting All Processes...**\n၁၀ စက္ကန့်ခန့် စောင့်ပေးပါဗျ။",
+            bot.edit_message_text("🔄 **Deep Restarting All Processes...**\n၁၀ စက္ကန့်ခန့် စောင့်ပေးပါဗျ။",
                                   call.message.chat.id, call.message.message_id)
-            log.warning(f"⚠️ System Restart triggered by {call.from_user.id}")
+            log.warning(f"⚠️ Deep System Restart triggered by {call.from_user.id}")
+            
+            # 💡 Orphaned Process Cleanup (PM2 အပြင်ဘက်က ပရိုဆက်များကို အရင်သတ်မည်)
+            os.system('pkill -9 -f "main_bot.py" || true')
+            os.system('pkill -9 -f "auditor.py" || true')
+            
             time.sleep(2)
             os.system("pm2 restart all")
             # No need to exit here as PM2 will restart the process
@@ -798,3 +807,33 @@ def register_handlers(bot):
                 time.sleep(1) # Telegram Flood Limit မမိစေရန်
         else:
             bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
+
+    @bot.message_handler(commands=['pkreset'])
+    def handle_pk_reset(message):
+        """ ယနေ့ရက်စွဲဖြင့် ရှိနေသော Pickup များကို Reset ချခြင်း (Manager Only) """
+        user_id = message.from_user.id
+        chat_id = message.chat.id
+        
+        # ၁။ Manager Level စစ်ဆေးခြင်း
+        if db_manager.get_user_level(user_id, chat_id) == 4:
+            try:
+                # ၂။ Reset Logic ကို ခေါ်ယူခြင်း
+                q_count, l_count = db_manager.reset_today_pickups(chat_id)
+                
+                # ၃။ အောင်မြင်ကြောင်း အကြောင်းကြားခြင်း
+                response = (
+                    "♻️ **Today's Pickup Reset Success!**\n"
+                    "━━━━━━━━━━━━━━━━━━\n"
+                    f"🗑 Deleted Queue: **{q_count}** items\n"
+                    f"🔄 Reset Logs: **{l_count}** messages\n"
+                    "━━━━━━━━━━━━━━━━━━\n"
+                    "ယနေ့အတွက် Pick Up အသစ် ထပ်မံစမ်းသပ်နိုင်ပါပြီ အစ်ကို။"
+                )
+                bot.reply_to(message, response, parse_mode="Markdown")
+                log.info(f"🚀 /pkreset executed by Manager {user_id} in chat {chat_id}")
+                
+            except Exception as e:
+                log.error(f"❌ /pkreset Command Error: {e}")
+                bot.reply_to(message, f"❌ Reset လုပ်ဆောင်စဉ် အမှားတစ်ခု ဖြစ်သွားပါသည်- {e}")
+        else:
+            bot.reply_to(message, "🚫 **Access Denied**\nဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည် အစ်ကို။")

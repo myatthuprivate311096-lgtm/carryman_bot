@@ -232,6 +232,7 @@ def route_message(bot, message):
         global_ai = db_manager.get_ai_global_status()
         group_ai = db_manager.get_group_ai_status(chat_id)
         global_pickup = db_manager.get_auto_pickup_global_status()
+        global_alert = db_manager.get_alert_system_global_status()
         
         is_sandbox = (chat_id == SANDBOX_CHAT_ID)
         
@@ -311,8 +312,8 @@ def route_message(bot, message):
                 log.info(f"⏭️ Skipping Auditor: Private Chat detected for non-staff")
                 return
             if not is_sandbox:
-                if not is_private and (global_ai != 'ON' or group_ai != 'ON' or not is_ai_office_hours()):
-                    log.info("⏭️ Skipping Auditor: Restrictions applied")
+                if not is_private and global_alert != 'ON':
+                    log.info("⏭️ Skipping Auditor: Alert System is OFF")
                     return
         else:
             # Support (AI Answer) အတွက် စစ်ဆေးခြင်း
