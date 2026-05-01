@@ -313,8 +313,15 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
                 if db_manager.is_manual_alert(message_id, chat_id):
                     return
 
-                msg_data = conn.execute("SELECT text FROM message_logs WHERE msg_id = ? AND chat_id = ?", (message_id, chat_id)).fetchone()
+                msg_data = conn.execute("SELECT text, category, intent FROM message_logs WHERE msg_id = ? AND chat_id = ?", (message_id, chat_id)).fetchone()
                 orig_text = msg_data[0] if msg_data else "[Unknown]"
+                category = msg_data[1] if msg_data else None
+                intent = msg_data[2] if msg_data else None
+
+                # 💡 Pick Up Alert ဖြစ်ပါက Reaction ဖြင့် Resolve လုပ်ခွင့်မပေးပါ
+                if category == 'PICKUP' or intent == 'PICKUP':
+                    log.info(f"ℹ️ Message {message_id} is PICKUP. Skipping auto-resolve on reaction.")
+                    return
                 _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
 
             # 💡 Step 2: API Cleanup (OUTSIDE DB Scope)
