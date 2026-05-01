@@ -444,7 +444,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             except Exception as ce:
                 log.error(f"❌ Cleanup during confirm error: {ce}")
 
-            auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "⏳ Pending")
+            auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "⏳ Pending", queue_id=queue_id)
                 
         except Exception as e:
             log.error(f"❌ Pickup Confirm Callback Error: {e}")
@@ -639,31 +639,6 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             try: bot.answer_callback_query(call.id)
             except: pass
 
-    @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_wrong_'))
-    def handle_wrong_pickup_callback(call):
-        """ AI မှ Pickup ဟု မှားယွင်းယူဆမိပါက Admin မှ Feedback ပေးခြင်း """
-        try:
-            # format: ap_wrong_{orig_msg_id}_{chat_id}
-            parts = call.data.split('_')
-            if parts[2] == "back":
-                return # Handled by handle_wrong_pickup_back_callback
-            orig_msg_id = int(parts[2])
-            chat_id = int(parts[3])
-
-            markup = telebot.types.InlineKeyboardMarkup(row_width=1)
-            markup.add(
-                telebot.types.InlineKeyboardButton("📋 စာရင်းပေးရုံသာ (List only)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_LIST"),
-                telebot.types.InlineKeyboardButton("💬 စကားပြောရုံသာ (Casual)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_CASUAL"),
-                telebot.types.InlineKeyboardButton("❓ စုံစမ်းမေးမြန်းခြင်း (Inquiry)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_INQUIRY"),
-                telebot.types.InlineKeyboardButton("🚫 အခြား (Other)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_OTHER"),
-                telebot.types.InlineKeyboardButton("🔙 Back", callback_data=f"ap_wrong_back_{orig_msg_id}_{chat_id}")
-            )
-            
-            bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
-            bot.answer_callback_query(call.id, "AI ကို သင်ယူစေရန် အကြောင်းရင်း ရွေးပေးပါ အစ်ကို")
-        except Exception as e:
-            log.error(f"❌ Wrong Pickup Callback Error: {e}")
-
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_wrong_back_'))
     def handle_wrong_pickup_back_callback(call):
         """ Wrong Pickup ရွေးချယ်မှုမှ နောက်ပြန်ဆုတ်ခြင်း """
@@ -690,6 +665,31 @@ def register_pickup_handlers(bot: telebot.TeleBot):
         finally:
             try: bot.answer_callback_query(call.id)
             except: pass
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_wrong_'))
+    def handle_wrong_pickup_callback(call):
+        """ AI မှ Pickup ဟု မှားယွင်းယူဆမိပါက Admin မှ Feedback ပေးခြင်း """
+        try:
+            # format: ap_wrong_{orig_msg_id}_{chat_id}
+            parts = call.data.split('_')
+            if parts[2] == "back":
+                return # Handled by handle_wrong_pickup_back_callback
+            orig_msg_id = int(parts[2])
+            chat_id = int(parts[3])
+
+            markup = telebot.types.InlineKeyboardMarkup(row_width=1)
+            markup.add(
+                telebot.types.InlineKeyboardButton("📋 စာရင်းပေးရုံသာ (List only)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_LIST"),
+                telebot.types.InlineKeyboardButton("💬 စကားပြောရုံသာ (Casual)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_CASUAL"),
+                telebot.types.InlineKeyboardButton("❓ စုံစမ်းမေးမြန်းခြင်း (Inquiry)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_INQUIRY"),
+                telebot.types.InlineKeyboardButton("🚫 အခြား (Other)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_OTHER"),
+                telebot.types.InlineKeyboardButton("🔙 Back", callback_data=f"ap_wrong_back_{orig_msg_id}_{chat_id}")
+            )
+            
+            bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
+            bot.answer_callback_query(call.id, "AI ကို သင်ယူစေရန် အကြောင်းရင်း ရွေးပေးပါ အစ်ကို")
+        except Exception as e:
+            log.error(f"❌ Wrong Pickup Callback Error: {e}")
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_fb_'))
     def handle_pickup_feedback_callback(call):
@@ -801,7 +801,7 @@ def finalize_pickup_queue(bot, chat_id, orig_msg_id, date_type, vehicle, manual_
             return
 
         v_str = vehicle
-        queue_id = db_manager.add_to_pickup_queue(chat_id, orig_msg_id, target_date, shop_name, final_remark, v_str, status='WAITING_CONFIRM')
+        queue_id = db_manager.upsert_pickup_queue(chat_id, orig_msg_id, target_date, shop_name, final_remark, v_str, status='WAITING_CONFIRM')
         
         confirm_text = (
             f"⏳ **Auto Pickup အချက်အလက်များ**\n"
@@ -826,7 +826,7 @@ def finalize_pickup_queue(bot, chat_id, orig_msg_id, date_type, vehicle, manual_
         
         # Update central alert with latest info (Remark/Vehicle might have changed)
         from modules import auto_pickup
-        auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "⏳ Waiting Confirmation (Rider)")
+        auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, "⏳ Waiting Confirmation (Rider)", queue_id=queue_id)
     except Exception as e:
         log.error(f"❌ Finalize Pickup Queue Error: {e}")
 
@@ -888,7 +888,7 @@ def save_manual_mapping(message, bot, chat_id):
             return
         db_manager.set_shop_mapping(chat_id, website_name)
         db_manager.retry_failed_pickups(chat_id)
-        bot.reply_to(message, f"✅ **Mapping သိမ်းဆည်းပြီးပါပြီ!**\n\nနောက်ပိုင်း ဒီ Group ကတက်လာတဲ့ Pick up တွေကို Website ထဲက `{website_name}` နာမည်နဲ့ တင်ပေးသွားပါမယ်။ ကျရှုံးခဲ့သော Pickup များကိုလည်း ပြန်လည်တင်ပေးနေပါပြီ။")
+        bot.reply_to(message, f"✅ **Mapping သိမ်းဆည်းပြီးပါပြီ!**\n\nနောက်ပိုင်း ဒီ Group ကတက်လာတဲ့ Pick up တွေကို Website ထဲက `{website_name}` နာမည်နဲ့ တင်ပေးသွားပါမယ်။ ကျရှုံးခဲ့သော Pickup များကိုလည်း ပြလည်တင်ပေးနေပါပြီ။")
         log.info(f"🎯 Manager manually mapped {chat_id} to {website_name}")
     except Exception as e:
         log.error(f"❌ Save Manual Mapping Error: {e}")

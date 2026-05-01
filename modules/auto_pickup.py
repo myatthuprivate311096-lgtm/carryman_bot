@@ -743,7 +743,7 @@ def send_staff_decision_alert(bot, message, os_name, vehicle):
     except Exception as e:
         log.error(f"❌ send_staff_decision_alert Error: {e}")
 
-def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_done=True, photo_path=None, custom_markup=None):
+def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_done=True, photo_path=None, custom_markup=None, queue_id=None):
     """ Admin Group နှင့် ဆိုင် Group ရှိ Alert Message များကို Update လုပ်ခြင်း """
     try:
         central_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
@@ -751,7 +751,11 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
         
         order = None
         with db_manager.get_connection() as conn:
-            order = conn.execute("SELECT os_name, target_date, remark, vehicle, status, shop_msg_id FROM pickup_queue WHERE orig_msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id)).fetchone()
+            if queue_id:
+                order = conn.execute("SELECT os_name, target_date, remark, vehicle, status, shop_msg_id FROM pickup_queue WHERE id = ?", (queue_id,)).fetchone()
+            else:
+                # If no queue_id, get the latest one for this message
+                order = conn.execute("SELECT os_name, target_date, remark, vehicle, status, shop_msg_id FROM pickup_queue WHERE orig_msg_id = ? AND chat_id = ? ORDER BY id DESC", (orig_msg_id, chat_id)).fetchone()
         
         if not order:
             ctx = db_manager.get_message_context(orig_msg_id, chat_id)
@@ -936,7 +940,7 @@ def run_queue_worker(bot):
             if db_manager.get_auto_pickup_global_status() == 'OFF' and chat_id != -1003539520778:
                 log.warning(f"🛑 System is OFF. Aborting order {queue_id} for {os_name}")
                 db_manager.update_queue_status(queue_id, 'CANCELLED', error_msg="System Shutdown (OFF)")
-                update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Aborted (System OFF)", show_done=False)
+                update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Aborted (System OFF)", show_done=False, queue_id=queue_id)
                 continue
 
             log.info(f"📦 Processing Queue Item {queue_id} for {os_name}")
@@ -957,7 +961,7 @@ def run_queue_worker(bot):
                 else:
                     log.warning(f"🛑 No mapping found for {os_name} and no exact match in website_shops.")
                     db_manager.update_queue_status(queue_id, 'FAILED', error_msg="Shop Mapping Missing")
-                    update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Failed (Mapping Missing)")
+                    update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Failed (Mapping Missing)", queue_id=queue_id)
                     
                     alert_msg = f"<b>Shop Mapping Missing</b>\n🏪 ဆိုင်: {os_name}\n⚠️ ဆိုင်နာမည် Mapping မရှိသေးပါ။ Manager မှ Fix Shop Mapping ကိုနှိပ်၍ အရင်ပြင်ပေးပါရန်။"
                     asyncio.run(send_pickup_notification(alert_msg, is_alert=True))
@@ -968,7 +972,7 @@ def run_queue_worker(bot):
             if not all([target_date, final_os_name, vehicle]) or vehicle == "none":
                 log.error(f"❌ Strict Validation Failed for Queue {queue_id}: Missing required fields.")
                 db_manager.update_queue_status(queue_id, 'FAILED', error_msg="Missing required fields (Date, Shop, or Vehicle)")
-                update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Failed (Missing Data)")
+                update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Failed (Missing Data)", queue_id=queue_id)
                 
                 if not vehicle or vehicle == "none":
                     tz = pytz.timezone('Asia/Yangon')
@@ -979,7 +983,7 @@ def run_queue_worker(bot):
                 continue
 
             db_manager.update_queue_status(queue_id, 'PROCESSING')
-            update_central_pickup_alert(bot, orig_msg_id, chat_id, "⏳ Processing")
+            update_central_pickup_alert(bot, orig_msg_id, chat_id, "⏳ Processing", queue_id=queue_id)
 
             success, msg = submit_pickup_order(target_date, final_os_name, remark, vehicle)
             
@@ -987,7 +991,7 @@ def run_queue_worker(bot):
                 db_manager.update_queue_status(queue_id, 'SUCCESS')
                 
                 # 1. ဆိုင် Group ကို Success ပြောင်းရန် (Admin Alert ကိုပါ update လုပ်ရန် ကြိုးစားမည်)
-                update_central_pickup_alert(bot, orig_msg_id, chat_id, "✅ Success")
+                update_central_pickup_alert(bot, orig_msg_id, chat_id, "✅ Success", queue_id=queue_id)
 
                 # 2. Success Group သို့ Report ပို့ခြင်း
                 send_success_report(bot, orig_msg_id, chat_id, handled_by="စက်ရုပ် (Auto)")
@@ -1016,7 +1020,8 @@ def run_queue_worker(bot):
                 update_central_pickup_alert(
                     bot, orig_msg_id, chat_id,
                     "⏳ Processing", # Keep Shop Group as Processing
-                    photo_path=screenshot_path if os.path.exists(screenshot_path) else None
+                    photo_path=screenshot_path if os.path.exists(screenshot_path) else None,
+                    queue_id=queue_id
                 )
                 
                 # Log error to Admin Topic 878 separately if needed,
