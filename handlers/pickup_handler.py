@@ -703,9 +703,19 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             category = parts[4]
 
             # ၁။ မူရင်းစာသားကို ယူခြင်း
+            log.info(f"🔍 Feedback Debug: Searching for msg_id={orig_msg_id}, chat_id={chat_id}")
             with db_manager.connection_scope() as conn:
                 msg_data = conn.execute("SELECT text, topic_id FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id)).fetchone()
             
+            if not msg_data:
+                # Try searching without -100 prefix if it exists, or vice versa
+                alt_chat_id = int(str(chat_id).replace("-100", "")) if str(chat_id).startswith("-100") else int(f"-100{chat_id}")
+                log.info(f"🔍 Feedback Debug: Not found, trying alternative chat_id={alt_chat_id}")
+                with db_manager.connection_scope() as conn:
+                    msg_data = conn.execute("SELECT text, topic_id FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_msg_id, alt_chat_id)).fetchone()
+                if msg_data:
+                    chat_id = alt_chat_id # Update chat_id if found with alternative
+
             if msg_data:
                 orig_text, topic_id = msg_data
                 # ၂။ Feedback သိမ်းခြင်း

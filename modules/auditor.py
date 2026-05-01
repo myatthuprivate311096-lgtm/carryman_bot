@@ -551,7 +551,7 @@ def process_audits():
                 last_report_date = today_str
 
             # Phase 2: AI Gatekeeper Logic for Auditor
-            import main_router
+            SANDBOX_CHAT_ID = -1003539520778
             # SLA Alerts & Group Auditing should follow Office Hours (6:15 PM limit)
             is_office = is_office_hours()
             global_ai = db_manager.get_ai_global_status()
@@ -562,7 +562,7 @@ def process_audits():
             filtered_topics = []
             for c_id, t_id in pending_topics:
                 # Sandbox/Test Group always allowed
-                if c_id == TEST_GROUP_ID or c_id == main_router.SANDBOX_CHAT_ID:
+                if c_id == TEST_GROUP_ID or c_id == SANDBOX_CHAT_ID:
                     log.info(f"🧪 Sandbox Audit: Bypassing restrictions for chat {c_id}")
                     filtered_topics.append((c_id, t_id))
                     continue
@@ -659,7 +659,7 @@ def process_audits():
             
             for m_id, c_id, t_id, txt in alerted_msgs:
                 # Sandbox bypass for escalation
-                is_sandbox = (c_id == TEST_GROUP_ID or c_id == main_router.SANDBOX_CHAT_ID)
+                is_sandbox = (c_id == TEST_GROUP_ID or c_id == SANDBOX_CHAT_ID)
                 
                 # Escalations also follow Office Hours
                 if not is_office and not is_sandbox:

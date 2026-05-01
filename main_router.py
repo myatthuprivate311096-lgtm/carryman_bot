@@ -1,4 +1,4 @@
-# Version: 1.0 (Central AI Router & Sandbox Logic)
+# Version: 1.1 (Manual AI Trigger Update)
 import os
 import json
 import importlib
@@ -30,10 +30,10 @@ def handle_ai_query(bot, message, is_automatic=False):
         is_private = chat_id > 0
         is_sandbox = (chat_id == SANDBOX_CHAT_ID)
 
-        # 🛑 Group Chat Restriction: AI Auto-Answer is DISABLED in Groups.
-        # Only allowed in Private Chats or Sandbox.
-        if not is_private and not is_sandbox:
-            log.info(f"🔇 AI Auto-Answer is disabled in Group Chat {chat_id}. Returning silently.")
+        # 🛑 Group Chat Restriction: AI Auto-Answer is DISABLED in Groups for automatic replies.
+        # Manual /ai queries are allowed.
+        if not is_private and not is_sandbox and is_automatic:
+            log.info(f"🔇 AI Auto-Answer is disabled in Group Chat {chat_id} for automatic replies. Returning silently.")
             return
 
         # ၁။ User Level သတ်မှတ်ခြင်း
@@ -230,6 +230,18 @@ def route_message(bot, message):
 
         # ၁။ Global & Group Status စစ်ဆေးခြင်း (Phase 2)
         global_ai = db_manager.get_ai_global_status()
+        
+        # 💡 Manual AI Trigger Check (/ai)
+        # အစ်ကို့တောင်းဆိုချက်အရ /ai ပါမှသာ AI Answer အလုပ်လုပ်ပါမည်။
+        is_manual_ai = text.strip().startswith('/ai')
+        
+        if is_manual_ai:
+            is_sandbox = (chat_id == SANDBOX_CHAT_ID)
+            if global_ai == 'ON' or is_sandbox:
+                handle_ai_query(bot, message, is_automatic=False)
+            else:
+                log.info(f"🔇 AI Command (/ai) ignored because global_ai_answer is {global_ai}")
+            return
         group_ai = db_manager.get_group_ai_status(chat_id)
         global_pickup = db_manager.get_auto_pickup_global_status()
         global_alert = db_manager.get_alert_system_global_status()
@@ -247,7 +259,8 @@ def route_message(bot, message):
 
         # ၂။ AI Decision (Intent Detection)
         # လက်ရှိ modules folder ထဲမှာ ရှိတဲ့ module list ကို ယူမယ်
-        available_modules = ["auto_pickup", "check_order", "auditor", "support"]
+        # 💡 support module ကို automatic routing မှ ဖယ်ထုတ်ထားပါသည် (Manual /ai သာ သုံးမည်)
+        available_modules = ["auto_pickup", "check_order", "auditor"]
         
         prompt = f"""
         Role: Central AI Router for a Logistics Bot.
@@ -258,16 +271,16 @@ def route_message(bot, message):
           CRITICAL: If the message is just sharing a list (e.g., "စာရင်းလေးပါ", "pickup စာရင်းလေးပါ"), discussing a past order, or mentioning "pickup" without requesting a new one or inquiring about availability, output 'none'.
         - check_order: Use for checking order status, tracking numbers, or finding specific orders.
         - auditor: Use for complaints or when the user is asking about an ALREADY PLACED pickup (e.g., "pick up မလာသေးဘူးလား", "ဘယ်အချိန်လာမှာလဲ").
-        - support: Use if the user is asking a general question about CarryMan, office location, or logistics services.
-        - none: Use if the message is just a greeting, spam, sharing a list, or irrelevant.
+        - none: Use if the message is just a greeting, spam, sharing a list, general question, or irrelevant.
 
         User Message: "{text}"
 
         Output Rules:
         1. Output ONLY the module name in lowercase.
         2. If the message is just sharing a list or info (e.g., "စာရင်းလေးပါ") without requesting a new pickup, output 'none'.
-        3. If unsure, output 'auditor'.
-        4. If irrelevant, output 'none'.
+        3. If the message is a general question (e.g., office location, contact info) without /ai, output 'none'.
+        4. If unsure, output 'auditor'.
+        5. If irrelevant, output 'none'.
         """
 
         intent = ai_utils.get_ai_completion(prompt, timeout=30.0)
@@ -330,7 +343,7 @@ def route_message(bot, message):
                     return
 
         # ၄။ Dynamic Loader (importlib)
-        if intent == 'support' or (intent == 'auditor' and is_private and is_staff):
+        if intent == 'auditor' and is_private and is_staff:
             handle_ai_query(bot, message, is_automatic=True)
             return
 

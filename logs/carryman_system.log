@@ -993,3 +993,1139 @@ Date -1/May/2026
 2026-05-01 08:32:42 AM | INFO | message_handler | ✅ Message 358 marked as RESOLVED via Reply by Eaindra
 2026-05-01 08:32:42 AM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
 2026-05-01 08:32:48 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:34:28 AM | INFO | main_router | Routing message from -1003801077622: cus 2ရကနေ့ရက်ချိန်းလေးပါရှငိ့မမ 09765027826...
+2026-05-01 08:34:29 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-01 08:34:29 AM | INFO | auto_pickup | 🔇 Auto Pickup is OFF. Skipping module for group -1003801077622
+2026-05-01 08:34:29 AM | INFO | db_manager | ✓ Message 408 in -1003801077622 saved as PENDING
+2026-05-01 08:34:29 AM | INFO | message_handler | 📩 New Pending Message from 8781916512 in -1003801077622 (Topic: 4)
+2026-05-01 08:35:26 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 08:36:31 AM | INFO | main_router | Routing message from -1003830048503: ငွေလွှဲဖစ်လားရှင့် ညီမလေး...
+2026-05-01 08:36:32 AM | INFO | main_router | 🎯 AI Decision: support
+2026-05-01 08:36:32 AM | INFO | main_router | 🔇 Blocking general intent 'support' in Group Chat -1003830048503. Bot will remain silent.
+2026-05-01 08:36:32 AM | INFO | db_manager | ✓ Message 360 in -1003830048503 saved as PENDING
+2026-05-01 08:36:32 AM | INFO | message_handler | 📩 New Pending Message from 5045917092 in -1003830048503 (Topic: 1)
+2026-05-01 08:36:36 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5982912055
+2026-05-01 08:37:26 AM | INFO | main_router | Routing message from -1003808909519: Total 10 ways...
+2026-05-01 08:37:27 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 08:37:33 AM | INFO | auditor | ℹ️ No active alert tracking found for 151 in -1003808909519.
+2026-05-01 08:37:33 AM | INFO | auditor | ℹ️ Message 151 was not an active alert. Skipping record.
+2026-05-01 08:37:33 AM | INFO | db_manager | ✅ Group Resolved: [151] in -1003808909519 by Yoon Waddy (Reaction (❤))
+2026-05-01 08:37:33 AM | INFO | alert_handler | ✅ Message 151 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 08:38:22 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:38:52 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7261311241
+2026-05-01 08:38:52 AM | INFO | db_manager | ✅ Group Resolved: [343] in -1003702835668 by (60501) (Reply)
+2026-05-01 08:38:52 AM | INFO | auditor | ℹ️ No active alert tracking found for 343 in -1003702835668.
+2026-05-01 08:38:52 AM | INFO | auditor | ℹ️ Message 343 was not an active alert. Skipping record.
+2026-05-01 08:38:52 AM | INFO | message_handler | ✅ Message 343 marked as RESOLVED via Reply by (60501)
+2026-05-01 08:40:01 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:40:11 AM | INFO | main_router | Routing message from -1003709069700: ပိုက်ဆံလွဲပေးပါအုံ...
+2026-05-01 08:40:12 AM | INFO | main_router | 🎯 AI Decision: support
+2026-05-01 08:40:12 AM | INFO | main_router | 🔇 Blocking general intent 'support' in Group Chat -1003709069700. Bot will remain silent.
+2026-05-01 08:40:12 AM | INFO | db_manager | ✓ Message 374 in -1003709069700 saved as PENDING
+2026-05-01 08:40:12 AM | INFO | message_handler | 📩 New Pending Message from 7224757067 in -1003709069700 (Topic: 1)
+2026-05-01 08:40:26 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 08:40:50 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:41:21 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:41:34 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:41:56 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:42:20 AM | INFO | main_router | Routing message from -1003752062728: 09980187507...
+2026-05-01 08:42:20 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 08:42:21 AM | INFO | db_manager | ✓ Message 211 in -1003752062728 saved as PENDING
+2026-05-01 08:42:21 AM | INFO | message_handler | 📩 New Pending Message from 8781916512 in -1003752062728 (Topic: 4)
+2026-05-01 08:42:30 AM | INFO | main_router | Routing message from -1003808909519: Total 959,000 kyats *** 
+10 ကြောင်းမှာ 
+1 ကြောင်းက...
+2026-05-01 08:42:32 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 08:42:49 AM | INFO | main_router | Routing message from -1003808909519: Kbz Pay : 095133682
+Thida Than.
+
+Kbz Pay : 0979540...
+2026-05-01 08:42:50 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 08:43:35 AM | INFO | main_router | Routing message from -1003798739565: ဒါလေး 7 April တုန်းကလည်း အပ်ထာူတာလေး ရှိပါတယ်ရှင့်...
+2026-05-01 08:43:35 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-01 08:43:35 AM | INFO | auditor | 🛡️ Auditor module handled message: 4425
+2026-05-01 08:43:36 AM | INFO | db_manager | ✓ Message 4425 in -1003798739565 saved as PENDING
+2026-05-01 08:43:36 AM | INFO | message_handler | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 4)
+2026-05-01 08:43:45 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:43:56 AM | INFO | main_router | Routing message from -1003752062728: cus phလေးဒီနေ့ထိမကိုင်လို့ပါရှငိ့မမ သက်မှတ်ရက်လေးလ...
+2026-05-01 08:43:57 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-01 08:43:57 AM | INFO | auditor | 🛡️ Auditor module handled message: 212
+2026-05-01 08:43:57 AM | INFO | db_manager | ✓ Message 212 in -1003752062728 saved as PENDING
+2026-05-01 08:43:57 AM | INFO | message_handler | 📩 New Pending Message from 8781916512 in -1003752062728 (Topic: 4)
+2026-05-01 08:44:28 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:45:13 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 08:45:13 AM | INFO | db_manager | ✅ Group Resolved: [374] in -1003709069700 by Yoon Waddy (Reply)
+2026-05-01 08:45:13 AM | INFO | auditor | ℹ️ No active alert tracking found for 374 in -1003709069700.
+2026-05-01 08:45:13 AM | INFO | auditor | ℹ️ Message 374 was not an active alert. Skipping record.
+2026-05-01 08:45:13 AM | INFO | message_handler | ✅ Message 374 marked as RESOLVED via Reply by Yoon Waddy
+2026-05-01 08:45:16 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:45:16 AM | INFO | db_manager | ✅ Group Resolved: [125] in -1003650157592 by Eaindra (Reply)
+2026-05-01 08:45:16 AM | INFO | auditor | ℹ️ No active alert tracking found for 125 in -1003650157592.
+2026-05-01 08:45:16 AM | INFO | auditor | ℹ️ Message 125 was not an active alert. Skipping record.
+2026-05-01 08:45:16 AM | INFO | message_handler | ✅ Message 125 marked as RESOLVED via Reply by Eaindra
+2026-05-01 08:45:17 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:45:27 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 08:45:35 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 08:45:35 AM | INFO | db_manager | ✅ Group Resolved: [360] in -1003830048503 by Yoon Waddy (Reply)
+2026-05-01 08:45:35 AM | INFO | auditor | ℹ️ No active alert tracking found for 360 in -1003830048503.
+2026-05-01 08:45:35 AM | INFO | auditor | ℹ️ Message 360 was not an active alert. Skipping record.
+2026-05-01 08:45:35 AM | INFO | message_handler | ✅ Message 360 marked as RESOLVED via Reply by Yoon Waddy
+2026-05-01 08:45:45 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 08:46:14 AM | INFO | main_router | Routing message from -1003798739565: ဟုတ်ကဲ့ရျငိ့မမ ထပ်ဆက်သွယ်ကြည့်လိုက်ပ့ါမယ်ရှငိ့...
+2026-05-01 08:46:15 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 08:46:15 AM | INFO | db_manager | ✓ Message 4426 in -1003798739565 saved as PENDING
+2026-05-01 08:46:15 AM | INFO | message_handler | 📩 New Pending Message from 8781916512 in -1003798739565 (Topic: 4)
+2026-05-01 08:47:35 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:47:35 AM | INFO | db_manager | ✅ Group Resolved: [354] in -1003830048503 by Eaindra (Reply)
+2026-05-01 08:47:35 AM | INFO | auditor | ℹ️ No active alert tracking found for 354 in -1003830048503.
+2026-05-01 08:47:35 AM | INFO | auditor | ℹ️ Message 354 was not an active alert. Skipping record.
+2026-05-01 08:47:35 AM | INFO | message_handler | ✅ Message 354 marked as RESOLVED via Reply by Eaindra
+2026-05-01 08:47:37 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:47:59 AM | INFO | main_router | Routing message from -1003813366869: ဟုတ်တယ်ညီမ...
+2026-05-01 08:48:00 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 08:48:00 AM | INFO | db_manager | ✓ Message 405 in -1003813366869 saved as PENDING
+2026-05-01 08:48:00 AM | INFO | message_handler | 📩 New Pending Message from 7639309830 in -1003813366869 (Topic: 1)
+2026-05-01 08:48:11 AM | INFO | db_manager | ✓ Message 409 in -1003801077622 saved as PENDING
+2026-05-01 08:48:11 AM | INFO | message_handler | 📩 New Pending Message from 1125243723 in -1003801077622 (Topic: 1)
+2026-05-01 08:48:20 AM | INFO | main_router | Routing message from -1003801077622: ဒီပါဆယ်လေးကြာနေပီး...
+2026-05-01 08:48:21 AM | INFO | auditor | ℹ️ No active alert tracking found for 405 in -1003813366869.
+2026-05-01 08:48:21 AM | INFO | auditor | ℹ️ Message 405 was not an active alert. Skipping record.
+2026-05-01 08:48:21 AM | INFO | db_manager | ✅ Group Resolved: [405] in -1003813366869 by Yoon Waddy (Reaction (❤))
+2026-05-01 08:48:21 AM | INFO | alert_handler | ✅ Message 405 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 08:48:21 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-01 08:48:21 AM | INFO | auditor | 🛡️ Auditor module handled message: 410
+2026-05-01 08:48:21 AM | INFO | db_manager | ✓ Message 410 in -1003801077622 saved as PENDING
+2026-05-01 08:48:21 AM | INFO | message_handler | 📩 New Pending Message from 1125243723 in -1003801077622 (Topic: 1)
+2026-05-01 08:48:27 AM | INFO | main_router | Routing message from -1003801077622: ပို့ပေးပါဦး...
+2026-05-01 08:48:28 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-01 08:48:28 AM | INFO | auto_pickup | 🔇 Auto Pickup is OFF. Skipping module for group -1003801077622
+2026-05-01 08:48:28 AM | INFO | db_manager | ✓ Message 411 in -1003801077622 saved as PENDING
+2026-05-01 08:48:28 AM | INFO | message_handler | 📩 New Pending Message from 1125243723 in -1003801077622 (Topic: 1)
+2026-05-01 08:48:31 AM | INFO | main_router | Routing message from -1003801077622: စစ်ပေးနော်...
+2026-05-01 08:48:32 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-05-01 08:48:32 AM | INFO | main_router | 🔇 Blocking general intent 'check_order' in Group Chat -1003801077622. Bot will remain silent.
+2026-05-01 08:48:32 AM | INFO | db_manager | ✓ Message 412 in -1003801077622 saved as PENDING
+2026-05-01 08:48:32 AM | INFO | message_handler | 📩 New Pending Message from 1125243723 in -1003801077622 (Topic: 1)
+2026-05-01 08:48:36 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 08:48:54 AM | INFO | db_manager | ✓ Message 346 in -1003702835668 saved as PENDING
+2026-05-01 08:48:54 AM | INFO | message_handler | 📩 New Pending Message from 5669529378 in -1003702835668 (Topic: 1)
+2026-05-01 08:49:03 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 08:49:11 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:49:16 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 08:49:25 AM | INFO | main_router | 🧪 Sandbox Mode: Bypassing all global/group/time restrictions for chat -1003539520778
+2026-05-01 08:49:25 AM | INFO | main_router | Routing message from -1003539520778: မောင်မောင်ပါဆယ်လေးဘယ်နေ့ရောက်မလဲ...
+2026-05-01 08:49:26 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-05-01 08:49:26 AM | INFO | check_order | 🔍 Check Order module handled message: 381
+2026-05-01 08:49:26 AM | INFO | db_manager | ✓ Message 381 in -1003539520778 saved as PENDING
+2026-05-01 08:49:26 AM | INFO | message_handler | 📩 New Pending Message from 8047375926 in -1003539520778 (Topic: 1)
+2026-05-01 08:49:49 AM | INFO | main_router | Routing message from -1003813366869: ဟုတ်...
+2026-05-01 08:49:51 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 08:49:51 AM | INFO | db_manager | ✓ Message 407 in -1003813366869 saved as PENDING
+2026-05-01 08:49:51 AM | INFO | message_handler | 📩 New Pending Message from 7639309830 in -1003813366869 (Topic: 1)
+2026-05-01 08:49:51 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:49:55 AM | INFO | main_router | Routing message from -1003813366869: ရတယ်နော်...
+2026-05-01 08:49:56 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 08:49:56 AM | INFO | db_manager | ✓ Message 408 in -1003813366869 saved as PENDING
+2026-05-01 08:49:56 AM | INFO | message_handler | 📩 New Pending Message from 7639309830 in -1003813366869 (Topic: 1)
+2026-05-01 08:50:27 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 08:50:36 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:50:36 AM | INFO | db_manager | ✅ Group Resolved: [70] in -1003791802416 by Eaindra (Reply)
+2026-05-01 08:50:36 AM | INFO | auditor | ℹ️ No active alert tracking found for 70 in -1003791802416.
+2026-05-01 08:50:36 AM | INFO | auditor | ℹ️ Message 70 was not an active alert. Skipping record.
+2026-05-01 08:50:36 AM | INFO | message_handler | ✅ Message 70 marked as RESOLVED via Reply by Eaindra
+2026-05-01 08:50:39 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:51:07 AM | INFO | main_router | Routing message from -1003731394148: ဂိတ်တင်ဘောင်ချာရရင်အမကိုပို့ပေးပါဦး...
+2026-05-01 08:51:07 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-01 08:51:07 AM | INFO | auditor | 🛡️ Auditor module handled message: 617
+2026-05-01 08:51:08 AM | INFO | db_manager | ✓ Message 617 in -1003731394148 saved as PENDING
+2026-05-01 08:51:08 AM | INFO | message_handler | 📩 New Pending Message from 5914750831 in -1003731394148 (Topic: 1)
+2026-05-01 08:53:32 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:54:11 AM | INFO | auditor | ℹ️ No active alert tracking found for 354 in -1003692715477.
+2026-05-01 08:54:11 AM | INFO | auditor | ℹ️ Message 354 was not an active alert. Skipping record.
+2026-05-01 08:54:11 AM | INFO | db_manager | ✅ Group Resolved: [354] in -1003692715477 by Eaindra (Reaction (❤))
+2026-05-01 08:54:11 AM | INFO | alert_handler | ✅ Message 354 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-05-01 08:54:26 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:55:14 AM | INFO | db_manager | ✓ Message 401 in -1003768834039 saved as PENDING
+2026-05-01 08:55:14 AM | INFO | message_handler | 📩 New Pending Message from 6779439018 in -1003768834039 (Topic: 4)
+2026-05-01 08:55:27 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 08:55:28 AM | INFO | main_router | Routing message from -1003595920776: လွှတ်ထားလားရှင့်...
+2026-05-01 08:55:30 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-01 08:55:30 AM | INFO | auditor | 🛡️ Auditor module handled message: 104
+2026-05-01 08:55:41 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:55:41 AM | INFO | db_manager | ✅ Group Resolved: [357] in -1003692715477 by Eaindra (Reply)
+2026-05-01 08:55:41 AM | INFO | auditor | ℹ️ No active alert tracking found for 357 in -1003692715477.
+2026-05-01 08:55:41 AM | INFO | auditor | ℹ️ Message 357 was not an active alert. Skipping record.
+2026-05-01 08:55:41 AM | INFO | message_handler | ✅ Message 357 marked as RESOLVED via Reply by Eaindra
+2026-05-01 08:55:41 AM | INFO | main_router | Routing message from -1003768834039: ဒီ Customer ရဲ့ နောက်ထပ် ဖုန်းနံပါတ်လေးပါ ညီမ...
+2026-05-01 08:55:42 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 08:55:42 AM | INFO | db_manager | ✓ Message 402 in -1003768834039 saved as PENDING
+2026-05-01 08:55:42 AM | INFO | message_handler | 📩 New Pending Message from 6779439018 in -1003768834039 (Topic: 1)
+2026-05-01 08:55:43 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:56:04 AM | INFO | main_router | Routing message from -1003768834039: Deli ပို့ပေးတဲ့ သူဖက်ကို ပြောပေးထားပ့အုံးနော်...
+2026-05-01 08:56:05 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-01 08:56:05 AM | INFO | auditor | 🛡️ Auditor module handled message: 403
+2026-05-01 08:56:05 AM | INFO | db_manager | ✓ Message 403 in -1003768834039 saved as PENDING
+2026-05-01 08:56:05 AM | INFO | message_handler | 📩 New Pending Message from 6779439018 in -1003768834039 (Topic: 1)
+2026-05-01 08:56:47 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:56:57 AM | INFO | main_router | Routing message from -1003723204023: Htet Htet 
+လှိုင်သာယာ ထန်းတပင်မြို့နယ် ပေါက်တန်း
+0...
+2026-05-01 08:56:58 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-01 08:56:58 AM | INFO | auto_pickup | 🔇 Auto Pickup is OFF. Skipping module for group -1003723204023
+2026-05-01 08:56:58 AM | INFO | db_manager | ✓ Message 356 in -1003723204023 saved as PENDING
+2026-05-01 08:56:58 AM | INFO | message_handler | 📩 New Pending Message from 2135841895 in -1003723204023 (Topic: 1)
+2026-05-01 08:57:13 AM | INFO | main_router | Routing message from -1003723204023: မရောက်သေးလို့ကြာနေပီ...
+2026-05-01 08:57:14 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-01 08:57:14 AM | INFO | auditor | 🛡️ Auditor module handled message: 357
+2026-05-01 08:57:14 AM | INFO | db_manager | ✓ Message 357 in -1003723204023 saved as PENDING
+2026-05-01 08:57:14 AM | INFO | message_handler | 📩 New Pending Message from 2135841895 in -1003723204023 (Topic: 1)
+2026-05-01 08:57:18 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8353570874
+2026-05-01 08:57:20 AM | INFO | main_router | Routing message from -1003938793102: လွှဲလိုက်ပါပြီနော်...
+2026-05-01 08:57:21 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 08:57:32 AM | INFO | main_router | Routing message from -1003121725085: ဟူတ်...
+2026-05-01 08:57:33 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 08:57:33 AM | INFO | db_manager | ✓ Message 145 in -1003121725085 saved as PENDING
+2026-05-01 08:57:33 AM | INFO | message_handler | 📩 New Pending Message from 2025599336 in -1003121725085 (Topic: 1)
+2026-05-01 08:58:20 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:58:29 AM | INFO | main_router | Routing message from -1003121725085: Deliခတေကညီမတို့ကိုပေးမယ့်cashထဲကနြှတ်လိုက်နော်ရှင်...
+2026-05-01 08:58:30 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-01 08:58:30 AM | INFO | auditor | 🛡️ Auditor module handled message: 146
+2026-05-01 08:58:30 AM | INFO | db_manager | ✓ Message 146 in -1003121725085 saved as PENDING
+2026-05-01 08:58:30 AM | INFO | message_handler | 📩 New Pending Message from 2025599336 in -1003121725085 (Topic: 1)
+2026-05-01 08:58:48 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:58:50 AM | INFO | auditor | ℹ️ No active alert tracking found for 146 in -1003121725085.
+2026-05-01 08:58:50 AM | INFO | auditor | ℹ️ Message 146 was not an active alert. Skipping record.
+2026-05-01 08:58:50 AM | INFO | db_manager | ✅ Group Resolved: [146] in -1003121725085 by Eaindra (Reaction (❤))
+2026-05-01 08:58:50 AM | INFO | alert_handler | ✅ Message 146 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-05-01 08:59:12 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 08:59:15 AM | INFO | auditor | ℹ️ No active alert tracking found for 68 in -1003938793102.
+2026-05-01 08:59:15 AM | INFO | auditor | ℹ️ Message 68 was not an active alert. Skipping record.
+2026-05-01 08:59:15 AM | INFO | db_manager | ✅ Group Resolved: [68] in -1003938793102 by Eaindra (Reaction (❤))
+2026-05-01 08:59:15 AM | INFO | alert_handler | ✅ Message 68 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-05-01 08:59:22 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 08:59:53 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 09:00:05 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-05-01 09:00:05 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-05-01 09:00:05 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-05-01 09:00:05 AM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-05-01 09:00:05 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-05-01 09:00:05 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-05-01 09:00:05 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-05-01 09:00:06 AM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-05-01 09:00:28 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 09:00:29 AM | INFO | main_router | Routing message from -1003830048503: ရောက်တယ်နော်ရှင့် ကျေးဇူးပါရှင့်...
+2026-05-01 09:00:29 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 09:00:30 AM | INFO | db_manager | ✓ Message 364 in -1003830048503 saved as PENDING
+2026-05-01 09:00:30 AM | INFO | message_handler | 📩 New Pending Message from 5045917092 in -1003830048503 (Topic: 1)
+2026-05-01 09:01:31 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 09:01:36 AM | INFO | main_router | Routing message from -1003734659970: OS Name - Lara's Boutique
+Date -1,5,2026
+
+စုစုပေါင...
+2026-05-01 09:01:37 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 09:01:37 AM | INFO | db_manager | ✓ Message 268 in -1003734659970 saved as PENDING
+2026-05-01 09:01:37 AM | INFO | message_handler | 📩 New Pending Message from 7154027121 in -1003734659970 (Topic: 1)
+2026-05-01 09:02:09 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7261311241
+2026-05-01 09:02:09 AM | INFO | db_manager | ✅ Group Resolved: [409] in -1003801077622 by (60501) (Reply)
+2026-05-01 09:02:09 AM | INFO | auditor | ℹ️ No active alert tracking found for 409 in -1003801077622.
+2026-05-01 09:02:09 AM | INFO | auditor | ℹ️ Message 409 was not an active alert. Skipping record.
+2026-05-01 09:02:09 AM | INFO | message_handler | ✅ Message 409 marked as RESOLVED via Reply by (60501)
+2026-05-01 09:02:47 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 09:03:02 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 09:03:53 AM | INFO | auditor | ℹ️ No active alert tracking found for 364 in -1003830048503.
+2026-05-01 09:03:53 AM | INFO | auditor | ℹ️ Message 364 was not an active alert. Skipping record.
+2026-05-01 09:03:53 AM | INFO | db_manager | ✅ Group Resolved: [364] in -1003830048503 by Yoon Waddy (Reaction (❤))
+2026-05-01 09:03:53 AM | INFO | alert_handler | ✅ Message 364 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 09:03:56 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:03:59 AM | INFO | auditor | ℹ️ No active alert tracking found for 268 in -1003734659970.
+2026-05-01 09:03:59 AM | INFO | auditor | ℹ️ Message 268 was not an active alert. Skipping record.
+2026-05-01 09:03:59 AM | INFO | db_manager | ✅ Group Resolved: [268] in -1003734659970 by Yoon Waddy (Reaction (❤))
+2026-05-01 09:03:59 AM | INFO | alert_handler | ✅ Message 268 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 09:04:06 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:04:28 AM | INFO | auditor | 🧪 Sandbox Audit: Bypassing restrictions for chat -1003539520778
+2026-05-01 09:04:28 AM | INFO | auditor | 📂 Auditing Batch: AI Testing OS Gp (Topic 1) in Chat -1003539520778 (1 messages)
+2026-05-01 09:04:29 AM | INFO | auditor | 🔇 AI Ignored Group: [381]
+2026-05-01 09:04:50 AM | INFO | auditor | ℹ️ No active alert tracking found for 104 in -1003595920776.
+2026-05-01 09:04:50 AM | INFO | auditor | ℹ️ Message 104 was not an active alert. Skipping record.
+2026-05-01 09:04:50 AM | INFO | db_manager | ✅ Group Resolved: [104] in -1003595920776 by Yoon Waddy (Reaction (❤))
+2026-05-01 09:04:50 AM | INFO | alert_handler | ✅ Message 104 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 09:05:29 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:05:32 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 09:05:47 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:05:47 AM | INFO | db_manager | ✅ Group Resolved: [401] in -1003768834039 by Yoon Waddy (Reply)
+2026-05-01 09:05:47 AM | INFO | auditor | ℹ️ No active alert tracking found for 401 in -1003768834039.
+2026-05-01 09:05:47 AM | INFO | auditor | ℹ️ Message 401 was not an active alert. Skipping record.
+2026-05-01 09:05:47 AM | INFO | message_handler | ✅ Message 401 marked as RESOLVED via Reply by Yoon Waddy
+2026-05-01 09:05:55 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:06:36 AM | INFO | main_router | Routing message from -1003595920776: ဟုတ်ကဲ့ရှင့် ဒီနေ့တော့မရဘူးပေါ့နော့...
+2026-05-01 09:06:37 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 09:06:39 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:06:56 AM | INFO | main_router | Routing message from -1003595920776: ၇ထုပ် အပ်ဖို့ရှိတာမို့လို့ပါ...
+2026-05-01 09:06:57 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-01 09:06:57 AM | INFO | auto_pickup | 🔇 Auto Pickup is OFF. Skipping module for group -1003595920776
+2026-05-01 09:07:02 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-01 09:07:07 AM | INFO | auditor | ℹ️ No active alert tracking found for 408 in -1003813366869.
+2026-05-01 09:07:07 AM | INFO | auditor | ℹ️ Message 408 was not an active alert. Skipping record.
+2026-05-01 09:07:07 AM | INFO | db_manager | ✅ Group Resolved: [408] in -1003813366869 by Yoon Waddy (Reaction (❤))
+2026-05-01 09:07:07 AM | INFO | alert_handler | ✅ Message 408 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 09:07:22 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:08:21 AM | INFO | auditor | ℹ️ No active alert tracking found for 107 in -1003595920776.
+2026-05-01 09:08:21 AM | INFO | auditor | ℹ️ Message 107 was not an active alert. Skipping record.
+2026-05-01 09:08:21 AM | INFO | db_manager | ✅ Group Resolved: [107] in -1003595920776 by Yoon Waddy (Reaction (❤))
+2026-05-01 09:08:21 AM | INFO | alert_handler | ✅ Message 107 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 09:08:57 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:09:52 AM | INFO | main_router | Routing message from -1003595920776: ဟုတ်ကဲ့ပါရှင်...
+2026-05-01 09:09:53 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 09:10:32 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 09:10:44 AM | INFO | auditor | ℹ️ No active alert tracking found for 357 in -1003723204023.
+2026-05-01 09:10:44 AM | INFO | auditor | ℹ️ Message 357 was not an active alert. Skipping record.
+2026-05-01 09:10:44 AM | INFO | db_manager | ✅ Group Resolved: [357] in -1003723204023 by Yoon Waddy (Reaction (❤))
+2026-05-01 09:10:44 AM | INFO | alert_handler | ✅ Message 357 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 09:10:46 AM | INFO | auditor | ℹ️ No active alert tracking found for 356 in -1003723204023.
+2026-05-01 09:10:46 AM | INFO | auditor | ℹ️ Message 356 was not an active alert. Skipping record.
+2026-05-01 09:10:46 AM | INFO | db_manager | ✅ Group Resolved: [356] in -1003723204023 by Yoon Waddy (Reaction (❤))
+2026-05-01 09:10:46 AM | INFO | alert_handler | ✅ Message 356 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 09:11:30 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:11:33 AM | INFO | auditor | ℹ️ No active alert tracking found for 109 in -1003595920776.
+2026-05-01 09:11:33 AM | INFO | auditor | ℹ️ Message 109 was not an active alert. Skipping record.
+2026-05-01 09:11:33 AM | INFO | db_manager | ✅ Group Resolved: [109] in -1003595920776 by Yoon Waddy (Reaction (❤))
+2026-05-01 09:11:33 AM | INFO | alert_handler | ✅ Message 109 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 09:11:40 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:11:54 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:11:54 AM | INFO | db_manager | ✅ Group Resolved: [617] in -1003731394148 by Yoon Waddy (Reply)
+2026-05-01 09:11:54 AM | INFO | auditor | ℹ️ No active alert tracking found for 617 in -1003731394148.
+2026-05-01 09:11:54 AM | INFO | auditor | ℹ️ Message 617 was not an active alert. Skipping record.
+2026-05-01 09:11:54 AM | INFO | message_handler | ✅ Message 617 marked as RESOLVED via Reply by Yoon Waddy
+2026-05-01 09:12:37 AM | INFO | main_router | Routing message from -1003780967023: OS Name - NNKW Bookstore
+Date - 1 /5/2026
+
+စုစုပေါ...
+2026-05-01 09:12:37 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 09:12:38 AM | INFO | db_manager | ✓ Message 452 in -1003780967023 saved as PENDING
+2026-05-01 09:12:38 AM | INFO | message_handler | 📩 New Pending Message from 8755095351 in -1003780967023 (Topic: 1)
+2026-05-01 09:13:37 AM | INFO | main_router | Routing message from -1003595920776: မနက်ဖြန်စောစောလေးလာလို့ရရင် လာပေးပါနော်...
+2026-05-01 09:13:38 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-01 09:13:38 AM | INFO | auto_pickup | 🔇 Auto Pickup is OFF. Skipping module for group -1003595920776
+2026-05-01 09:14:33 AM | INFO | auditor | ℹ️ No active alert tracking found for 111 in -1003595920776.
+2026-05-01 09:14:33 AM | INFO | auditor | ℹ️ Message 111 was not an active alert. Skipping record.
+2026-05-01 09:14:33 AM | INFO | db_manager | ✅ Group Resolved: [111] in -1003595920776 by (60501) (Reaction (❤))
+2026-05-01 09:14:33 AM | INFO | alert_handler | ✅ Message 111 marked as RESOLVED via Reaction (❤) by (60501)
+2026-05-01 09:15:32 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 09:16:08 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 09:16:15 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7261311241
+2026-05-01 09:16:53 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8353570874
+2026-05-01 09:16:59 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8353570874
+2026-05-01 09:17:29 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8353570874
+2026-05-01 09:19:00 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 09:20:33 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 09:20:37 AM | INFO | auditor | ℹ️ No active alert tracking found for 452 in -1003780967023.
+2026-05-01 09:20:37 AM | INFO | auditor | ℹ️ Message 452 was not an active alert. Skipping record.
+2026-05-01 09:20:37 AM | INFO | db_manager | ✅ Group Resolved: [452] in -1003780967023 by Yoon Waddy (Reaction (❤))
+2026-05-01 09:20:37 AM | INFO | alert_handler | ✅ Message 452 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 09:20:43 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:21:29 AM | INFO | main_router | Routing message from -1003791802416: 55000 မဟုတ်ဘူးလားနော်အမ...
+2026-05-01 09:21:30 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-01 09:21:30 AM | INFO | auditor | 🛡️ Auditor module handled message: 75
+2026-05-01 09:21:30 AM | INFO | db_manager | ✓ Message 75 in -1003791802416 saved as PENDING
+2026-05-01 09:21:30 AM | INFO | message_handler | 📩 New Pending Message from 7822392684 in -1003791802416 (Topic: 1)
+2026-05-01 09:22:02 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:22:02 AM | INFO | db_manager | ✅ Group Resolved: [356] in -1003801077622 by Yoon Waddy (Reply)
+2026-05-01 09:22:02 AM | INFO | auditor | ℹ️ No active alert tracking found for 356 in -1003801077622.
+2026-05-01 09:22:02 AM | INFO | auditor | ℹ️ Message 356 was not an active alert. Skipping record.
+2026-05-01 09:22:02 AM | INFO | message_handler | ✅ Message 356 marked as RESOLVED via Reply by Yoon Waddy
+2026-05-01 09:22:18 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 09:22:38 AM | INFO | auditor | ℹ️ No active alert tracking found for 75 in -1003791802416.
+2026-05-01 09:22:38 AM | INFO | auditor | ℹ️ Message 75 was not an active alert. Skipping record.
+2026-05-01 09:22:38 AM | INFO | db_manager | ✅ Group Resolved: [75] in -1003791802416 by Eaindra (Reaction (❤))
+2026-05-01 09:22:38 AM | INFO | alert_handler | ✅ Message 75 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-05-01 09:22:56 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 09:23:42 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 09:23:51 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 09:24:43 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 09:24:46 AM | INFO | main_router | Routing message from -1003791802416: ဘယ်ကိူပို့ခလေးလဲရှင့် မသိလိူ့မေးတာပါနော်...
+2026-05-01 09:24:47 AM | INFO | main_router | 🎯 AI Decision: support
+2026-05-01 09:24:47 AM | INFO | main_router | 🔇 Blocking general intent 'support' in Group Chat -1003791802416. Bot will remain silent.
+2026-05-01 09:24:47 AM | INFO | db_manager | ✓ Message 77 in -1003791802416 saved as PENDING
+2026-05-01 09:24:47 AM | INFO | message_handler | 📩 New Pending Message from 7822392684 in -1003791802416 (Topic: 1)
+2026-05-01 09:24:52 AM | INFO | main_router | Routing message from -1003760073283: OS Name - Yu Yu Baby
+Date -  28/4/2026
+
+စုစုပေါင်း...
+2026-05-01 09:24:53 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 09:24:54 AM | INFO | db_manager | ✓ Message 398 in -1003760073283 saved as PENDING
+2026-05-01 09:24:54 AM | INFO | message_handler | 📩 New Pending Message from 6728089723 in -1003760073283 (Topic: 1)
+2026-05-01 09:24:55 AM | INFO | main_router | Routing message from -1003798739565: cus 3ရက်နေ့ရက်ချိန်းလေးပါရှငိ့မမ 09796224542...
+2026-05-01 09:24:56 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-01 09:24:56 AM | INFO | auto_pickup | 🔇 Auto Pickup is OFF. Skipping module for group -1003798739565
+2026-05-01 09:24:57 AM | INFO | db_manager | ✓ Message 4427 in -1003798739565 saved as PENDING
+2026-05-01 09:24:57 AM | INFO | message_handler | 📩 New Pending Message from 8781916512 in -1003798739565 (Topic: 4)
+2026-05-01 09:25:00 AM | INFO | main_router | Routing message from -1003791802416: အရင်ဆိူ full ရလ်ု့ပါ...
+2026-05-01 09:25:00 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-01 09:25:00 AM | INFO | auditor | 🛡️ Auditor module handled message: 78
+2026-05-01 09:25:00 AM | INFO | db_manager | ✓ Message 78 in -1003791802416 saved as PENDING
+2026-05-01 09:25:00 AM | INFO | message_handler | 📩 New Pending Message from 7822392684 in -1003791802416 (Topic: 6)
+2026-05-01 09:25:11 AM | INFO | auditor | ℹ️ No active alert tracking found for 79 in -1003920564574.
+2026-05-01 09:25:11 AM | INFO | auditor | ℹ️ Message 79 was not an active alert. Skipping record.
+2026-05-01 09:25:11 AM | INFO | db_manager | ✅ Group Resolved: [79] in -1003920564574 by Eaindra (Reaction (❤))
+2026-05-01 09:25:11 AM | INFO | alert_handler | ✅ Message 79 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-05-01 09:25:22 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 09:25:33 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 09:27:03 AM | INFO | main_router | Routing message from -1003798739565: No 52
+Thin Thin Thaw
+
+ရန်ကုန်တိုင်း 
+တောင်ဥက္ကလာပ ...
+2026-05-01 09:27:04 AM | INFO | main_router | Routing message from -1003801077622: cus 2ရက်နေ့ရက်ချိန်းလေးပါရှငိ့မမ 0945007444...
+2026-05-01 09:27:04 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-01 09:27:04 AM | INFO | auto_pickup | 🔇 Auto Pickup is OFF. Skipping module for group -1003801077622
+2026-05-01 09:27:04 AM | INFO | db_manager | ✓ Message 415 in -1003801077622 saved as PENDING
+2026-05-01 09:27:04 AM | INFO | message_handler | 📩 New Pending Message from 8781916512 in -1003801077622 (Topic: 4)
+2026-05-01 09:27:04 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-01 09:27:04 AM | INFO | auto_pickup | 🔇 Auto Pickup is OFF. Skipping module for group -1003798739565
+2026-05-01 09:27:05 AM | INFO | db_manager | ✓ Message 4428 in -1003798739565 saved as PENDING
+2026-05-01 09:27:05 AM | INFO | message_handler | 📩 New Pending Message from 6258346237 in -1003798739565 (Topic: 1)
+2026-05-01 09:27:12 AM | INFO | main_router | Routing message from -1003798739565: မနေ့က way ထဲကပါ...
+2026-05-01 09:27:13 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-05-01 09:27:13 AM | INFO | main_router | 🔇 Blocking general intent 'check_order' in Group Chat -1003798739565. Bot will remain silent.
+2026-05-01 09:27:13 AM | INFO | db_manager | ✓ Message 4429 in -1003798739565 saved as PENDING
+2026-05-01 09:27:13 AM | INFO | message_handler | 📩 New Pending Message from 6258346237 in -1003798739565 (Topic: 1)
+2026-05-01 09:27:57 AM | INFO | main_router | Routing message from -1003798739565: ဒီနာမည်နဲ့ပါဆယ်လေး ပါလားသိချင်လို့...
+2026-05-01 09:27:58 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-05-01 09:27:58 AM | INFO | main_router | 🔇 Blocking general intent 'check_order' in Group Chat -1003798739565. Bot will remain silent.
+2026-05-01 09:27:58 AM | INFO | db_manager | ✓ Message 4430 in -1003798739565 saved as PENDING
+2026-05-01 09:27:58 AM | INFO | message_handler | 📩 New Pending Message from 6258346237 in -1003798739565 (Topic: 1)
+2026-05-01 09:28:15 AM | INFO | main_router | Routing message from -1003798739565: @cmsod1 @cmfinance4 @cmfinance1...
+2026-05-01 09:28:16 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 09:28:16 AM | INFO | db_manager | ✓ Message 4431 in -1003798739565 saved as PENDING
+2026-05-01 09:28:16 AM | INFO | message_handler | 📩 New Pending Message from 6258346237 in -1003798739565 (Topic: 1)
+2026-05-01 09:29:27 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 09:29:27 AM | INFO | db_manager | ✅ Group Resolved: [640] in -1003883905797 by Thida Hlaing (Reply)
+2026-05-01 09:29:27 AM | INFO | auditor | ℹ️ No active alert tracking found for 640 in -1003883905797.
+2026-05-01 09:29:27 AM | INFO | auditor | ℹ️ Message 640 was not an active alert. Skipping record.
+2026-05-01 09:29:27 AM | INFO | message_handler | ✅ Message 640 marked as RESOLVED via Reply by Thida Hlaing
+2026-05-01 09:29:39 AM | INFO | main_router | Routing message from -1003806753663: cus 2ရက်နေ့ရက်ချိန်းလေးပါရှငိ့မမ 09795274554...
+2026-05-01 09:29:50 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-01 09:29:50 AM | INFO | auto_pickup | 🔇 Auto Pickup is OFF. Skipping module for group -1003806753663
+2026-05-01 09:30:13 AM | INFO | main_router | Routing message from -1003920564574: ဟုတ်ကဲ့ပါ...
+2026-05-01 09:30:14 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 09:30:34 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 09:32:00 AM | INFO | main_router | Routing message from -1003798739565: cus 2ရက်နေ့ရက်ချိန်းလေးပါရှငိ့မမ 0977114432...
+2026-05-01 09:32:01 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-01 09:32:01 AM | INFO | auditor | 🛡️ Auditor module handled message: 4432
+2026-05-01 09:32:01 AM | INFO | db_manager | ✓ Message 4432 in -1003798739565 saved as PENDING
+2026-05-01 09:32:01 AM | INFO | message_handler | 📩 New Pending Message from 8781916512 in -1003798739565 (Topic: 4)
+2026-05-01 09:33:22 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 09:33:22 AM | INFO | db_manager | ✅ Group Resolved: [641] in -1003883905797 by Thida Hlaing (Reply)
+2026-05-01 09:33:22 AM | INFO | auditor | ℹ️ No active alert tracking found for 641 in -1003883905797.
+2026-05-01 09:33:22 AM | INFO | auditor | ℹ️ Message 641 was not an active alert. Skipping record.
+2026-05-01 09:33:22 AM | INFO | message_handler | ✅ Message 641 marked as RESOLVED via Reply by Thida Hlaing
+2026-05-01 09:34:08 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 09:35:34 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 09:38:09 AM | INFO | main_router | Routing message from -1003752062728: ဒါပြန်ပြောပေးပါဦး...
+2026-05-01 09:38:10 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 09:38:10 AM | INFO | db_manager | ✓ Message 213 in -1003752062728 saved as PENDING
+2026-05-01 09:38:10 AM | INFO | message_handler | 📩 New Pending Message from 1632962963 in -1003752062728 (Topic: 1)
+2026-05-01 09:39:22 AM | INFO | main_router | Routing message from -1003796096237: cus 4ရက်နေ့ရက်ချိန်းလေးပါရှငိ့မမ 09681777450...
+2026-05-01 09:39:23 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-01 09:39:23 AM | INFO | auto_pickup | 🔇 Auto Pickup is OFF. Skipping module for group -1003796096237
+2026-05-01 09:39:23 AM | INFO | db_manager | ✓ Message 361 in -1003796096237 saved as PENDING
+2026-05-01 09:39:23 AM | INFO | message_handler | 📩 New Pending Message from 8781916512 in -1003796096237 (Topic: 4)
+2026-05-01 09:40:30 AM | INFO | main_router | Routing message from -1003121725085: ဟုတ်...
+2026-05-01 09:40:31 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 09:40:31 AM | INFO | db_manager | ✓ Message 149 in -1003121725085 saved as PENDING
+2026-05-01 09:40:31 AM | INFO | message_handler | 📩 New Pending Message from 2025599336 in -1003121725085 (Topic: 1)
+2026-05-01 09:40:33 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 09:40:34 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 09:40:50 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7261311241
+2026-05-01 09:40:50 AM | INFO | db_manager | ✅ Group Resolved: [4428] in -1003798739565 by (60501) (Reply)
+2026-05-01 09:40:50 AM | INFO | auditor | ℹ️ No active alert tracking found for 4428 in -1003798739565.
+2026-05-01 09:40:50 AM | INFO | auditor | ℹ️ Message 4428 was not an active alert. Skipping record.
+2026-05-01 09:40:50 AM | INFO | message_handler | ✅ Message 4428 marked as RESOLVED via Reply by (60501)
+2026-05-01 09:41:15 AM | INFO | auditor | ℹ️ No active alert tracking found for 35 in -1003739231843.
+2026-05-01 09:41:15 AM | INFO | auditor | ℹ️ Message 35 was not an active alert. Skipping record.
+2026-05-01 09:41:15 AM | INFO | db_manager | ✅ Group Resolved: [35] in -1003739231843 by Thida Hlaing (Reaction (❤))
+2026-05-01 09:41:15 AM | INFO | alert_handler | ✅ Message 35 marked as RESOLVED via Reaction (❤) by Thida Hlaing
+2026-05-01 09:41:55 AM | INFO | main_router | Routing message from -1003798739565: No 44
+Thiri Htun
+
+အမှတ် ၉၂၊ ပဉ္ဇူလမ်းသွယ်၊ ထန်းပင်...
+2026-05-01 09:41:55 AM | INFO | main_router | Routing message from -1003798739565: cus 5ရက်နေ့ရက်ချိန်းလေးပါရှငိ့မမ 09451406245...
+2026-05-01 09:41:56 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-01 09:41:56 AM | INFO | auto_pickup | 🔇 Auto Pickup is OFF. Skipping module for group -1003798739565
+2026-05-01 09:41:56 AM | INFO | db_manager | ✓ Message 4435 in -1003798739565 saved as PENDING
+2026-05-01 09:41:56 AM | INFO | message_handler | 📩 New Pending Message from 8781916512 in -1003798739565 (Topic: 4)
+2026-05-01 09:41:57 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 09:41:57 AM | INFO | db_manager | ✓ Message 4434 in -1003798739565 saved as PENDING
+2026-05-01 09:41:57 AM | INFO | message_handler | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 1)
+2026-05-01 09:42:04 AM | INFO | main_router | Routing message from -1003798739565: ဒါလေး ဘယ်ျန့လောက်ရောက်မလဲရှင့်...
+2026-05-01 09:42:07 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-05-01 09:42:07 AM | INFO | main_router | 🔇 Blocking general intent 'check_order' in Group Chat -1003798739565. Bot will remain silent.
+2026-05-01 09:42:07 AM | INFO | db_manager | ✓ Message 4436 in -1003798739565 saved as PENDING
+2026-05-01 09:42:07 AM | INFO | message_handler | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 1)
+2026-05-01 09:42:33 AM | INFO | main_router | Routing message from -1003798739565: 23/24/25/26/27 ပုံတွေ ပို့ပေးပါဦးရှင့်...
+2026-05-01 09:42:34 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 09:42:34 AM | INFO | db_manager | ✓ Message 4437 in -1003798739565 saved as PENDING
+2026-05-01 09:42:34 AM | INFO | message_handler | 📩 New Pending Message from 7968341766 in -1003798739565 (Topic: 11)
+2026-05-01 09:44:42 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5982912055
+2026-05-01 09:45:35 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 09:47:15 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7261311241
+2026-05-01 09:47:15 AM | INFO | db_manager | ✅ Group Resolved: [206] in -1003752062728 by (60501) (Reply)
+2026-05-01 09:47:15 AM | INFO | auditor | ℹ️ No active alert tracking found for 206 in -1003752062728.
+2026-05-01 09:47:15 AM | INFO | auditor | ℹ️ Message 206 was not an active alert. Skipping record.
+2026-05-01 09:47:15 AM | INFO | message_handler | ✅ Message 206 marked as RESOLVED via Reply by (60501)
+2026-05-01 09:47:35 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:47:35 AM | INFO | db_manager | ✅ Group Resolved: [78] in -1003791802416 by Yoon Waddy (Reply)
+2026-05-01 09:47:35 AM | INFO | auditor | ℹ️ No active alert tracking found for 78 in -1003791802416.
+2026-05-01 09:47:35 AM | INFO | auditor | ℹ️ Message 78 was not an active alert. Skipping record.
+2026-05-01 09:47:35 AM | INFO | message_handler | ✅ Message 78 marked as RESOLVED via Reply by Yoon Waddy
+2026-05-01 09:48:08 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 09:49:16 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:49:28 AM | INFO | auditor | ℹ️ No active alert tracking found for 398 in -1003760073283.
+2026-05-01 09:49:28 AM | INFO | auditor | ℹ️ Message 398 was not an active alert. Skipping record.
+2026-05-01 09:49:28 AM | INFO | db_manager | ✅ Group Resolved: [398] in -1003760073283 by Yoon Waddy (Reaction (❤))
+2026-05-01 09:49:28 AM | INFO | alert_handler | ✅ Message 398 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 09:49:38 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 09:50:02 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 09:50:02 AM | INFO | db_manager | ✅ Group Resolved: [40] in -1003739231843 by Thida Hlaing (Reply)
+2026-05-01 09:50:02 AM | INFO | auditor | ℹ️ No active alert tracking found for 40 in -1003739231843.
+2026-05-01 09:50:02 AM | INFO | auditor | ℹ️ Message 40 was not an active alert. Skipping record.
+2026-05-01 09:50:02 AM | INFO | message_handler | ✅ Message 40 marked as RESOLVED via Reply by Thida Hlaing
+2026-05-01 09:50:35 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 09:51:25 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5982912055
+2026-05-01 09:54:48 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8688437892
+2026-05-01 09:55:36 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 09:57:31 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 09:57:59 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5982912055
+2026-05-01 09:59:01 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-05-01 09:59:01 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 09:59:01 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 1) in Chat -1003798739565 (12 messages)
+2026-05-01 09:59:03 AM | INFO | auditor | 🔇 AI Ignored Group: [3741, 3742, 3743, 3757, 3758, 3759, 4382, 4429, 4430, 4431, 4434, 4436]
+2026-05-01 09:59:05 AM | INFO | auditor | 📂 Auditing Batch: PhyoLay ð CarryMan (Topic 6) in Chat -1003849260656 (1 messages)
+2026-05-01 09:59:06 AM | INFO | auditor | 🔇 AI Ignored Group: [98]
+2026-05-01 09:59:08 AM | INFO | auditor | 📂 Auditing Batch: PoeMiMi Collection ï½ï½ï½ï½ï (Topic 1) in Chat -1003121725085 (6 messages)
+2026-05-01 09:59:10 AM | INFO | auditor | 🔇 AI Ignored Group: [136, 137, 139, 140, 145, 149]
+2026-05-01 09:59:12 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 4) in Chat -1003798739565 (20 messages)
+2026-05-01 09:59:14 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003798739565, topic=4, msg=3754, force=False
+2026-05-01 09:59:14 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/4 -> -1003601049225/37
+2026-05-01 09:59:14 AM | INFO | auditor | 📢 Alert sent for 3754 in Tina Fashion ï½ï½ï½ï½ï to Central Group
+2026-05-01 09:59:16 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 11) in Chat -1003798739565 (20 messages)
+2026-05-01 09:59:18 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003798739565, topic=11, msg=3760, force=False
+2026-05-01 09:59:18 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-05-01 09:59:19 AM | INFO | auditor | 📢 Alert sent for 3760 in Tina Fashion ï½ï½ï½ï½ï to Central Group
+2026-05-01 09:59:21 AM | INFO | auditor | 📂 Auditing Batch: BPink Girl ï½ï½ï½ï½ï (Topic 1) in Chat -1003823820784 (1 messages)
+2026-05-01 09:59:23 AM | INFO | auditor | 🔇 AI Ignored Group: [309]
+2026-05-01 09:59:24 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 09:59:25 AM | INFO | auditor | 📂 Auditing Batch: Glowic Beauty ï½ï½ï½ï½ï (Topic 1) in Chat -1003692715477 (9 messages)
+2026-05-01 09:59:26 AM | INFO | auditor | 🔇 AI Ignored Group: [330, 331, 332, 333, 335, 350, 351, 352, 355]
+2026-05-01 09:59:28 AM | INFO | auditor | 📂 Auditing Batch: Gi Ci ï½ï½ï½ï½ï (Topic 1) in Chat -1003801077622 (17 messages)
+2026-05-01 09:59:29 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003801077622, topic=1, msg=369, force=False
+2026-05-01 09:59:29 AM | INFO | auditor | 🎯 Explicit Route Found: -1003801077622/1 -> -1003601049225/1
+2026-05-01 09:59:29 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 09:59:31 AM | INFO | auditor | 📂 Auditing Batch: Lin Latt ï½ï½ï½ï½ï (Topic 1) in Chat -1003801802038 (1 messages)
+2026-05-01 09:59:32 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003801802038, topic=1, msg=252, force=False
+2026-05-01 09:59:32 AM | INFO | auditor | 🎯 Explicit Route Found: -1003801802038/1 -> -1003601049225/1
+2026-05-01 09:59:33 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 09:59:35 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 6) in Chat -1003798739565 (3 messages)
+2026-05-01 09:59:36 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003798739565, topic=6, msg=4130, force=False
+2026-05-01 09:59:36 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/6 -> -1003601049225/35
+2026-05-01 09:59:36 AM | INFO | auditor | 📢 Alert sent for 4130 in Tina Fashion ï½ï½ï½ï½ï to Central Group
+2026-05-01 09:59:37 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 3754 to Group
+2026-05-01 09:59:37 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 09:59:37 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 3760 to Group
+2026-05-01 09:59:37 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 4130 to Group
+2026-05-01 09:59:38 AM | INFO | auditor | 📂 Auditing Batch: Princess Nora ï½ï½ï½ï½ï (Topic 1) in Chat -1003768834039 (14 messages)
+2026-05-01 09:59:39 AM | INFO | auditor | 🔇 AI Ignored Group: [352, 353, 354, 355, 367, 368, 369, 370, 371, 372, 373, 374, 402, 403]
+2026-05-01 09:59:41 AM | INFO | auditor | 📂 Auditing Batch: Princess Nora ï½ï½ï½ï½ï (Topic 6) in Chat -1003768834039 (4 messages)
+2026-05-01 09:59:42 AM | INFO | auditor | 🔇 AI Ignored Group: [358, 392, 393, 394]
+2026-05-01 09:59:44 AM | INFO | auditor | 📂 Auditing Batch: Honey Accessoriesï½ï½ï½ï½ï (Topic 6) in Chat -1003529688950 (3 messages)
+2026-05-01 09:59:45 AM | INFO | auditor | 🔇 AI Ignored Group: [405, 428, 430]
+2026-05-01 09:59:47 AM | INFO | auditor | 📂 Auditing Batch: Honey Accessoriesï½ï½ï½ï½ï (Topic 1) in Chat -1003529688950 (7 messages)
+2026-05-01 09:59:48 AM | INFO | auditor | 🔇 AI Ignored Group: [407, 408, 410, 412, 413, 416, 429]
+2026-05-01 09:59:50 AM | INFO | auditor | 📂 Auditing Batch: Naseem ï½ï½ï½ï½ï (Topic 1) in Chat -1003731394148 (8 messages)
+2026-05-01 09:59:52 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 09:59:54 AM | INFO | auditor | 🔇 AI Ignored Group: [591, 592, 593, 594, 595, 597, 598, 615]
+2026-05-01 09:59:56 AM | INFO | auditor | 📂 Auditing Batch: KSJB ï½ï½ï½ï½ï (Topic 4) in Chat -1003883905797 (6 messages)
+2026-05-01 09:59:57 AM | INFO | auditor | 🔇 AI Ignored Group: [612, 615, 625, 626, 627, 638]
+2026-05-01 09:59:59 AM | INFO | auditor | 📂 Auditing Batch: IVY Essential ï½ï½ï½ï½ï (Topic 1) in Chat -1003633412428 (3 messages)
+2026-05-01 10:00:00 AM | INFO | auditor | 🔇 AI Ignored Group: [154, 155, 159]
+2026-05-01 10:00:02 AM | INFO | auditor | 📂 Auditing Batch: Naseem ï½ï½ï½ï½ï (Topic 6) in Chat -1003731394148 (4 messages)
+2026-05-01 10:00:03 AM | INFO | auditor | 🔇 AI Ignored Group: [602, 603, 605, 606]
+2026-05-01 10:00:05 AM | INFO | auditor | 📂 Auditing Batch: SH ï½ï½ï½ï½ï (Topic 1) in Chat -1003552853303 (3 messages)
+2026-05-01 10:00:06 AM | INFO | auditor | 🔇 AI Ignored Group: [275, 276, 284]
+2026-05-01 10:00:08 AM | INFO | auditor | 📂 Auditing Batch: SkinCare NextStep ï½ï½ï½ï½ï (Topic 6) in Chat -1003898476625 (9 messages)
+2026-05-01 10:00:09 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003898476625, topic=6, msg=649, force=False
+2026-05-01 10:00:09 AM | INFO | auditor | 🎯 Explicit Route Found: -1003898476625/6 -> -1003601049225/35
+2026-05-01 10:00:09 AM | INFO | auditor | 📢 Alert sent for 649 in SkinCare NextStep ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:00:11 AM | INFO | auditor | 📂 Auditing Batch: Skylar collection ï½ï½ï½ï½ï (Topic 1) in Chat -1003709069700 (7 messages)
+2026-05-01 10:00:12 AM | INFO | main_router | Routing message from -1003837115331: ကားဂိတ် ချလို့ရလား ဗျ...
+2026-05-01 10:00:12 AM | INFO | auditor | 🔇 AI Ignored Group: [344, 350, 359, 360, 364, 365, 368]
+2026-05-01 10:00:12 AM | INFO | main_router | 🎯 AI Decision: support
+2026-05-01 10:00:12 AM | INFO | main_router | 🔇 Blocking general intent 'support' in Group Chat -1003837115331. Bot will remain silent.
+2026-05-01 10:00:13 AM | INFO | db_manager | ✓ Message 263 in -1003837115331 saved as PENDING
+2026-05-01 10:00:13 AM | INFO | message_handler | 📩 New Pending Message from 5542320516 in -1003837115331 (Topic: 4)
+2026-05-01 10:00:14 AM | INFO | auditor | 📂 Auditing Batch: RETRO ï½ï½ï½ï½ï (Topic 1) in Chat -1003766245638 (5 messages)
+2026-05-01 10:00:16 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003766245638, topic=1, msg=318, force=False
+2026-05-01 10:00:16 AM | INFO | auditor | 🎯 Explicit Route Found: -1003766245638/1 -> -1003601049225/1
+2026-05-01 10:00:16 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 10:00:18 AM | INFO | auditor | 📂 Auditing Batch: Toly Moly ï½ï½ï½ï½ (Topic 1) in Chat -1003796096237 (1 messages)
+2026-05-01 10:00:20 AM | INFO | auditor | 🔇 AI Ignored Group: [345]
+2026-05-01 10:00:22 AM | INFO | auditor | 📂 Auditing Batch: May May Thae ï½ï½ï½ï½ï (Topic 6) in Chat -1003329445346 (5 messages)
+2026-05-01 10:00:23 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003329445346, topic=6, msg=129, force=False
+2026-05-01 10:00:23 AM | WARNING | auditor | ⚠️ No Explicit Route for -1003329445346/6. Notifying Manager...
+2026-05-01 10:00:23 AM | WARNING | auditor | ⚠️ No route found for May May Thae ï½ï½ï½ï½ï (-1003329445346/6). Notifying Manager.
+2026-05-01 10:00:23 AM | INFO | auditor | 🔍 notify_manager_missing_route: shop=May May Thae ï½ï½ï½ï½ï, msg_id=129, chat=-1003329445346
+2026-05-01 10:00:23 AM | INFO | auditor | 📲 Missing route notification sent to Manager for May May Thae ï½ï½ï½ï½ï
+2026-05-01 10:00:25 AM | INFO | auditor | 📂 Auditing Batch: Blanco Fashion ï½ï½ï½ï½ï (Topic 1) in Chat -1003816497641 (9 messages)
+2026-05-01 10:00:27 AM | INFO | auditor | 🔇 AI Ignored Group: [420, 422, 426, 427, 428, 429, 430, 431, 432]
+2026-05-01 10:00:29 AM | INFO | auditor | 📂 Auditing Batch: ChawSu Store ï½ï½ï½ï½ï (Topic 20) in Chat -1003731552887 (4 messages)
+2026-05-01 10:00:30 AM | INFO | auditor | 🔇 AI Ignored Group: [46, 47, 48, 49]
+2026-05-01 10:00:32 AM | INFO | auditor | 📂 Auditing Batch: Gi Ci ï½ï½ï½ï½ï (Topic 4) in Chat -1003801077622 (5 messages)
+2026-05-01 10:00:34 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003801077622, topic=4, msg=393, force=False
+2026-05-01 10:00:34 AM | INFO | auditor | 🎯 Explicit Route Found: -1003801077622/4 -> -1003601049225/37
+2026-05-01 10:00:35 AM | INFO | auditor | 📢 Alert sent for 393 in Gi Ci ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:00:37 AM | INFO | auditor | 📂 Auditing Batch: Hotssic ï½ï½ï½ï½ï (Topic 1) in Chat -1003506710131 (3 messages)
+2026-05-01 10:00:37 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 10:00:38 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003506710131, topic=1, msg=663, force=False
+2026-05-01 10:00:38 AM | INFO | auditor | 🎯 Explicit Route Found: -1003506710131/1 -> -1003601049225/1
+2026-05-01 10:00:38 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 10:00:38 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 649 to Group
+2026-05-01 10:00:38 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 393 to Group
+2026-05-01 10:00:40 AM | INFO | auditor | 📂 Auditing Batch: KPC OS ï½ï½ï½ï½ï (Topic 1) in Chat -1003812325795 (2 messages)
+2026-05-01 10:00:41 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003812325795, topic=1, msg=158, force=False
+2026-05-01 10:00:41 AM | INFO | auditor | 🎯 Explicit Route Found: -1003812325795/1 -> -1003601049225/1
+2026-05-01 10:00:41 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 10:00:43 AM | INFO | auditor | 📂 Auditing Batch: Khine Trendy Shop ð CarryMan (Topic 1) in Chat -1003727765180 (3 messages)
+2026-05-01 10:00:45 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003727765180, topic=1, msg=182, force=False
+2026-05-01 10:00:45 AM | INFO | auditor | 🎯 Explicit Route Found: -1003727765180/1 -> -1003601049225/1
+2026-05-01 10:00:45 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 10:00:47 AM | INFO | auditor | 📂 Auditing Batch: Pyo Ou Yin ï½ï½ï½ï½ï (Topic 1) in Chat -1003783350266 (1 messages)
+2026-05-01 10:00:48 AM | INFO | auditor | 🔇 AI Ignored Group: [136]
+2026-05-01 10:00:50 AM | INFO | auditor | 📂 Auditing Batch: Outfits Shop ï½ï½ï½ï½ï (Topic 6) in Chat -1003415524543 (2 messages)
+2026-05-01 10:00:51 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003415524543, topic=6, msg=391, force=False
+2026-05-01 10:00:51 AM | INFO | auditor | 🎯 Explicit Route Found: -1003415524543/6 -> -1003601049225/35
+2026-05-01 10:00:51 AM | INFO | auditor | 📢 Alert sent for 391 in Outfits Shop ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:00:53 AM | INFO | auditor | 📂 Auditing Batch: NNKW Bookstore ï½ï½ï½ï½ï (Topic 1) in Chat -1003780967023 (7 messages)
+2026-05-01 10:00:54 AM | INFO | auditor | 🔇 AI Ignored Group: [423, 424, 426, 431, 440, 444, 445]
+2026-05-01 10:00:56 AM | INFO | auditor | 📂 Auditing Batch: Thiri Beauty Bountyï½ï½ï½ï½ï (Topic 4) in Chat -1003868121514 (3 messages)
+2026-05-01 10:00:57 AM | INFO | auditor | 🔇 AI Ignored Group: [480, 481, 482]
+2026-05-01 10:00:59 AM | INFO | auditor | 📂 Auditing Batch: May May Thae ï½ï½ï½ï½ï (Topic 1) in Chat -1003329445346 (4 messages)
+2026-05-01 10:01:02 AM | INFO | auditor | ℹ️ No active alert tracking found for 160 in -1003633412428.
+2026-05-01 10:01:02 AM | INFO | auditor | ℹ️ Message 160 was not an active alert. Skipping record.
+2026-05-01 10:01:02 AM | INFO | auditor | ℹ️ No active alert tracking found for 158 in -1003633412428.
+2026-05-01 10:01:02 AM | INFO | auditor | ℹ️ Message 158 was not an active alert. Skipping record.
+2026-05-01 10:01:02 AM | INFO | db_manager | ✅ Group Resolved: [160] in -1003633412428 by Thida Hlaing (Reaction (❤))
+2026-05-01 10:01:02 AM | INFO | alert_handler | ✅ Message 160 marked as RESOLVED via Reaction (❤) by Thida Hlaing
+2026-05-01 10:01:02 AM | INFO | db_manager | ✅ Group Resolved: [158] in -1003633412428 by Thida Hlaing (Reaction (❤))
+2026-05-01 10:01:02 AM | INFO | alert_handler | ✅ Message 158 marked as RESOLVED via Reaction (❤) by Thida Hlaing
+2026-05-01 10:01:06 AM | INFO | auditor | ℹ️ No active alert tracking found for 162 in -1003633412428.
+2026-05-01 10:01:06 AM | INFO | auditor | ℹ️ Message 162 was not an active alert. Skipping record.
+2026-05-01 10:01:06 AM | INFO | db_manager | ✅ Group Resolved: [162] in -1003633412428 by Thida Hlaing (Reaction (❤))
+2026-05-01 10:01:06 AM | INFO | alert_handler | ✅ Message 162 marked as RESOLVED via Reaction (❤) by Thida Hlaing
+2026-05-01 10:01:09 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 391 to Group
+2026-05-01 10:01:11 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003329445346, topic=1, msg=135, force=False
+2026-05-01 10:01:11 AM | WARNING | auditor | ⚠️ No Explicit Route for -1003329445346/1. Notifying Manager...
+2026-05-01 10:01:11 AM | WARNING | auditor | ⚠️ No route found for May May Thae ï½ï½ï½ï½ï (-1003329445346/1). Notifying Manager.
+2026-05-01 10:01:11 AM | INFO | auditor | 🔍 notify_manager_missing_route: shop=May May Thae ï½ï½ï½ï½ï, msg_id=135, chat=-1003329445346
+2026-05-01 10:01:12 AM | INFO | auditor | 📲 Missing route notification sent to Manager for May May Thae ï½ï½ï½ï½ï
+2026-05-01 10:01:14 AM | INFO | auditor | 📂 Auditing Batch: Myo (Topic 1) in Chat -1003672811205 (11 messages)
+2026-05-01 10:01:15 AM | INFO | auditor | 🔇 AI Ignored Group: [201, 202, 203, 204, 206, 207, 209, 210, 211, 212, 214]
+2026-05-01 10:01:17 AM | INFO | auditor | 📂 Auditing Batch: NNKW Bookstore ï½ï½ï½ï½ï (Topic 4) in Chat -1003780967023 (1 messages)
+2026-05-01 10:01:17 AM | INFO | auditor | 🔇 AI Ignored Group: [428]
+2026-05-01 10:01:19 AM | INFO | auditor | 📂 Auditing Batch: Nge Shoes ï½ï½ï½ï½ï (Topic 1) in Chat -1003812868558 (4 messages)
+2026-05-01 10:01:21 AM | INFO | auditor | 🔇 AI Ignored Group: [428, 430, 432, 434]
+2026-05-01 10:01:23 AM | INFO | auditor | 📂 Auditing Batch: Dreamy Fancies Ygn ï½ï½ï½ï½ï (Topic 1) in Chat -1003819601608 (2 messages)
+2026-05-01 10:01:24 AM | INFO | auditor | 🔇 AI Ignored Group: [449, 456]
+2026-05-01 10:01:26 AM | INFO | auditor | 📂 Auditing Batch: TTW ï½ï½ï½ï½ï (Topic 1) in Chat -1003837115331 (7 messages)
+2026-05-01 10:01:28 AM | INFO | auditor | 🔇 AI Ignored Group: [240, 246, 249, 253, 256, 258, 260]
+2026-05-01 10:01:30 AM | INFO | auditor | 📂 Auditing Batch: Gi Ci ï½ï½ï½ï½ï (Topic 6) in Chat -1003801077622 (1 messages)
+2026-05-01 10:01:31 AM | INFO | auditor | 🔇 AI Ignored Group: [395]
+2026-05-01 10:01:33 AM | INFO | auditor | 📂 Auditing Batch: SkinCare NextStep ï½ï½ï½ï½ï (Topic 1) in Chat -1003898476625 (4 messages)
+2026-05-01 10:01:35 AM | INFO | auditor | 🔇 AI Ignored Group: [673, 674, 679, 680]
+2026-05-01 10:01:37 AM | INFO | auditor | 📂 Auditing Batch: Dreamy Fancies Ygn ï½ï½ï½ï½ï (Topic 6) in Chat -1003819601608 (1 messages)
+2026-05-01 10:01:38 AM | INFO | auditor | 🔇 AI Ignored Group: [454]
+2026-05-01 10:01:40 AM | INFO | auditor | 📂 Auditing Batch: Blingo Beauty ï½ï½ï½ï½ï (Topic 1) in Chat -1003810399961 (2 messages)
+2026-05-01 10:01:41 AM | INFO | auditor | 🔇 AI Ignored Group: [812, 814]
+2026-05-01 10:01:43 AM | INFO | auditor | 📂 Auditing Batch: Binnie Paradise ï½ï½ï½ï½ï (Topic 1) in Chat -1003752062728 (3 messages)
+2026-05-01 10:01:44 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003752062728, topic=1, msg=200, force=False
+2026-05-01 10:01:44 AM | WARNING | auditor | ⚠️ No Explicit Route for -1003752062728/1. Notifying Manager...
+2026-05-01 10:01:44 AM | WARNING | auditor | ⚠️ No route found for Binnie Paradise ï½ï½ï½ï½ï (-1003752062728/1). Notifying Manager.
+2026-05-01 10:01:44 AM | INFO | auditor | 🔍 notify_manager_missing_route: shop=Binnie Paradise ï½ï½ï½ï½ï, msg_id=200, chat=-1003752062728
+2026-05-01 10:01:45 AM | INFO | auditor | 📲 Missing route notification sent to Manager for Binnie Paradise ï½ï½ï½ï½ï
+2026-05-01 10:01:47 AM | INFO | auditor | 📂 Auditing Batch: Thiri Beauty Bountyï½ï½ï½ï½ï (Topic 6) in Chat -1003868121514 (1 messages)
+2026-05-01 10:01:48 AM | INFO | auditor | 🔇 AI Ignored Group: [487]
+2026-05-01 10:01:50 AM | INFO | auditor | 📂 Auditing Batch: LARAs ï½ï½ï½ï½ï (Topic 1) in Chat -1003734659970 (3 messages)
+2026-05-01 10:01:52 AM | INFO | auditor | 🔇 AI Ignored Group: [245, 252, 254]
+2026-05-01 10:01:54 AM | INFO | auditor | 📂 Auditing Batch: ITTC ï½ï½ï½ï½ï (Topic 1) in Chat -1003852412184 (1 messages)
+2026-05-01 10:01:55 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003852412184, topic=1, msg=430, force=False
+2026-05-01 10:01:55 AM | INFO | auditor | 🎯 Explicit Route Found: -1003852412184/1 -> -1003601049225/1
+2026-05-01 10:01:55 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 10:01:58 AM | INFO | auditor | 📂 Auditing Batch: Skylar collection ï½ï½ï½ï½ï (Topic 4) in Chat -1003709069700 (3 messages)
+2026-05-01 10:01:59 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003709069700, topic=4, msg=353, force=False
+2026-05-01 10:01:59 AM | INFO | auditor | 🎯 Explicit Route Found: -1003709069700/4 -> -1003601049225/37
+2026-05-01 10:01:59 AM | INFO | auditor | 📢 Alert sent for 353 in Skylar collection ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:02:01 AM | INFO | auditor | 📂 Auditing Batch: KSJB ï½ï½ï½ï½ï (Topic 6) in Chat -1003883905797 (1 messages)
+2026-05-01 10:02:03 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003883905797, topic=6, msg=637, force=False
+2026-05-01 10:02:03 AM | INFO | auditor | 🎯 Explicit Route Found: -1003883905797/6 -> -1003601049225/35
+2026-05-01 10:02:04 AM | INFO | auditor | 📢 Alert sent for 637 in KSJB ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:02:06 AM | INFO | auditor | 📂 Auditing Batch: Nge Shoes ï½ï½ï½ï½ï (Topic 6) in Chat -1003812868558 (1 messages)
+2026-05-01 10:02:07 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003812868558, topic=6, msg=436, force=False
+2026-05-01 10:02:07 AM | INFO | auditor | 🎯 Explicit Route Found: -1003812868558/6 -> -1003601049225/35
+2026-05-01 10:02:07 AM | INFO | auditor | 📢 Alert sent for 436 in Nge Shoes ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:02:09 AM | INFO | auditor | 📂 Auditing Batch: Charcoal ï½ï½ï½ï½ï (Topic 6) in Chat -1003707562121 (2 messages)
+2026-05-01 10:02:09 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 353 to Group
+2026-05-01 10:02:09 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 637 to Group
+2026-05-01 10:02:10 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 436 to Group
+2026-05-01 10:02:10 AM | INFO | auditor | 🔇 AI Ignored Group: [192, 195]
+2026-05-01 10:02:12 AM | INFO | auditor | 📂 Auditing Batch: Scarlett Beauty ï½ï½ï½ï½ï (Topic 4) in Chat -1003798966794 (3 messages)
+2026-05-01 10:02:13 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003798966794, topic=4, msg=207, force=False
+2026-05-01 10:02:13 AM | WARNING | auditor | ⚠️ No Explicit Route for -1003798966794/4. Notifying Manager...
+2026-05-01 10:02:13 AM | WARNING | auditor | ⚠️ No route found for Scarlett Beauty ï½ï½ï½ï½ï (-1003798966794/4). Notifying Manager.
+2026-05-01 10:02:13 AM | INFO | auditor | 🔍 notify_manager_missing_route: shop=Scarlett Beauty ï½ï½ï½ï½ï, msg_id=207, chat=-1003798966794
+2026-05-01 10:02:14 AM | INFO | auditor | 📲 Missing route notification sent to Manager for Scarlett Beauty ï½ï½ï½ï½ï
+2026-05-01 10:02:16 AM | INFO | auditor | 📂 Auditing Batch: Angel Lay ï½ï½ï½ï½ï (Topic 1) in Chat -1003881120872 (4 messages)
+2026-05-01 10:02:17 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003881120872, topic=1, msg=249, force=False
+2026-05-01 10:02:17 AM | INFO | auditor | 🎯 Explicit Route Found: -1003881120872/1 -> -1003601049225/1
+2026-05-01 10:02:17 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 10:02:19 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 49) in Chat -1003798739565 (3 messages)
+2026-05-01 10:02:21 AM | INFO | auditor | 🔇 AI Ignored Group: [4216, 4397, 4400]
+2026-05-01 10:02:23 AM | INFO | auditor | 📂 Auditing Batch: Glowic Beauty ï½ï½ï½ï½ï (Topic 36) in Chat -1003692715477 (1 messages)
+2026-05-01 10:02:24 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003692715477, topic=36, msg=353, force=False
+2026-05-01 10:02:24 AM | WARNING | auditor | ⚠️ No Explicit Route for -1003692715477/36. Notifying Manager...
+2026-05-01 10:02:24 AM | WARNING | auditor | ⚠️ No route found for Glowic Beauty ï½ï½ï½ï½ï (-1003692715477/36). Notifying Manager.
+2026-05-01 10:02:24 AM | INFO | auditor | 🔍 notify_manager_missing_route: shop=Glowic Beauty ï½ï½ï½ï½ï, msg_id=353, chat=-1003692715477
+2026-05-01 10:02:24 AM | INFO | auditor | 📲 Missing route notification sent to Manager for Glowic Beauty ï½ï½ï½ï½ï
+2026-05-01 10:02:26 AM | INFO | auditor | 📂 Auditing Batch: CiCi Beauty ï½ï½ï½ï½ï (Topic 6) in Chat -1003768124152 (4 messages)
+2026-05-01 10:02:27 AM | INFO | auditor | 🔇 AI Ignored Group: [525, 527, 528, 529]
+2026-05-01 10:02:29 AM | INFO | auditor | 📂 Auditing Batch: Vintage Paradise ï½ï½ï½ï½ (Topic 1) in Chat -1003804684425 (1 messages)
+2026-05-01 10:02:30 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003804684425, topic=1, msg=119, force=False
+2026-05-01 10:02:30 AM | WARNING | auditor | ⚠️ No Explicit Route for -1003804684425/1. Notifying Manager...
+2026-05-01 10:02:30 AM | WARNING | auditor | ⚠️ No route found for Vintage Paradise ï½ï½ï½ï½ (-1003804684425/1). Notifying Manager.
+2026-05-01 10:02:30 AM | INFO | auditor | 🔍 notify_manager_missing_route: shop=Vintage Paradise ï½ï½ï½ï½, msg_id=119, chat=-1003804684425
+2026-05-01 10:02:30 AM | INFO | auditor | 📲 Missing route notification sent to Manager for Vintage Paradise ï½ï½ï½ï½
+2026-05-01 10:02:32 AM | INFO | auditor | 📂 Auditing Batch: Thiri Beauty Bountyï½ï½ï½ï½ï (Topic 1) in Chat -1003822695947 (5 messages)
+2026-05-01 10:02:33 AM | INFO | auditor | 🔇 AI Ignored Group: [166, 168, 169, 172, 173]
+2026-05-01 10:02:35 AM | INFO | auditor | 📂 Auditing Batch: Khin Glory ï½ï½ï½ï½ï (Topic 1) in Chat -1003646045828 (1 messages)
+2026-05-01 10:02:36 AM | INFO | auditor | 🔇 AI Ignored Group: [624]
+2026-05-01 10:02:38 AM | INFO | auditor | 📂 Auditing Batch: PiggyKitKit ï½ï½ï½ï½ï (Topic 4) in Chat -1003513582211 (1 messages)
+2026-05-01 10:02:39 AM | INFO | auditor | 🔇 AI Ignored Group: [282]
+2026-05-01 10:02:41 AM | INFO | auditor | 📂 Auditing Batch: JJ ð CarryMan (Topic 1) in Chat -1003810623540 (4 messages)
+2026-05-01 10:02:42 AM | INFO | auditor | 🔇 AI Ignored Group: [127, 128, 129, 130]
+2026-05-01 10:02:44 AM | INFO | auditor | 📂 Auditing Batch: YuYu Baby ï½ï½ï½ï½ï (Topic 4) in Chat -1003760073283 (1 messages)
+2026-05-01 10:02:45 AM | INFO | auditor | 🔇 AI Ignored Group: [392]
+2026-05-01 10:02:47 AM | INFO | auditor | 📂 Auditing Batch: Shun Lett May ï½ï½ï½ï½ï (Topic 1) in Chat -1003772742014 (1 messages)
+2026-05-01 10:02:49 AM | INFO | auditor | 🔇 AI Ignored Group: [78]
+2026-05-01 10:02:51 AM | INFO | auditor | 📂 Auditing Batch: PiggyKitKit ï½ï½ï½ï½ï (Topic 1) in Chat -1003513582211 (1 messages)
+2026-05-01 10:02:52 AM | INFO | auditor | 🔇 AI Ignored Group: [285]
+2026-05-01 10:02:54 AM | INFO | auditor | 📂 Auditing Batch: KJ Clothing ï½ï½ï½ï½ï (Topic 1) in Chat -1003813366869 (5 messages)
+2026-05-01 10:02:56 AM | INFO | auditor | 🔇 AI Ignored Group: [400, 401, 402, 403, 407]
+2026-05-01 10:02:58 AM | INFO | auditor | 📂 Auditing Batch: Angel Lay ï½ï½ï½ï½ï (Topic 4) in Chat -1003881120872 (2 messages)
+2026-05-01 10:03:00 AM | INFO | auditor | 🔇 AI Ignored Group: [258, 259]
+2026-05-01 10:03:02 AM | INFO | auditor | 📂 Auditing Batch: Khin Glory ï½ï½ï½ï½ï (Topic 5) in Chat -1003646045828 (6 messages)
+2026-05-01 10:03:19 AM | INFO | auditor | 🔇 AI Ignored Group: [636, 638, 640, 645, 647, 649]
+2026-05-01 10:03:21 AM | INFO | auditor | 📂 Auditing Batch: CiCi Beauty ï½ï½ï½ï½ï (Topic 4) in Chat -1003768124152 (1 messages)
+2026-05-01 10:03:23 AM | INFO | auditor | 🔇 AI Ignored Group: [526]
+2026-05-01 10:03:25 AM | INFO | auditor | 📂 Auditing Batch: JFY ï½ï½ï½ï½ï (Topic 49) in Chat -1003361319863 (1 messages)
+2026-05-01 10:03:26 AM | INFO | auditor | 🔇 AI Ignored Group: [160]
+2026-05-01 10:03:28 AM | INFO | auditor | 📂 Auditing Batch: Panyoung Fashion ï½ï½ï½ï½ï (Topic 4) in Chat -1003752686638 (1 messages)
+2026-05-01 10:03:29 AM | INFO | auditor | 🔇 AI Ignored Group: [117]
+2026-05-01 10:03:31 AM | INFO | auditor | 📂 Auditing Batch: Hotssic ï½ï½ï½ï½ï (Topic 4) in Chat -1003506710131 (2 messages)
+2026-05-01 10:03:32 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003506710131, topic=4, msg=680, force=False
+2026-05-01 10:03:32 AM | INFO | auditor | 🎯 Explicit Route Found: -1003506710131/4 -> -1003601049225/37
+2026-05-01 10:03:32 AM | INFO | auditor | 📢 Alert sent for 680 in Hotssic ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:03:34 AM | INFO | auditor | 📂 Auditing Batch: Hay Thar Htetï½ï½ï½ï½ (Topic 1) in Chat -1003752706100 (1 messages)
+2026-05-01 10:03:40 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 680 to Group
+2026-05-01 10:03:46 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003752706100, topic=1, msg=96, force=False
+2026-05-01 10:03:46 AM | INFO | auditor | 🎯 Explicit Route Found: -1003752706100/1 -> -1003601049225/1
+2026-05-01 10:03:46 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 10:03:48 AM | INFO | auditor | 📂 Auditing Batch: Thiri Beauty Bountyï½ï½ï½ï½ï (Topic 1) in Chat -1003868121514 (1 messages)
+2026-05-01 10:03:49 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003868121514, topic=1, msg=489, force=False
+2026-05-01 10:03:49 AM | INFO | auditor | 🎯 Explicit Route Found: -1003868121514/1 -> -1003601049225/1
+2026-05-01 10:03:49 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 10:03:52 AM | INFO | auditor | 📂 Auditing Batch: Your Beauty ð CarryMan (Topic 1) in Chat -1003733871126 (1 messages)
+2026-05-01 10:03:53 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003733871126, topic=1, msg=67, force=False
+2026-05-01 10:03:53 AM | WARNING | auditor | ⚠️ No Explicit Route for -1003733871126/1. Notifying Manager...
+2026-05-01 10:03:53 AM | WARNING | auditor | ⚠️ No route found for Your Beauty ð CarryMan (-1003733871126/1). Notifying Manager.
+2026-05-01 10:03:53 AM | INFO | auditor | 🔍 notify_manager_missing_route: shop=Your Beauty ð CarryMan, msg_id=67, chat=-1003733871126
+2026-05-01 10:03:53 AM | INFO | auditor | 📲 Missing route notification sent to Manager for Your Beauty ð CarryMan
+2026-05-01 10:03:55 AM | INFO | auditor | 📂 Auditing Batch: ITTC ï½ï½ï½ï½ï (Topic 6) in Chat -1003852412184 (1 messages)
+2026-05-01 10:03:56 AM | INFO | auditor | 🔇 AI Ignored Group: [438]
+2026-05-01 10:03:58 AM | INFO | auditor | 📂 Auditing Batch: YuYu Baby ï½ï½ï½ï½ï (Topic 1) in Chat -1003760073283 (3 messages)
+2026-05-01 10:04:11 AM | INFO | auditor | 🔇 AI Ignored Group: [394, 395, 396]
+2026-05-01 10:04:13 AM | INFO | auditor | 📂 Auditing Batch: KPC OS ï½ï½ï½ï½ï (Topic 4) in Chat -1003812325795 (1 messages)
+2026-05-01 10:04:14 AM | INFO | auditor | 🔇 AI Ignored Group: [166]
+2026-05-01 10:04:16 AM | INFO | auditor | 📂 Auditing Batch: Harmonyï½ï½ï½ï½ï½ï½ï½ (Topic 1) in Chat -1003791802416 (2 messages)
+2026-05-01 10:04:17 AM | INFO | auditor | 🔇 AI Ignored Group: [68, 77]
+2026-05-01 10:04:19 AM | INFO | auditor | 📂 Auditing Batch: Charcoal ï½ï½ï½ï½ï (Topic 4) in Chat -1003707562121 (1 messages)
+2026-05-01 10:04:20 AM | INFO | auditor | ℹ️ No active alert tracking found for 4436 in -1003798739565.
+2026-05-01 10:04:20 AM | INFO | auditor | ℹ️ Message 4436 was not an active alert. Skipping record.
+2026-05-01 10:04:20 AM | INFO | db_manager | ✅ Group Resolved: [4436] in -1003798739565 by Yoon Waddy (Reaction (❤))
+2026-05-01 10:04:20 AM | INFO | alert_handler | ✅ Message 4436 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 10:04:21 AM | INFO | auditor | 🔇 AI Ignored Group: [193]
+2026-05-01 10:04:23 AM | INFO | auditor | 📂 Auditing Batch: TTW ï½ï½ï½ï½ï (Topic 4) in Chat -1003837115331 (5 messages)
+2026-05-01 10:04:24 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003837115331, topic=4, msg=251, force=False
+2026-05-01 10:04:24 AM | INFO | auditor | 🎯 Explicit Route Found: -1003837115331/4 -> -1003601049225/37
+2026-05-01 10:04:24 AM | INFO | auditor | 📢 Alert sent for 251 in TTW ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:04:26 AM | INFO | auditor | 📂 Auditing Batch: Retro Bites ï½ï½ï½ï½ï (Topic 1) in Chat -1003720313785 (2 messages)
+2026-05-01 10:04:27 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003720313785, topic=1, msg=174, force=False
+2026-05-01 10:04:27 AM | INFO | auditor | 🎯 Explicit Route Found: -1003720313785/1 -> -1003601049225/1
+2026-05-01 10:04:27 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 10:04:28 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1110
+2026-05-01 10:04:28 AM | INFO | auditor | 🗑️ Deleted Tier 2 escalation 96
+2026-05-01 10:04:28 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:04:29 AM | INFO | db_manager | ✅ Group Resolved: [3760] in -1003798739565 by Eaindra (Done Button)
+2026-05-01 10:04:30 AM | INFO | auditor | 📂 Auditing Batch: Vogue Os ï½ï½ï½ï½ï (Topic 1) in Chat -1003800154878 (1 messages)
+2026-05-01 10:04:31 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003800154878, topic=1, msg=115, force=False
+2026-05-01 10:04:31 AM | WARNING | auditor | ⚠️ No Explicit Route for -1003800154878/1. Notifying Manager...
+2026-05-01 10:04:31 AM | WARNING | auditor | ⚠️ No route found for Vogue Os ï½ï½ï½ï½ï (-1003800154878/1). Notifying Manager.
+2026-05-01 10:04:31 AM | INFO | auditor | 🔍 notify_manager_missing_route: shop=Vogue Os ï½ï½ï½ï½ï, msg_id=115, chat=-1003800154878
+2026-05-01 10:04:31 AM | INFO | auditor | 📲 Missing route notification sent to Manager for Vogue Os ï½ï½ï½ï½ï
+2026-05-01 10:04:33 AM | INFO | auditor | 📂 Auditing Batch: LARAs ï½ï½ï½ï½ï (Topic 4) in Chat -1003734659970 (1 messages)
+2026-05-01 10:04:33 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1113
+2026-05-01 10:04:33 AM | INFO | auditor | 🗑️ Deleted Tier 2 escalation 97
+2026-05-01 10:04:33 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:04:34 AM | INFO | db_manager | ✅ Group Resolved: [4130] in -1003798739565 by Eaindra (Done Button)
+2026-05-01 10:04:34 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003734659970, topic=4, msg=267, force=False
+2026-05-01 10:04:34 AM | WARNING | auditor | ⚠️ No Explicit Route for -1003734659970/4. Notifying Manager...
+2026-05-01 10:04:34 AM | WARNING | auditor | ⚠️ No route found for LARAs ï½ï½ï½ï½ï (-1003734659970/4). Notifying Manager.
+2026-05-01 10:04:34 AM | INFO | auditor | 🔍 notify_manager_missing_route: shop=LARAs ï½ï½ï½ï½ï, msg_id=267, chat=-1003734659970
+2026-05-01 10:04:34 AM | INFO | auditor | 📲 Missing route notification sent to Manager for LARAs ï½ï½ï½ï½ï
+2026-05-01 10:04:36 AM | INFO | auditor | 📂 Auditing Batch: Binnie Paradise ï½ï½ï½ï½ï (Topic 4) in Chat -1003752062728 (2 messages)
+2026-05-01 10:04:37 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003752062728, topic=4, msg=211, force=False
+2026-05-01 10:04:37 AM | INFO | auditor | 🎯 Explicit Route Found: -1003752062728/4 -> -1003601049225/37
+2026-05-01 10:04:38 AM | INFO | auditor | 📢 Alert sent for 211 in Binnie Paradise ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:04:39 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 10:04:40 AM | INFO | auditor | 📂 Auditing Batch: ááááºáá¾ááºáááááº ð CarryMan (Topic 1) in Chat -1003702835668 (1 messages)
+2026-05-01 10:04:41 AM | INFO | auditor | 🔇 AI Ignored Group: [346]
+2026-05-01 10:04:41 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 251 to Group
+2026-05-01 10:04:41 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 211 to Group
+2026-05-01 10:04:43 AM | INFO | auditor | 📂 Auditing Batch: Toly Moly ï½ï½ï½ï½ (Topic 4) in Chat -1003796096237 (1 messages)
+2026-05-01 10:04:44 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003796096237, topic=4, msg=361, force=False
+2026-05-01 10:04:44 AM | INFO | auditor | 🎯 Explicit Route Found: -1003796096237/4 -> -1003601049225/37
+2026-05-01 10:04:44 AM | INFO | auditor | 📢 Alert sent for 361 in Toly Moly ï½ï½ï½ï½ to Central Group
+2026-05-01 10:04:56 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1130
+2026-05-01 10:04:56 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:04:57 AM | INFO | db_manager | ✅ Group Resolved: [174] in -1003720313785 by Yoon Waddy (Done Button)
+2026-05-01 10:04:57 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1128
+2026-05-01 10:04:57 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:04:57 AM | INFO | db_manager | ✅ Group Resolved: [489] in -1003868121514 by Yoon Waddy (Done Button)
+2026-05-01 10:05:01 AM | INFO | db_manager | 🆕 New Routing Created: -1003734659970/4 (LARAs ï½ï½ï½ï½ï) -> -1003601049225/37
+2026-05-01 10:05:01 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003734659970, topic=4, msg=267, force=False
+2026-05-01 10:05:01 AM | INFO | auditor | 🎯 Explicit Route Found: -1003734659970/4 -> -1003601049225/37
+2026-05-01 10:05:02 AM | INFO | auditor | 📢 Alert sent for 267 in LARAs ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:05:02 AM | ERROR | alert_handler | ❌ Set Routing Callback Error: module 'db_manager' has no attribute 'write_scope'
+2026-05-01 10:05:03 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1114
+2026-05-01 10:05:03 AM | INFO | auditor | 🗑️ Deleted Tier 2 escalation 98
+2026-05-01 10:05:03 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:03 AM | INFO | db_manager | ✅ Group Resolved: [649] in -1003898476625 by Eaindra (Done Button)
+2026-05-01 10:05:05 AM | INFO | db_manager | 🆕 New Routing Created: -1003800154878/1 (Vogue Os ï½ï½ï½ï½ï) -> -1003601049225/1
+2026-05-01 10:05:05 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003800154878, topic=1, msg=115, force=False
+2026-05-01 10:05:05 AM | INFO | auditor | 🎯 Explicit Route Found: -1003800154878/1 -> -1003601049225/1
+2026-05-01 10:05:05 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 10:05:05 AM | ERROR | alert_handler | ❌ Set Routing Callback Error: module 'db_manager' has no attribute 'write_scope'
+2026-05-01 10:05:06 AM | INFO | db_manager | 🆕 New Routing Created: -1003733871126/1 (Your Beauty ð CarryMan) -> -1003601049225/1
+2026-05-01 10:05:06 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003733871126, topic=1, msg=67, force=False
+2026-05-01 10:05:06 AM | INFO | auditor | 🎯 Explicit Route Found: -1003733871126/1 -> -1003601049225/1
+2026-05-01 10:05:06 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 10:05:07 AM | ERROR | alert_handler | ❌ Set Routing Callback Error: module 'db_manager' has no attribute 'write_scope'
+2026-05-01 10:05:08 AM | INFO | db_manager | 🆕 New Routing Created: -1003804684425/1 (Vintage Paradise ï½ï½ï½ï½) -> -1003601049225/1
+2026-05-01 10:05:08 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003804684425, topic=1, msg=119, force=False
+2026-05-01 10:05:08 AM | INFO | auditor | 🎯 Explicit Route Found: -1003804684425/1 -> -1003601049225/1
+2026-05-01 10:05:08 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 10:05:09 AM | ERROR | alert_handler | ❌ Set Routing Callback Error: module 'db_manager' has no attribute 'write_scope'
+2026-05-01 10:05:10 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1123
+2026-05-01 10:05:11 AM | INFO | auditor | 🗑️ Deleted Tier 2 escalation 102
+2026-05-01 10:05:11 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:11 AM | INFO | db_manager | ✅ Group Resolved: [637] in -1003883905797 by Eaindra (Done Button)
+2026-05-01 10:05:11 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 267 to Group
+2026-05-01 10:05:12 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1120
+2026-05-01 10:05:12 AM | INFO | auditor | 🗑️ Deleted Tier 2 escalation 100
+2026-05-01 10:05:12 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:12 AM | INFO | db_manager | ✅ Group Resolved: [391] in -1003415524543 by Eaindra (Done Button)
+2026-05-01 10:05:14 AM | INFO | db_manager | 🆕 New Routing Created: -1003692715477/36 (Glowic Beauty ï½ï½ï½ï½ï) -> -1003601049225/35
+2026-05-01 10:05:14 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003692715477, topic=36, msg=353, force=False
+2026-05-01 10:05:14 AM | INFO | auditor | 🎯 Explicit Route Found: -1003692715477/36 -> -1003601049225/35
+2026-05-01 10:05:14 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1124
+2026-05-01 10:05:14 AM | INFO | auditor | 🗑️ Deleted Tier 2 escalation 103
+2026-05-01 10:05:14 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:14 AM | INFO | auditor | 📢 Alert sent for 353 in Glowic Beauty ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:05:14 AM | ERROR | alert_handler | ❌ Set Routing Callback Error: module 'db_manager' has no attribute 'write_scope'
+2026-05-01 10:05:14 AM | INFO | db_manager | ✅ Group Resolved: [436] in -1003812868558 by Eaindra (Done Button)
+2026-05-01 10:05:16 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 10:05:16 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 4) in Chat -1003798739565 (20 messages)
+2026-05-01 10:05:18 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/4 -> -1003601049225/37
+2026-05-01 10:05:18 AM | INFO | auditor | ➕ Appended message 3771 to alert 1109 (Topic: 4)
+2026-05-01 10:05:18 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1137
+2026-05-01 10:05:18 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:18 AM | INFO | db_manager | ✅ Group Resolved: [353] in -1003692715477 by Eaindra (Done Button)
+2026-05-01 10:05:19 AM | INFO | db_manager | 🆕 New Routing Created: -1003798966794/4 (Scarlett Beauty ï½ï½ï½ï½ï) -> -1003601049225/37
+2026-05-01 10:05:19 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003798966794, topic=4, msg=207, force=False
+2026-05-01 10:05:19 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798966794/4 -> -1003601049225/37
+2026-05-01 10:05:19 AM | INFO | auditor | 📢 Alert sent for 207 in Scarlett Beauty ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:05:19 AM | ERROR | alert_handler | ❌ Set Routing Callback Error: module 'db_manager' has no attribute 'write_scope'
+2026-05-01 10:05:20 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 11) in Chat -1003798739565 (20 messages)
+2026-05-01 10:05:21 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003798739565, topic=11, msg=3858, force=False
+2026-05-01 10:05:21 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-05-01 10:05:21 AM | INFO | auditor | 📢 Alert sent for 3858 in Tina Fashion ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:05:24 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 3858 to Group
+2026-05-01 10:05:24 AM | INFO | db_manager | 🆕 New Routing Created: -1003752062728/1 (Binnie Paradise ï½ï½ï½ï½ï) -> -1003601049225/1
+2026-05-01 10:05:24 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003752062728, topic=1, msg=200, force=False
+2026-05-01 10:05:24 AM | INFO | auditor | 🎯 Explicit Route Found: -1003752062728/1 -> -1003601049225/1
+2026-05-01 10:05:24 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 10:05:24 AM | ERROR | alert_handler | ❌ Set Routing Callback Error: module 'db_manager' has no attribute 'write_scope'
+2026-05-01 10:05:24 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 207 to Group
+2026-05-01 10:05:26 AM | INFO | db_manager | 🆕 New Routing Created: -1003329445346/1 (May May Thae ï½ï½ï½ï½ï) -> -1003601049225/1
+2026-05-01 10:05:26 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003329445346, topic=1, msg=135, force=False
+2026-05-01 10:05:26 AM | INFO | auditor | 🎯 Explicit Route Found: -1003329445346/1 -> -1003601049225/1
+2026-05-01 10:05:26 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-01 10:05:26 AM | ERROR | alert_handler | ❌ Set Routing Callback Error: module 'db_manager' has no attribute 'write_scope'
+2026-05-01 10:05:26 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1141
+2026-05-01 10:05:26 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:26 AM | INFO | db_manager | ✅ Group Resolved: [200] in -1003752062728 by Yoon Waddy (Done Button)
+2026-05-01 10:05:28 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1142
+2026-05-01 10:05:28 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:28 AM | INFO | db_manager | ✅ Group Resolved: [135] in -1003329445346 by Yoon Waddy (Done Button)
+2026-05-01 10:05:30 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1136
+2026-05-01 10:05:30 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:30 AM | INFO | db_manager | ✅ Group Resolved: [119] in -1003804684425 by Yoon Waddy (Done Button)
+2026-05-01 10:05:31 AM | INFO | db_manager | 🆕 New Routing Created: -1003329445346/6 (May May Thae ï½ï½ï½ï½ï) -> -1003601049225/35
+2026-05-01 10:05:31 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003329445346, topic=6, msg=129, force=False
+2026-05-01 10:05:31 AM | INFO | auditor | 🎯 Explicit Route Found: -1003329445346/6 -> -1003601049225/35
+2026-05-01 10:05:31 AM | INFO | auditor | 📢 Alert sent for 129 in May May Thae ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:05:31 AM | ERROR | alert_handler | ❌ Set Routing Callback Error: module 'db_manager' has no attribute 'write_scope'
+2026-05-01 10:05:36 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1143
+2026-05-01 10:05:36 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:36 AM | INFO | db_manager | ✅ Group Resolved: [129] in -1003329445346 by Eaindra (Done Button)
+2026-05-01 10:05:37 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1140
+2026-05-01 10:05:37 AM | INFO | auditor | 🗑️ Deleted Tier 2 escalation 117
+2026-05-01 10:05:37 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:37 AM | INFO | db_manager | ✅ Group Resolved: [3858] in -1003798739565 by Eaindra (Done Button)
+2026-05-01 10:05:41 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-05-01 10:05:41 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 10:05:41 AM | WARNING | db_manager | 🧹 Auto-resolved 54 stale alerts (Older than 30 hours)
+2026-05-01 10:05:41 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 11) in Chat -1003798739565 (20 messages)
+2026-05-01 10:05:43 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-05-01 10:05:43 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-05-01 10:05:43 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-05-01 10:05:43 AM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-05-01 10:05:43 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-05-01 10:05:43 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-05-01 10:05:43 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-05-01 10:05:44 AM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-05-01 10:05:44 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003798739565, topic=11, msg=3878, force=False
+2026-05-01 10:05:44 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-05-01 10:05:44 AM | INFO | auditor | 📢 Alert sent for 3878 in Tina Fashion ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:05:46 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1135
+2026-05-01 10:05:46 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:46 AM | INFO | db_manager | ✅ Group Resolved: [67] in -1003733871126 by Yoon Waddy (Done Button)
+2026-05-01 10:05:46 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 4) in Chat -1003798739565 (20 messages)
+2026-05-01 10:05:47 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1134
+2026-05-01 10:05:47 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:47 AM | INFO | db_manager | ✅ Group Resolved: [115] in -1003800154878 by Yoon Waddy (Done Button)
+2026-05-01 10:05:47 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003798739565, topic=4, msg=4132, force=False
+2026-05-01 10:05:47 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/4 -> -1003601049225/37
+2026-05-01 10:05:48 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1127
+2026-05-01 10:05:48 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:48 AM | INFO | db_manager | ✅ Group Resolved: [96] in -1003752706100 by Yoon Waddy (Done Button)
+2026-05-01 10:05:48 AM | INFO | auditor | 📢 Alert sent for 4132 in Tina Fashion ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:05:48 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1125
+2026-05-01 10:05:48 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:49 AM | INFO | db_manager | ✅ Group Resolved: [249] in -1003881120872 by Yoon Waddy (Done Button)
+2026-05-01 10:05:49 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1121
+2026-05-01 10:05:49 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:49 AM | INFO | db_manager | ✅ Group Resolved: [430] in -1003852412184 by Yoon Waddy (Done Button)
+2026-05-01 10:05:50 AM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: Tina Fashion ï½ï½ï½ï½ï, Chat: -1003798739565, Topic: 4): name 'main_router' is not defined
+2026-05-01 10:05:53 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1119
+2026-05-01 10:05:53 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:05:53 AM | INFO | db_manager | ✅ Group Resolved: [182] in -1003727765180 by Yoon Waddy (Done Button)
+2026-05-01 10:05:54 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 11) in Chat -1003798739565 (20 messages)
+2026-05-01 10:05:59 AM | INFO | auditor | ℹ️ No active alert tracking found for 67 in -1003733871126.
+2026-05-01 10:05:59 AM | INFO | auditor | ℹ️ Message 67 was not an active alert. Skipping record.
+2026-05-01 10:05:59 AM | INFO | db_manager | ✅ Group Resolved: [67] in -1003733871126 by (60501) (Done Button)
+2026-05-01 10:06:00 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 11) in Chat -1003798739565 (20 messages)
+2026-05-01 10:06:01 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-05-01 10:06:01 AM | INFO | auditor | ➕ Appended message 3918 to alert 1144 (Topic: 11)
+2026-05-01 10:06:03 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 4) in Chat -1003798739565 (20 messages)
+2026-05-01 10:06:04 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/4 -> -1003601049225/37
+2026-05-01 10:06:05 AM | INFO | auditor | ➕ Appended message 4133 to alert 1145 (Topic: 4)
+2026-05-01 10:06:06 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-05-01 10:06:07 AM | INFO | auditor | ➕ Appended message 3899 to alert 1144 (Topic: 11)
+2026-05-01 10:06:07 AM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: Tina Fashion ï½ï½ï½ï½ï, Chat: -1003798739565, Topic: 4): name 'main_router' is not defined
+2026-05-01 10:06:08 AM | INFO | auditor | 🔗 Found parent 251 for message 263. Retrying cleanup...
+2026-05-01 10:06:08 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1129
+2026-05-01 10:06:09 AM | INFO | auditor | 🗑️ Deleted Tier 2 escalation 107
+2026-05-01 10:06:09 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:06:09 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 4) in Chat -1003798739565 (20 messages)
+2026-05-01 10:06:09 AM | INFO | auditor | ℹ️ No active alert tracking found for 489 in -1003868121514.
+2026-05-01 10:06:09 AM | INFO | auditor | ℹ️ Message 489 was not an active alert. Skipping record.
+2026-05-01 10:06:09 AM | INFO | db_manager | ✅ Group Resolved: [489] in -1003868121514 by (60501) (Done Button)
+2026-05-01 10:06:09 AM | INFO | db_manager | ✅ Group Resolved: [263] in -1003837115331 by Yoon Waddy (Reaction (❤))
+2026-05-01 10:06:09 AM | INFO | alert_handler | ✅ Message 263 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 10:06:10 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/4 -> -1003601049225/37
+2026-05-01 10:06:10 AM | INFO | auditor | ➕ Appended message 4169 to alert 1145 (Topic: 4)
+2026-05-01 10:06:13 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 3878 to Group
+2026-05-01 10:06:13 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 4132 to Group
+2026-05-01 10:06:17 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 11) in Chat -1003798739565 (20 messages)
+2026-05-01 10:06:18 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-05-01 10:06:18 AM | INFO | auditor | ➕ Appended message 3898 to alert 1144 (Topic: 11)
+2026-05-01 10:06:20 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 4) in Chat -1003798739565 (20 messages)
+2026-05-01 10:06:21 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1106
+2026-05-01 10:06:21 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:06:21 AM | INFO | db_manager | ✅ Group Resolved: [137] in -1003808909519 by (60501) (Done Button)
+2026-05-01 10:06:22 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/4 -> -1003601049225/37
+2026-05-01 10:06:22 AM | INFO | auditor | ➕ Appended message 4170 to alert 1145 (Topic: 4)
+2026-05-01 10:06:23 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 10:06:24 AM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: Tina Fashion ï½ï½ï½ï½ï, Chat: -1003798739565, Topic: 4): name 'main_router' is not defined
+2026-05-01 10:06:33 AM | INFO | auditor | ℹ️ No active alert tracking found for 100 in -1003897065464.
+2026-05-01 10:06:33 AM | INFO | auditor | ℹ️ Message 100 was not an active alert. Skipping record.
+2026-05-01 10:06:33 AM | INFO | db_manager | ✅ Group Resolved: [100] in -1003897065464 by Htet Htet (Reaction (❤))
+2026-05-01 10:06:33 AM | INFO | alert_handler | ✅ Message 100 marked as RESOLVED via Reaction (❤) by Htet Htet
+2026-05-01 10:06:34 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 11) in Chat -1003798739565 (20 messages)
+2026-05-01 10:06:35 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-05-01 10:06:36 AM | INFO | auditor | ➕ Appended message 4043 to alert 1144 (Topic: 11)
+2026-05-01 10:06:38 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 4) in Chat -1003798739565 (9 messages)
+2026-05-01 10:06:38 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1104
+2026-05-01 10:06:38 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:06:39 AM | INFO | db_manager | ✅ Group Resolved: [135] in -1003808909519 by (60501) (Done Button)
+2026-05-01 10:06:40 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/4 -> -1003601049225/37
+2026-05-01 10:06:40 AM | INFO | auditor | ➕ Appended message 4421 to alert 1145 (Topic: 4)
+2026-05-01 10:06:42 AM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: Tina Fashion ï½ï½ï½ï½ï, Chat: -1003798739565, Topic: 4): name 'main_router' is not defined
+2026-05-01 10:06:43 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 11) in Chat -1003798739565 (20 messages)
+2026-05-01 10:06:44 AM | INFO | main_router | Routing message from -1003837115331: ကျေးဇူးပါ ဂိတ်ချပေးပါ...
+2026-05-01 10:06:47 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 10:06:48 AM | INFO | db_manager | ✓ Message 265 in -1003837115331 saved as PENDING
+2026-05-01 10:06:48 AM | INFO | message_handler | 📩 New Pending Message from 5542320516 in -1003837115331 (Topic: 4)
+2026-05-01 10:06:52 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 11) in Chat -1003798739565 (20 messages)
+2026-05-01 10:06:53 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1101
+2026-05-01 10:06:53 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:06:54 AM | INFO | db_manager | ✅ Group Resolved: [77] in -1003718787824 by (60501) (Done Button)
+2026-05-01 10:06:55 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-05-01 10:06:55 AM | INFO | auditor | ➕ Appended message 4062 to alert 1144 (Topic: 11)
+2026-05-01 10:06:57 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-05-01 10:06:57 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 10:06:57 AM | WARNING | db_manager | 🧹 Auto-resolved 85 stale alerts (Older than 30 hours)
+2026-05-01 10:06:57 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 11) in Chat -1003798739565 (20 messages)
+2026-05-01 10:06:59 AM | INFO | auditor | 🔇 AI Ignored Group: [4064, 4065, 4066, 4067, 4068, 4069, 4070, 4072, 4071, 4073, 4074, 4075, 4076, 4077, 4078, 4079, 4080, 4081, 4082, 4103]
+2026-05-01 10:06:59 AM | INFO | auditor | ℹ️ No active alert tracking found for 265 in -1003837115331.
+2026-05-01 10:06:59 AM | INFO | auditor | ℹ️ Message 265 was not an active alert. Skipping record.
+2026-05-01 10:06:59 AM | INFO | db_manager | ✅ Group Resolved: [265] in -1003837115331 by Yoon Waddy (Reaction (❤))
+2026-05-01 10:06:59 AM | INFO | alert_handler | ✅ Message 265 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 10:07:01 AM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: Tina Fashion ï½ï½ï½ï½ï, Chat: -1003798739565, Topic: 11): name 'main_router' is not defined
+2026-05-01 10:07:04 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1098
+2026-05-01 10:07:04 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:07:04 AM | INFO | db_manager | ✅ Group Resolved: [285] in -1003513582211 by (60501) (Done Button)
+2026-05-01 10:07:11 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 11) in Chat -1003798739565 (20 messages)
+2026-05-01 10:07:12 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1097
+2026-05-01 10:07:12 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:07:12 AM | INFO | db_manager | ✅ Group Resolved: [78] in -1003772742014 by (60501) (Done Button)
+2026-05-01 10:07:12 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003798739565, topic=11, msg=4105, force=False
+2026-05-01 10:07:12 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-05-01 10:07:13 AM | INFO | auditor | 📢 Alert sent for 4105 in Tina Fashion ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:07:14 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 10:07:15 AM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: Tina Fashion ï½ï½ï½ï½ï, Chat: -1003798739565, Topic: 11): name 'main_router' is not defined
+2026-05-01 10:07:21 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1089
+2026-05-01 10:07:21 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:07:21 AM | INFO | db_manager | ✅ Group Resolved: [624] in -1003646045828 by (60501) (Done Button)
+2026-05-01 10:07:25 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 11) in Chat -1003798739565 (20 messages)
+2026-05-01 10:07:26 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-05-01 10:07:26 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 10:07:26 AM | WARNING | db_manager | 🧹 Auto-resolved 1 stale alerts (Older than 30 hours)
+2026-05-01 10:07:26 AM | INFO | auditor | 📂 Auditing Batch: Tina Fashion ï½ï½ï½ï½ï (Topic 11) in Chat -1003798739565 (17 messages)
+2026-05-01 10:07:27 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003798739565, topic=11, msg=4125, force=False
+2026-05-01 10:07:27 AM | INFO | auditor | 🎯 Explicit Route Found: -1003798739565/11 -> -1003601049225/35
+2026-05-01 10:07:27 AM | INFO | auditor | 📢 Alert sent for 4125 in Tina Fashion ï½ï½ï½ï½ï to Central Group
+2026-05-01 10:07:30 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 4125 to Group
+2026-05-01 10:07:37 AM | INFO | main_router | Routing message from -1003860464215: 4နာရီတော့ခွဲပီးပီ ၅နာရီဆိုလာကောက်မှာလားရှင့်...
+2026-05-01 10:07:37 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1079
+2026-05-01 10:07:37 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:07:38 AM | INFO | db_manager | ✅ Group Resolved: [66] in -1003718787824 by (60501) (Done Button)
+2026-05-01 10:07:38 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-01 10:07:38 AM | INFO | auditor | 🛡️ Auditor module handled message: 11
+2026-05-01 10:07:57 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1071
+2026-05-01 10:07:57 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:07:57 AM | INFO | db_manager | ✅ Group Resolved: [91] in -1003595920776 by (60501) (Done Button)
+2026-05-01 10:08:09 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8594974673
+2026-05-01 10:09:31 AM | WARNING | auditor | 🚨 Tier 2 Escalation sent for 361 to Group
+2026-05-01 10:10:08 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5982912055
+2026-05-01 10:11:52 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8688437892
+2026-05-01 10:12:31 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 10:16:30 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-05-01 10:16:30 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-05-01 10:16:30 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-05-01 10:16:30 AM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-05-01 10:16:30 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-05-01 10:16:30 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-05-01 10:16:30 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-05-01 10:16:30 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-05-01 10:16:30 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 10:16:30 AM | WARNING | db_manager | 🧹 Auto-resolved 10 stale alerts (Older than 30 hours)
+2026-05-01 10:16:31 AM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-05-01 10:18:17 AM | INFO | auditor | ℹ️ No active alert tracking found for 4421 in -1003798739565.
+2026-05-01 10:18:17 AM | INFO | auditor | ℹ️ Message 4421 was not an active alert. Skipping record.
+2026-05-01 10:18:17 AM | INFO | db_manager | ✅ Group Resolved: [4421] in -1003798739565 by Myat Thu (Done Button)
+2026-05-01 10:18:21 AM | INFO | auditor | 🔗 Found parent 3754 for message 4170. Retrying cleanup...
+2026-05-01 10:18:21 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1109
+2026-05-01 10:18:21 AM | INFO | auditor | 🗑️ Deleted Tier 2 escalation 95
+2026-05-01 10:18:21 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-01 10:18:22 AM | INFO | db_manager | ✅ Group Resolved: [4170] in -1003798739565 by Myat Thu (Done Button)
+2026-05-01 10:20:17 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 10:21:20 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 10:21:31 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 10:22:21 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 10:22:21 AM | INFO | db_manager | ✅ Group Resolved: [259] in -1003801802038 by Eaindra (Reply)
+2026-05-01 10:22:21 AM | INFO | auditor | ℹ️ No active alert tracking found for 259 in -1003801802038.
+2026-05-01 10:22:21 AM | INFO | auditor | ℹ️ Message 259 was not an active alert. Skipping record.
+2026-05-01 10:22:21 AM | INFO | message_handler | ✅ Message 259 marked as RESOLVED via Reply by Eaindra
+2026-05-01 10:22:22 AM | INFO | main_router | Routing message from -1003718787824: Rider လဲမလာသေးဘူးနော်...
+2026-05-01 10:22:23 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 10:22:23 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-01 10:22:23 AM | INFO | auditor | 🛡️ Auditor module handled message: 83
+2026-05-01 10:22:29 AM | INFO | main_router | Routing message from -1003718787824: စောင့်နေတာ...
+2026-05-01 10:22:30 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-01 10:22:30 AM | INFO | auditor | 🛡️ Auditor module handled message: 84
+2026-05-01 10:23:14 AM | INFO | main_router | Routing message from -1003798966794: OS Name - Scarlett Beauty Collection 
+
+Date - 1.52...
+2026-05-01 10:23:16 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 10:23:16 AM | INFO | db_manager | ✓ Message 219 in -1003798966794 saved as PENDING
+2026-05-01 10:23:16 AM | INFO | message_handler | 📩 New Pending Message from 5989936352 in -1003798966794 (Topic: 1)
+2026-05-01 10:24:26 AM | INFO | auditor | ℹ️ No active alert tracking found for 219 in -1003798966794.
+2026-05-01 10:24:26 AM | INFO | auditor | ℹ️ Message 219 was not an active alert. Skipping record.
+2026-05-01 10:24:26 AM | INFO | db_manager | ✅ Group Resolved: [219] in -1003798966794 by Yoon Waddy (Reaction (❤))
+2026-05-01 10:24:26 AM | INFO | alert_handler | ✅ Message 219 marked as RESOLVED via Reaction (❤) by Yoon Waddy
+2026-05-01 10:24:30 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8781916512
+2026-05-01 10:24:37 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 10:25:42 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8781916512
+2026-05-01 10:25:42 AM | INFO | db_manager | ✅ Group Resolved: [343] in -1003801077622 by Ei Pan Hmue (Reply)
+2026-05-01 10:25:42 AM | INFO | auditor | ℹ️ No active alert tracking found for 343 in -1003801077622.
+2026-05-01 10:25:42 AM | INFO | auditor | ℹ️ Message 343 was not an active alert. Skipping record.
+2026-05-01 10:25:42 AM | INFO | message_handler | ✅ Message 343 marked as RESOLVED via Reply by Ei Pan Hmue
+2026-05-01 10:26:02 AM | INFO | main_router | Routing message from -1003709069700: ပိုက်ဆံလွဲပေးပါအုန်း...
+2026-05-01 10:26:02 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-01 10:26:02 AM | INFO | db_manager | ✓ Message 376 in -1003709069700 saved as PENDING
+2026-05-01 10:26:02 AM | INFO | message_handler | 📩 New Pending Message from 1831579231 in -1003709069700 (Topic: 1)
+2026-05-01 10:26:32 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 10:26:33 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7591872239
+2026-05-01 10:26:33 AM | INFO | db_manager | ✅ Group Resolved: [376] in -1003709069700 by Yoon Waddy (Reply)
+2026-05-01 10:26:33 AM | INFO | auditor | ℹ️ No active alert tracking found for 376 in -1003709069700.
+2026-05-01 10:26:33 AM | INFO | auditor | ℹ️ Message 376 was not an active alert. Skipping record.
+2026-05-01 10:26:33 AM | INFO | message_handler | ✅ Message 376 marked as RESOLVED via Reply by Yoon Waddy
+2026-05-01 10:27:27 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7261311241
+2026-05-01 10:28:20 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-05-01 10:28:20 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-05-01 10:28:20 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-05-01 10:28:20 AM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-05-01 10:28:20 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-05-01 10:28:20 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-05-01 10:28:20 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-05-01 10:28:20 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-05-01 10:28:20 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-01 10:28:20 AM | WARNING | db_manager | 🧹 Auto-resolved 2 stale alerts (Older than 30 hours)
+2026-05-01 10:28:20 AM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-05-01 10:28:35 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7261311241
+2026-05-01 10:30:26 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-01 10:30:42 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-01 10:30:42 AM | INFO | db_manager | ✅ Group Resolved: [158] in -1003633412428 by Thida Hlaing (Reply)
+2026-05-01 10:30:42 AM | INFO | auditor | ℹ️ No active alert tracking found for 158 in -1003633412428.
+2026-05-01 10:30:42 AM | INFO | auditor | ℹ️ Message 158 was not an active alert. Skipping record.
+2026-05-01 10:30:42 AM | INFO | message_handler | ✅ Message 158 marked as RESOLVED via Reply by Thida Hlaing
+2026-05-01 10:31:29 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8688437892
