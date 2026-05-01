@@ -1220,11 +1220,11 @@ def retry_failed_pickups(chat_id):
 
 # --- [ Pickup Duplicate Check ] ---
 def check_existing_pickup(chat_id, target_date):
-    """ သတ်မှတ်ထားတဲ့ ရက်စွဲနဲ့ ဆိုင် (Chat ID) အတွက် အောင်မြင်ပြီးသား Pickup ရှိမရှိ စစ်ဆေးခြင်း """
+    """ သတ်မှတ်ထားတဲ့ ရက်စွဲနဲ့ ဆိုင် (Chat ID) အတွက် PENDING, PROCESSING သို့မဟုတ် SUCCESS ဖြစ်နေသော Pickup ရှိမရှိ စစ်ဆေးခြင်း """
     conn = get_connection()
     try:
         res = conn.execute(
-            "SELECT 1 FROM pickup_queue WHERE chat_id = ? AND target_date = ? AND status = 'SUCCESS'",
+            "SELECT 1 FROM pickup_queue WHERE chat_id = ? AND target_date = ? AND status IN ('PENDING', 'PROCESSING', 'SUCCESS')",
             (chat_id, target_date)
         ).fetchone()
         return res is not None
