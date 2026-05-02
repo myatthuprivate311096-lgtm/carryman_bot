@@ -26,7 +26,8 @@ def get_system_snapshot():
     return f"🖥 CPU: {cpu}% | 💾 RAM: {ram}% | ⏱ Uptime: {uptime}"
 
 def check_process_health():
-    processes = ["carryman-ingestion", "carryman-auditor"]
+    # Auditor is now a thread inside ingestion, so we only monitor the main process
+    processes = ["carryman-ingestion"]
     unhealthy = []
     
     try:

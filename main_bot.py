@@ -72,5 +72,12 @@ if __name__ == "__main__":
     pickup_thread = threading.Thread(target=auto_pickup.run_queue_worker, args=(bot,), daemon=True)
     pickup_thread.start()
     log.info("🚚 Auto Pickup Queue Worker thread started.")
+
+    # 🛡️ Start Auditor (Worker 2: AI Brain) in a background thread
+    # This prevents Conflict (409) by sharing the same bot instance
+    auditor.set_bot(bot)
+    auditor_thread = threading.Thread(target=auditor.process_audits, daemon=True)
+    auditor_thread.start()
+    log.info("🛡️ Auditor (AI Brain) thread started.")
     
     start_bot()

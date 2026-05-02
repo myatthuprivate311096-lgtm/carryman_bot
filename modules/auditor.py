@@ -34,7 +34,11 @@ HEALTHCHECK_URL = os.getenv('HEALTHCHECK_URL')
 # 🧪 Test Mode Configuration
 TEST_GROUP_ID = int(os.getenv('TEST_GROUP_ID', -1003539520778))
 
-bot = telebot.TeleBot(BOT_TOKEN)
+_bot = None
+
+def set_bot(bot_instance):
+    global _bot
+    _bot = bot_instance
 
 def is_office_hours(chat_id=None):
     """
@@ -101,9 +105,10 @@ def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs
 
         Rules:
         1. DUPLICATE/APPEND: If these messages concern the same issue as an existing 'Active Alert', return APPEND.
-        2. AUTO-RESOLVE: If subsequent messages (especially from Staff or if they react with ❤️) show the issue is already handled, return RESOLVE.
+        2. AUTO-RESOLVE: ONLY return RESOLVE if there is a CLEAR reply or reaction from a STAFF member in the [Subsequent Conversation Flow] that addresses the issue. If only the customer is talking, NEVER return RESOLVE.
         3. INTENT GROUPING: Group multiple messages into ONE ticket if they are related. Do NOT issue one ticket per line.
-        4. IGNORE: If messages are just noise (thanks, ok, hi).
+        4. IGNORE: ONLY return IGNORE for pure noise (e.g., "hi", "hello", "thanks", "ok", "sticker", "emoji").
+        5. STATUS INQUIRIES: Messages asking about delivery status, payment status, or "have you sent it yet?" (e.g., "အထုတ်တွေပို့ပြီးပြီလား", "ရောက်ပြီလား", "ဘယ်တော့ပို့မှာလဲ") are CRITICAL. NEVER return IGNORE or RESOLVE for these unless a staff has already replied.
 
         Output ONLY JSON:
         {{
@@ -130,9 +135,21 @@ def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs
 
         action = res_data.get("action", "NEW_ALERT")
         
-        if action == "RESOLVE" and not any(db_manager.check_if_staff(s[1]) for s in subsequent_msgs):
-            action = "NEW_ALERT"
+        # 🛡️ Safety Net: ဝန်ထမ်းဘက်က စာပြန်တာမျိုး မရှိဘဲ RESOLVE သို့မဟုတ် IGNORE လုပ်ခြင်းကို တားဆီးရန်
+        has_staff_reply = any(db_manager.check_if_staff(s[1]) for s in subsequent_msgs)
+        
+        if action in ["RESOLVE", "IGNORE"] and not has_staff_reply:
+            # စာသားထဲတွင် စုံစမ်းသည့် စကားလုံးများ ပါ/မပါ ထပ်မံစစ်ဆေးခြင်း (Heuristic Safety)
+            inquiry_keywords = ["ပို့ပြီးပြီလား", "ရောက်ပြီလား", "ဘယ်တော့", "မရသေးဘူး", "ကြာနေ", "sent", "status", "tracking"]
+            is_inquiry = any(kw in targets_context for kw in inquiry_keywords)
             
+            if is_inquiry:
+                log.info(f"🛡️ Safety Net Triggered: Inquiry detected without staff reply. Overriding {action} to NEW_ALERT.")
+                action = "NEW_ALERT"
+            elif action == "RESOLVE":
+                action = "NEW_ALERT"
+            
+        log.info(f"🤖 AI Decision for {group_name}: {action} (Staff Reply: {has_staff_reply})")
         return action, res_data
     except Exception as e:
         log.error(f"❌ Auditor AI Error for {group_name} ({chat_id}/{topic_id}): {e}")
@@ -176,7 +193,7 @@ def notify_manager_missing_route(chat_id, topic_id, shop_name, trigger_text, ori
         markup.add(telebot.types.InlineKeyboardButton("💰 Finance (Topic 35)", callback_data=f"setrt_{chat_id}_{topic_id}_35_{original_msg_id}"))
         markup.add(telebot.types.InlineKeyboardButton("⚠️ Error (Topic 37)", callback_data=f"setrt_{chat_id}_{topic_id}_37_{original_msg_id}"))
         
-        bot.send_message(MANAGER_ID, text, reply_markup=markup, parse_mode="HTML")
+        _bot.send_message(MANAGER_ID, text, reply_markup=markup, parse_mode="HTML")
         log.info(f"📲 Missing route notification sent to Manager for {shop_name}")
     except Exception as e:
         log.error(f"❌ Failed to notify Manager for {shop_name} ({chat_id}): {e}")
@@ -232,7 +249,7 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
     
     try:
         if media_id:
-            msg = bot.send_photo(
+            msg = _bot.send_photo(
                 target_chat,
                 media_id,
                 caption=alert_text,
@@ -241,7 +258,7 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
                 reply_markup=markup
             )
         else:
-            msg = bot.send_message(
+            msg = _bot.send_message(
                 target_chat,
                 alert_text,
                 message_thread_id=safe_target_topic,
@@ -257,9 +274,9 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
             log.warning(f"⚠️ Topic {safe_target_topic} not found in Central Group. Falling back to General.")
             try:
                 if media_id:
-                    msg = bot.send_photo(target_chat, media_id, caption=alert_text, parse_mode="HTML", reply_markup=markup)
+                    msg = _bot.send_photo(target_chat, media_id, caption=alert_text, parse_mode="HTML", reply_markup=markup)
                 else:
-                    msg = bot.send_message(target_chat, alert_text, parse_mode="HTML", reply_markup=markup)
+                    msg = _bot.send_message(target_chat, alert_text, parse_mode="HTML", reply_markup=markup)
                 db_manager.save_alert_tracking(original_msg_id, chat_id, msg.message_id, target_chat)
                 db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id, category=category, intent=intent, summary=summary)
                 return msg.message_id
@@ -283,7 +300,7 @@ def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_i
             telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{original_msg_id}_{chat_id}")
         )
 
-        msg = bot.send_message(
+        msg = _bot.send_message(
             target_alert_chat,
             f"➕ <b>Update for Alert:</b>\n{safe_new_text}",
             reply_to_message_id=target_alert_id,
@@ -320,14 +337,14 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
         # alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids, esc_tier2_msg_id
         alert_msg_id, alert_chat_id, _, esc_msg_id, linked_ids_json, linked_customer_ids_json, esc_tier2_msg_id = tracking
         try:
-            bot.delete_message(alert_chat_id, alert_msg_id)
+            _bot.delete_message(alert_chat_id, alert_msg_id)
             log.info(f"🗑️ Deleted Level 1 alert {alert_msg_id}")
         except Exception as e:
             log.warning(f"⚠️ Failed to delete Level 1 alert {alert_msg_id}: {e}")
         
         if esc_msg_id:
             try:
-                bot.delete_message(MANAGER_ID, esc_msg_id)
+                _bot.delete_message(MANAGER_ID, esc_msg_id)
                 log.info(f"🗑️ Deleted Level 2 escalation {esc_msg_id}")
             except Exception as e:
                 log.warning(f"⚠️ Failed to delete Level 2 escalation {esc_msg_id}: {e}")
@@ -335,7 +352,7 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
         if esc_tier2_msg_id:
             try:
                 ESCALATION_GROUP_ID = -1003906164269
-                bot.delete_message(ESCALATION_GROUP_ID, esc_tier2_msg_id)
+                _bot.delete_message(ESCALATION_GROUP_ID, esc_tier2_msg_id)
                 log.info(f"🗑️ Deleted Tier 2 escalation {esc_tier2_msg_id}")
             except Exception as e:
                 log.warning(f"⚠️ Failed to delete Tier 2 escalation {esc_tier2_msg_id}: {e}")
@@ -344,7 +361,7 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
             linked_ids = json.loads(linked_ids_json)
             for l_id in linked_ids:
                 try:
-                    bot.delete_message(alert_chat_id, l_id)
+                    _bot.delete_message(alert_chat_id, l_id)
                 except Exception as e:
                     log.warning(f"⚠️ Failed to delete linked message {l_id}: {e}")
             log.info(f"🗑️ Deleted {len(linked_ids)} linked messages")
@@ -360,8 +377,17 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
 
     RESOLVED_GROUP_ID = int(os.getenv('RESOLVED_GROUP_ID', -1003906164269))
     
-    # 💡 Pick Up (Topic 1) ဖြစ်ပါက Topic 28 သို့ ပို့မည်၊ အခြားစာများကို Topic 3 သို့ ပို့မည်
+    # Fetch pickup details if it's from Topic 1
+    pickup_data = None
     if topic_id == 1:
+        with db_manager.get_connection() as conn:
+            pickup_data = conn.execute(
+                "SELECT target_date, remark FROM pickup_queue WHERE orig_msg_id = ? AND chat_id = ?",
+                (msg_id, chat_id)
+            ).fetchone()
+
+    # 💡 Pick Up (Topic 1) ဖြစ်ပြီး Pickup Data ရှိပါက Topic 28 သို့ ပို့မည်၊ အခြားစာများကို Topic 3 သို့ ပို့မည်
+    if topic_id == 1 and pickup_data:
         RESOLVED_TOPIC_ID = 28
     else:
         RESOLVED_TOPIC_ID = int(os.getenv('RESOLVED_TOPIC_ID', 3))
@@ -378,13 +404,9 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
                 tz = pytz.timezone('Asia/Yangon')
                 orig_time_str = datetime.fromtimestamp(orig_ts, tz).strftime('%Y-%m-%d %I:%M %p') if 'orig_ts' in locals() else datetime.now(tz).strftime('%Y-%m-%d %I:%M %p')
 
-                if topic_id == 1:
-                    # Fetch pickup details from DB
-                    with db_manager.get_connection() as conn:
-                        pickup = conn.execute("SELECT target_date, remark FROM pickup_queue WHERE orig_msg_id = ? AND chat_id = ?", (msg_id, chat_id)).fetchone()
-                    
-                    p_date = pickup[0] if pickup else "-"
-                    p_remark = pickup[1] if pickup else "-"
+                if topic_id == 1 and pickup_data:
+                    p_date = pickup_data[0]
+                    p_remark = pickup_data[1]
                     
                     record_text = (
                         f"✅ **Pick Up Record**\n"
@@ -408,7 +430,7 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
                         f"⏳ ကြာချိန်: {duration_str if duration_str != 'Unknown' else 'ချက်ချင်း'}\n"
                         f"📅 အချိန်: {orig_time_str}"
                     )
-                bot.send_message(
+                _bot.send_message(
                     RESOLVED_GROUP_ID,
                     record_text,
                     message_thread_id=RESOLVED_TOPIC_ID,
@@ -471,7 +493,7 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
                     telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{msg_id}_{chat_id}")
                 )
 
-                msg = bot.send_message(ESCALATION_GROUP_ID, esc_text, message_thread_id=ESCALATION_TOPIC_ID, reply_markup=markup, parse_mode="HTML")
+                msg = _bot.send_message(ESCALATION_GROUP_ID, esc_text, message_thread_id=ESCALATION_TOP_ID, reply_markup=markup, parse_mode="HTML")
                 db_manager.update_alert_tracking_esc(msg_id, chat_id, msg.message_id, tier=2)
                 log.warning(f"🚨 Tier 2 Escalation sent for {msg_id} to Group")
             except Exception as e:
@@ -484,7 +506,7 @@ def backup_database():
             
         log.info("💾 Starting Automated Database Backup...")
         with open(db_manager.DB_FILE, 'rb') as f:
-            bot.send_document(
+            _bot.send_document(
                 MANAGER_ID,
                 f,
                 caption=f"📅 **CarryMan DB Backup**\nအလိုအလျောက် သိမ်းဆည်းထားသော မှတ်တမ်း\nအချိန်: {datetime.now(pytz.timezone('Asia/Yangon')).strftime('%Y-%m-%d %I:%M %p')}"
@@ -508,7 +530,7 @@ def send_performance_report():
         report += "━━━━━━━━━━━━━━━━━━\n"
         report += "💡 ဤမှတ်တမ်းသည် လွန်ခဲ့သော ၇ ရက်စာ ဖြစ်ပါသည်။"
         
-        bot.send_message(MANAGER_ID, report, parse_mode="Markdown")
+        _bot.send_message(MANAGER_ID, report, parse_mode="Markdown")
         log.info("✅ Weekly Performance Report sent to Manager.")
     except Exception as e:
         log.error(f"❌ Performance Report Failed: {e}")
@@ -521,13 +543,24 @@ def send_heartbeat():
         except Exception as e:
             log.error(f"❌ Heartbeat Failed: {e}")
 
-def process_audits():
+def process_audits(bot_instance=None):
+    if bot_instance:
+        set_bot(bot_instance)
+    
+    if not _bot:
+        log.error("❌ Auditor: Bot instance not set. Exiting worker.")
+        return
+
     log.info("🧠 Auditor (Worker 2: AI Brain) is running...")
     last_backup_date = None
     last_report_date = None
     last_heartbeat_time = 0
     last_cleanup_time = 0
     
+    if not _bot:
+        log.error("❌ Auditor: Bot instance not set. Worker cannot start.")
+        return
+
     while True:
         try:
             if time.time() - last_heartbeat_time >= 300:
@@ -689,7 +722,7 @@ def run(data, event):
     event: str (e.g., "start_worker")
     """
     if event == "start_worker":
-        process_audits()
+        process_audits(data.get("bot"))
         return True, "Auditor worker finished"
     
     return False, f"Unknown event: {event}"
@@ -698,6 +731,8 @@ def handle(bot, message):
     """
     Central Router မှတစ်ဆင့် ခေါ်ယူသည့် Entry Point
     """
+    global _bot
+    if not _bot: _bot = bot
     log.info(f"🛡️ Auditor module handled message: {message.message_id}")
     # Auditor သည် Worker အနေဖြင့် သီးသန့် Run နေသော်လည်း Router မှ ခေါ်ယူနိုင်ရန် handle() ထည့်ထားခြင်းဖြစ်သည်
 

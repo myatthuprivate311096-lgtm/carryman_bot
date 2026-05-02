@@ -1411,7 +1411,7 @@ def get_pickup_order(queue_id):
     conn = get_connection()
     try:
         res = conn.execute(
-            "SELECT id, chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status, created_at FROM pickup_queue WHERE id = ?",
+            "SELECT id, chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status, error_msg, created_at, shop_msg_id FROM pickup_queue WHERE id = ?",
             (queue_id,)
         ).fetchone()
         return res
