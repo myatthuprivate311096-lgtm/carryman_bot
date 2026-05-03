@@ -123,9 +123,9 @@ def send_manager_notification(text):
     except Exception as e:
         log.error(f"❌ Failed to send manager notification: {e}")
 
-def call_gemini_direct(prompt, model="gemini-2.0-flash", response_format=None):
+def call_gemini_direct(prompt, model="gemini-1.5-flash", response_format=None):
     """Direct Gemini API call (Cheap & Fast)"""
-    # Use v1beta for newer models like gemini-2.0-flash
+    # Use v1beta for newer models
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={FALLBACK_GEMINI_API_KEY}"
     headers = {'Content-Type': 'application/json'}
     
@@ -270,8 +270,8 @@ def get_ai_completion(prompt, model="google/gemini-3.1-flash-lite-preview", resp
 
     # 2. Try Fallback (Gemini Direct)
     if FALLBACK_GEMINI_API_KEY:
-        # Use gemini-2.0-flash as it's the cheapest and very capable
-        fallback_content = call_gemini_direct(prompt, model="gemini-2.0-flash", response_format=response_format)
+        # Use gemini-1.5-flash as it's the cheapest and very capable
+        fallback_content = call_gemini_direct(prompt, model="gemini-1.5-flash", response_format=response_format)
         if fallback_content:
             return fallback_content
 

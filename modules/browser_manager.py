@@ -28,7 +28,15 @@ class BrowserManager:
         log.info("🌐 Starting shared Playwright (Async) instance...")
         try:
             self.playwright = await async_playwright().start()
-            self.browser = await self.playwright.chromium.launch(headless=True)
+            self.browser = await self.playwright.chromium.launch(
+                headless=True,
+                args=[
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu",
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox"
+                ]
+            )
             self._semaphore = asyncio.Semaphore(self._max_tabs)
             self._ready_event.set() # အောင်မြင်စွာ စတင်ပြီးကြောင်း အချက်ပြမည်
             log.info("✅ Shared Playwright instance is ready.")

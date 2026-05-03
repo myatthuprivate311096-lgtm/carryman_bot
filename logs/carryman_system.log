@@ -18055,3 +18055,231 @@ Date -  3/5/2026
 2026-05-03 12:29:52 PM | INFO | auditor | 🌙 Outside Office Hours: 06:59 PM MMT. Alerts are paused.
 2026-05-03 12:30:22 PM | INFO | auditor | 🌙 Outside Office Hours: 07:00 PM MMT. Alerts are paused.
 2026-05-03 12:30:52 PM | INFO | auditor | 🌙 Outside Office Hours: 07:00 PM MMT. Alerts are paused.
+2026-05-03 12:31:22 PM | INFO | auditor | 🌙 Outside Office Hours: 07:01 PM MMT. Alerts are paused.
+2026-05-03 12:31:26 PM | INFO | health_monitor | 🚀 Proactive Health Monitor started (5 min interval)
+2026-05-03 12:31:27 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-05-03 12:31:27 PM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-05-03 12:31:27 PM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-05-03 12:31:27 PM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-05-03 12:31:27 PM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-05-03 12:31:27 PM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-05-03 12:31:27 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-05-03 12:31:27 PM | INFO | main_bot | 🛡️ Auditor (AI Brain) thread started.
+2026-05-03 12:31:27 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-05-03 12:31:27 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 12:31:27 PM | WARNING | db_manager | 🧹 Auto-resolved 2 stale alerts (Older than 30 hours)
+2026-05-03 12:31:27 PM | INFO | auditor | 🌙 Outside Office Hours: 07:01 PM MMT. Alerts are paused.
+2026-05-03 12:31:27 PM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-05-03 12:31:31 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-03 12:31:40 PM | INFO | health_monitor | 🚀 Proactive Health Monitor started (5 min interval)
+2026-05-03 12:31:40 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-05-03 12:31:40 PM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-05-03 12:31:40 PM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-05-03 12:31:40 PM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-05-03 12:31:40 PM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-05-03 12:31:40 PM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-05-03 12:31:40 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-05-03 12:31:40 PM | INFO | main_bot | 🛡️ Auditor (AI Brain) thread started.
+2026-05-03 12:31:40 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-05-03 12:31:41 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 12:31:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:01 PM MMT. Alerts are paused.
+2026-05-03 12:31:41 PM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-05-03 12:32:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:02 PM MMT. Alerts are paused.
+2026-05-03 12:32:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:02 PM MMT. Alerts are paused.
+2026-05-03 12:33:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:03 PM MMT. Alerts are paused.
+2026-05-03 12:33:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:03 PM MMT. Alerts are paused.
+2026-05-03 12:34:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:04 PM MMT. Alerts are paused.
+2026-05-03 12:34:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:04 PM MMT. Alerts are paused.
+2026-05-03 12:35:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:05 PM MMT. Alerts are paused.
+2026-05-03 12:35:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:05 PM MMT. Alerts are paused.
+2026-05-03 12:36:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:06 PM MMT. Alerts are paused.
+2026-05-03 12:36:41 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 12:36:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:06 PM MMT. Alerts are paused.
+2026-05-03 12:37:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:07 PM MMT. Alerts are paused.
+2026-05-03 12:37:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:07 PM MMT. Alerts are paused.
+2026-05-03 12:38:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:08 PM MMT. Alerts are paused.
+2026-05-03 12:38:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:08 PM MMT. Alerts are paused.
+2026-05-03 12:39:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:09 PM MMT. Alerts are paused.
+2026-05-03 12:39:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:09 PM MMT. Alerts are paused.
+2026-05-03 12:40:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:10 PM MMT. Alerts are paused.
+2026-05-03 12:40:13 PM | INFO | auditor | 🌙 Outside Office Hours: 07:10 PM MMT. Alerts are paused.
+2026-05-03 12:40:13 PM | INFO | auditor | ℹ️ No active alert tracking found for 1184 in -1003837671590.
+2026-05-03 12:40:13 PM | INFO | auditor | ℹ️ Message 1184 was not an active alert. Skipping record.
+2026-05-03 12:40:13 PM | INFO | db_manager | ✅ Group Resolved: [1184] in -1003837671590 by Data Entry (Reaction (👍))
+2026-05-03 12:40:13 PM | INFO | alert_handler | ✅ Message 1184 marked as RESOLVED via Reaction (👍) by Data Entry
+2026-05-03 12:40:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:10 PM MMT. Alerts are paused.
+2026-05-03 12:41:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:11 PM MMT. Alerts are paused.
+2026-05-03 12:41:41 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 12:41:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:11 PM MMT. Alerts are paused.
+2026-05-03 12:42:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:12 PM MMT. Alerts are paused.
+2026-05-03 12:42:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:12 PM MMT. Alerts are paused.
+2026-05-03 12:43:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:13 PM MMT. Alerts are paused.
+2026-05-03 12:43:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:13 PM MMT. Alerts are paused.
+2026-05-03 12:43:58 PM | INFO | auditor | 🌙 Outside Office Hours: 07:13 PM MMT. Alerts are paused.
+2026-05-03 12:43:58 PM | INFO | auditor | ℹ️ No active alert tracking found for 838 in -1003745970988.
+2026-05-03 12:43:58 PM | INFO | auditor | ℹ️ Message 838 was not an active alert. Skipping record.
+2026-05-03 12:43:58 PM | INFO | db_manager | ✅ Group Resolved: [838] in -1003745970988 by Eaindra (Reaction (❤))
+2026-05-03 12:43:58 PM | INFO | alert_handler | ✅ Message 838 marked as RESOLVED via Reaction (❤) by Eaindra
+2026-05-03 12:44:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:14 PM MMT. Alerts are paused.
+2026-05-03 12:44:21 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-03 12:44:28 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-03 12:44:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:14 PM MMT. Alerts are paused.
+2026-05-03 12:45:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:15 PM MMT. Alerts are paused.
+2026-05-03 12:45:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:15 PM MMT. Alerts are paused.
+2026-05-03 12:45:45 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-03 12:45:52 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-03 12:46:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:16 PM MMT. Alerts are paused.
+2026-05-03 12:46:30 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-03 12:46:41 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 12:46:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:16 PM MMT. Alerts are paused.
+2026-05-03 12:46:43 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-03 12:47:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:17 PM MMT. Alerts are paused.
+2026-05-03 12:47:26 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-03 12:47:33 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-03 12:47:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:17 PM MMT. Alerts are paused.
+2026-05-03 12:48:02 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-03 12:48:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:18 PM MMT. Alerts are paused.
+2026-05-03 12:48:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:18 PM MMT. Alerts are paused.
+2026-05-03 12:49:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:19 PM MMT. Alerts are paused.
+2026-05-03 12:49:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:19 PM MMT. Alerts are paused.
+2026-05-03 12:50:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:20 PM MMT. Alerts are paused.
+2026-05-03 12:50:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:20 PM MMT. Alerts are paused.
+2026-05-03 12:51:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:21 PM MMT. Alerts are paused.
+2026-05-03 12:51:41 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 12:51:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:21 PM MMT. Alerts are paused.
+2026-05-03 12:52:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:22 PM MMT. Alerts are paused.
+2026-05-03 12:52:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:22 PM MMT. Alerts are paused.
+2026-05-03 12:53:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:23 PM MMT. Alerts are paused.
+2026-05-03 12:53:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:23 PM MMT. Alerts are paused.
+2026-05-03 12:54:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:24 PM MMT. Alerts are paused.
+2026-05-03 12:54:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:24 PM MMT. Alerts are paused.
+2026-05-03 12:55:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:25 PM MMT. Alerts are paused.
+2026-05-03 12:55:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:25 PM MMT. Alerts are paused.
+2026-05-03 12:56:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:26 PM MMT. Alerts are paused.
+2026-05-03 12:56:41 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 12:56:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:26 PM MMT. Alerts are paused.
+2026-05-03 12:57:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:27 PM MMT. Alerts are paused.
+2026-05-03 12:57:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:27 PM MMT. Alerts are paused.
+2026-05-03 12:57:49 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-03 12:57:51 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-03 12:58:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:28 PM MMT. Alerts are paused.
+2026-05-03 12:58:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:28 PM MMT. Alerts are paused.
+2026-05-03 12:59:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:29 PM MMT. Alerts are paused.
+2026-05-03 12:59:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:29 PM MMT. Alerts are paused.
+2026-05-03 01:00:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:30 PM MMT. Alerts are paused.
+2026-05-03 01:00:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:30 PM MMT. Alerts are paused.
+2026-05-03 01:01:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:31 PM MMT. Alerts are paused.
+2026-05-03 01:01:41 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 01:01:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:31 PM MMT. Alerts are paused.
+2026-05-03 01:02:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:32 PM MMT. Alerts are paused.
+2026-05-03 01:02:41 PM | INFO | auditor | 🌙 Outside Office Hours: 07:32 PM MMT. Alerts are paused.
+2026-05-03 01:02:51 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8781916512
+2026-05-03 01:02:51 PM | INFO | db_manager | ✅ Group Resolved: [2384] in -1003798739565 by Ei Pan Hmue (Reply)
+2026-05-03 01:02:51 PM | INFO | auditor | 🌙 Outside Office Hours: 07:32 PM MMT. Alerts are paused.
+2026-05-03 01:02:51 PM | INFO | auditor | ℹ️ No active alert tracking found for 2384 in -1003798739565.
+2026-05-03 01:02:51 PM | INFO | auditor | ℹ️ Message 2384 was not an active alert. Skipping record.
+2026-05-03 01:02:51 PM | INFO | message_handler | ✅ Message 2384 marked as RESOLVED via Reply by Ei Pan Hmue
+2026-05-03 01:03:11 PM | INFO | auditor | 🌙 Outside Office Hours: 07:33 PM MMT. Alerts are paused.
+2026-05-03 01:03:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:33 PM MMT. Alerts are paused.
+2026-05-03 01:04:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:34 PM MMT. Alerts are paused.
+2026-05-03 01:04:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:34 PM MMT. Alerts are paused.
+2026-05-03 01:05:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:35 PM MMT. Alerts are paused.
+2026-05-03 01:05:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:35 PM MMT. Alerts are paused.
+2026-05-03 01:06:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:36 PM MMT. Alerts are paused.
+2026-05-03 01:06:42 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 01:06:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:36 PM MMT. Alerts are paused.
+2026-05-03 01:07:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:37 PM MMT. Alerts are paused.
+2026-05-03 01:07:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:37 PM MMT. Alerts are paused.
+2026-05-03 01:08:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:38 PM MMT. Alerts are paused.
+2026-05-03 01:08:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:38 PM MMT. Alerts are paused.
+2026-05-03 01:08:59 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8781916512
+2026-05-03 01:08:59 PM | INFO | db_manager | ✅ Group Resolved: [343] in -1003801077622 by Ei Pan Hmue (Reply)
+2026-05-03 01:08:59 PM | INFO | auditor | 🌙 Outside Office Hours: 07:38 PM MMT. Alerts are paused.
+2026-05-03 01:08:59 PM | INFO | auditor | ℹ️ No active alert tracking found for 343 in -1003801077622.
+2026-05-03 01:08:59 PM | INFO | auditor | ℹ️ Message 343 was not an active alert. Skipping record.
+2026-05-03 01:08:59 PM | INFO | message_handler | ✅ Message 343 marked as RESOLVED via Reply by Ei Pan Hmue
+2026-05-03 01:09:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:39 PM MMT. Alerts are paused.
+2026-05-03 01:09:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:39 PM MMT. Alerts are paused.
+2026-05-03 01:10:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:40 PM MMT. Alerts are paused.
+2026-05-03 01:10:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:40 PM MMT. Alerts are paused.
+2026-05-03 01:11:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:41 PM MMT. Alerts are paused.
+2026-05-03 01:11:42 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 01:11:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:41 PM MMT. Alerts are paused.
+2026-05-03 01:12:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:42 PM MMT. Alerts are paused.
+2026-05-03 01:12:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:42 PM MMT. Alerts are paused.
+2026-05-03 01:12:48 PM | INFO | main_router | Routing message from -1003801802038: Ok...
+2026-05-03 01:12:49 PM | INFO | main_router | 🎯 AI Decision: none
+2026-05-03 01:12:50 PM | INFO | db_manager | ✓ Message 278 in -1003801802038 saved as PENDING
+2026-05-03 01:12:50 PM | INFO | message_handler | 📩 New Pending Message from 6858436718 in -1003801802038 (Topic: 6)
+2026-05-03 01:13:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:43 PM MMT. Alerts are paused.
+2026-05-03 01:13:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:43 PM MMT. Alerts are paused.
+2026-05-03 01:14:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:44 PM MMT. Alerts are paused.
+2026-05-03 01:14:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:44 PM MMT. Alerts are paused.
+2026-05-03 01:14:59 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-03 01:15:05 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-03 01:15:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:45 PM MMT. Alerts are paused.
+2026-05-03 01:15:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:45 PM MMT. Alerts are paused.
+2026-05-03 01:15:46 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-03 01:16:02 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-03 01:16:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:46 PM MMT. Alerts are paused.
+2026-05-03 01:16:42 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 01:16:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:46 PM MMT. Alerts are paused.
+2026-05-03 01:17:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:47 PM MMT. Alerts are paused.
+2026-05-03 01:17:22 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 5497143255
+2026-05-03 01:17:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:47 PM MMT. Alerts are paused.
+2026-05-03 01:18:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:48 PM MMT. Alerts are paused.
+2026-05-03 01:18:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:48 PM MMT. Alerts are paused.
+2026-05-03 01:19:06 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8781916512
+2026-05-03 01:19:06 PM | INFO | db_manager | ✅ Group Resolved: [261] in -1003646045828 by Ei Pan Hmue (Reply)
+2026-05-03 01:19:06 PM | INFO | auditor | 🌙 Outside Office Hours: 07:49 PM MMT. Alerts are paused.
+2026-05-03 01:19:06 PM | INFO | auditor | ℹ️ No active alert tracking found for 261 in -1003646045828.
+2026-05-03 01:19:06 PM | INFO | auditor | ℹ️ Message 261 was not an active alert. Skipping record.
+2026-05-03 01:19:06 PM | INFO | message_handler | ✅ Message 261 marked as RESOLVED via Reply by Ei Pan Hmue
+2026-05-03 01:19:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:49 PM MMT. Alerts are paused.
+2026-05-03 01:19:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:49 PM MMT. Alerts are paused.
+2026-05-03 01:20:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:50 PM MMT. Alerts are paused.
+2026-05-03 01:20:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:50 PM MMT. Alerts are paused.
+2026-05-03 01:21:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:51 PM MMT. Alerts are paused.
+2026-05-03 01:21:12 PM | INFO | main_router | Routing message from -1003723204023: မသဲစန္ဒာအောင်
+09650802805ရန်ကုန်တိုင်းသေဒကြီး လှည်...
+2026-05-03 01:21:13 PM | INFO | main_router | 🎯 AI Decision: none
+2026-05-03 01:21:14 PM | INFO | db_manager | ✓ Message 403 in -1003723204023 saved as PENDING
+2026-05-03 01:21:14 PM | INFO | message_handler | 📩 New Pending Message from 2135841895 in -1003723204023 (Topic: 1)
+2026-05-03 01:21:21 PM | INFO | main_router | Routing message from -1003723204023: ကြာနေလို့ပါ...
+2026-05-03 01:21:21 PM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-03 01:21:21 PM | INFO | auditor | 🛡️ Auditor module handled message: 404
+2026-05-03 01:21:21 PM | INFO | db_manager | ✓ Message 404 in -1003723204023 saved as PENDING
+2026-05-03 01:21:21 PM | INFO | message_handler | 📩 New Pending Message from 2135841895 in -1003723204023 (Topic: 1)
+2026-05-03 01:21:42 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 01:21:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:51 PM MMT. Alerts are paused.
+2026-05-03 01:22:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:52 PM MMT. Alerts are paused.
+2026-05-03 01:22:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:52 PM MMT. Alerts are paused.
+2026-05-03 01:23:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:53 PM MMT. Alerts are paused.
+2026-05-03 01:23:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:53 PM MMT. Alerts are paused.
+2026-05-03 01:24:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:54 PM MMT. Alerts are paused.
+2026-05-03 01:24:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:54 PM MMT. Alerts are paused.
+2026-05-03 01:24:55 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8781916512
+2026-05-03 01:25:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:55 PM MMT. Alerts are paused.
+2026-05-03 01:25:36 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-03 01:25:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:55 PM MMT. Alerts are paused.
+2026-05-03 01:26:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:56 PM MMT. Alerts are paused.
+2026-05-03 01:26:42 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 01:26:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:56 PM MMT. Alerts are paused.
+2026-05-03 01:26:55 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-03 01:27:06 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-03 01:27:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:57 PM MMT. Alerts are paused.
+2026-05-03 01:27:16 PM | INFO | main_router | Routing message from -1003912736945: ထည့်ပေးလိုက်နော်...
+2026-05-03 01:27:17 PM | INFO | main_router | 🎯 AI Decision: none
+2026-05-03 01:27:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:57 PM MMT. Alerts are paused.
+2026-05-03 01:28:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:58 PM MMT. Alerts are paused.
+2026-05-03 01:28:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:58 PM MMT. Alerts are paused.
+2026-05-03 01:29:12 PM | INFO | auditor | 🌙 Outside Office Hours: 07:59 PM MMT. Alerts are paused.
+2026-05-03 01:29:42 PM | INFO | auditor | 🌙 Outside Office Hours: 07:59 PM MMT. Alerts are paused.
+2026-05-03 01:30:12 PM | INFO | auditor | 🌙 Outside Office Hours: 08:00 PM MMT. Alerts are paused.
+2026-05-03 01:30:42 PM | INFO | auditor | 🌙 Outside Office Hours: 08:00 PM MMT. Alerts are paused.
+2026-05-03 01:31:12 PM | INFO | auditor | 🌙 Outside Office Hours: 08:01 PM MMT. Alerts are paused.
+2026-05-03 01:31:42 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 01:31:42 PM | WARNING | db_manager | 🧹 Auto-resolved 6 stale alerts (Older than 30 hours)
+2026-05-03 01:31:42 PM | INFO | auditor | 🌙 Outside Office Hours: 08:01 PM MMT. Alerts are paused.
+2026-05-03 01:32:12 PM | INFO | auditor | 🌙 Outside Office Hours: 08:02 PM MMT. Alerts are paused.
+2026-05-03 01:32:42 PM | INFO | auditor | 🌙 Outside Office Hours: 08:02 PM MMT. Alerts are paused.

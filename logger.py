@@ -11,6 +11,18 @@ if not os.path.exists('logs'):
 log = logging.getLogger("CarryManAI")
 log.setLevel(logging.INFO)
 
+# Noisy libraries များ၏ log ကို လျှော့ချခြင်း (Disk I/O သက်သာစေရန်)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("telebot").setLevel(logging.WARNING)
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("openai").setLevel(logging.WARNING)
+logging.getLogger("playwright").setLevel(logging.WARNING)
+logging.getLogger("asyncio").setLevel(logging.WARNING)
+logging.getLogger("google").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("hpack").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+
 # ၁။ ဖိုင်ထဲသို့ သိမ်းဆည်းမည့်စနစ် (RotatingFileHandler)
 # ဖိုင်အရွယ်အစား 5MB ပြည့်သွားတိုင်း ဖိုင်အသစ်တစ်ခု အလိုအလျောက်ခွဲမည် (အများဆုံး ၅ ခုအထိ သိမ်းမည်)
 file_handler = RotatingFileHandler(

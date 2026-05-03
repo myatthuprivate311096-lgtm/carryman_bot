@@ -41,7 +41,7 @@ def test_pickup_extraction(text):
     """
     ai_res_content = ai_utils.get_ai_completion(
         prompt=extract_prompt,
-        model="google/gemini-2.0-flash-001",
+        model="google/gemini-3.1-flash-lite-preview",
         response_format={ "type": "json_object" },
         timeout=30.0
     )

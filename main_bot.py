@@ -1,18 +1,13 @@
-# Version: 5.1 (Worker 1: Data Ingestion Bot - Refactored)
+# Version: 6.0 (Receiver Process - Polling Only)
 import os
 import time
-import html
 import telebot
-import pytz
-from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from logger import log
 import db_manager
 import commands_handler
 import main_router
 from handlers import alert_handler, pickup_handler, message_handler
-from modules import auditor, distiller
-import threading
 
 # 💡 Absolute Path Fix for .env
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -62,22 +57,5 @@ def start_bot():
                 time.sleep(5)
 
 if __name__ == "__main__":
-    # 🧠 Start Daily AI Distiller in a background thread
-    distiller_thread = threading.Thread(target=distiller.run_scheduler, daemon=True)
-    distiller_thread.start()
-    log.info("🧠 Daily AI Distiller thread started.")
-
-    # 🚚 Start Auto Pickup Queue Worker
-    from modules import auto_pickup
-    pickup_thread = threading.Thread(target=auto_pickup.run_queue_worker, args=(bot,), daemon=True)
-    pickup_thread.start()
-    log.info("🚚 Auto Pickup Queue Worker thread started.")
-
-    # 🛡️ Start Auditor (Worker 2: AI Brain) in a background thread
-    # This prevents Conflict (409) by sharing the same bot instance
-    auditor.set_bot(bot)
-    auditor_thread = threading.Thread(target=auditor.process_audits, daemon=True)
-    auditor_thread.start()
-    log.info("🛡️ Auditor (AI Brain) thread started.")
-    
+    log.info("📡 Receiver Process is starting (Polling Only)...")
     start_bot()
