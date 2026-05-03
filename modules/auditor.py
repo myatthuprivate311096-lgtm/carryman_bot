@@ -31,8 +31,16 @@ def is_manager(user_id):
 RECORD_GROUP_ID = int(os.getenv('ARCHIVE_CHAT_ID', -1003906164269))
 HEALTHCHECK_URL = os.getenv('HEALTHCHECK_URL')
 
+# 🚨 Escalation Configuration
+ESCALATION_GROUP_ID = int(os.getenv('ESCALATION_GROUP_ID', -1003906164269))
+ESCALATION_TOPIC_ID = int(os.getenv('ESCALATION_TOPIC_ID', 5))
+
 # 🧪 Test Mode Configuration
 TEST_GROUP_ID = int(os.getenv('TEST_GROUP_ID', -1003539520778))
+
+# 🚨 Escalation Configuration
+ESCALATION_GROUP_ID = int(os.getenv('ESCALATION_GROUP_ID', -1003906164269))
+ESCALATION_TOPIC_ID = int(os.getenv('ESCALATION_TOPIC_ID', 5))
 
 _bot = None
 
@@ -193,10 +201,10 @@ def notify_manager_missing_route(chat_id, topic_id, shop_name, trigger_text, ori
         markup.add(telebot.types.InlineKeyboardButton("💰 Finance (Topic 35)", callback_data=f"setrt_{chat_id}_{topic_id}_35_{original_msg_id}"))
         markup.add(telebot.types.InlineKeyboardButton("⚠️ Error (Topic 37)", callback_data=f"setrt_{chat_id}_{topic_id}_37_{original_msg_id}"))
         
-        _bot.send_message(MANAGER_ID, text, reply_markup=markup, parse_mode="HTML")
-        log.info(f"📲 Missing route notification sent to Manager for {shop_name}")
+        _bot.send_message(ESCALATION_GROUP_ID, text, message_thread_id=ESCALATION_TOPIC_ID, reply_markup=markup, parse_mode="HTML")
+        log.info(f"📲 Missing route notification sent to Escalation Group for {shop_name}")
     except Exception as e:
-        log.error(f"❌ Failed to notify Manager for {shop_name} ({chat_id}): {e}")
+        log.error(f"❌ Failed to notify Escalation Group for {shop_name} ({chat_id}): {e}")
 
 def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name, original_ts, category="အခြား", intent=None, media_id=None, title="⚠️ **15-Minute SLA Alert!**", force=False):
     chat_id = int(chat_id)
@@ -351,7 +359,6 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
 
         if esc_tier2_msg_id:
             try:
-                ESCALATION_GROUP_ID = -1003906164269
                 _bot.delete_message(ESCALATION_GROUP_ID, esc_tier2_msg_id)
                 log.info(f"🗑️ Deleted Tier 2 escalation {esc_tier2_msg_id}")
             except Exception as e:
@@ -466,9 +473,6 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
         # 💡 30-Minute Critical SLA Alert (Tier 2 Escalation)
         if not esc_tier2_msg_id and diff >= 1800:
             try:
-                ESCALATION_GROUP_ID = -1003906164269
-                ESCALATION_TOPIC_ID = 5
-                
                 tz = pytz.timezone('Asia/Yangon')
                 orig_time = datetime.fromtimestamp(orig_ts, tz).strftime('%I:%M %p')
                 safe_shop = html.escape(shop_name)
@@ -493,7 +497,7 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
                     telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{msg_id}_{chat_id}")
                 )
 
-                msg = _bot.send_message(ESCALATION_GROUP_ID, esc_text, message_thread_id=ESCALATION_TOP_ID, reply_markup=markup, parse_mode="HTML")
+                msg = _bot.send_message(ESCALATION_GROUP_ID, esc_text, message_thread_id=ESCALATION_TOPIC_ID, reply_markup=markup, parse_mode="HTML")
                 db_manager.update_alert_tracking_esc(msg_id, chat_id, msg.message_id, tier=2)
                 log.warning(f"🚨 Tier 2 Escalation sent for {msg_id} to Group")
             except Exception as e:

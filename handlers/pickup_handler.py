@@ -731,6 +731,16 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                     media_id=media_id, title="🚨 **Urgent Alert (Rider Request)**", force=True
                 )
                 log.info(f"✅ send_new_alert result: {res}")
+
+                # 🗑️ Admin Group ရှိ Pick Up alert အဟောင်းကို ဖျက်ခြင်း
+                try:
+                    tracking = db_manager.get_alert_tracking(orig_msg_id, chat_id)
+                    if tracking:
+                        admin_chat_id = tracking[1]
+                        bot.delete_message(admin_chat_id, tracking[0])
+                        log.info(f"🗑️ Deleted old pickup alert {tracking[0]} in admin group")
+                except Exception as de:
+                    log.debug(f"Failed to delete old alert: {de}")
     
                 auto_pickup.cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id)
                 bot.send_message(chat_id, "တာဝန်ရှိသူထံ အကြောင်းကြားပြီးပါပြီ။ အမြန်ဆုံး ပြန်လည်အကြောင်းပြန်ပေးပါ့မယ်နော်", reply_to_message_id=orig_msg_id)
@@ -746,21 +756,40 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     def handle_wrong_pickup_back_callback(call):
         """ Wrong Pickup ရွေးချယ်မှုမှ နောက်ပြန်ဆုတ်ခြင်း """
         try:
-            # format: ap_wrong_back_{orig_msg_id}_{chat_id}
+            # format: ap_wrong_back_{orig_msg_id}_{chat_id} OR ap_wrong_back_staff_{orig_msg_id}_{chat_id}_{vehicle}
             parts = call.data.split('_')
-            orig_msg_id = int(parts[3])
-            chat_id = int(parts[4])
+            
+            if parts[3] == "staff":
+                orig_msg_id = int(parts[4])
+                chat_id = int(parts[5])
+                vehicle = parts[6]
+                
+                clean_chat_id = str(chat_id).replace("-100", "")
+                msg_link = f"https://t.me/c/{clean_chat_id}/{orig_msg_id}"
 
-            msg_link = f"https://t.me/c/{str(chat_id)[4:]}/{orig_msg_id}" if str(chat_id).startswith("-100") else None
-            
-            markup = telebot.types.InlineKeyboardMarkup(row_width=1)
-            if msg_link:
-                markup.add(telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link))
-            
-            markup.add(
-                telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_msg_id}_{chat_id}"),
-                telebot.types.InlineKeyboardButton("❌ Wrong Pickup", callback_data=f"ap_wrong_{orig_msg_id}_{chat_id}")
-            )
+                markup = telebot.types.InlineKeyboardMarkup(row_width=2)
+                markup.row(
+                    telebot.types.InlineKeyboardButton("📅 Today", callback_data=f"ap_st_{orig_msg_id}_{chat_id}_today_{vehicle}"),
+                    telebot.types.InlineKeyboardButton("📅 Tomorrow", callback_data=f"ap_st_{orig_msg_id}_{chat_id}_tomorrow_{vehicle}")
+                )
+                markup.row(
+                    telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
+                    telebot.types.InlineKeyboardButton("❌ Wrong Pickup", callback_data=f"ap_wrong_staff_{orig_msg_id}_{chat_id}_{vehicle}")
+                )
+            else:
+                orig_msg_id = int(parts[3])
+                chat_id = int(parts[4])
+
+                msg_link = f"https://t.me/c/{str(chat_id)[4:]}/{orig_msg_id}" if str(chat_id).startswith("-100") else None
+                
+                markup = telebot.types.InlineKeyboardMarkup(row_width=1)
+                if msg_link:
+                    markup.add(telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link))
+                
+                markup.add(
+                    telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_msg_id}_{chat_id}"),
+                    telebot.types.InlineKeyboardButton("❌ Wrong Pickup", callback_data=f"ap_wrong_{orig_msg_id}_{chat_id}")
+                )
             
             bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
         except Exception as e:
@@ -773,12 +802,20 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     def handle_wrong_pickup_callback(call):
         """ AI မှ Pickup ဟု မှားယွင်းယူဆမိပါက Admin မှ Feedback ပေးခြင်း """
         try:
-            # format: ap_wrong_{orig_msg_id}_{chat_id}
+            # format: ap_wrong_{orig_msg_id}_{chat_id} OR ap_wrong_staff_{orig_msg_id}_{chat_id}_{vehicle}
             parts = call.data.split('_')
             if parts[2] == "back":
                 return # Handled by handle_wrong_pickup_back_callback
-            orig_msg_id = int(parts[2])
-            chat_id = int(parts[3])
+            
+            if parts[2] == "staff":
+                orig_msg_id = int(parts[3])
+                chat_id = int(parts[4])
+                vehicle = parts[5]
+                back_callback = f"ap_wrong_back_staff_{orig_msg_id}_{chat_id}_{vehicle}"
+            else:
+                orig_msg_id = int(parts[2])
+                chat_id = int(parts[3])
+                back_callback = f"ap_wrong_back_{orig_msg_id}_{chat_id}"
 
             markup = telebot.types.InlineKeyboardMarkup(row_width=1)
             markup.add(
@@ -786,7 +823,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 telebot.types.InlineKeyboardButton("💬 စကားပြောရုံသာ (Casual)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_CASUAL"),
                 telebot.types.InlineKeyboardButton("❓ စုံစမ်းမေးမြန်းခြင်း (Inquiry)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_INQUIRY"),
                 telebot.types.InlineKeyboardButton("🚫 အခြား (Other)", callback_data=f"ap_fb_{orig_msg_id}_{chat_id}_OTHER"),
-                telebot.types.InlineKeyboardButton("🔙 Back", callback_data=f"ap_wrong_back_{orig_msg_id}_{chat_id}")
+                telebot.types.InlineKeyboardButton("🔙 Back", callback_data=back_callback)
             )
             
             bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)

@@ -347,9 +347,9 @@ def handle(bot, message, force_pickup=False):
         
         # 🛡️ Global Toggle Check (Early Exit)
         # Whitelist Group -1003539520778 bypasses this
-        if db_manager.get_auto_pickup_global_status() == 'OFF' and chat_id != -1003539520778:
-            log.info(f"🔇 Auto Pickup is OFF. Skipping module for group {chat_id}")
-            return
+        is_system_off = db_manager.get_auto_pickup_global_status() == 'OFF'
+        # 💡 Note: We no longer exit early here even if OFF,
+        # to allow the AI to detect pickup and send Admin Alerts.
 
         # 🛡️ Staff Safety Net (Rule #1): ဝန်ထမ်းများအတွက် Auto Pickup အလုပ်မလုပ်စေရ
         user_level = db_manager.get_user_level(user_id, chat_id)
@@ -570,7 +570,7 @@ def handle(bot, message, force_pickup=False):
         # 2. Silent Mode for Group Chat when Pickup is OFF
         # 2. Silent Mode for Group Chat when Pickup is OFF (Whitelist Group -1003539520778 bypasses this)
         if is_system_off and chat_id != -1003539520778:
-            log.info(f"🔇 Silent Mode: Pickup is OFF. Returning silently for group {chat_id}")
+            log.info(f"🔇 Silent Mode: Pickup is OFF. Alert sent to Admin, but skipping customer interaction for group {chat_id}")
             return
 
         if not vehicle:
@@ -740,14 +740,21 @@ def send_staff_decision_alert(bot, message, os_name, vehicle):
         db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, msg.message_id)
 
         # Admin Group ရှိ မူလ Alert ကို Update လုပ်ခြင်း
+        clean_chat_id = str(chat_id).replace("-100", "")
+        msg_link = f"https://t.me/c/{clean_chat_id}/{orig_msg_id}"
+
         markup = types.InlineKeyboardMarkup(row_width=2)
-        markup.add(
+        markup.row(
             types.InlineKeyboardButton("📅 Today", callback_data=f"ap_st_{orig_msg_id}_{chat_id}_today_{vehicle}"),
             types.InlineKeyboardButton("📅 Tomorrow", callback_data=f"ap_st_{orig_msg_id}_{chat_id}_tomorrow_{vehicle}")
         )
+        markup.row(
+            types.InlineKeyboardButton("🔗 View Message", url=msg_link),
+            types.InlineKeyboardButton("❌ Wrong Pickup", callback_data=f"ap_wrong_staff_{orig_msg_id}_{chat_id}_{vehicle}")
+        )
         
         log.info(f"🕒 Mid-day Flow: Updating central alert with Staff Decision buttons for {os_name}")
-        update_central_pickup_alert(bot, orig_msg_id, chat_id, "⏳ Waiting Decision (Staff)", custom_markup=markup)
+        update_central_pickup_alert(bot, orig_msg_id, chat_id, "⏳ Waiting Decision (Staff)", custom_markup=markup, show_done=False)
 
     except Exception as e:
         log.error(f"❌ send_staff_decision_alert Error: {e}")
@@ -816,6 +823,15 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
                 log.debug(f"Shop message update skip: {e}")
 
         # 2. Update Admin Group Message
+        if status_text and "Success" in str(status_text):
+            try:
+                bot.delete_message(alert_chat_id, alert_msg_id)
+                log.info(f"🗑️ Deleted central alert {alert_msg_id} in {alert_chat_id} because status is Success")
+                return # Exit early as we don't need to edit a deleted message
+            except Exception as delete_e:
+                log.debug(f"Failed to delete alert (might be already deleted): {delete_e}")
+                # If deletion fails, we continue to edit it as a fallback
+
         # Get original text for the caption
         with db_manager.connection_scope() as conn:
             orig_data = conn.execute("SELECT text FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id)).fetchone()
