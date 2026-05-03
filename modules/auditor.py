@@ -508,20 +508,36 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
                 log.error(f"❌ Tier 2 Escalation failed: {e}")
 
 def backup_database():
+    """
+    Database Backup Logic (Optimized for RAM)
+    Uses a temporary copy to avoid locking and sends as a file stream.
+    """
+    import shutil
+    temp_backup = f"{db_manager.DB_FILE}.bak"
     try:
         if not os.path.exists(db_manager.DB_FILE):
             return
             
-        log.info("💾 Starting Automated Database Backup...")
-        with open(db_manager.DB_FILE, 'rb') as f:
+        log.info("💾 Starting Automated Database Backup (Optimized)...")
+        
+        # 1. Create a temporary copy to avoid SQLite locking issues during backup
+        shutil.copy2(db_manager.DB_FILE, temp_backup)
+        
+        # 2. Send the file using a stream to keep RAM usage low
+        with open(temp_backup, 'rb') as f:
             _bot.send_document(
                 MANAGER_ID,
                 f,
-                caption=f"📅 **CarryMan DB Backup**\nအလိုအလျောက် သိမ်းဆည်းထားသော မှတ်တမ်း\nအချိန်: {datetime.now(pytz.timezone('Asia/Yangon')).strftime('%Y-%m-%d %I:%M %p')}"
+                caption=f"📅 **CarryMan DB Backup**\nအလိုအလျောက် သိမ်းဆည်းထားသော မှတ်တမ်း\nအချိန်: {datetime.now(pytz.timezone('Asia/Yangon')).strftime('%Y-%m-%d %I:%M %p')}",
+                timeout=60 # Give it more time for large files
             )
         log.info("✅ Database Backup sent to Manager.")
     except Exception as e:
         log.error(f"❌ Backup Error: {e}")
+    finally:
+        # 3. Cleanup temporary file
+        if os.path.exists(temp_backup):
+            os.remove(temp_backup)
 
 def send_performance_report():
     try:

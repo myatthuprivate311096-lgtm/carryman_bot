@@ -121,19 +121,40 @@ def register_handlers(bot):
                 pm2_output = subprocess.check_output(["pm2", "jlist"]).decode('utf-8')
                 import json
                 pm2_data = json.loads(pm2_output)
+                
+                # 💡 Support multiple naming conventions for backward compatibility
+                ingestion_names = ["carryman-ingestion", "carryman-bot", "main_bot"]
+                worker_names = ["carryman-worker", "worker_bot"]
+                
+                found_ingestion = False
+                found_worker = False
+                
                 for proc in pm2_data:
                     name = proc.get('name')
                     status = proc.get('pm2_env', {}).get('status')
                     
-                    if name == "carryman-ingestion":
+                    if name in ingestion_names:
+                        found_ingestion = True
                         if status == 'online':
                             processes["carryman-ingestion"] = "🟢 Online"
-                            # Auditor runs as a thread inside Ingestion
-                            processes["carryman-auditor"] = "🟢 Online (Thread)"
                         else:
                             processes["carryman-ingestion"] = f"🔴 {status.capitalize()}"
-                            processes["carryman-auditor"] = "🔴 Parent Offline"
                             unhealthy_processes.append(name)
+                            
+                    if name in worker_names:
+                        found_worker = True
+                        if status == 'online':
+                            processes["carryman-auditor"] = "🟢 Online"
+                        else:
+                            processes["carryman-auditor"] = f"🔴 {status.capitalize()}"
+                            unhealthy_processes.append(name)
+
+                # If worker not found in PM2, check if it's running as a thread (Legacy/Combined mode)
+                if not found_worker and found_ingestion:
+                    if processes["carryman-ingestion"] == "🟢 Online":
+                        processes["carryman-auditor"] = "🟢 Online (Thread)"
+                    else:
+                        processes["carryman-auditor"] = "🔴 Parent Offline"
             except Exception as e:
                 log.error(f"PM2 Status Error: {e}")
                 for k in processes: processes[k] = "⚠️ Error"
