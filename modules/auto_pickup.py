@@ -524,26 +524,30 @@ def handle(bot, message, force_pickup=False):
         log.info(f"🕒 Auto Pickup Time Check: {current_time} (Yangon)")
         
         is_system_off = db_manager.get_auto_pickup_global_status() == 'OFF'
+        is_whitelisted = chat_id == -1003539520778
 
         # --- [ Duplicate Check & Date Logic (Moved Up) ] ---
         # Time-based Date Logic (Strict)
         if 1 <= current_time <= 1100:
             date_type = "today"
             log.info(f"🕒 Time {current_time}: Auto-assigning TODAY (Strict)")
-            ask_pickup_confirmation(bot, message, "today", message.message_id)
-            return
+            if not is_system_off or is_whitelisted:
+                ask_pickup_confirmation(bot, message, "today", message.message_id)
+                return
         elif 1501 <= current_time <= 2359 or current_time == 0:
-            # ညနေ ၃ နာရီနောက်ပိုင်း မနက်ဖြန်အတွက် အတည်ပြုချက် အရင်တောင်းခြင်း
+            date_type = "tomorrow"
             log.info(f"🕒 Time {current_time}: Auto-assigning TOMORROW (Strict)")
-            ask_pickup_confirmation(bot, message, "tomorrow", message.message_id)
-            return
+            if not is_system_off or is_whitelisted:
+                ask_pickup_confirmation(bot, message, "tomorrow", message.message_id)
+                return
         else: # 11:01 AM to 03:00 PM
             # ၁၁ နာရီနဲ့ ၃ နာရီကြားမှာ Staff အတည်ပြုချက် အမြဲတောင်းပါမည် (ဒီနေ့ ရ/မရ သိရန်)
             log.info(f"🕒 Time {current_time}: Entering Mid-day Staff Decision Flow")
             today_str = now.strftime("%d-%m-%Y")
             if db_manager.check_existing_pickup(chat_id, today_str) and ai_date_type != "tomorrow":
                 log.info(f"⚠️ Duplicate pickup detected for {chat_id} on {today_str} (Late Morning). Skipping Staff Decision.")
-                show_duplicate_alert(bot, message, today_str, message.message_id)
+                if not is_system_off or is_whitelisted:
+                    show_duplicate_alert(bot, message, today_str, message.message_id)
                 return
             
             date_type = "today" # Default for alert context
@@ -557,7 +561,8 @@ def handle(bot, message, force_pickup=False):
         # 🛡️ Duplicate Check: Pending, Processing, Success ရှိနေရင် Admin Alert မပို့တော့ဘဲ Manual Flow သို့ လွှတ်မည်
         if db_manager.check_existing_pickup(chat_id, target_date_str):
             log.info(f"⚠️ Duplicate pickup detected for {chat_id} on {target_date_str}. Skipping Pick Up alert to allow Manual Flow.")
-            show_duplicate_alert(bot, message, target_date_str, message.message_id)
+            if not is_system_off or is_whitelisted:
+                show_duplicate_alert(bot, message, target_date_str, message.message_id)
             return
 
         # 1. Admin Group Notification (Unified Photo Message)
@@ -569,12 +574,12 @@ def handle(bot, message, force_pickup=False):
         # 1.1 Mid-day Staff Decision Alert (Update the alert we just sent)
         if 1101 <= current_time <= 1500:
             log.info(f"🕒 Mid-day Flow: Triggering Staff Decision Alert for {os_name}")
-            send_staff_decision_alert(bot, message, os_name, vehicle if vehicle else "none")
-            return
+            if not is_system_off or is_whitelisted:
+                send_staff_decision_alert(bot, message, os_name, vehicle if vehicle else "none")
+                return
 
         # 2. Silent Mode for Group Chat when Pickup is OFF
-        # 2. Silent Mode for Group Chat when Pickup is OFF (Whitelist Group -1003539520778 bypasses this)
-        if is_system_off and chat_id != -1003539520778:
+        if is_system_off and not is_whitelisted:
             log.info(f"🔇 Silent Mode: Pickup is OFF. Alert sent to Admin, but skipping customer interaction for group {chat_id}")
             return
 
@@ -795,10 +800,24 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
         
         if not order:
             ctx = db_manager.get_message_context(orig_msg_id, chat_id)
-            # Try to get shop name from os_groups directly
+            # 💡 Chat ID Mismatch Fix & Fallback to Chat Title
+            clean_id = int(str(chat_id).replace("-100", ""))
             with db_manager.connection_scope() as conn:
-                g_res = conn.execute("SELECT shop_name FROM os_groups WHERE chat_id = ? LIMIT 1", (chat_id,)).fetchone()
-            os_name = db_manager.clean_shop_name(g_res[0]) if g_res else "Unknown Shop"
+                g_res = conn.execute("SELECT shop_name FROM os_groups WHERE chat_id IN (?, ?) LIMIT 1", (chat_id, clean_id)).fetchone()
+            
+            if g_res:
+                os_name = db_manager.clean_shop_name(g_res[0])
+            else:
+                # Database မှာ မရှိရင် Telegram Group Title ကနေ တိုက်ရိုက်ယူမည်
+                try:
+                    chat_info = bot.get_chat(chat_id)
+                    chat_title = chat_info.title or "Unknown Shop"
+                    if '🤝' in chat_title:
+                        os_name = chat_title.split('🤝')[0].strip()
+                    else:
+                        os_name = db_manager.clean_shop_name(chat_title)
+                except:
+                    os_name = "Unknown Shop"
             
             target_date = "-"
             remark = ctx[1] if ctx and ctx[1] else "-"

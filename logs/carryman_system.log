@@ -18283,3 +18283,120 @@ Date -  3/5/2026
 2026-05-03 01:31:42 PM | INFO | auditor | 🌙 Outside Office Hours: 08:01 PM MMT. Alerts are paused.
 2026-05-03 01:32:12 PM | INFO | auditor | 🌙 Outside Office Hours: 08:02 PM MMT. Alerts are paused.
 2026-05-03 01:32:42 PM | INFO | auditor | 🌙 Outside Office Hours: 08:02 PM MMT. Alerts are paused.
+2026-05-03 03:18:41 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-05-03 03:18:41 PM | INFO | main_bot | 📡 Receiver Process is starting (Polling Only)...
+2026-05-03 03:18:41 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-05-03 03:18:45 PM | INFO | main_router | Routing message from -1003692715477: OS Name - Glowic Beauty 
+Page 2 - Myat skincare 
+
+...
+2026-05-03 03:18:46 PM | INFO | main_router | 🎯 AI Decision: none
+2026-05-03 03:18:46 PM | INFO | db_manager | ✓ Message 380 in -1003692715477 saved as PENDING
+2026-05-03 03:18:46 PM | INFO | message_handler | 📩 New Pending Message from 6111933201 in -1003692715477 (Topic: 1)
+2026-05-03 03:22:42 PM | INFO | main_router | 🧪 Sandbox Mode: Bypassing all global/group/time restrictions for chat -1003539520778
+2026-05-03 03:22:42 PM | INFO | main_router | Routing message from -1003539520778: Pick up ရသေးလား...
+2026-05-03 03:22:43 PM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-03 03:22:43 PM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-05-03 03:22:43 PM | INFO | auto_pickup | 🚚 Auto Pickup module handling message: 516
+2026-05-03 03:22:43 PM | INFO | db_manager | ✓ Message 516 in -1003539520778 saved as PENDING
+2026-05-03 03:22:43 PM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-05-03 03:22:44 PM | INFO | auto_pickup | 🕒 Auto Pickup Time Check: 2152 (Yangon)
+2026-05-03 03:22:44 PM | INFO | auto_pickup | 🕒 Time 2152: Auto-assigning TOMORROW (Strict)
+2026-05-03 03:22:45 PM | WARNING | db_manager | ⚠ Message 516 in -1003539520778 already exists or failed to save
+2026-05-03 03:22:45 PM | INFO | db_manager |   → Current status: PENDING
+2026-05-03 03:22:45 PM | INFO | message_handler | 📩 New Pending Message from 8047375926 in -1003539520778 (Topic: 1)
+2026-05-03 03:22:51 PM | INFO | auto_pickup | 🔔 Unified Admin notification sent for pickup request from AI Testing OS Gp
+2026-05-03 03:31:58 PM | INFO | db_manager | ✓ Message 434 in -1003813366869 saved as PENDING
+2026-05-03 03:31:58 PM | INFO | message_handler | 📩 New Pending Message from 7639309830 in -1003813366869 (Topic: 1)
+2026-05-03 03:31:58 PM | INFO | db_manager | ✓ Message 435 in -1003813366869 saved as PENDING
+2026-05-03 03:31:58 PM | INFO | message_handler | 📩 New Pending Message from 7639309830 in -1003813366869 (Topic: 1)
+2026-05-03 03:31:58 PM | INFO | db_manager | ✓ Message 436 in -1003813366869 saved as PENDING
+2026-05-03 03:31:58 PM | INFO | message_handler | 📩 New Pending Message from 7639309830 in -1003813366869 (Topic: 1)
+2026-05-03 03:31:58 PM | INFO | db_manager | ✓ Message 433 in -1003813366869 saved as PENDING
+2026-05-03 03:31:58 PM | INFO | message_handler | 📩 New Pending Message from 7639309830 in -1003813366869 (Topic: 1)
+2026-05-03 03:33:26 PM | INFO | main_router | Routing message from -1003813366869: OS Name - K & J
+Date -3/5/2026
+
+စုစုပေါင်း ပါဆယ် -...
+2026-05-03 03:33:27 PM | INFO | main_router | 🎯 AI Decision: none
+2026-05-03 03:33:27 PM | INFO | db_manager | ✓ Message 437 in -1003813366869 saved as PENDING
+2026-05-03 03:33:27 PM | INFO | message_handler | 📩 New Pending Message from 7639309830 in -1003813366869 (Topic: 1)
+2026-05-03 03:50:40 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 03:52:41 PM | INFO | main_router | Routing message from -1003702835668: OS Name - မျက်မှန်ဆိုင်
+Date -28/april/2026
+
+စုစုပ...
+2026-05-03 03:52:42 PM | INFO | main_router | 🎯 AI Decision: none
+2026-05-03 03:52:42 PM | INFO | db_manager | ✓ Message 373 in -1003702835668 saved as PENDING
+2026-05-03 03:52:42 PM | INFO | message_handler | 📩 New Pending Message from 5669529378 in -1003702835668 (Topic: 6)
+2026-05-03 03:52:57 PM | INFO | db_manager | ✓ Message 374 in -1003702835668 saved as PENDING
+2026-05-03 03:52:57 PM | INFO | message_handler | 📩 New Pending Message from 5669529378 in -1003702835668 (Topic: 4)
+2026-05-03 03:53:22 PM | INFO | main_router | Routing message from -1003702835668: ဒီနေ့pickupမှာပါတဲ့ ဒိပါဆယ်လေး ကို 09424549229 အဲ့...
+2026-05-03 03:53:22 PM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-03 03:53:22 PM | INFO | auditor | 🛡️ Auditor module handled message: 375
+2026-05-03 03:53:22 PM | INFO | db_manager | ✓ Message 375 in -1003702835668 saved as PENDING
+2026-05-03 03:53:22 PM | INFO | message_handler | 📩 New Pending Message from 5669529378 in -1003702835668 (Topic: 4)
+2026-05-03 03:57:14 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 03:58:08 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:02:23 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:02:41 PM | INFO | main_router | Routing message from -1003734659970: ငွေရှင်းပြီးသားပါရှင်...
+2026-05-03 04:02:42 PM | INFO | main_router | 🎯 AI Decision: none
+2026-05-03 04:02:42 PM | INFO | db_manager | ✓ Message 309 in -1003734659970 saved as PENDING
+2026-05-03 04:02:42 PM | INFO | message_handler | 📩 New Pending Message from 7154027121 in -1003734659970 (Topic: 6)
+2026-05-03 04:04:52 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:06:51 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:06:51 PM | INFO | db_manager | ✅ Group Resolved: [309] in -1003734659970 by Data Entry (Reply)
+2026-05-03 04:06:51 PM | INFO | auditor | 🌙 Outside Office Hours: 10:36 PM MMT. Alerts are paused.
+2026-05-03 04:06:51 PM | INFO | auditor | ℹ️ No active alert tracking found for 309 in -1003734659970.
+2026-05-03 04:06:51 PM | INFO | auditor | ℹ️ Message 309 was not an active alert. Skipping record.
+2026-05-03 04:06:51 PM | INFO | message_handler | ✅ Message 309 marked as RESOLVED via Reply by Data Entry
+2026-05-03 04:07:10 PM | INFO | main_router | Routing message from -1003881120872: OS Name - Angel Lay
+Date -  3/May/2026
+
+စုစုပေါင်း...
+2026-05-03 04:07:11 PM | INFO | main_router | 🎯 AI Decision: none
+2026-05-03 04:07:12 PM | INFO | db_manager | ✓ Message 309 in -1003881120872 saved as PENDING
+2026-05-03 04:07:12 PM | INFO | message_handler | 📩 New Pending Message from 5453401661 in -1003881120872 (Topic: 1)
+2026-05-03 04:09:52 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:09:52 PM | INFO | db_manager | ✅ Group Resolved: [309] in -1003734659970 by Data Entry (Reply)
+2026-05-03 04:09:52 PM | INFO | auditor | 🌙 Outside Office Hours: 10:39 PM MMT. Alerts are paused.
+2026-05-03 04:09:52 PM | INFO | auditor | ℹ️ No active alert tracking found for 309 in -1003734659970.
+2026-05-03 04:09:52 PM | INFO | auditor | ℹ️ Message 309 was not an active alert. Skipping record.
+2026-05-03 04:09:52 PM | INFO | message_handler | ✅ Message 309 marked as RESOLVED via Reply by Data Entry
+2026-05-03 04:14:57 PM | INFO | main_router | Routing message from -1003813366869: ညီမလေးသူကဖုန်းစိမ်းဆိုမကိုင်လို့ မက်ဆေ့အရင်ပို့ပေး...
+2026-05-03 04:14:58 PM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-03 04:14:58 PM | INFO | auditor | 🛡️ Auditor module handled message: 438
+2026-05-03 04:14:58 PM | INFO | db_manager | ✓ Message 438 in -1003813366869 saved as PENDING
+2026-05-03 04:14:58 PM | INFO | message_handler | 📩 New Pending Message from 7639309830 in -1003813366869 (Topic: 4)
+2026-05-03 04:26:23 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:29:25 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:30:48 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:32:00 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:33:23 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:34:34 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:37:19 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:39:25 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:40:29 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:41:39 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:42:47 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:46:40 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:47:34 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:48:59 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:49:55 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:50:44 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 7898619942
+2026-05-03 04:55:49 PM | INFO | main_router | Routing message from -1003727765180: ဘိတ်ကဂိတ်ချရလားရှင့်...
+2026-05-03 04:55:50 PM | INFO | main_router | 🎯 AI Decision: none
+2026-05-03 04:55:50 PM | INFO | db_manager | ✓ Message 211 in -1003727765180 saved as PENDING
+2026-05-03 04:55:50 PM | INFO | message_handler | 📩 New Pending Message from 6869170635 in -1003727765180 (Topic: 1)
+2026-05-03 05:15:36 PM | INFO | main_router | Routing message from -1003872160078: မနက်wayလာကောက်ပေးပါဦးရှင့်...
+2026-05-03 05:15:37 PM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-03 05:15:37 PM | INFO | auto_pickup | 🚚 Auto Pickup module handling message: 301
+2026-05-03 05:15:37 PM | INFO | db_manager | ✓ Message 301 in -1003872160078 saved as PENDING
+2026-05-03 05:15:38 PM | INFO | auto_pickup | 🕒 Auto Pickup Time Check: 2345 (Yangon)
+2026-05-03 05:15:38 PM | INFO | auto_pickup | 🕒 Time 2345: Auto-assigning TOMORROW (Strict)
+2026-05-03 05:15:38 PM | WARNING | db_manager | ⚠ Message 301 in -1003872160078 already exists or failed to save
+2026-05-03 05:15:38 PM | INFO | db_manager |   → Current status: PENDING
+2026-05-03 05:15:38 PM | INFO | message_handler | 📩 New Pending Message from 1436482655 in -1003872160078 (Topic: 1)
+2026-05-03 05:15:47 PM | INFO | auto_pickup | 🔔 Unified Admin notification sent for pickup request from Moe Collection
+2026-05-03 05:16:01 PM | INFO | auto_pickup | 🔄 Updating central alert for msg 301 in chat -1003872160078 (Status: ⏳ Pending, Has Custom Markup: False)
+2026-05-03 05:16:01 PM | INFO | auto_pickup | ✅ Tracking found for msg 301 on attempt 1

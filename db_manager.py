@@ -267,9 +267,11 @@ def update_last_read_id(chat_id, topic_id, last_id):
     """ Smart Polling အတွက် နောက်ဆုံးဖတ်ပြီးသား Message ID ကို မှတ်သားရန် """
     conn = get_connection()
     try:
+        # 💡 Chat ID Mismatch Fix
+        clean_id = int(str(chat_id).replace("-100", ""))
         conn.execute(
-            "UPDATE os_groups SET last_read_message_id = ? WHERE chat_id = ? AND topic_id = ?",
-            (last_id, chat_id, topic_id)
+            "UPDATE os_groups SET last_read_message_id = ? WHERE chat_id IN (?, ?) AND topic_id = ?",
+            (last_id, chat_id, clean_id, topic_id)
         )
         conn.commit()
     finally:
@@ -663,7 +665,11 @@ def get_topic_context(chat_id, topic_id):
     pending = c.fetchall()
     c.execute("SELECT text FROM message_logs WHERE chat_id=? AND topic_id=? AND status IN ('RESOLVED', 'HANDLED_BY_AI') ORDER BY timestamp DESC LIMIT 5", (chat_id, topic_id))
     resolved = [r[0] for r in c.fetchall()]
-    c.execute("SELECT shop_name FROM os_groups WHERE chat_id=? LIMIT 1", (chat_id,))
+    
+    # 💡 Chat ID Mismatch Fix (Telethon vs Telebot)
+    # Telebot uses -100... while Telethon might store without it.
+    clean_id = int(str(chat_id).replace("-100", ""))
+    c.execute("SELECT shop_name FROM os_groups WHERE chat_id IN (?, ?) LIMIT 1", (chat_id, clean_id))
     g_res = c.fetchone()
     shop_name = clean_shop_name(g_res[0]) if g_res else "Unknown Shop"
     conn.close()
@@ -775,9 +781,11 @@ def get_routing_entry(chat_id, topic_id):
         t_id = int(topic_id) if topic_id is not None else 0
         
         conn = get_connection()
+        # 💡 Chat ID Mismatch Fix
+        clean_id = int(str(c_id).replace("-100", ""))
         res = conn.execute(
-            "SELECT target_chat_id, target_topic_id FROM os_groups WHERE chat_id = ? AND topic_id = ?",
-            (c_id, t_id)
+            "SELECT target_chat_id, target_topic_id FROM os_groups WHERE chat_id IN (?, ?) AND topic_id = ? LIMIT 1",
+            (c_id, clean_id, t_id)
         ).fetchone()
         conn.close()
         
@@ -796,9 +804,11 @@ def update_routing_entry(chat_id, topic_id, target_chat_id, target_topic_id):
         # ၁။ အရင်ရှိမရှိ စစ်ဆေးခြင်း (သို့မဟုတ် INSERT OR REPLACE သုံးခြင်း)
         # os_groups မှာ chat_id, topic_id က primary key သို့မဟုတ် unique ဖြစ်ရမည်
         # လက်ရှိ schema အရ UPDATE အရင်လုပ်ကြည့်ပြီး rowcount 0 ဖြစ်လျှင် INSERT လုပ်မည်
+        # 💡 Chat ID Mismatch Fix
+        clean_id = int(str(chat_id).replace("-100", ""))
         cursor = conn.execute(
-            "UPDATE os_groups SET target_chat_id = ?, target_topic_id = ? WHERE chat_id = ? AND topic_id = ?",
-            (target_chat_id, target_topic_id, chat_id, topic_id)
+            "UPDATE os_groups SET target_chat_id = ?, target_topic_id = ? WHERE chat_id IN (?, ?) AND topic_id = ?",
+            (target_chat_id, target_topic_id, chat_id, clean_id, topic_id)
         )
         
         if cursor.rowcount == 0:
@@ -821,7 +831,9 @@ def update_routing_entry(chat_id, topic_id, target_chat_id, target_topic_id):
 # --- [ OS Group & Analytics ] ---
 def check_if_os_group(chat_id):
     conn = get_connection()
-    res = conn.execute("SELECT 1 FROM os_groups WHERE chat_id = ?", (chat_id,)).fetchone()
+    # 💡 Chat ID Mismatch Fix
+    clean_id = int(str(chat_id).replace("-100", ""))
+    res = conn.execute("SELECT 1 FROM os_groups WHERE chat_id IN (?, ?) LIMIT 1", (chat_id, clean_id)).fetchone()
     conn.close()
     return res is not None
 
@@ -885,7 +897,9 @@ def get_os_group_names():
 def delete_os_group_by_chat_id(chat_id):
     conn = get_connection()
     try:
-        conn.execute("DELETE FROM os_groups WHERE chat_id=?", (chat_id,))
+        # 💡 Chat ID Mismatch Fix
+        clean_id = int(str(chat_id).replace("-100", ""))
+        conn.execute("DELETE FROM os_groups WHERE chat_id IN (?, ?)", (chat_id, clean_id))
         conn.commit()
     finally:
         conn.close()
@@ -893,13 +907,14 @@ def delete_os_group_by_chat_id(chat_id):
 def get_pending_counts_by_shop():
     conn = get_connection()
     try:
+        # 💡 Chat ID Mismatch Fix: Use a more flexible JOIN that handles both ID formats
         return conn.execute(
             """
             SELECT o.shop_name, COUNT(m.msg_id)
             FROM message_logs m
-            JOIN os_groups o ON m.chat_id = o.chat_id
+            JOIN os_groups o ON (m.chat_id = o.chat_id OR CAST(REPLACE(CAST(m.chat_id AS TEXT), '-100', '') AS INTEGER) = o.chat_id)
             WHERE m.status='PENDING' AND m.status != 'HANDLED_BY_AI'
-            GROUP BY m.chat_id
+            GROUP BY o.chat_id
             """
         ).fetchall()
     finally:
@@ -1243,7 +1258,9 @@ def check_existing_pickup(chat_id, target_date):
 def get_shop_mapping(chat_id):
     conn = get_connection()
     try:
-        res = conn.execute("SELECT website_os_name FROM shop_mappings WHERE chat_id = ?", (chat_id,)).fetchone()
+        # 💡 Chat ID Mismatch Fix
+        clean_id = int(str(chat_id).replace("-100", ""))
+        res = conn.execute("SELECT website_os_name FROM shop_mappings WHERE chat_id IN (?, ?)", (chat_id, clean_id)).fetchone()
         return res[0] if res else None
     finally:
         conn.close()
@@ -1251,9 +1268,15 @@ def get_shop_mapping(chat_id):
 def set_shop_mapping(chat_id, website_os_name):
     conn = get_connection()
     try:
+        # 💡 Chat ID Mismatch Fix: Always store with -100 prefix for consistency in new mappings
+        full_id = chat_id
+        if not str(chat_id).startswith("-100"):
+            try: full_id = int(f"-100{chat_id}")
+            except: pass
+            
         conn.execute(
             "INSERT OR REPLACE INTO shop_mappings (chat_id, website_os_name, updated_at) VALUES (?, ?, ?)",
-            (chat_id, website_os_name, int(time.time()))
+            (full_id, website_os_name, int(time.time()))
         )
         conn.commit()
     finally:
@@ -1313,10 +1336,11 @@ def get_unmapped_os_groups():
     try:
         # os_groups ထဲမှာရှိပြီး shop_mappings ထဲမှာ မရှိသေးတာတွေကို ယူမည်
         # website_shops ထဲမှာ အတိအကျတူတာ ရှိနေရင်လည်း ကျော်မည်
+        # 💡 Chat ID Mismatch Fix
         query = """
             SELECT DISTINCT g.chat_id, g.shop_name
             FROM os_groups g
-            LEFT JOIN shop_mappings m ON g.chat_id = m.chat_id
+            LEFT JOIN shop_mappings m ON (g.chat_id = m.chat_id OR CAST('-100' || CAST(g.chat_id AS TEXT) AS INTEGER) = m.chat_id)
             LEFT JOIN website_shops w ON g.shop_name = w.name
             WHERE m.chat_id IS NULL AND w.name IS NULL AND g.shop_name IS NOT NULL
         """
@@ -1446,7 +1470,9 @@ def get_group_ai_status(chat_id):
     """ Group တစ်ခုချင်းစီ၏ AI Status ကို ရယူခြင်း (Default: ON) """
     conn = get_connection()
     try:
-        res = conn.execute("SELECT ai_status FROM group_settings WHERE chat_id = ?", (chat_id,)).fetchone()
+        # 💡 Chat ID Mismatch Fix
+        clean_id = int(str(chat_id).replace("-100", ""))
+        res = conn.execute("SELECT ai_status FROM group_settings WHERE chat_id IN (?, ?)", (chat_id, clean_id)).fetchone()
         return res[0] if res else 'ON'
     finally:
         conn.close()
@@ -1455,7 +1481,13 @@ def set_group_ai_status(chat_id, status):
     """ Group တစ်ခုချင်းစီ၏ AI Status ကို Update လုပ်ခြင်း ('ON' or 'OFF') """
     conn = get_connection()
     try:
-        conn.execute("INSERT OR REPLACE INTO group_settings (chat_id, ai_status) VALUES (?, ?)", (chat_id, status))
+        # 💡 Chat ID Mismatch Fix: Always store with -100 prefix
+        full_id = chat_id
+        if not str(chat_id).startswith("-100"):
+            try: full_id = int(f"-100{chat_id}")
+            except: pass
+            
+        conn.execute("INSERT OR REPLACE INTO group_settings (chat_id, ai_status) VALUES (?, ?)", (full_id, status))
         conn.commit()
     finally:
         conn.close()
@@ -1564,9 +1596,12 @@ def reset_today_pickups(chat_id):
         today_str = datetime.now(tz).strftime("%d-%m-%Y")
         
         # ၁။ pickup_queue မှ ယနေ့ record များကို ဖျက်ခြင်း
+        # 💡 Chat ID Mismatch Fix
+        clean_id = int(str(chat_id).replace("-100", ""))
+        
         res_queue = conn.execute(
-            "DELETE FROM pickup_queue WHERE chat_id = ? AND target_date = ?",
-            (chat_id, today_str)
+            "DELETE FROM pickup_queue WHERE chat_id IN (?, ?) AND target_date = ?",
+            (chat_id, clean_id, today_str)
         )
         queue_count = res_queue.rowcount
         
@@ -1577,8 +1612,8 @@ def reset_today_pickups(chat_id):
         
         res_logs = conn.execute(
             "UPDATE message_logs SET status = 'PENDING', resolved_by = NULL, resolve_time = NULL "
-            "WHERE chat_id = ? AND timestamp >= ? AND status IN ('HANDLED_BY_AI', 'RESOLVED')",
-            (chat_id, start_of_day)
+            "WHERE chat_id IN (?, ?) AND timestamp >= ? AND status IN ('HANDLED_BY_AI', 'RESOLVED')",
+            (chat_id, clean_id, start_of_day)
         )
         logs_count = res_logs.rowcount
         
@@ -1602,16 +1637,20 @@ def check_active_pickup_session(chat_id, minutes=3):
         threshold = int(time.time()) - (minutes * 60)
         
         # 1. Check alert_tracking for recent alerts
+        # 💡 Chat ID Mismatch Fix
+        clean_id = int(str(chat_id).replace("-100", ""))
+        
+        # 1. Check alert_tracking for recent alerts
         alert = conn.execute(
-            "SELECT 1 FROM alert_tracking WHERE chat_id = ? AND created_at > ?",
-            (chat_id, threshold)
+            "SELECT 1 FROM alert_tracking WHERE chat_id IN (?, ?) AND created_at > ?",
+            (chat_id, clean_id, threshold)
         ).fetchone()
         if alert: return True
         
         # 2. Check intermediate messages for recent bot interactions
         inter = conn.execute(
-            "SELECT 1 FROM pickup_intermediate_messages WHERE chat_id = ? AND created_at > ?",
-            (chat_id, threshold)
+            "SELECT 1 FROM pickup_intermediate_messages WHERE chat_id IN (?, ?) AND created_at > ?",
+            (chat_id, clean_id, threshold)
         ).fetchone()
         if inter: return True
         
