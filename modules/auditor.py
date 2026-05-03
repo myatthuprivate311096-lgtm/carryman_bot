@@ -206,7 +206,7 @@ def notify_manager_missing_route(chat_id, topic_id, shop_name, trigger_text, ori
     except Exception as e:
         log.error(f"❌ Failed to notify Escalation Group for {shop_name} ({chat_id}): {e}")
 
-def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name, original_ts, category="အခြား", intent=None, media_id=None, title="⚠️ **15-Minute SLA Alert!**", force=False):
+def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name, original_ts, category="အခြား", intent=None, media_id=None, title="⚠️ **15-Minute SLA Alert!**", force=False, target_topic_override=None):
     chat_id = int(chat_id)
     topic_id = int(topic_id)
     original_msg_id = int(original_msg_id)
@@ -214,6 +214,10 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
     log.info(f"📢 send_new_alert triggered: chat={chat_id}, topic={topic_id}, msg={original_msg_id}, force={force}")
 
     target_chat, target_topic = get_routing_data(chat_id, topic_id, category=category, intent=intent)
+    
+    # 💡 Manual Override for Topic (e.g., forcing to Topic 1 when "Talk to Admin" is clicked)
+    if target_topic_override is not None:
+        target_topic = target_topic_override
     
     if target_chat is None or target_topic is None:
         log.warning(f"⚠️ No route found for {shop_name} ({chat_id}/{topic_id}). Notifying Manager.")

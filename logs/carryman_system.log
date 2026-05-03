@@ -15489,3 +15489,128 @@ Date - 2May/2026
 2026-05-03 05:42:48 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
 2026-05-03 05:42:49 AM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
 2026-05-03 05:42:53 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8781916512
+2026-05-03 05:45:02 AM | INFO | auditor | 🗑️ Deleted Level 1 alert 1270
+2026-05-03 05:45:02 AM | INFO | auditor | 🗑️ Deleted 0 linked messages
+2026-05-03 05:45:02 AM | INFO | db_manager | ✅ Group Resolved: [499] in -1003539520778 by Myat Thu (Done Button)
+2026-05-03 05:46:10 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8781916512
+2026-05-03 05:46:37 AM | INFO | main_router | 🧪 Sandbox Mode: Bypassing all global/group/time restrictions for chat -1003539520778
+2026-05-03 05:46:37 AM | INFO | main_router | Routing message from -1003539520778: Pick up ခေါ်ချင်လို့...
+2026-05-03 05:46:38 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-03 05:46:38 AM | INFO | auto_pickup | 🚚 Auto Pickup module handling message: 505
+2026-05-03 05:46:38 AM | INFO | db_manager | ✓ Message 505 in -1003539520778 saved as PENDING
+2026-05-03 05:46:39 AM | INFO | auto_pickup | 🕒 Auto Pickup Time Check: 1216 (Yangon)
+2026-05-03 05:46:39 AM | INFO | auto_pickup | 🕒 Time 1216: Entering Mid-day Staff Decision Flow
+2026-05-03 05:46:39 AM | INFO | auto_pickup | 🔔 Sending Admin Pickup Alert for AI Testing OS Gp...
+2026-05-03 05:46:40 AM | INFO | auto_pickup | 🔔 Unified Admin notification sent for pickup request from AI Testing OS Gp
+2026-05-03 05:46:40 AM | INFO | auto_pickup | 🕒 Mid-day Flow: Triggering Staff Decision Alert for AI Testing OS Gp
+2026-05-03 05:46:40 AM | INFO | auto_pickup | 🕒 Mid-day Flow: Updating central alert with Staff Decision buttons for AI Testing OS Gp
+2026-05-03 05:46:40 AM | INFO | auto_pickup | 🔄 Updating central alert for msg 505 in chat -1003539520778 (Status: ⏳ Waiting Decision (Staff), Has Custom Markup: True)
+2026-05-03 05:46:40 AM | INFO | auto_pickup | ✅ Tracking found for msg 505 on attempt 1
+2026-05-03 05:46:40 AM | WARNING | db_manager | ⚠ Message 505 in -1003539520778 already exists or failed to save
+2026-05-03 05:46:40 AM | INFO | db_manager |   → Current status: ALERTED
+2026-05-03 05:46:40 AM | INFO | message_handler | 📩 New Pending Message from 8047375926 in -1003539520778 (Topic: 1)
+2026-05-03 05:46:49 AM | INFO | auto_pickup | 🔄 Updating central alert for msg 505 in chat -1003539520778 (Status: 📅 Tomorrow (Waiting OS), Has Custom Markup: False)
+2026-05-03 05:46:49 AM | INFO | auto_pickup | ✅ Tracking found for msg 505 on attempt 1
+2026-05-03 05:46:55 AM | INFO | pickup_handler | 🚨 Admin Support Request: queue_id=0, msg_id=505, chat=-1003539520778
+2026-05-03 05:46:55 AM | INFO | pickup_handler | 📢 Sending Urgent Alert for AI Testing OS Gp (Force=True)
+2026-05-03 05:46:55 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003539520778, topic=1, msg=505, force=True
+2026-05-03 05:46:55 AM | INFO | auditor | 🎯 Explicit Route Found: -1003539520778/1 -> -1003601049225/1
+2026-05-03 05:46:55 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-03 05:46:55 AM | INFO | pickup_handler | ✅ send_new_alert result: 1272
+2026-05-03 05:46:56 AM | INFO | pickup_handler | 🗑️ Deleted old pickup alert 1272 in admin group
+2026-05-03 05:47:49 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 05:48:24 AM | INFO | main_router | 🧪 Sandbox Mode: Bypassing all global/group/time restrictions for chat -1003539520778
+2026-05-03 05:48:24 AM | INFO | main_router | Routing message from -1003539520778: Pick up လာပေးပါ...
+2026-05-03 05:48:25 AM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-03 05:48:25 AM | INFO | auto_pickup | 🚚 Auto Pickup module handling message: 509
+2026-05-03 05:48:25 AM | INFO | db_manager | ✓ Message 509 in -1003539520778 saved as PENDING
+2026-05-03 05:48:26 AM | INFO | auto_pickup | 🕒 Auto Pickup Time Check: 1218 (Yangon)
+2026-05-03 05:48:26 AM | INFO | auto_pickup | 🕒 Time 1218: Entering Mid-day Staff Decision Flow
+2026-05-03 05:48:26 AM | INFO | auto_pickup | 🔔 Sending Admin Pickup Alert for AI Testing OS Gp...
+2026-05-03 05:48:26 AM | INFO | auto_pickup | 🔔 Unified Admin notification sent for pickup request from AI Testing OS Gp
+2026-05-03 05:48:26 AM | INFO | auto_pickup | 🕒 Mid-day Flow: Triggering Staff Decision Alert for AI Testing OS Gp
+2026-05-03 05:48:27 AM | INFO | auto_pickup | 🕒 Mid-day Flow: Updating central alert with Staff Decision buttons for AI Testing OS Gp
+2026-05-03 05:48:27 AM | INFO | auto_pickup | 🔄 Updating central alert for msg 509 in chat -1003539520778 (Status: ⏳ Waiting Decision (Staff), Has Custom Markup: True)
+2026-05-03 05:48:27 AM | INFO | auto_pickup | ✅ Tracking found for msg 509 on attempt 1
+2026-05-03 05:48:27 AM | WARNING | db_manager | ⚠ Message 509 in -1003539520778 already exists or failed to save
+2026-05-03 05:48:27 AM | INFO | db_manager |   → Current status: ALERTED
+2026-05-03 05:48:27 AM | INFO | message_handler | 📩 New Pending Message from 8047375926 in -1003539520778 (Topic: 1)
+2026-05-03 05:48:45 AM | INFO | pickup_handler | 🚨 Admin Support Request: queue_id=0, msg_id=509, chat=-1003539520778
+2026-05-03 05:48:45 AM | INFO | pickup_handler | 📢 Sending Urgent Alert for AI Testing OS Gp (Force=True)
+2026-05-03 05:48:45 AM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003539520778, topic=1, msg=509, force=True
+2026-05-03 05:48:45 AM | INFO | auditor | 🎯 Explicit Route Found: -1003539520778/1 -> -1003601049225/1
+2026-05-03 05:48:45 AM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-03 05:48:45 AM | INFO | pickup_handler | ✅ send_new_alert result: 1274
+2026-05-03 05:48:46 AM | INFO | pickup_handler | 🗑️ Deleted old pickup alert 1274 in admin group
+2026-05-03 05:49:22 AM | INFO | main_router | Routing message from -1003812868558: ဟုတ်...
+2026-05-03 05:49:23 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-03 05:49:23 AM | INFO | db_manager | ✓ Message 450 in -1003812868558 saved as PENDING
+2026-05-03 05:49:23 AM | INFO | message_handler | 📩 New Pending Message from 5247216852 in -1003812868558 (Topic: 1)
+2026-05-03 05:50:16 AM | INFO | main_router | Routing message from -1003672811205: ဘာတွေကျန်သေးလဲ...
+2026-05-03 05:50:17 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-03 05:50:17 AM | INFO | db_manager | ✓ Message 227 in -1003672811205 saved as PENDING
+2026-05-03 05:50:17 AM | INFO | message_handler | 📩 New Pending Message from 7877359327 in -1003672811205 (Topic: 1)
+2026-05-03 05:50:19 AM | INFO | auditor | 🧪 Sandbox Audit: Bypassing restrictions for chat -1003539520778
+2026-05-03 05:50:19 AM | INFO | auditor | 📂 Auditing Batch: AI Testing OS Gp (Topic 1) in Chat -1003539520778 (1 messages)
+2026-05-03 05:50:20 AM | INFO | auditor | 🤖 AI Decision for AI Testing OS Gp: IGNORE (Staff Reply: False)
+2026-05-03 05:50:20 AM | INFO | auditor | 🔇 AI Ignored Group: [495]
+2026-05-03 05:52:12 AM | INFO | main_router | Routing message from -1003529688950: OS Name - Honey Accessories
+Date - 2/May/2026
+
+စုစ...
+2026-05-03 05:52:12 AM | INFO | main_router | 🎯 AI Decision: none
+2026-05-03 05:52:13 AM | INFO | db_manager | ✓ Message 440 in -1003529688950 saved as PENDING
+2026-05-03 05:52:13 AM | INFO | message_handler | 📩 New Pending Message from 1811966308 in -1003529688950 (Topic: 1)
+2026-05-03 05:52:52 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 05:52:54 AM | INFO | main_router | Routing message from -1003881120872: ပြောပေးထားပါတယ်ဗျ ဖုန်းကိုင်ပေးပီးပစ္စည်းလေးလက်ခံပ...
+2026-05-03 05:52:54 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-03 05:52:54 AM | INFO | auditor | 🛡️ Auditor module handled message: 291
+2026-05-03 05:52:55 AM | INFO | db_manager | ✓ Message 291 in -1003881120872 saved as PENDING
+2026-05-03 05:52:55 AM | INFO | message_handler | 📩 New Pending Message from 5453401661 in -1003881120872 (Topic: 4)
+2026-05-03 05:53:05 AM | INFO | auditor | ℹ️ No active alert tracking found for 450 in -1003812868558.
+2026-05-03 05:53:05 AM | INFO | auditor | ℹ️ Message 450 was not an active alert. Skipping record.
+2026-05-03 05:53:05 AM | INFO | db_manager | ✅ Group Resolved: [450] in -1003812868558 by CS 2 (Reaction (❤))
+2026-05-03 05:53:05 AM | INFO | alert_handler | ✅ Message 450 marked as RESOLVED via Reaction (❤) by CS 2
+2026-05-03 05:54:29 AM | INFO | main_router | Routing message from -1003250479427: ထောက်ကြန့်အထုပ်က Return ပြန်ပို့ပြီလားညီမ...
+2026-05-03 05:54:30 AM | INFO | main_router | 🎯 AI Decision: check_order
+2026-05-03 05:54:30 AM | INFO | main_router | 🔇 Blocking general intent 'check_order' in Group Chat -1003250479427. Bot will remain silent.
+2026-05-03 05:54:30 AM | INFO | db_manager | ✓ Message 47 in -1003250479427 saved as PENDING
+2026-05-03 05:54:30 AM | INFO | message_handler | 📩 New Pending Message from 5337325691 in -1003250479427 (Topic: 1)
+2026-05-03 05:56:42 AM | INFO | db_manager | ✓ Message 187 in -1003720313785 saved as PENDING
+2026-05-03 05:56:42 AM | INFO | message_handler | 📩 New Pending Message from 6251359796 in -1003720313785 (Topic: 1)
+2026-05-03 05:57:08 AM | INFO | main_router | Routing message from -1003720313785: ဒါကdeliခဘဲကောက်ရမှာနော် cusကိုအထည်ဖိုးသွားတောင်းနေ...
+2026-05-03 05:57:08 AM | INFO | main_router | 🎯 AI Decision: auditor
+2026-05-03 05:57:08 AM | INFO | auditor | 🛡️ Auditor module handled message: 188
+2026-05-03 05:57:09 AM | INFO | db_manager | ✓ Message 188 in -1003720313785 saved as PENDING
+2026-05-03 05:57:09 AM | INFO | message_handler | 📩 New Pending Message from 6251359796 in -1003720313785 (Topic: 1)
+2026-05-03 05:57:53 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 05:58:26 AM | INFO | health_monitor | 🚀 Proactive Health Monitor started (5 min interval)
+2026-05-03 05:58:27 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-05-03 05:58:27 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-05-03 05:58:27 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-05-03 05:58:27 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-05-03 05:58:27 AM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-05-03 05:58:27 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-05-03 05:58:27 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-05-03 05:58:27 AM | INFO | main_bot | 🛡️ Auditor (AI Brain) thread started.
+2026-05-03 05:58:27 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-05-03 05:58:27 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 05:58:27 AM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-05-03 05:58:40 AM | INFO | health_monitor | 🚀 Proactive Health Monitor started (5 min interval)
+2026-05-03 05:58:40 AM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-05-03 05:58:40 AM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...
+2026-05-03 05:58:40 AM | INFO | main_bot | 🧠 Daily AI Distiller thread started.
+2026-05-03 05:58:40 AM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-05-03 05:58:40 AM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-05-03 05:58:40 AM | INFO | main_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-05-03 05:58:40 AM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-05-03 05:58:40 AM | INFO | main_bot | 🛡️ Auditor (AI Brain) thread started.
+2026-05-03 05:58:40 AM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-05-03 05:58:40 AM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-03 05:58:41 AM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-05-03 05:58:58 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428
+2026-05-03 05:58:58 AM | INFO | db_manager | ✅ Group Resolved: [118] in -1003800154878 by Eaindra (Reply)
+2026-05-03 05:58:58 AM | INFO | auditor | ℹ️ No active alert tracking found for 118 in -1003800154878.
+2026-05-03 05:58:58 AM | INFO | auditor | ℹ️ Message 118 was not an active alert. Skipping record.
+2026-05-03 05:58:58 AM | INFO | message_handler | ✅ Message 118 marked as RESOLVED via Reply by Eaindra
+2026-05-03 05:59:00 AM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8748591428

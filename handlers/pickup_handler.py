@@ -728,7 +728,8 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 log.info(f"📢 Sending Urgent Alert for {shop_name} (Force=True)")
                 res = auditor.send_new_alert(
                     chat_id, 1, orig_msg_id, text, "Rider requested Admin support", shop_name, ts,
-                    media_id=media_id, title="🚨 **Urgent Alert (Rider Request)**", force=True
+                    media_id=media_id, title="🚨 **Urgent Alert (Rider Request)**", force=True,
+                    target_topic_override=1 # Force to Topic 1 (General/Urgent)
                 )
                 log.info(f"✅ send_new_alert result: {res}")
 
@@ -738,7 +739,8 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                     if tracking:
                         admin_chat_id = tracking[1]
                         bot.delete_message(admin_chat_id, tracking[0])
-                        log.info(f"🗑️ Deleted old pickup alert {tracking[0]} in admin group")
+                        db_manager.delete_alert_tracking(orig_msg_id, chat_id) # Clear tracking so new alert can be tracked
+                        log.info(f"🗑️ Deleted old pickup alert {tracking[0]} in admin group and cleared tracking")
                 except Exception as de:
                     log.debug(f"Failed to delete old alert: {de}")
     
