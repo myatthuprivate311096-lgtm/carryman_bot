@@ -114,6 +114,7 @@ def register_handlers(bot):
             pickup_global = db_manager.get_auto_pickup_global_status()
             alert_global = db_manager.get_alert_system_global_status()
             # 2. Process Health (PM2)
+            # Auditor is now a thread inside Ingestion, so we map its status to Ingestion
             processes = {"carryman-ingestion": "🔴", "carryman-auditor": "🔴"}
             unhealthy_processes = []
             try:
@@ -123,11 +124,15 @@ def register_handlers(bot):
                 for proc in pm2_data:
                     name = proc.get('name')
                     status = proc.get('pm2_env', {}).get('status')
-                    if name in processes:
+                    
+                    if name == "carryman-ingestion":
                         if status == 'online':
-                            processes[name] = "🟢 Online"
+                            processes["carryman-ingestion"] = "🟢 Online"
+                            # Auditor runs as a thread inside Ingestion
+                            processes["carryman-auditor"] = "🟢 Online (Thread)"
                         else:
-                            processes[name] = f"🔴 {status.capitalize()}"
+                            processes["carryman-ingestion"] = f"🔴 {status.capitalize()}"
+                            processes["carryman-auditor"] = "🔴 Parent Offline"
                             unhealthy_processes.append(name)
             except Exception as e:
                 log.error(f"PM2 Status Error: {e}")

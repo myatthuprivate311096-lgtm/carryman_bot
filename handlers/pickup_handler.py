@@ -1,4 +1,5 @@
 import telebot
+from telebot import util
 import pytz
 import os
 from datetime import datetime, timedelta
@@ -268,7 +269,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 f"⏳ **Auto Pickup အချက်အလက်များ**\n"
                 f"━━━━━━━━━━━━━━━━━━\n"
                 f"📅 ရက်စွဲ: {target_date}\n"
-                f"🏪 ဆိုင်: <b>{shop_name}</b>\n"
+                f"🏪 ဆိုင်: <b>{util.escape(shop_name)}</b>\n"
                 f"🚲 ယာဉ်: <b>{vehicle}</b>\n"
                 f"📝 မှတ်ချက်: {final_remark}\n"
                 f"📊 Status: <b>⏳ Pending</b>\n"
@@ -504,7 +505,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             # Detailed Status Message for Shop Group
             status_text = (
                 f"✅ **အတည်ပြုပြီးပါပြီ!**\n\n"
-                f"🏪 ဆိုင်: <b>{shop_name}</b>\n"
+                f"🏪 ဆိုင်: <b>{util.escape(shop_name)}</b>\n"
                 f"📅 ရက်စွဲ: <b>{target_date}</b>\n"
                 f"🚲 ယာဉ်: <b>{vehicle}</b>\n"
                 f"📝 မှတ်ချက်: {remark if remark else '-'}\n"

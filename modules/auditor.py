@@ -183,7 +183,7 @@ def notify_manager_missing_route(chat_id, topic_id, shop_name, trigger_text, ori
         text = (
             f"🚨 **Missing Routing Rule**\n"
             f"━━━━━━━━━━━━━━━━━━\n"
-            f"🏪 ဆိုင်: <b>{shop_name}</b>\n"
+            f"🏪 ဆိုင်: <b>{html.escape(shop_name)}</b>\n"
             f"🎧 Topic: <b>{topic_id}</b>\n"
             f"💬 စာသား: {html.escape(trigger_text[:100])}...\n"
             f"━━━━━━━━━━━━━━━━━━\n"

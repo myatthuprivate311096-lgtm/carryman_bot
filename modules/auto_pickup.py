@@ -495,6 +495,11 @@ def handle(bot, message, force_pickup=False):
                 log.info(f"ℹ️ Message {message.message_id} is not a pickup request (Action: {action}). Skipping auto_pickup.")
                 return
 
+        # 🛡️ Anti-Spam/Duplicate Trigger Check (Prevent multiple alerts for rapid-fire messages)
+        if not force_pickup and db_manager.check_active_pickup_session(chat_id, minutes=3):
+            log.info(f"⏳ Active pickup session detected for {chat_id}. Skipping duplicate trigger for msg {message.message_id}.")
+            return
+
         vehicle = extracted_data.get("vehicle")
         clean_remark = extracted_data.get("clean_remark")
         ai_date_type = extracted_data.get("date_type")
@@ -685,7 +690,7 @@ def show_interactive_setup(bot, chat_id, orig_msg_id, date_type, vehicle=None, r
             f"⏳ <b>Auto Pickup အချက်အလက်များ</b>\n"
             f"━━━━━━━━━━━━━━━━━━\n"
             f"📅 ရက်စွဲ: {target_date_str}\n"
-            f"🏪 ဆိုင်: <b>{os_name}</b>\n"
+            f"🏪 ဆိုင်: <b>{util.escape(os_name)}</b>\n"
             f"🚲 ယာဉ်: <b>{v_display}</b>\n"
             f"📝 မှတ်ချက်: {r_display}\n"
             f"📊 Status: <b>✅ Pending</b>\n"
@@ -924,7 +929,7 @@ def send_success_report(bot, orig_msg_id, chat_id, handled_by="System"):
         report_text = (
             f"✅ **Auto Pickup Success**\n"
             f"━━━━━━━━━━━━━━━━━━\n"
-            f"🏪 ဆိုင်: <b>{os_name}</b>\n"
+            f"🏪 ဆိုင်: <b>{util.escape(os_name)}</b>\n"
             f"📅 ရက်စွဲ: <b>{target_date}</b>\n"
             f"🚲 ယာဉ်: <b>{vehicle}</b>\n"
             f"📝 မှတ်ချက်: {remark}\n"

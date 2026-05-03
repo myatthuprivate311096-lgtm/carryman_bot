@@ -19,38 +19,47 @@ load_dotenv(ENV_FILE)
 def clean_shop_name(raw_name):
     """
     Shop name မှ emoji/noise များကိုဖြတ်၍ base name ပြန်ပေးမည်။ (Burmese Support)
-    🤝 ပါဝင်ပါက ၎င်း၏ ရှေ့က အမည်ကိုသာ ယူမည်။
-    (***) ပါဝင်ပါက ၎င်းကို ဖယ်ရှားမည်။
+    🤝CarryMan နှင့် Emoji များကို ဖယ်ရှားမည်။
     """
-    if raw_name is None:
+    if not raw_name:
         return "Unknown Shop"
     
+    import re
+    # Unicode string အဖြစ် သေချာအောင်လုပ်ခြင်း
     raw_str = str(raw_name)
     
-    # 🤝 ဖြင့် ခွဲထုတ်ခြင်း
-    if '🤝' in raw_str:
-        base = raw_str.split('🤝')[0]
-    else:
-        base = raw_str
+    # 1. 🤝CarryMan (Emoji ပါသည်ဖြစ်စေ၊ မပါသည်ဖြစ်စေ) ကို ဖယ်ရှားခြင်း
+    # Case-insensitive replace
+    cleaned = re.sub(r'🤝?\s*CarryMan\s*', '', raw_str, flags=re.IGNORECASE)
+    
+    # 2. (***) ဖြင့် ရေးထားသည်များကို ဖယ်ရှားခြင်း
+    cleaned = re.sub(r'\(.*?\)', '', cleaned)
+    
+    # 3. Noise characters များ (ï½ စသည်ဖြင့်) နှင့် Emoji များကို ဖယ်ရှားခြင်း
+    # Burmese Unicode Range: \u1000-\u109F
+    # Burmese Extended-A: \uAA60-\uAA7F
+    # Burmese Extended-B: \uA9E0-\uA9FF
+    # We keep: Burmese characters, English letters (A-Z, a-z), Numbers (0-9), and Spaces
+    # \w ကို မသုံးဘဲ တိကျသော range များသာ သုံးမည် (Noise characters များ \w ထဲ ပါသွားနိုင်၍)
+    cleaned = re.sub(r'[^a-zA-Z0-9\s\u1000-\u109F\uAA60-\uAA7F\uA9E0-\uA9FF]', '', cleaned)
+    
+    # 4. ပိုနေသော space များကို ရှင်းလင်းခြင်း
+    cleaned = " ".join(cleaned.split()).strip()
+    
+    # အကယ်၍ clean လုပ်ပြီးနောက် ဘာမှမကျန်တော့ပါက မူရင်းနာမည်မှ emoji မပါသည်ကို ပြန်ယူရန် ကြိုးစားမည်
+    if not cleaned:
+        # Emoji မပါသော character များသာ ယူမည်
+        fallback = "".join(c for c in raw_str if ord(c) < 0x1F600)
+        cleaned = " ".join(fallback.split()).strip()
 
-    # (***) ဖြင့် ရေးထားသည်များကို ဖယ်ရှားခြင်း
-    import re
-    base = re.sub(r'\(.*?\)', '', base)
-        
-    # Emoji များကို ဖယ်ရှားခြင်း (Burmese characters များကို ချန်ထားမည်)
-    # Unicode range for Burmese: \u1000-\u109F
-    # We keep alphanumeric, spaces, and Burmese range.
-    cleaned_base = re.sub(r'[^\w\s\u1000-\u109F]', '', base)
-    
-    # ပိုနေသော space များကို ရှင်းလင်းခြင်း
-    cleaned = " ".join(cleaned_base.split()).strip()
-    
-    return cleaned or "Unknown Shop"
+    return cleaned or raw_str or "Unknown Shop"
 
 def get_connection():
     """ Database ချိတ်ဆက်မှုအား Multithreading နှင့် မြန်နှုန်းမြင့် WAL Mode သတ်မှတ်ခြင်း (Timeout 60s ထည့်ထားသည်) """
     try:
         conn = sqlite3.connect(DB_FILE, check_same_thread=False, timeout=60)
+        # Unicode handling အတွက် text_factory ကို str သတ်မှတ်ခြင်း (Python 3 တွင် default ဖြစ်သော်လည်း သေချာစေရန်)
+        conn.text_factory = str
         conn.execute('PRAGMA journal_mode=WAL;')
         conn.execute('PRAGMA synchronous=NORMAL;')
         conn.execute('PRAGMA cache_size=-64000;') # 64MB Cache
@@ -1580,5 +1589,32 @@ def reset_today_pickups(chat_id):
         log.error(f"❌ reset_today_pickups Error: {e}")
         conn.rollback()
         raise
+    finally:
+        conn.close()
+
+def check_active_pickup_session(chat_id, minutes=3):
+    """
+    Check if there's an active pickup session (alert sent or interactive msg sent)
+    within the last X minutes to prevent duplicate triggers.
+    """
+    conn = get_connection()
+    try:
+        threshold = int(time.time()) - (minutes * 60)
+        
+        # 1. Check alert_tracking for recent alerts
+        alert = conn.execute(
+            "SELECT 1 FROM alert_tracking WHERE chat_id = ? AND created_at > ?",
+            (chat_id, threshold)
+        ).fetchone()
+        if alert: return True
+        
+        # 2. Check intermediate messages for recent bot interactions
+        inter = conn.execute(
+            "SELECT 1 FROM pickup_intermediate_messages WHERE chat_id = ? AND created_at > ?",
+            (chat_id, threshold)
+        ).fetchone()
+        if inter: return True
+        
+        return False
     finally:
         conn.close()
