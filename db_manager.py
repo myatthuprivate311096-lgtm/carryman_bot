@@ -211,7 +211,7 @@ def init_db():
             "staff": ["branch TEXT", "dept TEXT"],
             "message_logs": ["text TEXT", "resolved_by TEXT", "resolve_time INTEGER", "topic_id INTEGER", "media_id TEXT", "is_manual INTEGER DEFAULT 0", "category TEXT", "intent TEXT", "summary TEXT"],
             "os_groups": ["last_read_message_id INTEGER DEFAULT 0", "target_chat_id INTEGER", "target_topic_id INTEGER"],
-            "alert_tracking": ["created_at INTEGER", "esc_msg_id INTEGER", "esc_tier2_msg_id INTEGER", "linked_msg_ids TEXT DEFAULT '[]'", "linked_customer_ids TEXT DEFAULT '[]'"],
+            "alert_tracking": ["created_at INTEGER", "esc_msg_id INTEGER", "esc_tier2_msg_id INTEGER", "linked_msg_ids TEXT DEFAULT '[]'", "linked_customer_ids TEXT DEFAULT '[]'", "updates_text TEXT DEFAULT ''"],
             "feedback_logs": ["chat_id INTEGER", "topic_id INTEGER", "category TEXT", "original_text TEXT", "staff_id INTEGER"],
             "master_rules": ["chat_id INTEGER", "topic_id INTEGER", "rule_content TEXT"],
             "knowledge_base": ["category TEXT", "question TEXT", "answer TEXT", "tags TEXT", "level INTEGER DEFAULT 1", "last_updated INTEGER"],
@@ -668,8 +668,12 @@ def get_topic_context(chat_id, topic_id):
     
     # 💡 Chat ID Mismatch Fix (Telethon vs Telebot)
     # Telebot uses -100... while Telethon might store without it.
-    clean_id = int(str(chat_id).replace("-100", ""))
-    c.execute("SELECT shop_name FROM os_groups WHERE chat_id IN (?, ?) LIMIT 1", (chat_id, clean_id))
+    # We handle both cases: removing -100 and adding -100
+    s_id = str(chat_id)
+    clean_id = int(s_id.replace("-100", ""))
+    alt_id = int(f"-100{clean_id}") if not s_id.startswith("-100") else chat_id
+    
+    c.execute("SELECT shop_name FROM os_groups WHERE chat_id IN (?, ?, ?) LIMIT 1", (chat_id, clean_id, alt_id))
     g_res = c.fetchone()
     shop_name = clean_shop_name(g_res[0]) if g_res else "Unknown Shop"
     conn.close()
@@ -715,11 +719,23 @@ def add_linked_msg_id(original_msg_id, chat_id, new_msg_id):
 def get_alert_tracking(original_msg_id, chat_id):
     conn = get_connection()
     res = conn.execute(
-        "SELECT alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids, esc_tier2_msg_id FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ?",
+        "SELECT alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids, esc_tier2_msg_id, updates_text FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ?",
         (original_msg_id, chat_id)
     ).fetchone()
     conn.close()
     return res
+
+def update_alert_updates_text(original_msg_id, chat_id, updates_text):
+    """ Alert Tracking တွင် updates_text ကို update လုပ်ခြင်း """
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE alert_tracking SET updates_text = ? WHERE original_msg_id = ? AND chat_id = ?",
+            (updates_text, original_msg_id, chat_id)
+        )
+        conn.commit()
+    finally:
+        conn.close()
 
 def get_parent_msg_id(msg_id, chat_id):
     """ Child Message ID မှ Parent (Original) Message ID ကို ရှာပေးခြင်း """

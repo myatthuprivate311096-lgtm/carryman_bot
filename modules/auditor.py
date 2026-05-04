@@ -300,11 +300,85 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
         return None
 
 def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_id, chat_id, topic_id=None):
+    """
+    Alert Message ကို အသစ်မပို့တော့ဘဲ မူရင်း Message ထဲမှာပဲ Update စာသားကို ပေါင်းထည့်ပေးမည်။
+    Character limit 4096 ကျော်ပါက ဖြတ်ချမည်။
+    """
     try:
-        safe_new_text = html.escape(new_text)
+        # ၁။ Alert Tracking နှင့် Pickup Status စစ်ဆေးခြင်း
+        tracking = db_manager.get_alert_tracking(original_msg_id, chat_id)
+        if not tracking:
+            log.error(f"❌ No tracking found for {original_msg_id} in {chat_id}")
+            return
+
+        # Pickup Alert ဖြစ်ပါက Status စစ်မည် (Processing/Success ဆိုလျှင် Update မလုပ်တော့ပါ)
+        pickup = db_manager.get_pickup_order_by_msg(original_msg_id, chat_id)
+        if pickup:
+            status = pickup[7] # status column
+            if status in ['PROCESSING', 'SUCCESS', 'COMPLETED']:
+                log.info(f"⏭️ Skipping update for {original_msg_id} as pickup status is {status}")
+                return
+
+        # ၂။ Updates Text ကို DB တွင် Update လုပ်ခြင်း
+        old_updates = tracking[7] if tracking[7] else ""
+        new_entry = f"• {new_text.strip()}"
+        
+        if new_entry in old_updates: # ထပ်နေရင် မထည့်တော့ပါ
+            return
+            
+        updated_updates = (old_updates + "\n" + new_entry).strip()
+        db_manager.update_alert_updates_text(original_msg_id, chat_id, updated_updates)
+
+        # ၃။ Message ကို ပြန်လည်တည်ဆောက်၍ Edit လုပ်ခြင်း
+        msg_data = db_manager.get_message_context(original_msg_id, chat_id)
+        if not msg_data: return
+        
+        orig_text, summary, category, intent, timestamp, media_id = msg_data
+        
+        # Header & Format သတ်မှတ်ခြင်း
+        if pickup:
+            # Pickup Alert Format (auto_pickup.py နှင့် ကိုက်ညီအောင်)
+            os_name, target_date, remark, vehicle = pickup[4], pickup[3], pickup[5], pickup[6]
+            status_text = pickup[7]
+            
+            text_content = (
+                f"🚚 <b>Pick Up alert</b>\n"
+                f"━━━━━━━━━━━━━━━━━━\n"
+                f"🏪 ဆိုင်: <b>{html.escape(str(os_name))}</b>\n"
+                f"📅 ရက်စွဲ: <b>{html.escape(str(target_date))}</b>\n"
+                f"🚲 ယာဉ်: <b>{html.escape(str(vehicle))}</b>\n"
+                f"📝 မှတ်ချက်: {html.escape(str(remark))}\n"
+                f"📊 Status: <b>{html.escape(str(status_text))}</b>\n"
+                f"━━━━━━━━━━━━━━━━━━\n"
+                f"💬 မူရင်းစာ: <i>{html.escape(orig_text[:200])}</i>"
+            )
+        else:
+            # Regular SLA Alert Format
+            tz = pytz.timezone('Asia/Yangon')
+            orig_time = datetime.fromtimestamp(timestamp, tz).strftime('%Y-%m-%d %I:%M %p')
+            _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
+            
+            text_content = (
+                f"⚠️ **15-Minute SLA Alert!**\n"
+                f"Customer စာပို့ထားသည်မှာ မိနစ် ၁၅ ပြည့်သွားပါပြီ။\n"
+                f"━━━━━━━━━━━━━━━━━━\n"
+                f"🏪 ဆိုင်: <b>{html.escape(shop_name)}</b>\n"
+                f"💬 စာသား: {html.escape(orig_text)}\n"
+                f"⏰ အချိန်: {orig_time}\n"
+                f"━━━━━━━━━━━━━━━━━━"
+            )
+
+        # Updates Section ပေါင်းထည့်ခြင်း
+        if updated_updates:
+            text_content += f"\n➕ <b>Updates:</b>\n<i>{html.escape(updated_updates)}</i>"
+
+        # Character Limit Check (4096)
+        if len(text_content) > 4000:
+            text_content = text_content[:3990] + "...\n(စာသားရှည်လွန်း၍ ဖြတ်ချလိုက်ပါသည်)"
+
+        # Markup ပြန်လည်တည်ဆောက်ခြင်း
         clean_chat_id = str(chat_id).replace("-100", "")
         msg_link = f"tg://privatepost?channel={clean_chat_id}&post={original_msg_id}"
-        
         markup = telebot.types.InlineKeyboardMarkup(row_width=2)
         markup.add(
             telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
@@ -312,16 +386,32 @@ def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_i
             telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{original_msg_id}_{chat_id}")
         )
 
-        msg = _bot.send_message(
-            target_alert_chat,
-            f"➕ <b>Update for Alert:</b>\n{safe_new_text}",
-            reply_to_message_id=target_alert_id,
-            reply_markup=markup,
-            parse_mode="HTML"
-        )
-        db_manager.add_linked_msg_id(original_msg_id, chat_id, msg.message_id)
+        # Edit Message
+        try:
+            if media_id: # photo alert
+                _bot.edit_message_caption(
+                    chat_id=target_alert_chat,
+                    message_id=target_alert_id,
+                    caption=text_content,
+                    parse_mode="HTML",
+                    reply_markup=markup
+                )
+            else:
+                _bot.edit_message_text(
+                    chat_id=target_alert_chat,
+                    message_id=target_alert_id,
+                    text=text_content,
+                    parse_mode="HTML",
+                    reply_markup=markup
+                )
+            log.info(f"✅ Alert {target_alert_id} updated with new text for {original_msg_id}")
+        except Exception as edit_e:
+            if "message is not modified" in str(edit_e).lower():
+                pass
+            else:
+                log.error(f"❌ Failed to edit alert message: {edit_e}")
+                
         db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id)
-        log.info(f"➕ Appended message {original_msg_id} to alert {target_alert_id} (Topic: {topic_id})")
     except Exception as e:
         log.error(f"❌ Failed to append to alert: {e}")
 

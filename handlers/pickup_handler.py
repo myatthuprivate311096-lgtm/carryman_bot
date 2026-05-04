@@ -158,10 +158,14 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             
             if msg_data:
                 orig_text, clean_remark = msg_data
-                _, _, shop_name = db_manager.get_topic_context(chat_id, 1)
+                shop_name = auto_pickup.get_best_shop_name(bot, chat_id)
                 
-                # Send Alert to Admin (Topic 878)
-                auto_pickup.send_admin_pickup_alert(bot, chat_id, orig_msg_id, shop_name, target_date_str, None, clean_remark, orig_text)
+                # 🛡️ Duplicate Alert Check: Mid-day flow မှာ Alert ပို့ထားပြီးသားဆိုရင် ထပ်မပို့တော့ပါ
+                if not db_manager.get_alert_tracking(orig_msg_id, chat_id):
+                    # Send Alert to Admin (Topic 878)
+                    auto_pickup.send_admin_pickup_alert(bot, chat_id, orig_msg_id, shop_name, target_date_str, None, clean_remark, orig_text)
+                else:
+                    log.info(f"ℹ️ Admin Alert already exists for msg {orig_msg_id}. Skipping duplicate.")
             
             # 2. Show interactive setup
             auto_pickup.show_interactive_setup(bot, chat_id, orig_msg_id, date_type, edit_msg_id=call.message.message_id)
@@ -200,7 +204,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             msg_dt = datetime.fromtimestamp(msg_ts, tz)
             
             target_date = (msg_dt if date_type == "today" else msg_dt + timedelta(days=1)).strftime("%d-%m-%Y")
-            _, _, shop_name = db_manager.get_topic_context(chat_id, 1)
+            shop_name = auto_pickup.get_best_shop_name(bot, chat_id)
             
             db_manager.upsert_pickup_queue(chat_id, orig_msg_id, target_date, shop_name, None, vehicle, status='WAITING_SETUP')
             
@@ -256,7 +260,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             ai_summary = msg_data[0] if msg_data else None
             final_remark = remark if remark else (ai_summary if ai_summary else "-")
             
-            _, _, shop_name = db_manager.get_topic_context(chat_id, 1)
+            shop_name = auto_pickup.get_best_shop_name(bot, chat_id)
             
             # Create queue item with PENDING status (Robot will pick it up)
             queue_id = db_manager.upsert_pickup_queue(chat_id, orig_msg_id, target_date, shop_name, final_remark, vehicle, status='PENDING')
@@ -959,7 +963,8 @@ def finalize_pickup_queue(bot, chat_id, orig_msg_id, date_type, vehicle, manual_
         # Priority: Manual Remark > AI Summary (Clean Remark)
         # If no specific remark, use "-" instead of falling back to original text (which might be just "Pick up")
         final_remark = manual_remark if manual_remark else (ai_summary if ai_summary else "-")
-        _, _, shop_name = db_manager.get_topic_context(chat_id, 1)
+        from modules import auto_pickup
+        shop_name = auto_pickup.get_best_shop_name(bot, chat_id)
         
         # Strict Validation: No vehicle = No queue
         if not vehicle or vehicle == "none":

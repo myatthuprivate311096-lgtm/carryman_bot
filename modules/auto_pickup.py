@@ -12,6 +12,26 @@ from modules import location_service, auto_login, browser_manager
 
 _bot = None
 
+def get_best_shop_name(bot, chat_id):
+    """
+    Centralized helper to get the most accurate shop name.
+    Checks DB first (with ID mismatch fix), then falls back to Chat Title.
+    """
+    try:
+        _, _, shop_name = db_manager.get_topic_context(chat_id, 1)
+        if shop_name and shop_name != "Unknown Shop":
+            return shop_name
+        
+        # Fallback to Chat Title
+        chat_info = bot.get_chat(chat_id)
+        chat_title = chat_info.title or "Unknown Shop"
+        if '🤝' in chat_title:
+            return chat_title.split('🤝')[0].strip()
+        return db_manager.clean_shop_name(chat_title)
+    except Exception as e:
+        log.error(f"❌ get_best_shop_name Error: {e}")
+        return "Unknown Shop"
+
 async def send_pickup_notification(text, is_alert=False):
     """
     Centralized notification helper for Topic 878 (Pickup Command Center)
@@ -168,24 +188,51 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
     await asyncio.sleep(1)
     await os_input.fill("")
     await os_input.press_sequentially(os_name, delay=100)
-    await asyncio.sleep(3)
-
-    options = page.locator(".ant-select-item-option-content, .select-option, [role='option']")
-    count = await options.count()
     
+    # Wait for dropdown options to appear with retries
     found = False
-    if count > 0:
-        for i in range(count):
-            opt_text = (await options.nth(i).inner_text()).strip()
-            if os_name.lower() == opt_text.lower():
-                await options.nth(i).click()
-                found = True
-                log.info(f"   ✅ OS Name အတိအကျတူသည်ကို တွေ့ရှိ၍ ရွေးချယ်လိုက်ပါသည် ({opt_text})")
-                break
+    for attempt in range(3):
+        log.info(f"   ⏳ OS Name options ရှာဖွေနေပါသည် (Attempt {attempt+1}/3)...")
+        await asyncio.sleep(2)
+        options = page.locator(".ant-select-item-option-content, .select-option, [role='option']")
+        count = await options.count()
+        
+        if count > 0:
+            # 1. Try Exact Match first
+            for i in range(count):
+                opt_text = (await options.nth(i).inner_text()).strip()
+                if os_name.lower() == opt_text.lower():
+                    await options.nth(i).click()
+                    found = True
+                    log.info(f"   ✅ OS Name အတိအကျတူသည်ကို တွေ့ရှိ၍ ရွေးချယ်လိုက်ပါသည် ({opt_text})")
+                    break
+            
+            if found: break
+
+            # 2. Try Partial Match if exact fails
+            for i in range(count):
+                opt_text = (await options.nth(i).inner_text()).strip()
+                if os_name.lower() in opt_text.lower() or opt_text.lower() in os_name.lower():
+                    log.warning(f"   ⚠️ OS Name အတိအကျမတူသော်လည်း ဆင်တူသည်ကို တွေ့ရှိ၍ ရွေးချယ်လိုက်ပါသည် ({opt_text})")
+                    await options.nth(i).click()
+                    found = True
+                    break
+            
+            if found: break
         
     if not found:
         log.error(f"   ❌ OS Name ({os_name}) ကို Website ထဲတွင် ရှာမတွေ့ပါ။")
-        return False, f"Website ထဲတွင် ဆိုင်နာမည် ({os_name}) ကို ရှာမတွေ့ပါ။"
+        # Last resort: Try ArrowDown + Enter if there are any options at all
+        options = page.locator(".ant-select-item-option-content, .select-option, [role='option']")
+        if await options.count() > 0:
+            log.warning("   ⚠️ Option တိုက်ရိုက်နှိပ်မရသဖြင့် Keyboard ဖြင့် ရွေးချယ်ကြည့်ပါမည်...")
+            await page.keyboard.press("ArrowDown")
+            await asyncio.sleep(0.5)
+            await page.keyboard.press("Enter")
+            found = True
+            log.info("   ✅ Keyboard ဖြင့် ပထမဆုံး option ကို ရွေးချယ်လိုက်ပါသည်")
+        else:
+            return False, f"Website ထဲတွင် ဆိုင်နာမည် ({os_name}) ကို ရှာမတွေ့ပါ။"
 
     log.info(f"   ✅ OS Name ရွေးပြီးပါပြီ")
     
@@ -396,14 +443,8 @@ def handle(bot, message, force_pickup=False):
                     pickup_handler.show_pickup_reconfirmation(bot, chat_id, waiting_order[0])
                     return
 
-        # Get Group Title for Admin Notification
-        chat_title = message.chat.title or "Unknown Shop"
-        
-        # Extract OS Name for internal logic (before 🤝)
-        if '🤝' in chat_title:
-            os_name = chat_title.split('🤝')[0].strip()
-        else:
-            os_name = db_manager.clean_shop_name(chat_title)
+        # 💡 Get Best Shop Name (DB + Fallback)
+        os_name = get_best_shop_name(bot, chat_id)
 
         # Fetch recent feedback for AI learning
         feedbacks = db_manager.get_isolated_feedback(chat_id, 1, limit=10)
@@ -685,8 +726,7 @@ def show_interactive_setup(bot, chat_id, orig_msg_id, date_type, vehicle=None, r
             target_date = (msg_dt if date_type == "today" else msg_dt + timedelta(days=1))
             target_date_str = target_date.strftime("%d-%m-%Y")
             
-            _, _, shop_name = db_manager.get_topic_context(chat_id, 1)
-            os_name = shop_name
+            os_name = get_best_shop_name(bot, chat_id)
 
         v_display = vehicle if vehicle else "-"
         r_display = remark if remark else "-"
@@ -768,6 +808,41 @@ def send_staff_decision_alert(bot, message, os_name, vehicle):
 
     except Exception as e:
         log.error(f"❌ send_staff_decision_alert Error: {e}")
+
+def handle_pickup_error(bot, chat_id, orig_msg_id, os_name, target_date, error_msg):
+    """ Pickup တင်စဉ် Error တက်ပါက Admin Group သို့ အကြောင်းကြားခြင်း """
+    try:
+        admin_chat_id = int(os.getenv('ALERT_CHAT_ID', -1003601049225))
+        admin_topic_id = 878
+        
+        clean_chat_id = str(chat_id).replace("-100", "")
+        msg_link = f"https://t.me/c/{clean_chat_id}/{orig_msg_id}"
+        
+        markup = types.InlineKeyboardMarkup()
+        markup.add(types.InlineKeyboardButton("🔗 View Message", url=msg_link))
+        
+        # 💡 Logic: Mapping မရှိသေးရင် Fix Mapping ပြမည်။ Mapping ရှိပြီးသားဆိုရင် Done ပြမည်။
+        mapped_name = db_manager.get_shop_mapping(chat_id)
+        if not mapped_name or "Mapping" in error_msg:
+            markup.add(types.InlineKeyboardButton("� Fix Shop Mapping", callback_data=f"ap_fix_{chat_id}"))
+            instruction = "ဆိုင်နာမည် Mapping လွဲနေပါက အောက်ကခလုတ်ကိုနှိပ်၍ ပြင်ပေးပါရန်။"
+        else:
+            markup.add(types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_msg_id}_{chat_id}"))
+            instruction = "စက်ရုပ်ဖြင့် တင်မရပါက Manual တင်ပြီး Done နှိပ်ပေးပါရန်။"
+        
+        alert_text = (
+            f"❌ **Auto Pickup Failed**\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"🏪 ဆိုင်: <b>{util.escape(os_name)}</b>\n"
+            f"📅 ရက်စွဲ: <b>{target_date}</b>\n"
+            f"⚠️ အကြောင်းရင်း: {util.escape(error_msg)}\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"{instruction}"
+        )
+        
+        bot.send_message(admin_chat_id, alert_text, parse_mode="HTML", message_thread_id=admin_topic_id, reply_markup=markup)
+    except Exception as e:
+        log.error(f"❌ handle_pickup_error Error: {e}")
 
 def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_done=True, photo_path=None, custom_markup=None, queue_id=None):
     """ Admin Group နှင့် ဆိုင် Group ရှိ Alert Message များကို Update လုပ်ခြင်း """
@@ -856,7 +931,10 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
                 log.debug(f"Failed to delete alert (might be already deleted): {delete_e}")
                 # If deletion fails, we continue to edit it as a fallback
 
-        # Get original text for the caption
+        # Get original text and updates for the caption
+        tracking = db_manager.get_alert_tracking(orig_msg_id, chat_id)
+        updates_text = tracking[7] if tracking and len(tracking) > 7 else ""
+
         with db_manager.connection_scope() as conn:
             orig_data = conn.execute("SELECT text FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id)).fetchone()
         orig_text = str(orig_data[0]) if orig_data and orig_data[0] else "-"
@@ -872,24 +950,44 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
             f"━━━━━━━━━━━━━━━━━━\n"
             f"💬 မူရင်းစာ: <i>{util.escape(orig_text[:200])}{'...' if len(orig_text) > 200 else ''}</i>"
         )
+        
+        if updates_text:
+            new_caption += f"\n➕ <b>Updates:</b>\n<i>{util.escape(updates_text)}</i>"
+
+        is_processing = status_text and "Processing" in str(status_text)
+        is_failed = status_text and ("Failed" in str(status_text) or "❌" in str(status_text))
 
         if custom_markup:
             markup = custom_markup
-            # Ensure View Message and Done are always there if not already in custom_markup
+            # Ensure View Message is always there
             has_view = any(getattr(b, 'url', None) == msg_link for row in markup.keyboard for b in row)
             if not has_view:
                 markup.add(types.InlineKeyboardButton("🔗 View Message", url=msg_link))
-            
-            has_done = any(getattr(b, 'callback_data', None) == f"done_{orig_msg_id}_{chat_id}" for row in markup.keyboard for b in row)
-            if not has_done and show_done:
-                markup.add(types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_msg_id}_{chat_id}"))
         else:
             markup = types.InlineKeyboardMarkup()
-            markup.add(
-                types.InlineKeyboardButton("🔗 View Message", url=msg_link),
-                types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_msg_id}_{chat_id}"),
-                types.InlineKeyboardButton("❌ Wrong Pickup", callback_data=f"ap_wrong_{orig_msg_id}_{chat_id}")
-            )
+            markup.add(types.InlineKeyboardButton("🔗 View Message", url=msg_link))
+            
+            if is_processing:
+                # ၁။ Processing status ဖြစ်နေချိန်: Done နှင့် Wrong Pickup ခလုတ်များကို ဖျောက်ထားမည်။ View Message တစ်ခုတည်းသာပြမည်။
+                pass
+            elif is_failed:
+                # Error တက်ချိန် logic
+                mapped_name = db_manager.get_shop_mapping(chat_id)
+                # Mapping မရှိလျှင် သို့မဟုတ် status_text ထဲမှာ Mapping/ဆိုင်နာမည်/OS Name ပါနေလျှင် Fix Shop Mapping ပြမည်
+                is_mapping_issue = not mapped_name or any(x in str(status_text) for x in ["Mapping", "ဆိုင်နာမည်", "OS Name"])
+                
+                if is_mapping_issue:
+                    # ၂။ စက်ရုပ် ပထမအကြိမ် Error တက်ချိန် (သို့မဟုတ် Mapping လိုအပ်ချိန်): View Message နှင့် Fix Shop Mapping ခလုတ်များကို ပြမည်။
+                    markup.add(types.InlineKeyboardButton("🔧 Fix Shop Mapping", callback_data=f"ap_fix_{chat_id}"))
+                else:
+                    # ၃။ Mapping ပြင်ပြီးသော်လည်း ထပ်မံ Error တက်ချိန် (သို့မဟုတ် အခြား Error များ): View Message နှင့် Done ခလုတ်များကို ပြမည်။
+                    if show_done:
+                        markup.add(types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_msg_id}_{chat_id}"))
+            else:
+                # ပုံမှန် Pending status သို့မဟုတ် အခြား status များ
+                if show_done:
+                    markup.add(types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_msg_id}_{chat_id}"))
+                markup.add(types.InlineKeyboardButton("❌ Wrong Pickup", callback_data=f"ap_wrong_{orig_msg_id}_{chat_id}"))
 
         try:
             # Check if the original message was a photo or text
@@ -1132,15 +1230,19 @@ def run_queue_worker(bot):
                 base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
                 screenshot_path = os.path.join(base_dir, "before_save.png")
                 
+                # Error ဖြစ်ပါက update_central_pickup_alert မှ ခလုတ်များကို အလိုအလျောက် စီမံပေးပါမည်
+                status_msg = "❌ Failed (Mapping Missing)" if ("ဆိုင်နာမည်" in str(msg) or "OS Name" in str(msg)) else "❌ Failed (Check Admin)"
+                
                 update_central_pickup_alert(
                     bot, orig_msg_id, chat_id,
-                    "⏳ Processing", # Keep Shop Group as Processing
+                    status_msg,
                     photo_path=screenshot_path if os.path.exists(screenshot_path) else None,
                     queue_id=queue_id
                 )
                 
-                # Log error to Admin Topic 878 separately if needed,
-                # but the unified alert already shows the screenshot.
+                # Also send a separate error notification with Fix button if it's a mapping issue
+                if custom_markup:
+                    handle_pickup_error(bot, chat_id, orig_msg_id, final_os_name or os_name, target_date, msg)
 
             time.sleep(10)
 
