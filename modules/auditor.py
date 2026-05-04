@@ -737,6 +737,11 @@ def process_audits(bot_instance=None):
             
             if time.time() - last_cleanup_time >= 3600:
                 db_manager.auto_resolve_stale_alerts(hours=30)
+                # 🧹 Run Database Maintenance hourly
+                try:
+                    db_manager.db_maintenance()
+                except:
+                    pass
                 last_cleanup_time = time.time()
 
             tz = pytz.timezone('Asia/Yangon')

@@ -849,7 +849,7 @@ def handle_pickup_error(bot, chat_id, orig_msg_id, os_name, target_date, error_m
             markup.add(types.InlineKeyboardButton("� Fix Shop Mapping", callback_data=f"ap_fix_{chat_id}"))
             instruction = "ဆိုင်နာမည် Mapping လွဲနေပါက အောက်ကခလုတ်ကိုနှိပ်၍ ပြင်ပေးပါရန်။"
         else:
-            markup.add(types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_msg_id}_{chat_id}"))
+            markup.add(types.InlineKeyboardButton("✅ Done", callback_data=f"pdone_{orig_msg_id}_{chat_id}"))
             instruction = "စက်ရုပ်ဖြင့် တင်မရပါက Manual တင်ပြီး Done နှိပ်ပေးပါရန်။"
         
         alert_text = (
@@ -1025,11 +1025,11 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
                 else:
                     # ၃။ Mapping ပြင်ပြီးသော်လည်း ထပ်မံ Error တက်ချိန် (သို့မဟုတ် အခြား Error များ): View Message နှင့် Done ခလုတ်များကို ပြမည်။
                     if show_done:
-                        markup.add(types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_msg_id}_{chat_id}"))
+                        markup.add(types.InlineKeyboardButton("✅ Done", callback_data=f"pdone_{orig_msg_id}_{chat_id}"))
             else:
                 # ပုံမှန် Pending status သို့မဟုတ် အခြား status များ
                 if show_done:
-                    markup.add(types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_msg_id}_{chat_id}"))
+                    markup.add(types.InlineKeyboardButton("✅ Done", callback_data=f"pdone_{orig_msg_id}_{chat_id}"))
                 markup.add(types.InlineKeyboardButton("❌ Wrong Pickup", callback_data=f"ap_wrong_{orig_msg_id}_{chat_id}"))
 
         try:
@@ -1130,7 +1130,7 @@ def send_admin_pickup_alert(bot, chat_id, msg_id, os_name, target_date, vehicle,
         admin_markup = types.InlineKeyboardMarkup()
         admin_markup.add(
             types.InlineKeyboardButton("🔗 View Message", url=msg_link),
-            types.InlineKeyboardButton("✅ Done", callback_data=f"done_{msg_id}_{chat_id}"),
+            types.InlineKeyboardButton("✅ Done", callback_data=f"pdone_{msg_id}_{chat_id}"),
             types.InlineKeyboardButton("❌ Wrong Pickup", callback_data=f"ap_wrong_{msg_id}_{chat_id}")
         )
         

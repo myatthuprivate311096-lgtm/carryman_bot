@@ -27423,3 +27423,483 @@ Date/4/5/2026/May
 2026-05-04 05:48:48 PM | INFO | message_handler | 📩 New Pending Message from 8047375926 in -1003539520778 (Topic: 1)
 2026-05-04 05:48:54 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
 2026-05-04 05:48:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:18 AM MMT. Alerts are paused.
+2026-05-04 05:49:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:19 AM MMT. Alerts are paused.
+2026-05-04 05:49:42 PM | INFO | main_router | Routing message from -1003912736945: 5ways ကြိုရှင်း = 141,800 ks...
+2026-05-04 05:49:42 PM | INFO | db_manager | ✓ Message 59 in -1003912736945 saved as PENDING
+2026-05-04 05:49:42 PM | INFO | message_handler | 📩 New Pending Message from 1650641603 in -1003912736945 (Topic: 1)
+2026-05-04 05:49:43 PM | INFO | main_router | 🎯 AI Decision: none
+2026-05-04 05:49:43 PM | INFO | db_manager | ✓ Message 58 in -1003912736945 saved as PENDING
+2026-05-04 05:49:43 PM | INFO | message_handler | 📩 New Pending Message from 1650641603 in -1003912736945 (Topic: 1)
+2026-05-04 05:49:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:19 AM MMT. Alerts are paused.
+2026-05-04 05:50:02 PM | INFO | main_bot | 💓 Heartbeat sent from Receiver.
+2026-05-04 05:50:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:20 AM MMT. Alerts are paused.
+2026-05-04 05:50:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:20 AM MMT. Alerts are paused.
+2026-05-04 05:51:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:21 AM MMT. Alerts are paused.
+2026-05-04 05:51:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:21 AM MMT. Alerts are paused.
+2026-05-04 05:52:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:22 AM MMT. Alerts are paused.
+2026-05-04 05:52:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:22 AM MMT. Alerts are paused.
+2026-05-04 05:53:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:23 AM MMT. Alerts are paused.
+2026-05-04 05:53:54 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-04 05:53:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:23 AM MMT. Alerts are paused.
+2026-05-04 05:54:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:24 AM MMT. Alerts are paused.
+2026-05-04 05:54:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:24 AM MMT. Alerts are paused.
+2026-05-04 05:55:02 PM | INFO | main_bot | 💓 Heartbeat sent from Receiver.
+2026-05-04 05:55:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:25 AM MMT. Alerts are paused.
+2026-05-04 05:55:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:25 AM MMT. Alerts are paused.
+2026-05-04 05:56:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:26 AM MMT. Alerts are paused.
+2026-05-04 05:56:35 PM | INFO | auto_pickup | 🔄 Updating central alert for msg 225 in chat -1003727765180 (Status: ⏳ Pending, Has Custom Markup: False)
+2026-05-04 05:56:35 PM | INFO | auto_pickup | ✅ Tracking found for msg 225 on attempt 1
+2026-05-04 05:56:38 PM | INFO | auto_pickup | 📦 Processing Queue Item 65 for Khine Trendy Shop
+2026-05-04 05:56:38 PM | INFO | auto_pickup | 🎯 Using saved mapping: Khine Trendy Shop (New Os )
+2026-05-04 05:56:38 PM | INFO | auto_pickup | 🔄 Updating central alert for msg 225 in chat -1003727765180 (Status: ⏳ Processing, Has Custom Markup: False)
+2026-05-04 05:56:38 PM | INFO | auto_pickup | ✅ Tracking found for msg 225 on attempt 1
+2026-05-04 05:56:39 PM | INFO | auto_pickup | 🚀 Auto Pickup စက်ရုပ် (Playwright) စတင်နေပါပြီ...
+2026-05-04 05:56:39 PM | INFO | browser_manager | 📑 Opening new tab. (Task #3, Resource Guard: 1/2)
+2026-05-04 05:56:39 PM | INFO | auto_pickup | 🔗 https://www.carrymanexpress.com/neworder သို့ သွားနေပါသည်...
+2026-05-04 05:56:41 PM | INFO | auto_pickup | 📝 အချက်အလက်များ ဖြည့်သွင်းနေပါသည်...
+2026-05-04 05:56:41 PM | INFO | auto_pickup | 📅 ရက်စွဲ သတ်မှတ်နေပါသည်: 05-05-2026
+2026-05-04 05:56:42 PM | INFO | auto_pickup |    ✅ ရက်စွဲဖြည့်ပြီးပါပြီ (05-05-2026)
+2026-05-04 05:56:46 PM | INFO | auto_pickup |    ⏳ OS Name options ရှာဖွေနေပါသည် (Attempt 1/3)...
+2026-05-04 05:56:48 PM | INFO | auto_pickup |    ✅ OS Name အတိအကျတူသည်ကို တွေ့ရှိ၍ ရွေးချယ်လိုက်ပါသည် (Khine Trendy Shop (New Os ))
+2026-05-04 05:56:48 PM | INFO | auto_pickup |    ✅ OS Name ရွေးပြီးပါပြီ
+2026-05-04 05:56:48 PM | INFO | auto_pickup | ⏳ Website auto-fill လုပ်ဆောင်ချက်ကို (၅) စက္ကန့် စောင့်နေပါသည်...
+2026-05-04 05:56:53 PM | INFO | auto_pickup | 🚲 ယာဉ်အမျိုးအစား ရွေးချယ်နေပါသည် (Bicycle)...
+2026-05-04 05:56:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:26 AM MMT. Alerts are paused.
+2026-05-04 05:57:02 PM | WARNING | auto_pickup | ⚠️ Vehicle option 'Bicycle' not found via direct click. Trying keyboard fallback...
+2026-05-04 05:57:04 PM | INFO | auto_pickup |    ✅ ယာဉ်ရွေးပြီးပါပြီ (Bicycle)
+2026-05-04 05:57:04 PM | INFO | auto_pickup | 📝 မှတ်ချက် နောက်ဆုံးမှ ထပ်မံဖြည့်သွင်းနေပါသည် (deli)...
+2026-05-04 05:57:05 PM | INFO | auto_pickup |    ✅ မှတ်ချက်ဖြည့်ပြီးပါပြီ
+2026-05-04 05:57:07 PM | INFO | auto_pickup | 📸 SAVE ခလုတ်မနှိပ်မီ မျက်နှာပြင်ကို '/root/carryman_bot/before_save.png' အဖြစ် မှတ်တမ်းတင်ထားပါသည်။
+2026-05-04 05:57:08 PM | INFO | auto_pickup | 💾 SAVE ခလုတ်ကို နှိပ်လိုက်ပါပြီ။
+2026-05-04 05:57:11 PM | INFO | auto_pickup | 🎉 အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်!
+2026-05-04 05:57:11 PM | INFO | browser_manager | 🗑️ Tab closed. (Resource Guard: 1/2)
+2026-05-04 05:57:11 PM | INFO | auto_pickup | 🔄 Updating central alert for msg 225 in chat -1003727765180 (Status: ✅ Success, Has Custom Markup: False)
+2026-05-04 05:57:11 PM | INFO | auto_pickup | ✅ Tracking found for msg 225 on attempt 1
+2026-05-04 05:57:12 PM | INFO | auto_pickup | 🗑️ Deleted central alert 1434 in -1003601049225 because status is Success
+2026-05-04 05:57:12 PM | INFO | auto_pickup | 📤 Success Report sent to -1003906164269/28 for Khine Trendy Shop
+2026-05-04 05:57:12 PM | INFO | db_manager | ✅ Group Resolved: [225] in -1003727765180 by System (Auto-Pickup) (Auto)
+2026-05-04 05:57:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:27 AM MMT. Alerts are paused.
+2026-05-04 05:57:32 PM | INFO | auto_pickup | 🔄 Updating central alert for msg 42 in chat -1003830280576 (Status: ⏳ Pending, Has Custom Markup: False)
+2026-05-04 05:57:32 PM | INFO | auto_pickup | ✅ Tracking found for msg 42 on attempt 1
+2026-05-04 05:57:33 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 05:57:43 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 05:57:53 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 05:57:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:27 AM MMT. Alerts are paused.
+2026-05-04 05:57:54 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 05:58:03 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 05:58:04 PM | INFO | auditor | 🌙 Outside Office Hours: 12:28 AM MMT. Alerts are paused.
+2026-05-04 05:58:04 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 05:58:13 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 05:58:14 PM | INFO | auditor | 🌙 Outside Office Hours: 12:28 AM MMT. Alerts are paused.
+2026-05-04 05:58:14 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 05:58:19 PM | INFO | auto_pickup | 🔄 Updating central alert for msg 123 in chat -1003800154878 (Status: ⏳ Pending, Has Custom Markup: False)
+2026-05-04 05:58:19 PM | INFO | auto_pickup | ✅ Tracking found for msg 123 on attempt 1
+2026-05-04 05:58:23 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 05:58:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:28 AM MMT. Alerts are paused.
+2026-05-04 05:58:24 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 05:58:33 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 05:58:34 PM | INFO | auditor | 🌙 Outside Office Hours: 12:28 AM MMT. Alerts are paused.
+2026-05-04 05:58:34 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 05:58:43 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 05:58:44 PM | INFO | auditor | 🌙 Outside Office Hours: 12:28 AM MMT. Alerts are paused.
+2026-05-04 05:58:44 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 05:58:53 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 05:58:54 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-04 05:58:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:28 AM MMT. Alerts are paused.
+2026-05-04 05:58:54 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 05:59:03 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 05:59:04 PM | INFO | auditor | 🌙 Outside Office Hours: 12:29 AM MMT. Alerts are paused.
+2026-05-04 05:59:04 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 05:59:13 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 05:59:14 PM | INFO | auditor | 🌙 Outside Office Hours: 12:29 AM MMT. Alerts are paused.
+2026-05-04 05:59:14 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 05:59:23 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 05:59:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:29 AM MMT. Alerts are paused.
+2026-05-04 05:59:24 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 05:59:33 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 05:59:34 PM | INFO | auditor | 🌙 Outside Office Hours: 12:29 AM MMT. Alerts are paused.
+2026-05-04 05:59:34 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 05:59:43 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 05:59:44 PM | INFO | auditor | 🌙 Outside Office Hours: 12:29 AM MMT. Alerts are paused.
+2026-05-04 05:59:44 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 05:59:53 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 05:59:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:29 AM MMT. Alerts are paused.
+2026-05-04 05:59:54 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:00:02 PM | INFO | main_bot | 💓 Heartbeat sent from Receiver.
+2026-05-04 06:00:03 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:00:04 PM | INFO | auditor | 🌙 Outside Office Hours: 12:30 AM MMT. Alerts are paused.
+2026-05-04 06:00:04 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:00:13 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:00:14 PM | INFO | auditor | 🌙 Outside Office Hours: 12:30 AM MMT. Alerts are paused.
+2026-05-04 06:00:14 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:00:23 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:00:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:30 AM MMT. Alerts are paused.
+2026-05-04 06:00:24 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:00:33 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:00:34 PM | INFO | auditor | 🌙 Outside Office Hours: 12:30 AM MMT. Alerts are paused.
+2026-05-04 06:00:34 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:00:43 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:00:44 PM | INFO | auditor | 🌙 Outside Office Hours: 12:30 AM MMT. Alerts are paused.
+2026-05-04 06:00:44 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:00:53 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:00:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:30 AM MMT. Alerts are paused.
+2026-05-04 06:00:54 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:01:03 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:01:04 PM | INFO | auditor | 🌙 Outside Office Hours: 12:31 AM MMT. Alerts are paused.
+2026-05-04 06:01:04 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:01:13 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:01:14 PM | INFO | auditor | 🌙 Outside Office Hours: 12:31 AM MMT. Alerts are paused.
+2026-05-04 06:01:14 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:01:23 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:01:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:31 AM MMT. Alerts are paused.
+2026-05-04 06:01:24 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:01:29 PM | INFO | auditor | 🌙 Outside Office Hours: 12:31 AM MMT. Alerts are paused.
+2026-05-04 06:01:29 PM | ERROR | alert_handler | ❌ Done Button Error: too many values to unpack (expected 7)
+2026-05-04 06:01:33 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:01:34 PM | INFO | auditor | 🌙 Outside Office Hours: 12:31 AM MMT. Alerts are paused.
+2026-05-04 06:01:34 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:01:43 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:01:44 PM | INFO | auditor | 🌙 Outside Office Hours: 12:31 AM MMT. Alerts are paused.
+2026-05-04 06:01:44 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:01:53 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:01:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:31 AM MMT. Alerts are paused.
+2026-05-04 06:01:54 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:02:03 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:02:04 PM | INFO | auditor | 🌙 Outside Office Hours: 12:32 AM MMT. Alerts are paused.
+2026-05-04 06:02:04 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:02:13 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:02:14 PM | INFO | auditor | 🌙 Outside Office Hours: 12:32 AM MMT. Alerts are paused.
+2026-05-04 06:02:14 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:02:23 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:02:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:32 AM MMT. Alerts are paused.
+2026-05-04 06:02:24 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:02:33 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:02:34 PM | INFO | auditor | 🌙 Outside Office Hours: 12:32 AM MMT. Alerts are paused.
+2026-05-04 06:02:34 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:02:43 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:02:44 PM | INFO | auditor | 🌙 Outside Office Hours: 12:32 AM MMT. Alerts are paused.
+2026-05-04 06:02:44 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:02:53 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:02:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:32 AM MMT. Alerts are paused.
+2026-05-04 06:02:54 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:03:03 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:03:04 PM | INFO | auditor | 🌙 Outside Office Hours: 12:33 AM MMT. Alerts are paused.
+2026-05-04 06:03:04 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:03:13 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:03:14 PM | INFO | auditor | 🌙 Outside Office Hours: 12:33 AM MMT. Alerts are paused.
+2026-05-04 06:03:14 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:03:23 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:03:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:33 AM MMT. Alerts are paused.
+2026-05-04 06:03:24 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:03:33 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:03:34 PM | INFO | auditor | 🌙 Outside Office Hours: 12:33 AM MMT. Alerts are paused.
+2026-05-04 06:03:34 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:03:43 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:03:44 PM | INFO | auditor | 🌙 Outside Office Hours: 12:33 AM MMT. Alerts are paused.
+2026-05-04 06:03:44 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:03:53 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:03:54 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-04 06:03:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:33 AM MMT. Alerts are paused.
+2026-05-04 06:03:54 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:04:03 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:04:04 PM | INFO | auditor | 🌙 Outside Office Hours: 12:34 AM MMT. Alerts are paused.
+2026-05-04 06:04:04 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:04:13 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:04:14 PM | INFO | auditor | 🌙 Outside Office Hours: 12:34 AM MMT. Alerts are paused.
+2026-05-04 06:04:14 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:04:23 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:04:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:34 AM MMT. Alerts are paused.
+2026-05-04 06:04:24 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:04:33 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:04:34 PM | INFO | auditor | 🌙 Outside Office Hours: 12:34 AM MMT. Alerts are paused.
+2026-05-04 06:04:34 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:04:43 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:04:44 PM | INFO | auditor | 🌙 Outside Office Hours: 12:34 AM MMT. Alerts are paused.
+2026-05-04 06:04:44 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:04:53 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:04:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:34 AM MMT. Alerts are paused.
+2026-05-04 06:04:54 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:05:02 PM | INFO | main_bot | 💓 Heartbeat sent from Receiver.
+2026-05-04 06:05:03 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:05:04 PM | INFO | auditor | 🌙 Outside Office Hours: 12:35 AM MMT. Alerts are paused.
+2026-05-04 06:05:04 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:05:13 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:05:14 PM | INFO | auditor | 🌙 Outside Office Hours: 12:35 AM MMT. Alerts are paused.
+2026-05-04 06:05:14 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:05:23 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:05:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:35 AM MMT. Alerts are paused.
+2026-05-04 06:05:24 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:05:33 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:05:34 PM | INFO | auditor | 🌙 Outside Office Hours: 12:35 AM MMT. Alerts are paused.
+2026-05-04 06:05:34 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:05:43 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:05:44 PM | INFO | auditor | 🌙 Outside Office Hours: 12:35 AM MMT. Alerts are paused.
+2026-05-04 06:05:44 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:05:53 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:05:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:35 AM MMT. Alerts are paused.
+2026-05-04 06:05:54 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:06:03 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:06:04 PM | INFO | auditor | 🌙 Outside Office Hours: 12:36 AM MMT. Alerts are paused.
+2026-05-04 06:06:04 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:06:13 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:06:14 PM | INFO | auditor | 🌙 Outside Office Hours: 12:36 AM MMT. Alerts are paused.
+2026-05-04 06:06:14 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:06:23 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:06:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:36 AM MMT. Alerts are paused.
+2026-05-04 06:06:24 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:06:33 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:06:34 PM | INFO | auditor | 🌙 Outside Office Hours: 12:36 AM MMT. Alerts are paused.
+2026-05-04 06:06:34 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:06:43 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:06:44 PM | INFO | auditor | 🌙 Outside Office Hours: 12:36 AM MMT. Alerts are paused.
+2026-05-04 06:06:44 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:06:53 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:06:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:36 AM MMT. Alerts are paused.
+2026-05-04 06:06:54 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:07:03 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:07:04 PM | INFO | auditor | 🌙 Outside Office Hours: 12:37 AM MMT. Alerts are paused.
+2026-05-04 06:07:04 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:07:13 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:07:14 PM | INFO | auditor | 🌙 Outside Office Hours: 12:37 AM MMT. Alerts are paused.
+2026-05-04 06:07:14 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:07:23 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:07:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:37 AM MMT. Alerts are paused.
+2026-05-04 06:07:24 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:07:33 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:07:34 PM | INFO | auditor | 🌙 Outside Office Hours: 12:37 AM MMT. Alerts are paused.
+2026-05-04 06:07:34 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:07:43 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:07:44 PM | INFO | auditor | 🌙 Outside Office Hours: 12:37 AM MMT. Alerts are paused.
+2026-05-04 06:07:44 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:07:53 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:07:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:37 AM MMT. Alerts are paused.
+2026-05-04 06:07:54 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:08:03 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:08:04 PM | INFO | auditor | 🌙 Outside Office Hours: 12:38 AM MMT. Alerts are paused.
+2026-05-04 06:08:04 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:08:13 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:08:14 PM | INFO | auditor | 🌙 Outside Office Hours: 12:38 AM MMT. Alerts are paused.
+2026-05-04 06:08:14 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:08:23 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:08:24 PM | INFO | auditor | 🌙 Outside Office Hours: 12:38 AM MMT. Alerts are paused.
+2026-05-04 06:08:24 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:08:33 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:08:34 PM | INFO | auditor | 🌙 Outside Office Hours: 12:38 AM MMT. Alerts are paused.
+2026-05-04 06:08:34 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:08:43 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:08:44 PM | INFO | auditor | 🌙 Outside Office Hours: 12:38 AM MMT. Alerts are paused.
+2026-05-04 06:08:44 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:08:53 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:08:54 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-04 06:08:54 PM | INFO | auditor | 🌙 Outside Office Hours: 12:38 AM MMT. Alerts are paused.
+2026-05-04 06:08:54 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:09:03 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:09:04 PM | INFO | auditor | 🌙 Outside Office Hours: 12:39 AM MMT. Alerts are paused.
+2026-05-04 06:09:04 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:09:13 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:09:14 PM | INFO | auditor | 🌙 Outside Office Hours: 12:39 AM MMT. Alerts are paused.
+2026-05-04 06:09:14 PM | ERROR | auditor | ⚠️ Auditor Loop Error (Shop: AI Testing OS Gp, Chat: -1003539520778, Topic: 1): disk I/O error
+2026-05-04 06:09:23 PM | ERROR | auto_pickup | ❌ Queue Worker Error: disk I/O error
+2026-05-04 06:09:23 PM | INFO | worker_bot | 🛑 Worker Process stopped by user.
+2026-05-04 06:09:28 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-05-04 06:09:28 PM | INFO | fb_webhook | 🚀 FB Webhook Server starting on port 5000...
+2026-05-04 06:09:29 PM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-05-04 06:09:29 PM | INFO | worker_bot | ⚙️ Worker Process (Background Tasks) is starting...
+2026-05-04 06:09:29 PM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:30 AM MMT)...
+2026-05-04 06:09:29 PM | INFO | worker_bot | 🧠 Daily AI Distiller thread started.
+2026-05-04 06:09:29 PM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-05-04 06:09:29 PM | INFO | worker_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-05-04 06:09:29 PM | INFO | auto_pickup | ⏰ Daily Pickup Cleanup Scheduler is running (Target: 04:00 AM MMT)...
+2026-05-04 06:09:29 PM | INFO | worker_bot | 🧹 Daily Pickup Cleanup thread started.
+2026-05-04 06:09:29 PM | INFO | worker_bot | 🛡️ Auditor (AI Brain) starting...
+2026-05-04 06:09:29 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-05-04 06:09:29 PM | INFO | auto_pickup | 📦 Processing Queue Item 62 for Vogue Os
+2026-05-04 06:09:29 PM | INFO | auto_pickup | 🎯 Using saved mapping: Vogue
+2026-05-04 06:09:29 PM | INFO | auto_pickup | 🔄 Updating central alert for msg 123 in chat -1003800154878 (Status: ⏳ Processing, Has Custom Markup: False)
+2026-05-04 06:09:29 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-04 06:09:29 PM | WARNING | db_manager | 🧹 Auto-resolved 3 stale alerts (Older than 30 hours)
+2026-05-04 06:09:29 PM | INFO | auditor | 🌙 Outside Office Hours: 12:39 AM MMT. Alerts are paused.
+2026-05-04 06:09:29 PM | INFO | auditor | 🧪 Sandbox Audit: Bypassing restrictions for chat -1003539520778
+2026-05-04 06:09:29 PM | INFO | auditor | 📂 Auditing Batch: AI Testing OS Gp (Topic 1) in Chat -1003539520778 (2 messages)
+2026-05-04 06:09:29 PM | INFO | auto_pickup | ✅ Shop Group Status updated to ⏳ Processing for Vogue Os (Msg: 124)
+2026-05-04 06:09:29 PM | INFO | auto_pickup | ✅ Tracking found for msg 123 on attempt 1
+2026-05-04 06:09:29 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-05-04 06:09:29 PM | INFO | fb_handler | ✅ FB Handlers Registered
+2026-05-04 06:09:29 PM | INFO | main_bot | 📡 Receiver Process is starting (Polling Only)...
+2026-05-04 06:09:29 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-05-04 06:09:29 PM | INFO | main_bot | 💓 Heartbeat sent from Receiver.
+2026-05-04 06:09:29 PM | INFO | auto_pickup | 🚀 Auto Pickup စက်ရုပ် (Playwright) စတင်နေပါပြီ...
+2026-05-04 06:09:29 PM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-05-04 06:09:29 PM | INFO | browser_manager | 📑 Opening new tab. (Task #1, Resource Guard: 1/2)
+2026-05-04 06:09:30 PM | INFO | auto_pickup | 🔗 https://www.carrymanexpress.com/neworder သို့ သွားနေပါသည်...
+2026-05-04 06:09:30 PM | INFO | auditor | 🤖 AI Decision for AI Testing OS Gp: IGNORE (Staff Reply: False)
+2026-05-04 06:09:30 PM | INFO | auditor | 🔇 AI Ignored Group: [565, 566]
+2026-05-04 06:09:32 PM | INFO | auto_pickup | 📝 အချက်အလက်များ ဖြည့်သွင်းနေပါသည်...
+2026-05-04 06:09:32 PM | INFO | auto_pickup | 📅 ရက်စွဲ သတ်မှတ်နေပါသည်: 05-05-2026
+2026-05-04 06:09:33 PM | INFO | auto_pickup |    ✅ ရက်စွဲဖြည့်ပြီးပါပြီ (05-05-2026)
+2026-05-04 06:09:35 PM | INFO | auto_pickup |    ⏳ OS Name options ရှာဖွေနေပါသည် (Attempt 1/3)...
+2026-05-04 06:09:37 PM | INFO | auto_pickup |    ✅ OS Name အတိအကျတူသည်ကို တွေ့ရှိ၍ ရွေးချယ်လိုက်ပါသည် (Vogue)
+2026-05-04 06:09:37 PM | INFO | auto_pickup |    ✅ OS Name ရွေးပြီးပါပြီ
+2026-05-04 06:09:37 PM | INFO | auto_pickup | ⏳ Website auto-fill လုပ်ဆောင်ချက်ကို (၅) စက္ကန့် စောင့်နေပါသည်...
+2026-05-04 06:09:42 PM | INFO | auto_pickup | 🚲 ယာဉ်အမျိုးအစား ရွေးချယ်နေပါသည် (Bicycle)...
+2026-05-04 06:09:46 PM | INFO | main_router | 🛡️ Staff Exclusion (Group): Skipping AI routing for staff 8353570874
+2026-05-04 06:09:51 PM | WARNING | auto_pickup | ⚠️ Vehicle option 'Bicycle' not found via direct click. Trying keyboard fallback...
+2026-05-04 06:09:53 PM | INFO | auto_pickup |    ✅ ယာဉ်ရွေးပြီးပါပြီ (Bicycle)
+2026-05-04 06:09:53 PM | INFO | auto_pickup | 📝 မှတ်ချက် နောက်ဆုံးမှ ထပ်မံဖြည့်သွင်းနေပါသည် (-)...
+2026-05-04 06:09:54 PM | INFO | auto_pickup |    ✅ မှတ်ချက်ဖြည့်ပြီးပါပြီ
+2026-05-04 06:09:56 PM | INFO | auto_pickup | 📸 SAVE ခလုတ်မနှိပ်မီ မျက်နှာပြင်ကို '/root/carryman_bot/before_save.png' အဖြစ် မှတ်တမ်းတင်ထားပါသည်။
+2026-05-04 06:09:57 PM | INFO | auto_pickup | 💾 SAVE ခလုတ်ကို နှိပ်လိုက်ပါပြီ။
+2026-05-04 06:10:00 PM | INFO | auto_pickup | 🎉 အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်!
+2026-05-04 06:10:00 PM | INFO | browser_manager | 🗑️ Tab closed. (Resource Guard: 1/2)
+2026-05-04 06:10:00 PM | INFO | auto_pickup | 🔄 Updating central alert for msg 123 in chat -1003800154878 (Status: ✅ Success, Has Custom Markup: False)
+2026-05-04 06:10:00 PM | INFO | auto_pickup | ✅ Shop Group Status updated to ✅ Success for Vogue Os (Msg: 124)
+2026-05-04 06:10:00 PM | INFO | auto_pickup | ✅ Tracking found for msg 123 on attempt 1
+2026-05-04 06:10:00 PM | INFO | auto_pickup | 🗑️ Deleted central alert 1412 in -1003601049225 because status is Success
+2026-05-04 06:10:01 PM | INFO | auto_pickup | 📤 Success Report sent to -1003906164269/28 for Vogue Os
+2026-05-04 06:10:01 PM | INFO | db_manager | ✅ Group Resolved: [123] in -1003800154878 by System (Auto-Pickup) (Auto)
+2026-05-04 06:10:02 PM | INFO | auditor | 🌙 Outside Office Hours: 12:40 AM MMT. Alerts are paused.
+2026-05-04 06:10:11 PM | INFO | auto_pickup | 📦 Processing Queue Item 63 for JFY
+2026-05-04 06:10:11 PM | INFO | auto_pickup | 🎯 Using saved mapping: JFY
+2026-05-04 06:10:11 PM | INFO | auto_pickup | 🔄 Updating central alert for msg 191 in chat -1003361319863 (Status: ⏳ Processing, Has Custom Markup: False)
+2026-05-04 06:10:14 PM | WARNING | auto_pickup | ⚠️ update_central_pickup_alert: No tracking found for msg 191 in chat -1003361319863. Admin alert update skipped.
+2026-05-04 06:10:14 PM | INFO | auto_pickup | 🚀 Auto Pickup စက်ရုပ် (Playwright) စတင်နေပါပြီ...
+2026-05-04 06:10:14 PM | INFO | browser_manager | 📑 Opening new tab. (Task #2, Resource Guard: 1/2)
+2026-05-04 06:10:14 PM | INFO | auto_pickup | 🔗 https://www.carrymanexpress.com/neworder သို့ သွားနေပါသည်...
+2026-05-04 06:10:16 PM | INFO | auto_pickup | 📝 အချက်အလက်များ ဖြည့်သွင်းနေပါသည်...
+2026-05-04 06:10:16 PM | INFO | auto_pickup | 📅 ရက်စွဲ သတ်မှတ်နေပါသည်: 05-05-2026
+2026-05-04 06:10:17 PM | INFO | auto_pickup |    ✅ ရက်စွဲဖြည့်ပြီးပါပြီ (05-05-2026)
+2026-05-04 06:10:18 PM | INFO | auto_pickup |    ⏳ OS Name options ရှာဖွေနေပါသည် (Attempt 1/3)...
+2026-05-04 06:10:20 PM | INFO | auto_pickup |    ✅ OS Name အတိအကျတူသည်ကို တွေ့ရှိ၍ ရွေးချယ်လိုက်ပါသည် (JFY)
+2026-05-04 06:10:20 PM | INFO | auto_pickup |    ✅ OS Name ရွေးပြီးပါပြီ
+2026-05-04 06:10:20 PM | INFO | auto_pickup | ⏳ Website auto-fill လုပ်ဆောင်ချက်ကို (၅) စက္ကန့် စောင့်နေပါသည်...
+2026-05-04 06:10:25 PM | INFO | auto_pickup | 🚲 ယာဉ်အမျိုးအစား ရွေးချယ်နေပါသည် (Car)...
+2026-05-04 06:10:30 PM | INFO | auditor | 🌙 Outside Office Hours: 12:40 AM MMT. Alerts are paused.
+2026-05-04 06:10:30 PM | ERROR | alert_handler | ❌ Done Button Error: too many values to unpack (expected 7)
+2026-05-04 06:10:32 PM | INFO | auditor | 🌙 Outside Office Hours: 12:40 AM MMT. Alerts are paused.
+2026-05-04 06:10:34 PM | WARNING | auto_pickup | ⚠️ Vehicle option 'Car' not found via direct click. Trying keyboard fallback...
+2026-05-04 06:10:36 PM | INFO | auto_pickup |    ✅ ယာဉ်ရွေးပြီးပါပြီ (Car)
+2026-05-04 06:10:36 PM | INFO | auto_pickup | 📝 မှတ်ချက် နောက်ဆုံးမှ ထပ်မံဖြည့်သွင်းနေပါသည် (ညနေ 4:30 နောက်ပိုင်းမှ လာကောက်ပေးပါရန်)...
+2026-05-04 06:10:37 PM | INFO | auto_pickup |    ✅ မှတ်ချက်ဖြည့်ပြီးပါပြီ
+2026-05-04 06:10:39 PM | INFO | auto_pickup | 📸 SAVE ခလုတ်မနှိပ်မီ မျက်နှာပြင်ကို '/root/carryman_bot/before_save.png' အဖြစ် မှတ်တမ်းတင်ထားပါသည်။
+2026-05-04 06:10:40 PM | INFO | auto_pickup | 💾 SAVE ခလုတ်ကို နှိပ်လိုက်ပါပြီ။
+2026-05-04 06:10:43 PM | INFO | auto_pickup | 🎉 အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်!
+2026-05-04 06:10:43 PM | INFO | browser_manager | 🗑️ Tab closed. (Resource Guard: 1/2)
+2026-05-04 06:10:43 PM | INFO | auto_pickup | 🔄 Updating central alert for msg 191 in chat -1003361319863 (Status: ✅ Success, Has Custom Markup: False)
+2026-05-04 06:10:46 PM | WARNING | auto_pickup | ⚠️ update_central_pickup_alert: No tracking found for msg 191 in chat -1003361319863. Admin alert update skipped.
+2026-05-04 06:10:46 PM | INFO | auto_pickup | 📤 Success Report sent to -1003906164269/28 for JFY
+2026-05-04 06:10:46 PM | INFO | db_manager | ✅ Group Resolved: [191] in -1003361319863 by System (Auto-Pickup) (Auto)
+2026-05-04 06:10:56 PM | INFO | auto_pickup | 📦 Processing Queue Item 64 for Meachy
+2026-05-04 06:10:56 PM | INFO | auto_pickup | 🎯 Using saved mapping: Meachy Os
+2026-05-04 06:10:56 PM | INFO | auto_pickup | 🔄 Updating central alert for msg 42 in chat -1003830280576 (Status: ⏳ Processing, Has Custom Markup: False)
+2026-05-04 06:10:57 PM | INFO | auto_pickup | ✅ Shop Group Status updated to ⏳ Processing for Meachy (Msg: 43)
+2026-05-04 06:10:57 PM | INFO | auto_pickup | ✅ Tracking found for msg 42 on attempt 1
+2026-05-04 06:10:57 PM | INFO | auto_pickup | 🚀 Auto Pickup စက်ရုပ် (Playwright) စတင်နေပါပြီ...
+2026-05-04 06:10:57 PM | INFO | browser_manager | 📑 Opening new tab. (Task #3, Resource Guard: 1/2)
+2026-05-04 06:10:57 PM | INFO | auto_pickup | 🔗 https://www.carrymanexpress.com/neworder သို့ သွားနေပါသည်...
+2026-05-04 06:10:59 PM | INFO | auto_pickup | 📝 အချက်အလက်များ ဖြည့်သွင်းနေပါသည်...
+2026-05-04 06:10:59 PM | INFO | auto_pickup | 📅 ရက်စွဲ သတ်မှတ်နေပါသည်: 05-05-2026
+2026-05-04 06:11:00 PM | INFO | auto_pickup |    ✅ ရက်စွဲဖြည့်ပြီးပါပြီ (05-05-2026)
+2026-05-04 06:11:02 PM | INFO | auto_pickup |    ⏳ OS Name options ရှာဖွေနေပါသည် (Attempt 1/3)...
+2026-05-04 06:11:02 PM | INFO | auditor | 🌙 Outside Office Hours: 12:41 AM MMT. Alerts are paused.
+2026-05-04 06:11:04 PM | INFO | auto_pickup |    ✅ OS Name အတိအကျတူသည်ကို တွေ့ရှိ၍ ရွေးချယ်လိုက်ပါသည် (Meachy Os)
+2026-05-04 06:11:04 PM | INFO | auto_pickup |    ✅ OS Name ရွေးပြီးပါပြီ
+2026-05-04 06:11:04 PM | INFO | auto_pickup | ⏳ Website auto-fill လုပ်ဆောင်ချက်ကို (၅) စက္ကန့် စောင့်နေပါသည်...
+2026-05-04 06:11:09 PM | INFO | auto_pickup | 🚲 ယာဉ်အမျိုးအစား ရွေးချယ်နေပါသည် (Car)...
+2026-05-04 06:11:17 PM | WARNING | auto_pickup | ⚠️ Vehicle option 'Car' not found via direct click. Trying keyboard fallback...
+2026-05-04 06:11:19 PM | INFO | auto_pickup |    ✅ ယာဉ်ရွေးပြီးပါပြီ (Car)
+2026-05-04 06:11:19 PM | INFO | auto_pickup | 📝 မှတ်ချက် နောက်ဆုံးမှ ထပ်မံဖြည့်သွင်းနေပါသည် (-)...
+2026-05-04 06:11:21 PM | INFO | auto_pickup |    ✅ မှတ်ချက်ဖြည့်ပြီးပါပြီ
+2026-05-04 06:11:23 PM | INFO | auto_pickup | 📸 SAVE ခလုတ်မနှိပ်မီ မျက်နှာပြင်ကို '/root/carryman_bot/before_save.png' အဖြစ် မှတ်တမ်းတင်ထားပါသည်။
+2026-05-04 06:11:24 PM | INFO | auto_pickup | 💾 SAVE ခလုတ်ကို နှိပ်လိုက်ပါပြီ။
+2026-05-04 06:11:27 PM | INFO | auto_pickup | 🎉 အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်!
+2026-05-04 06:11:27 PM | INFO | browser_manager | 🗑️ Tab closed. (Resource Guard: 1/2)
+2026-05-04 06:11:27 PM | INFO | auto_pickup | 🔄 Updating central alert for msg 42 in chat -1003830280576 (Status: ✅ Success, Has Custom Markup: False)
+2026-05-04 06:11:27 PM | INFO | auto_pickup | ✅ Shop Group Status updated to ✅ Success for Meachy (Msg: 43)
+2026-05-04 06:11:27 PM | INFO | auto_pickup | ✅ Tracking found for msg 42 on attempt 1
+2026-05-04 06:11:27 PM | INFO | auto_pickup | 🗑️ Deleted central alert 1432 in -1003601049225 because status is Success
+2026-05-04 06:11:28 PM | INFO | auto_pickup | 📤 Success Report sent to -1003906164269/28 for Meachy
+2026-05-04 06:11:28 PM | INFO | db_manager | ✅ Group Resolved: [42] in -1003830280576 by System (Auto-Pickup) (Auto)
+2026-05-04 06:11:32 PM | INFO | auditor | 🌙 Outside Office Hours: 12:41 AM MMT. Alerts are paused.
+2026-05-04 06:11:33 PM | INFO | auditor | 🌙 Outside Office Hours: 12:41 AM MMT. Alerts are paused.
+2026-05-04 06:11:33 PM | ERROR | alert_handler | ❌ Done Button Error: too many values to unpack (expected 7)
+2026-05-04 06:12:02 PM | INFO | auditor | 🌙 Outside Office Hours: 12:42 AM MMT. Alerts are paused.
+2026-05-04 06:12:32 PM | INFO | auditor | 🌙 Outside Office Hours: 12:42 AM MMT. Alerts are paused.
+2026-05-04 06:13:02 PM | INFO | auditor | 🌙 Outside Office Hours: 12:43 AM MMT. Alerts are paused.
+2026-05-04 06:13:02 PM | INFO | auditor | ℹ️ No active alert tracking found for 191 in -1003361319863.
+2026-05-04 06:13:02 PM | INFO | auditor | ℹ️ Message 191 was not an active alert. Skipping record.
+2026-05-04 06:13:02 PM | INFO | db_manager | ✅ Group Resolved: [191] in -1003361319863 by Myat Thu (Done Button)
+2026-05-04 06:13:02 PM | INFO | auditor | 🌙 Outside Office Hours: 12:43 AM MMT. Alerts are paused.
+2026-05-04 06:13:06 PM | INFO | auditor | 🌙 Outside Office Hours: 12:43 AM MMT. Alerts are paused.
+2026-05-04 06:13:06 PM | ERROR | alert_handler | ❌ Done Button Error: too many values to unpack (expected 7)
+2026-05-04 06:13:32 PM | INFO | auditor | 🌙 Outside Office Hours: 12:43 AM MMT. Alerts are paused.
+2026-05-04 06:14:02 PM | INFO | auditor | 🌙 Outside Office Hours: 12:44 AM MMT. Alerts are paused.
+2026-05-04 06:14:29 PM | INFO | main_bot | 💓 Heartbeat sent from Receiver.
+2026-05-04 06:14:33 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-04 06:14:33 PM | INFO | auditor | 🌙 Outside Office Hours: 12:44 AM MMT. Alerts are paused.
+2026-05-04 06:15:03 PM | INFO | auditor | 🌙 Outside Office Hours: 12:45 AM MMT. Alerts are paused.
+2026-05-04 06:15:33 PM | INFO | auditor | 🌙 Outside Office Hours: 12:45 AM MMT. Alerts are paused.
+2026-05-04 06:16:03 PM | INFO | auditor | 🌙 Outside Office Hours: 12:46 AM MMT. Alerts are paused.
+2026-05-04 06:16:33 PM | INFO | auditor | 🌙 Outside Office Hours: 12:46 AM MMT. Alerts are paused.
+2026-05-04 06:17:03 PM | INFO | auditor | 🌙 Outside Office Hours: 12:47 AM MMT. Alerts are paused.
+2026-05-04 06:17:33 PM | INFO | auditor | 🌙 Outside Office Hours: 12:47 AM MMT. Alerts are paused.
+2026-05-04 06:18:03 PM | INFO | auditor | 🌙 Outside Office Hours: 12:48 AM MMT. Alerts are paused.
+2026-05-04 06:18:33 PM | INFO | auditor | 🌙 Outside Office Hours: 12:48 AM MMT. Alerts are paused.
+2026-05-04 06:19:03 PM | INFO | auditor | 🌙 Outside Office Hours: 12:49 AM MMT. Alerts are paused.
+2026-05-04 06:19:29 PM | INFO | main_bot | 💓 Heartbeat sent from Receiver.
+2026-05-04 06:19:33 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-04 06:19:33 PM | INFO | auditor | 🌙 Outside Office Hours: 12:49 AM MMT. Alerts are paused.
+2026-05-04 06:19:55 PM | INFO | worker_bot | 🛑 Worker Process stopped by user.
+2026-05-04 06:19:56 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-05-04 06:19:56 PM | INFO | db_manager | 🧹 Starting Database Maintenance...
+2026-05-04 06:19:56 PM | INFO | db_manager | ✅ Database Maintenance Completed.
+2026-05-04 06:19:56 PM | INFO | fb_webhook | 🚀 FB Webhook Server starting on port 5000...
+2026-05-04 06:19:57 PM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-05-04 06:19:57 PM | INFO | worker_bot | ⚙️ Worker Process (Background Tasks) is starting...
+2026-05-04 06:19:57 PM | INFO | distiller | ⏰ Distiller Scheduler is running (Target: 03:30 AM MMT)...
+2026-05-04 06:19:57 PM | INFO | worker_bot | 🧠 Daily AI Distiller thread started.
+2026-05-04 06:19:57 PM | INFO | auto_pickup | 🚀 Auto Pickup Queue Worker စတင်နေပါပြီ...
+2026-05-04 06:19:57 PM | INFO | worker_bot | 🚚 Auto Pickup Queue Worker thread started.
+2026-05-04 06:19:57 PM | INFO | auto_pickup | ⏰ Daily Pickup Cleanup Scheduler is running (Target: 04:00 AM MMT)...
+2026-05-04 06:19:57 PM | INFO | worker_bot | 🧹 Daily Pickup Cleanup thread started.
+2026-05-04 06:19:57 PM | INFO | worker_bot | 🛡️ Auditor (AI Brain) starting...
+2026-05-04 06:19:57 PM | INFO | auditor | 🧠 Auditor (Worker 2: AI Brain) is running...
+2026-05-04 06:19:57 PM | INFO | auditor | 💓 Heartbeat sent to HealthCheck.
+2026-05-04 06:19:57 PM | INFO | db_manager | 🧹 Starting Database Maintenance...
+2026-05-04 06:19:57 PM | INFO | db_manager | ✅ Database Maintenance Completed.
+2026-05-04 06:19:57 PM | INFO | auditor | 🌙 Outside Office Hours: 12:49 AM MMT. Alerts are paused.
+2026-05-04 06:19:57 PM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-05-04 06:19:58 PM | INFO | db_manager | ✅ Database (Version 5.0) Initialized Successfully.
+2026-05-04 06:19:58 PM | INFO | db_manager | 🧹 Starting Database Maintenance...
+2026-05-04 06:19:58 PM | INFO | db_manager | ✅ Database Maintenance Completed.
+2026-05-04 06:19:58 PM | INFO | fb_handler | ✅ FB Handlers Registered
+2026-05-04 06:19:58 PM | INFO | main_bot | 📡 Receiver Process is starting (Polling Only)...
+2026-05-04 06:19:58 PM | INFO | main_bot | 🚀 CarryMan Bot (Worker 1: Ingestion) is starting...
+2026-05-04 06:19:58 PM | INFO | main_bot | 💓 Heartbeat sent from Receiver.
+2026-05-04 06:20:27 PM | INFO | auditor | 🌙 Outside Office Hours: 12:50 AM MMT. Alerts are paused.
+2026-05-04 06:20:57 PM | INFO | auditor | 🌙 Outside Office Hours: 12:50 AM MMT. Alerts are paused.
+2026-05-04 06:21:27 PM | INFO | auditor | 🌙 Outside Office Hours: 12:51 AM MMT. Alerts are paused.
+2026-05-04 06:21:57 PM | INFO | auditor | 🌙 Outside Office Hours: 12:51 AM MMT. Alerts are paused.
+2026-05-04 06:22:27 PM | INFO | auditor | 🌙 Outside Office Hours: 12:52 AM MMT. Alerts are paused.
+2026-05-04 06:22:57 PM | INFO | auditor | 🌙 Outside Office Hours: 12:52 AM MMT. Alerts are paused.
+2026-05-04 06:22:58 PM | INFO | main_router | 🧪 Sandbox Mode: Bypassing all global/group/time restrictions for chat -1003539520778
+2026-05-04 06:22:58 PM | INFO | main_router | Routing message from -1003539520778: Pick up ခေါ်ချင်လို့...
+2026-05-04 06:22:59 PM | INFO | main_router | 🎯 AI Decision: auto_pickup
+2026-05-04 06:22:59 PM | INFO | browser_manager | 🌐 Starting shared Playwright (Async) instance...
+2026-05-04 06:22:59 PM | INFO | auto_pickup | 🚚 Auto Pickup module handling message: 567
+2026-05-04 06:22:59 PM | INFO | db_manager | ✓ Message 567 in -1003539520778 saved as PENDING
+2026-05-04 06:23:00 PM | INFO | browser_manager | ✅ Shared Playwright instance is ready.
+2026-05-04 06:23:00 PM | INFO | auto_pickup | 🕒 Auto Pickup Time Check: 53 (Yangon)
+2026-05-04 06:23:00 PM | INFO | auto_pickup | 🕒 Time 53: Auto-assigning TODAY (Strict)
+2026-05-04 06:23:00 PM | WARNING | db_manager | ⚠ Message 567 in -1003539520778 already exists or failed to save
+2026-05-04 06:23:00 PM | INFO | db_manager |   → Current status: PENDING
+2026-05-04 06:23:00 PM | INFO | message_handler | 📩 New Pending Message from 8047375926 in -1003539520778 (Topic: 1)
+2026-05-04 06:23:16 PM | INFO | pickup_handler | 🚨 Admin Support Request: queue_id=0, msg_id=567, chat=-1003539520778
+2026-05-04 06:23:16 PM | INFO | pickup_handler | 🧹 Full Reset: Cleared pickup state for msg 567 in chat -1003539520778
+2026-05-04 06:23:16 PM | INFO | pickup_handler | 📢 Sending Urgent Alert for AI Testing OS Gp (Force=True)
+2026-05-04 06:23:16 PM | INFO | auditor | 📢 send_new_alert triggered: chat=-1003539520778, topic=1, msg=567, force=True
+2026-05-04 06:23:16 PM | INFO | auditor | 🎯 Explicit Route Found: -1003539520778/1 -> -1003601049225/1
+2026-05-04 06:23:16 PM | WARNING | auditor | ⚠️ Topic 1 not found in Central Group. Falling back to General.
+2026-05-04 06:23:16 PM | INFO | pickup_handler | ✅ send_new_alert result: 1440
+2026-05-04 06:23:25 PM | INFO | auditor | 🌙 Outside Office Hours: 12:53 AM MMT. Alerts are paused.
+2026-05-04 06:23:25 PM | ERROR | alert_handler | ❌ Done Button Error: too many values to unpack (expected 7)
+2026-05-04 06:23:27 PM | INFO | auditor | 🌙 Outside Office Hours: 12:53 AM MMT. Alerts are paused.

@@ -10,12 +10,12 @@ from modules import auditor
 def register_pickup_handlers(bot: telebot.TeleBot):
     """ Auto Pickup Module အတွက် Callback များကို Register လုပ်ပေးသည် """
 
-    @bot.callback_query_handler(func=lambda call: call.data.startswith('done_'))
+    @bot.callback_query_handler(func=lambda call: call.data.startswith('pdone_'))
     def handle_pickup_done_callback(call):
         """ Admin မှ Pickup Notification ရှိ Done Button ကို နှိပ်လိုက်သည့်အခါ """
         try:
             from modules import auto_pickup
-            # format: done_{orig_msg_id}_{chat_id}
+            # format: pdone_{orig_msg_id}_{chat_id}
             parts = call.data.split('_')
             if len(parts) == 3:
                 orig_msg_id = int(parts[1])
@@ -805,7 +805,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                     markup.add(telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link))
                 
                 markup.add(
-                    telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_msg_id}_{chat_id}"),
+                    telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"pdone_{orig_msg_id}_{chat_id}"),
                     telebot.types.InlineKeyboardButton("❌ Wrong Pickup", callback_data=f"ap_wrong_{orig_msg_id}_{chat_id}")
                 )
             

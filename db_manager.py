@@ -286,6 +286,35 @@ def init_db():
             log.error(f"❌ Database Init Error: {e}")
     finally:
         conn.close()
+        # Perform initial maintenance
+        try:
+            db_maintenance()
+        except:
+            pass
+
+def db_maintenance():
+    """
+    Database ကျန်းမာရေးအတွက် ပုံမှန်လုပ်ဆောင်ပေးရမည့် Maintenance လုပ်ငန်းစဉ်များ။
+    WAL file ကို ရှင်းထုတ်ခြင်း၊ Index များကို Optimize လုပ်ခြင်းနှင့် နေရာလွတ်များ ပြန်ယူခြင်းတို့ ပါဝင်သည်။
+    """
+    conn = get_connection()
+    try:
+        log.info("🧹 Starting Database Maintenance...")
+        # ၁။ WAL Checkpoint (ယာယီဖိုင်မှ data များကို main db ထဲသို့ အကုန်သွင်းပြီး WAL ဖိုင်ကို 0 size လုပ်ခြင်း)
+        conn.execute("PRAGMA wal_checkpoint(TRUNCATE);")
+        
+        # ၂။ Optimize (Query performance ကောင်းမွန်စေရန် index များကို ပြန်စီခြင်း)
+        conn.execute("PRAGMA optimize;")
+        
+        # ၃။ Vacuum (ဖျက်လိုက်သော data များနေရာတွင် ကျန်ခဲ့သော နေရာလွတ်များကို ပြန်သိမ်းပြီး file size လျှော့ခြင်း)
+        # မှတ်ချက် - Vacuum သည် DB တစ်ခုလုံးကို lock ချတတ်သဖြင့် လိုအပ်မှသာ သုံးသင့်သည်။
+        # conn.execute("VACUUM;")
+        
+        log.info("✅ Database Maintenance Completed.")
+    except sqlite3.Error as e:
+        log.error(f"❌ Database Maintenance Error: {e}")
+    finally:
+        conn.close()
 
 def update_last_read_id(chat_id, topic_id, last_id):
     """ Smart Polling အတွက် နောက်ဆုံးဖတ်ပြီးသား Message ID ကို မှတ်သားရန် """
