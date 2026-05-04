@@ -13,7 +13,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-bot = telebot.TeleBot(BOT_TOKEN)
+bot = telebot.TeleBot(BOT_TOKEN, threaded=True, num_threads=20)
 
 def run_worker():
     log.info("⚙️ Worker Process (Background Tasks) is starting...")
@@ -27,6 +27,11 @@ def run_worker():
     pickup_thread = threading.Thread(target=auto_pickup.run_queue_worker, args=(bot,), daemon=True)
     pickup_thread.start()
     log.info("🚚 Auto Pickup Queue Worker thread started.")
+
+    # 🧹 Start Daily Pickup Cleanup (04:00 AM)
+    cleanup_thread = threading.Thread(target=auto_pickup.run_daily_cleanup, args=(bot,), daemon=True)
+    cleanup_thread.start()
+    log.info("🧹 Daily Pickup Cleanup thread started.")
 
     # 🛡️ Start Auditor (Worker 2: AI Brain)
     # Note: This process does NOT poll, it only sends messages.

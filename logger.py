@@ -25,10 +25,13 @@ logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 # ၁။ ဖိုင်ထဲသို့ သိမ်းဆည်းမည့်စနစ် (RotatingFileHandler)
 # ဖိုင်အရွယ်အစား 5MB ပြည့်သွားတိုင်း ဖိုင်အသစ်တစ်ခု အလိုအလျောက်ခွဲမည် (အများဆုံး ၅ ခုအထိ သိမ်းမည်)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+LOG_FILE = os.path.join(BASE_DIR, 'logs', 'carryman_system.log')
+
 file_handler = RotatingFileHandler(
-    'logs/carryman_system.log', 
+    LOG_FILE,
     maxBytes=5 * 1024 * 1024, # 5 MB
-    backupCount=5, 
+    backupCount=5,
     encoding='utf-8'
 )
 # ဖိုင်ထဲတွင် ရေးမှတ်မည့် ပုံစံ (ဥပမာ - 2026-04-14 10:30:00 | ERROR | main_bot | Connection timeout)

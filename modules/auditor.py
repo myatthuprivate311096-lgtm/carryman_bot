@@ -44,6 +44,21 @@ ESCALATION_TOPIC_ID = int(os.getenv('ESCALATION_TOPIC_ID', 5))
 
 _bot = None
 
+def get_bot():
+    """
+    Bot instance ကို Robust ဖြစ်အောင် ရယူခြင်း။
+    တကယ်လို့ _bot က None ဖြစ်နေရင် Environment Variable ထဲက Token နဲ့ အသစ်ဆောက်ပေးမည်။
+    """
+    global _bot
+    if _bot is None:
+        token = os.getenv('TELEGRAM_BOT_TOKEN')
+        if token:
+            log.info("🤖 Auditor: Initializing new bot instance from token...")
+            _bot = telebot.TeleBot(token, threaded=True)
+        else:
+            log.error("❌ Auditor: TELEGRAM_BOT_TOKEN not found in environment.")
+    return _bot
+
 def set_bot(bot_instance):
     global _bot
     _bot = bot_instance
@@ -179,6 +194,11 @@ def get_routing_data(chat_id, topic_id, category="", intent=""):
 
 def notify_manager_missing_route(chat_id, topic_id, shop_name, trigger_text, original_msg_id=0):
     try:
+        bot = get_bot()
+        if bot is None:
+            log.error("❌ notify_manager_missing_route: Bot instance not available.")
+            return
+
         log.info(f"🔍 notify_manager_missing_route: shop={shop_name}, msg_id={original_msg_id}, chat={chat_id}")
         text = (
             f"🚨 **Missing Routing Rule**\n"
@@ -201,7 +221,7 @@ def notify_manager_missing_route(chat_id, topic_id, shop_name, trigger_text, ori
         markup.add(telebot.types.InlineKeyboardButton("💰 Finance (Topic 35)", callback_data=f"setrt_{chat_id}_{topic_id}_35_{original_msg_id}"))
         markup.add(telebot.types.InlineKeyboardButton("⚠️ Error (Topic 37)", callback_data=f"setrt_{chat_id}_{topic_id}_37_{original_msg_id}"))
         
-        _bot.send_message(ESCALATION_GROUP_ID, text, message_thread_id=ESCALATION_TOPIC_ID, reply_markup=markup, parse_mode="HTML")
+        bot.send_message(ESCALATION_GROUP_ID, text, message_thread_id=ESCALATION_TOPIC_ID, reply_markup=markup, parse_mode="HTML")
         log.info(f"📲 Missing route notification sent to Escalation Group for {shop_name}")
     except Exception as e:
         log.error(f"❌ Failed to notify Escalation Group for {shop_name} ({chat_id}): {e}")
@@ -213,6 +233,11 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
 
     log.info(f"📢 send_new_alert triggered: chat={chat_id}, topic={topic_id}, msg={original_msg_id}, force={force}")
 
+    bot = get_bot()
+    if bot is None:
+        log.error("❌ send_new_alert: Bot instance not available.")
+        return None
+
     target_chat, target_topic = get_routing_data(chat_id, topic_id, category=category, intent=intent)
     
     # 💡 Manual Override for Topic (e.g., forcing to Topic 1 when "Talk to Admin" is clicked)
@@ -220,10 +245,16 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
         target_topic = target_topic_override
     
     if target_chat is None or target_topic is None:
-        log.warning(f"⚠️ No route found for {shop_name} ({chat_id}/{topic_id}). Notifying Manager.")
-        db_manager.update_message_status(original_msg_id, chat_id, 'WAITING_ROUTE', topic_id=topic_id, category=category, intent=intent, summary=summary)
-        notify_manager_missing_route(chat_id, topic_id, shop_name, text, original_msg_id=original_msg_id)
-        return "WAITING_ROUTE"
+        # 💡 Fallback: Force=True ဖြစ်နေရင် (ဥပမာ - Admin နှင့်ပြောမည် နှိပ်ထားရင်) Default Admin Group ကို ပို့မည်
+        if force:
+            log.info(f"🛡️ Route Fallback: Using default admin group for forced alert ({shop_name})")
+            target_chat = int(os.getenv('ALERT_CHAT_ID', -1003601049225))
+            target_topic = 878 # Default Pickup/Urgent Topic
+        else:
+            log.warning(f"⚠️ No route found for {shop_name} ({chat_id}/{topic_id}). Notifying Manager.")
+            db_manager.update_message_status(original_msg_id, chat_id, 'WAITING_ROUTE', topic_id=topic_id, category=category, intent=intent, summary=summary)
+            notify_manager_missing_route(chat_id, topic_id, shop_name, text, original_msg_id=original_msg_id)
+            return "WAITING_ROUTE"
 
     if not force and not is_office_hours(chat_id):
         log.info(f"🌙 Office Hours Over: Skipping alert for {shop_name} (Route exists)")
@@ -261,7 +292,7 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
     
     try:
         if media_id:
-            msg = _bot.send_photo(
+            msg = bot.send_photo(
                 target_chat,
                 media_id,
                 caption=alert_text,
@@ -270,7 +301,7 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
                 reply_markup=markup
             )
         else:
-            msg = _bot.send_message(
+            msg = bot.send_message(
                 target_chat,
                 alert_text,
                 message_thread_id=safe_target_topic,
@@ -286,9 +317,9 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
             log.warning(f"⚠️ Topic {safe_target_topic} not found in Central Group. Falling back to General.")
             try:
                 if media_id:
-                    msg = _bot.send_photo(target_chat, media_id, caption=alert_text, parse_mode="HTML", reply_markup=markup)
+                    msg = bot.send_photo(target_chat, media_id, caption=alert_text, parse_mode="HTML", reply_markup=markup)
                 else:
-                    msg = _bot.send_message(target_chat, alert_text, parse_mode="HTML", reply_markup=markup)
+                    msg = bot.send_message(target_chat, alert_text, parse_mode="HTML", reply_markup=markup)
                 db_manager.save_alert_tracking(original_msg_id, chat_id, msg.message_id, target_chat)
                 db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id, category=category, intent=intent, summary=summary)
                 return msg.message_id
@@ -321,12 +352,20 @@ def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_i
 
         # ၂။ Updates Text ကို DB တွင် Update လုပ်ခြင်း
         old_updates = tracking[7] if tracking[7] else ""
-        new_entry = f"• {new_text.strip()}"
         
-        if new_entry in old_updates: # ထပ်နေရင် မထည့်တော့ပါ
+        # စာသားအသစ်ကို line တစ်ကြောင်းချင်းစီခွဲပြီး bullet point format ပြောင်းခြင်း
+        new_lines = [line.strip() for line in new_text.split('\n') if line.strip()]
+        
+        # လက်ရှိရှိပြီးသား updates တွေနဲ့ တိုက်စစ်ပြီး duplicate ဖြစ်နေတာတွေကို ဖယ်ထုတ်ခြင်း
+        existing_lines = [line.strip('• ').strip() for line in old_updates.split('\n')]
+        unique_new_lines = [line for line in new_lines if line not in existing_lines]
+        
+        if not unique_new_lines:
+            log.info(f"⏭️ Skipping update for {original_msg_id} as all lines are duplicates.")
             return
             
-        updated_updates = (old_updates + "\n" + new_entry).strip()
+        new_entries = "\n".join([f"• {line}" for line in unique_new_lines])
+        updated_updates = (old_updates + "\n" + new_entries).strip()
         db_manager.update_alert_updates_text(original_msg_id, chat_id, updated_updates)
 
         # ၃။ Message ကို ပြန်လည်တည်ဆောက်၍ Edit လုပ်ခြင်း
@@ -387,9 +426,12 @@ def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_i
         )
 
         # Edit Message
+        bot = get_bot()
+        if bot is None: return
+
         try:
             if media_id: # photo alert
-                _bot.edit_message_caption(
+                bot.edit_message_caption(
                     chat_id=target_alert_chat,
                     message_id=target_alert_id,
                     caption=text_content,
@@ -397,7 +439,7 @@ def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_i
                     reply_markup=markup
                 )
             else:
-                _bot.edit_message_text(
+                bot.edit_message_text(
                     chat_id=target_alert_chat,
                     message_id=target_alert_id,
                     text=text_content,
@@ -438,23 +480,27 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
     if tracking:
         # alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids, esc_tier2_msg_id
         alert_msg_id, alert_chat_id, _, esc_msg_id, linked_ids_json, linked_customer_ids_json, esc_tier2_msg_id = tracking
+        bot = get_bot()
         try:
-            _bot.delete_message(alert_chat_id, alert_msg_id)
-            log.info(f"🗑️ Deleted Level 1 alert {alert_msg_id}")
+            if bot:
+                bot.delete_message(alert_chat_id, alert_msg_id)
+                log.info(f"🗑️ Deleted Level 1 alert {alert_msg_id}")
         except Exception as e:
             log.warning(f"⚠️ Failed to delete Level 1 alert {alert_msg_id}: {e}")
         
         if esc_msg_id:
             try:
-                _bot.delete_message(MANAGER_ID, esc_msg_id)
-                log.info(f"🗑️ Deleted Level 2 escalation {esc_msg_id}")
+                if bot:
+                    bot.delete_message(MANAGER_ID, esc_msg_id)
+                    log.info(f"🗑️ Deleted Level 2 escalation {esc_msg_id}")
             except Exception as e:
                 log.warning(f"⚠️ Failed to delete Level 2 escalation {esc_msg_id}: {e}")
 
         if esc_tier2_msg_id:
             try:
-                _bot.delete_message(ESCALATION_GROUP_ID, esc_tier2_msg_id)
-                log.info(f"🗑️ Deleted Tier 2 escalation {esc_tier2_msg_id}")
+                if bot:
+                    bot.delete_message(ESCALATION_GROUP_ID, esc_tier2_msg_id)
+                    log.info(f"🗑️ Deleted Tier 2 escalation {esc_tier2_msg_id}")
             except Exception as e:
                 log.warning(f"⚠️ Failed to delete Tier 2 escalation {esc_tier2_msg_id}: {e}")
             
@@ -531,12 +577,14 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
                         f"⏳ ကြာချိန်: {duration_str if duration_str != 'Unknown' else 'ချက်ချင်း'}\n"
                         f"📅 အချိန်: {orig_time_str}"
                     )
-                _bot.send_message(
-                    RESOLVED_GROUP_ID,
-                    record_text,
-                    message_thread_id=RESOLVED_TOPIC_ID,
-                    reply_markup=markup
-                )
+                bot = get_bot()
+                if bot:
+                    bot.send_message(
+                        RESOLVED_GROUP_ID,
+                        record_text,
+                        message_thread_id=RESOLVED_TOPIC_ID,
+                        reply_markup=markup
+                    )
             else:
                 log.info(f"🌙 Off-hours resolution for {msg_id}. Alert cleaned but record skipped.")
         except Exception as e:
@@ -591,7 +639,9 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
                     telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{msg_id}_{chat_id}")
                 )
 
-                msg = _bot.send_message(ESCALATION_GROUP_ID, esc_text, message_thread_id=ESCALATION_TOPIC_ID, reply_markup=markup, parse_mode="HTML")
+                bot = get_bot()
+                if bot:
+                    msg = bot.send_message(ESCALATION_GROUP_ID, esc_text, message_thread_id=ESCALATION_TOPIC_ID, reply_markup=markup, parse_mode="HTML")
                 db_manager.update_alert_tracking_esc(msg_id, chat_id, msg.message_id, tier=2)
                 log.warning(f"🚨 Tier 2 Escalation sent for {msg_id} to Group")
             except Exception as e:
@@ -614,13 +664,15 @@ def backup_database():
         shutil.copy2(db_manager.DB_FILE, temp_backup)
         
         # 2. Send the file using a stream to keep RAM usage low
+        bot = get_bot()
         with open(temp_backup, 'rb') as f:
-            _bot.send_document(
-                MANAGER_ID,
-                f,
-                caption=f"📅 **CarryMan DB Backup**\nအလိုအလျောက် သိမ်းဆည်းထားသော မှတ်တမ်း\nအချိန်: {datetime.now(pytz.timezone('Asia/Yangon')).strftime('%Y-%m-%d %I:%M %p')}",
-                timeout=60 # Give it more time for large files
-            )
+            if bot:
+                bot.send_document(
+                    MANAGER_ID,
+                    f,
+                    caption=f"📅 **CarryMan DB Backup**\nအလိုအလျောက် သိမ်းဆည်းထားသော မှတ်တမ်း\nအချိန်: {datetime.now(pytz.timezone('Asia/Yangon')).strftime('%Y-%m-%d %I:%M %p')}",
+                    timeout=60 # Give it more time for large files
+                )
         log.info("✅ Database Backup sent to Manager.")
     except Exception as e:
         log.error(f"❌ Backup Error: {e}")
@@ -644,7 +696,9 @@ def send_performance_report():
         report += "━━━━━━━━━━━━━━━━━━\n"
         report += "💡 ဤမှတ်တမ်းသည် လွန်ခဲ့သော ၇ ရက်စာ ဖြစ်ပါသည်။"
         
-        _bot.send_message(MANAGER_ID, report, parse_mode="Markdown")
+        bot = get_bot()
+        if bot:
+            bot.send_message(MANAGER_ID, report, parse_mode="Markdown")
         log.info("✅ Weekly Performance Report sent to Manager.")
     except Exception as e:
         log.error(f"❌ Performance Report Failed: {e}")
@@ -845,8 +899,7 @@ def handle(bot, message):
     """
     Central Router မှတစ်ဆင့် ခေါ်ယူသည့် Entry Point
     """
-    global _bot
-    if not _bot: _bot = bot
+    set_bot(bot)
     log.info(f"🛡️ Auditor module handled message: {message.message_id}")
     # Auditor သည် Worker အနေဖြင့် သီးသန့် Run နေသော်လည်း Router မှ ခေါ်ယူနိုင်ရန် handle() ထည့်ထားခြင်းဖြစ်သည်
 

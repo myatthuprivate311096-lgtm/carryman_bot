@@ -28,6 +28,8 @@ def distill_feedback():
     
     if not topics:
         log.info("ℹ️ No new feedback to distill.")
+        # Export existing rules to JSON even if no new feedback
+        export_rules_to_json()
         return
 
     for chat_id, topic_id in topics:
@@ -76,16 +78,44 @@ def distill_feedback():
         except Exception as e:
             log.error(f"❌ Distiller Error for Topic {topic_id}: {e}")
 
+    # ၄။ Export all rules to JSON for AI context
+    export_rules_to_json()
+
+def export_rules_to_json():
+    """ Master Rules အားလုံးကို ai_learning_context.json သို့ ထုတ်ယူသိမ်းဆည်းခြင်း """
+    try:
+        log.info("📂 Exporting Master Rules to JSON...")
+        conn = db_manager.get_connection()
+        # Get all rules grouped by chat/topic
+        rows = conn.execute("SELECT chat_id, topic_id, rule_content FROM master_rules ORDER BY created_at DESC").fetchall()
+        conn.close()
+
+        rules_map = {}
+        for chat_id, topic_id, rule in rows:
+            key = f"{chat_id}_{topic_id}"
+            if key not in rules_map:
+                rules_map[key] = []
+            if rule not in rules_map[key]:
+                rules_map[key].append(rule)
+
+        json_path = os.path.join(BASE_DIR, "ai_learning_context.json")
+        with open(json_path, 'w', encoding='utf-8') as f:
+            json.dump(rules_map, f, ensure_ascii=False, indent=4)
+        
+        log.info(f"✅ Exported rules to {json_path}")
+    except Exception as e:
+        log.error(f"❌ Export Rules Error: {e}")
+
 def run_scheduler():
-    """ မနက် ၃ နာရီ (Myanmar Time) တွင် အလုပ်လုပ်မည့် Scheduler """
-    log.info("⏰ Distiller Scheduler is running (Target: 03:00 AM MMT)...")
+    """ မနက် ၃:၃၀ နာရီ (Myanmar Time) တွင် အလုပ်လုပ်မည့် Scheduler """
+    log.info("⏰ Distiller Scheduler is running (Target: 03:30 AM MMT)...")
     tz = pytz.timezone('Asia/Yangon')
     
     while True:
         try:
             now = datetime.now(tz)
-            # မနက် ၃ နာရီ ဖြစ်မဖြစ် စစ်ဆေးခြင်း
-            if now.hour == 3 and now.minute == 0:
+            # မနက် ၃:၃၀ နာရီ ဖြစ်မဖြစ် စစ်ဆေးခြင်း
+            if now.hour == 3 and now.minute == 30:
                 distill_feedback()
                 # တစ်မိနစ် စောင့်လိုက်ခြင်းဖြင့် ထပ်ခါထပ်ခါ မ Run စေရန်
                 time.sleep(65)

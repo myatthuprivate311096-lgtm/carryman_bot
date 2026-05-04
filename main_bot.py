@@ -7,7 +7,8 @@ from logger import log
 import db_manager
 import commands_handler
 import main_router
-from handlers import alert_handler, pickup_handler, message_handler
+from modules import auditor
+from handlers import alert_handler, pickup_handler, message_handler, fb_handler
 
 # 💡 Absolute Path Fix for .env
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -20,17 +21,19 @@ MANAGER_IDS = [int(i.strip()) for i in os.getenv('MANAGER_IDS', str(MANAGER_ID))
 def is_manager(user_id):
     return user_id in MANAGER_IDS
 
-bot = telebot.TeleBot(BOT_TOKEN)
+bot = telebot.TeleBot(BOT_TOKEN, threaded=True, num_threads=20)
 
 
 # Initialize DB (Explicit call for Worker 1)
 db_manager.init_db()
 
 # Register Commands & Handlers
+auditor.set_bot(bot)
 commands_handler.register_handlers(bot)
 alert_handler.register_alert_handlers(bot, is_manager)
 pickup_handler.register_pickup_handlers(bot)
 message_handler.register_message_handlers(bot, is_manager)
+fb_handler.register_fb_handlers(bot)
 
 @bot.message_handler(commands=['ai'])
 def handle_ai_command(message):
@@ -39,8 +42,29 @@ def handle_ai_command(message):
 
 # 🚀 Stability & Auto-Recovery Polling
 # ==========================================
+def send_heartbeat():
+    """HealthCheck URL သို့ Heartbeat ပို့ခြင်း"""
+    url = os.getenv('HEALTHCHECK_URL')
+    if url:
+        try:
+            import requests
+            requests.get(url, timeout=10)
+            log.info("💓 Heartbeat sent from Receiver.")
+        except Exception as e:
+            log.error(f"❌ Receiver Heartbeat Failed: {e}")
+
 def start_bot():
     log.info("🚀 CarryMan Bot (Worker 1: Ingestion) is starting...")
+    
+    # Heartbeat ကို background thread နဲ့ run ပါမယ်
+    import threading
+    def heartbeat_loop():
+        while True:
+            send_heartbeat()
+            time.sleep(300) # ၅ မိနစ်တစ်ခါ
+    
+    threading.Thread(target=heartbeat_loop, daemon=True).start()
+
     while True:
         try:
             # skip_pending=False: လိုင်းကျနေတုန်းက ကျန်ခဲ့တဲ့စာတွေကိုပါ ပြန်ဖတ်ရန်

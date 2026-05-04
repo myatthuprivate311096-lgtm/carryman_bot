@@ -36,9 +36,14 @@ async def send_pickup_notification(text, is_alert=False):
     """
     Centralized notification helper for Topic 878 (Pickup Command Center)
     """
-    if not _bot:
-        log.error("❌ send_pickup_notification: Bot instance not initialized.")
-        return
+    bot = _bot
+    if not bot:
+        token = os.getenv('TELEGRAM_BOT_TOKEN')
+        if token:
+            bot = telebot.TeleBot(token, threaded=True)
+        else:
+            log.error("❌ send_pickup_notification: Bot instance not initialized and token missing.")
+            return
 
     target_chat_id = -1003601049225
     topic_id = 878
@@ -50,7 +55,7 @@ async def send_pickup_notification(text, is_alert=False):
     try:
         # Use asyncio.to_thread for sync telebot calls
         await asyncio.to_thread(
-            _bot.send_message,
+            bot.send_message,
             target_chat_id,
             formatted_text,
             parse_mode="HTML",
@@ -437,17 +442,32 @@ def handle(bot, message, force_pickup=False):
                     db_manager.cancel_message(waiting_order[2], chat_id, reason='Midnight Rule: Auto-Expired')
                     cleanup_pickup_intermediate_msgs(bot, chat_id, waiting_order[2])
                 else:
-                    log.info(f"🔒 Flow Locked: Found WAITING_CONFIRM order {waiting_order[0]} for chat {chat_id}")
-                    from handlers import pickup_handler
+                    status = waiting_order[7]
+                    log.info(f"🔒 Flow Locked: Found {status} order {waiting_order[0]} for chat {chat_id}")
                     cleanup_pickup_intermediate_msgs(bot, chat_id, waiting_order[2])
-                    pickup_handler.show_pickup_reconfirmation(bot, chat_id, waiting_order[0])
+                    
+                    if status == 'WAITING_SETUP':
+                        # 💡 Phase 1: If in setup phase, show interactive setup again
+                        # We need to determine date_type from target_date
+                        target_date_str = waiting_order[3]
+                        tz = pytz.timezone('Asia/Yangon')
+                        now = datetime.now(tz)
+                        today_str = now.strftime("%d-%m-%Y")
+                        date_type = "today" if target_date_str == today_str else "tomorrow"
+                        
+                        show_interactive_setup(bot, chat_id, waiting_order[2], date_type)
+                    else:
+                        from handlers import pickup_handler
+                        pickup_handler.show_pickup_reconfirmation(bot, chat_id, waiting_order[0])
                     return
 
         # 💡 Get Best Shop Name (DB + Fallback)
         os_name = get_best_shop_name(bot, chat_id)
 
-        # Fetch recent feedback for AI learning
+        # Fetch recent feedback and distilled rules for AI learning
         feedbacks = db_manager.get_isolated_feedback(chat_id, 1, limit=10)
+        distilled_rules = db_manager.get_isolated_rules(chat_id, 1)
+        
         not_pickup_examples = []
         is_pickup_examples = []
         for cat, txt in feedbacks:
@@ -457,12 +477,17 @@ def handle(bot, message, force_pickup=False):
                 not_pickup_examples.append(f"{cat}: {txt}")
 
         feedback_context = ""
+        if distilled_rules:
+            feedback_context += "\n[Distilled Lessons from Past Mistakes]:\n"
+            for rule in distilled_rules[:5]: # Use top 5 rules
+                feedback_context += f"- {rule}\n"
+                
         if not_pickup_examples:
-            feedback_context += "\n[Examples of messages that are NOT Pickups (Mistakes you made before)]:\n"
+            feedback_context += "\n[Recent Examples of messages that are NOT Pickups]:\n"
             for txt in not_pickup_examples:
                 feedback_context += f"- {txt}\n"
         if is_pickup_examples:
-            feedback_context += "\n[Examples of messages that ARE Pickups (You missed these before)]:\n"
+            feedback_context += "\n[Recent Examples of messages that ARE Pickups]:\n"
             for txt in is_pickup_examples:
                 feedback_context += f"- {txt}\n"
 
@@ -733,14 +758,11 @@ def show_interactive_setup(bot, chat_id, orig_msg_id, date_type, vehicle=None, r
         
         text = (
             f"⏳ <b>Auto Pickup အချက်အလက်များ</b>\n"
-            f"━━━━━━━━━━━━━━━━━━\n"
             f"📅 ရက်စွဲ: {target_date_str}\n"
             f"🏪 ဆိုင်: <b>{util.escape(os_name)}</b>\n"
             f"🚲 ယာဉ်: <b>{v_display}</b>\n"
             f"📝 မှတ်ချက်: {r_display}\n"
-            f"📊 Status: <b>✅ Pending</b>\n"
-            f"━━━━━━━━━━━━━━━━━━\n"
-            f"အချက်အလက်စုံပြီဆိုလျှင် \"Pick UP တင်မည်\" ကိုနှိပ်ပေးနော်"
+            f"📊 Status: <b>✅ Pending</b>"
         )
 
         markup = types.InlineKeyboardMarkup(row_width=2)
@@ -756,7 +778,7 @@ def show_interactive_setup(bot, chat_id, orig_msg_id, date_type, vehicle=None, r
         markup.add(types.InlineKeyboardButton("📝 မှတ်ချက်ရေးမည်", callback_data=f"ap_irm_{orig_msg_id}_{date_type}_write"))
         
         # Submit Button
-        markup.add(types.InlineKeyboardButton("🚀 Pick UP တင်မည်", callback_data=f"ap_isb_{orig_msg_id}_{date_type}"))
+        markup.add(types.InlineKeyboardButton("🚀 Pickup တင်ရန် (နှိပ်ပါ)", callback_data=f"ap_isb_{orig_msg_id}_{date_type}"))
         
         # Admin Button (Changed from Cancel Button as per user request)
         markup.add(types.InlineKeyboardButton("💬 Admin နှင့်ပြောမည်", callback_data=f"ap_admin_0_{orig_msg_id}"))
@@ -848,23 +870,7 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
     """ Admin Group နှင့် ဆိုင် Group ရှိ Alert Message များကို Update လုပ်ခြင်း """
     log.info(f"🔄 Updating central alert for msg {orig_msg_id} in chat {chat_id} (Status: {status_text}, Has Custom Markup: {custom_markup is not None})")
     try:
-        # 💡 Retry logic for tracking (to avoid race condition with save_alert_tracking)
-        tracking = None
-        for i in range(10): # Increased retries to 10 seconds
-            tracking = db_manager.get_alert_tracking(orig_msg_id, chat_id)
-            if tracking:
-                log.info(f"✅ Tracking found for msg {orig_msg_id} on attempt {i+1}")
-                break
-            log.debug(f"⏳ Waiting for tracking for msg {orig_msg_id} (Attempt {i+1}/10)...")
-            time.sleep(1)
-
-        if not tracking:
-            log.error(f"❌ update_central_pickup_alert: No tracking found for msg {orig_msg_id} in chat {chat_id} after 10 attempts. Alert update aborted.")
-            return
-
-        alert_msg_id = tracking[0]
-        alert_chat_id = tracking[1]
-        
+        # --- 1. Update Shop Group Message (Always try this first) ---
         order = None
         with db_manager.connection_scope() as conn:
             if queue_id:
@@ -901,27 +907,66 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
         else:
             os_name, target_date, remark, vehicle, _, shop_msg_id = order
 
-        clean_chat_id = str(chat_id).replace("-100", "")
-        msg_link = f"https://t.me/c/{clean_chat_id}/{orig_msg_id}"
+        # 💡 Fallback: If shop_msg_id is missing, try to find it in the database
+        if not shop_msg_id:
+            with db_manager.connection_scope() as conn:
+                res = conn.execute("SELECT shop_msg_id FROM pickup_queue WHERE orig_msg_id = ? AND chat_id = ? AND shop_msg_id IS NOT NULL ORDER BY id DESC", (orig_msg_id, chat_id)).fetchone()
+                if res:
+                    shop_msg_id = res[0]
+                    log.info(f"🔍 Found fallback shop_msg_id: {shop_msg_id}")
 
-        # 1. Update Shop Group Message (If exists)
         if shop_msg_id:
+            # Phase 1: Shop Group UI Logic
+            display_status = status_text
+            footer = ""
+            
+            status_str = str(status_text) if status_text else ""
+            if "Processing" in status_str:
+                display_status = "⏳ Processing"
+                footer = "\nCarryMan AI Bot မှ Pickup လေးတင်ပေးနေပါတယ်နော်"
+            elif "Failed" in status_str or "❌" in status_str:
+                display_status = "⏳ Processing" # Do not show Failed to shop
+                footer = "\nဝန်ထမ်းမှ တိုက်ရိုက် ဝင်ရောက်စီစဉ်ပေးနေပါတယ်နော်"
+            elif "Success" in status_str or "✅" in status_str:
+                display_status = "✅ Success"
+                footer = "\nPickup လေးတင်ပြီးပါပြီနော်။ ပျော်ရွှင်စရာနေ့လေး ဖြစ်ပါစေ။ 🍀🚚"
+
             shop_status_text = (
                 f"⏳ <b>Auto Pickup အချက်အလက်များ</b>\n"
-                f"━━━━━━━━━━━━━━━━━━\n"
                 f"📅 ရက်စွဲ: {util.escape(str(target_date)) if target_date else '-'}\n"
                 f"🏪 ဆိုင်: <b>{util.escape(str(os_name)) if os_name else '-'}</b>\n"
                 f"🚲 ယာဉ်: <b>{util.escape(str(vehicle)) if vehicle else '-'}</b>\n"
                 f"📝 မှတ်ချက်: {util.escape(str(remark)) if remark else '-'}\n"
-                f"📊 Status: <b>{util.escape(str(status_text)) if status_text else '-'}</b>\n"
-                f"━━━━━━━━━━━━━━━━━━"
+                f"📊 Status: <b>{util.escape(str(display_status)) if display_status else '-'}</b>"
+                f"{footer}"
             )
             try:
                 bot.edit_message_text(shop_status_text, chat_id, shop_msg_id, parse_mode="HTML")
+                log.info(f"✅ Shop Group Status updated to {display_status} for {os_name} (Msg: {shop_msg_id})")
             except Exception as e:
-                log.debug(f"Shop message update skip: {e}")
+                log.error(f"❌ Shop message update failed for {os_name} (Msg: {shop_msg_id}): {e}")
 
-        # 2. Update Admin Group Message
+        # --- 2. Update Admin Group Message (Requires Tracking) ---
+        # 💡 Retry logic for tracking (to avoid race condition with save_alert_tracking)
+        tracking = None
+        # Reduced retries to 3 seconds to prevent long loading spinner
+        for i in range(3):
+            tracking = db_manager.get_alert_tracking(orig_msg_id, chat_id)
+            if tracking:
+                log.info(f"✅ Tracking found for msg {orig_msg_id} on attempt {i+1}")
+                break
+            log.debug(f"⏳ Waiting for tracking for msg {orig_msg_id} (Attempt {i+1}/3)...")
+            time.sleep(1)
+
+        if not tracking:
+            log.warning(f"⚠️ update_central_pickup_alert: No tracking found for msg {orig_msg_id} in chat {chat_id}. Admin alert update skipped.")
+            return
+
+        alert_msg_id = tracking[0]
+        alert_chat_id = tracking[1]
+        
+        clean_chat_id = str(chat_id).replace("-100", "")
+        msg_link = f"https://t.me/c/{clean_chat_id}/{orig_msg_id}"
         if status_text and "Success" in str(status_text):
             try:
                 bot.delete_message(alert_chat_id, alert_msg_id)
@@ -941,13 +986,11 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
 
         new_caption = (
             f"🚚 <b>Pick Up alert</b>\n"
-            f"━━━━━━━━━━━━━━━━━━\n"
             f"🏪 ဆိုင်: <b>{util.escape(str(os_name)) if os_name else '-'}</b>\n"
             f"📅 ရက်စွဲ: <b>{util.escape(str(target_date)) if target_date else '-'}</b>\n"
             f"🚲 ယာဉ်: <b>{util.escape(str(vehicle)) if vehicle else '-'}</b>\n"
             f"📝 မှတ်ချက်: {util.escape(str(remark)) if remark else '-'}\n"
             f"📊 Status: <b>{util.escape(str(status_text)) if status_text else '-'}</b>\n"
-            f"━━━━━━━━━━━━━━━━━━\n"
             f"💬 မူရင်းစာ: <i>{util.escape(orig_text[:200])}{'...' if len(orig_text) > 200 else ''}</i>"
         )
         
@@ -1123,6 +1166,43 @@ def cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id, exclude_msg_id=N
     except Exception as e:
         log.error(f"❌ Cleanup Pickup Intermediate Messages Error: {e}")
 
+def run_daily_cleanup(bot):
+    """ မနက် ၄ နာရီ (Myanmar Time) တွင် မနေ့က request များကို အလိုအလျောက် ရှင်းလင်းပေးမည့် Scheduler """
+    log.info("⏰ Daily Pickup Cleanup Scheduler is running (Target: 04:00 AM MMT)...")
+    tz = pytz.timezone('Asia/Yangon')
+    
+    while True:
+        try:
+            now = datetime.now(tz)
+            # မနက် ၄ နာရီ ဖြစ်မဖြစ် စစ်ဆေးခြင်း
+            if now.hour == 4 and now.minute == 0:
+                log.info("🧹 Starting Daily Pickup Cleanup...")
+                stale_orders = db_manager.get_stale_pickup_orders()
+                
+                if stale_orders:
+                    log.info(f"🔍 Found {len(stale_orders)} stale pickup orders to clean up.")
+                    for order_id, chat_id, orig_msg_id, status in stale_orders:
+                        try:
+                            # ၁။ Group ထဲမှ ခလုတ်များကို ဖျက်ခြင်း
+                            cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id)
+                            
+                            # ၂။ DB Status ကို CANCELLED ပြောင်းခြင်း
+                            db_manager.update_queue_status(order_id, 'CANCELLED', error_msg="Daily Cleanup: Auto-Expired at 04:00 AM")
+                            
+                            log.info(f"✅ Cleaned up stale order {order_id} for chat {chat_id}")
+                        except Exception as oe:
+                            log.error(f"❌ Error cleaning up order {order_id}: {oe}")
+                else:
+                    log.info("ℹ️ No stale pickup orders found.")
+                
+                # တစ်မိနစ် စောင့်လိုက်ခြင်းဖြင့် ထပ်ခါထပ်ခါ မ Run စေရန်
+                time.sleep(65)
+            
+            time.sleep(30) # ၃၀ စက္ကန့်တစ်ခါ စစ်မည်
+        except Exception as e:
+            log.error(f"⚠️ Daily Cleanup Scheduler Loop Error: {e}")
+            time.sleep(60)
+
 def run_queue_worker(bot):
     global _bot
     _bot = bot
@@ -1239,6 +1319,18 @@ def run_queue_worker(bot):
                     photo_path=screenshot_path if os.path.exists(screenshot_path) else None,
                     queue_id=queue_id
                 )
+
+                # 💡 Manager ဆီသို့ Screenshot နှင့်တကွ Error Report ပို့ခြင်း
+                if os.path.exists(screenshot_path):
+                    report_caption = (
+                        f"❌ <b>Auto Pickup Failed Report</b>\n"
+                        f"━━━━━━━━━━━━━━━━━━\n"
+                        f"🏪 ဆိုင်: {os_name}\n"
+                        f"📅 ရက်စွဲ: {target_date}\n"
+                        f"⚠️ Error: {msg}\n"
+                        f"━━━━━━━━━━━━━━━━━━"
+                    )
+                    ai_utils.send_manager_photo(screenshot_path, report_caption)
                 
                 # Also send a separate error notification with Fix button if it's a mapping issue
                 if custom_markup:

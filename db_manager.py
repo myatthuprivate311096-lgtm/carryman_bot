@@ -205,6 +205,24 @@ def init_db():
                      value TEXT,
                      created_at INTEGER
                    )''')
+
+        # Facebook Messenger Integration Tables
+        c.execute('''CREATE TABLE IF NOT EXISTS fb_tasks (
+                     fb_user_id TEXT PRIMARY KEY,
+                     fb_user_name TEXT,
+                     tg_group_msg_id INTEGER,
+                     staff_id INTEGER,
+                     staff_name TEXT,
+                     status TEXT DEFAULT 'PENDING',
+                     last_text TEXT,
+                     updated_at INTEGER
+                   )''')
+
+        c.execute('''CREATE TABLE IF NOT EXISTS fb_chat_sessions (
+                     staff_id INTEGER PRIMARY KEY,
+                     fb_user_id TEXT,
+                     started_at INTEGER
+                   )''')
         
         # ၂။ Migration Engine (Column အသစ်များ အလိုအလျောက် စစ်ဆေးထည့်သွင်းခြင်း)
         migrations = {
@@ -215,7 +233,8 @@ def init_db():
             "feedback_logs": ["chat_id INTEGER", "topic_id INTEGER", "category TEXT", "original_text TEXT", "staff_id INTEGER"],
             "master_rules": ["chat_id INTEGER", "topic_id INTEGER", "rule_content TEXT"],
             "knowledge_base": ["category TEXT", "question TEXT", "answer TEXT", "tags TEXT", "level INTEGER DEFAULT 1", "last_updated INTEGER"],
-            "pickup_queue": ["shop_msg_id INTEGER"]
+            "pickup_queue": ["shop_msg_id INTEGER"],
+            "fb_tasks": ["fb_user_name TEXT"]
         }
         
         for table, columns in migrations.items():
@@ -252,8 +271,13 @@ def init_db():
         c.execute("CREATE INDEX IF NOT EXISTS idx_os_groups_chat_topic ON os_groups(chat_id, topic_id)")
         c.execute("CREATE INDEX IF NOT EXISTS idx_feedback_logs_chat_topic ON feedback_logs(chat_id, topic_id)")
         c.execute("CREATE INDEX IF NOT EXISTS idx_master_rules_chat_topic ON master_rules(chat_id, topic_id)")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_chat_time ON message_logs(chat_id, timestamp)")
 
         conn.commit()
+        
+        # ၇။ Database Maintenance (PRAGMA optimize)
+        c.execute("PRAGMA optimize;")
+        
         log.info("✅ Database (Version 5.0) Initialized Successfully.")
     except sqlite3.OperationalError as e:
         if "database is locked" in str(e):
@@ -323,6 +347,84 @@ def get_staff_info(user_id):
     res = conn.execute("SELECT user_id, name, branch, dept FROM staff WHERE user_id = ?", (user_id,)).fetchone()
     conn.close()
     return res
+
+# --- [ Facebook Messenger Helpers ] ---
+def get_fb_task(fb_user_id):
+    conn = get_connection()
+    res = conn.execute("SELECT * FROM fb_tasks WHERE fb_user_id = ?", (fb_user_id,)).fetchone()
+    conn.close()
+    if res:
+        return {
+            'fb_user_id': res[0],
+            'fb_user_name': res[1],
+            'tg_group_msg_id': res[2],
+            'staff_id': res[3],
+            'staff_name': res[4],
+            'status': res[5],
+            'last_text': res[6],
+            'updated_at': res[7]
+        }
+    return None
+
+def upsert_fb_task(fb_user_id, fb_user_name, tg_group_msg_id, status, last_text):
+    conn = get_connection()
+    now = int(time.time())
+    conn.execute("""
+        INSERT INTO fb_tasks (fb_user_id, fb_user_name, tg_group_msg_id, status, last_text, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(fb_user_id) DO UPDATE SET
+            fb_user_name = excluded.fb_user_name,
+            tg_group_msg_id = excluded.tg_group_msg_id,
+            status = excluded.status,
+            last_text = excluded.last_text,
+            updated_at = excluded.updated_at
+    """, (fb_user_id, fb_user_name, tg_group_msg_id, status, last_text, now))
+    conn.commit()
+    conn.close()
+
+def update_fb_task_status(fb_user_id, status, staff_id=None, staff_name=None):
+    conn = get_connection()
+    now = int(time.time())
+    if staff_id:
+        conn.execute("UPDATE fb_tasks SET status = ?, staff_id = ?, staff_name = ?, updated_at = ? WHERE fb_user_id = ?",
+                     (status, staff_id, staff_name, now, fb_user_id))
+    else:
+        conn.execute("UPDATE fb_tasks SET status = ?, updated_at = ? WHERE fb_user_id = ?",
+                     (status, now, fb_user_id))
+    conn.commit()
+    conn.close()
+
+def delete_fb_task(fb_user_id):
+    conn = get_connection()
+    conn.execute("DELETE FROM fb_tasks WHERE fb_user_id = ?", (fb_user_id,))
+    conn.commit()
+    conn.close()
+
+def get_active_fb_session(staff_id):
+    conn = get_connection()
+    res = conn.execute("SELECT fb_user_id FROM fb_chat_sessions WHERE staff_id = ?", (staff_id,)).fetchone()
+    conn.close()
+    return res[0] if res else None
+
+def start_fb_session(staff_id, fb_user_id):
+    conn = get_connection()
+    now = int(time.time())
+    conn.execute("INSERT OR REPLACE INTO fb_chat_sessions (staff_id, fb_user_id, started_at) VALUES (?, ?, ?)",
+                 (staff_id, fb_user_id, now))
+    conn.commit()
+    conn.close()
+
+def end_fb_session(staff_id):
+    conn = get_connection()
+    conn.execute("DELETE FROM fb_chat_sessions WHERE staff_id = ?", (staff_id,))
+    conn.commit()
+    conn.close()
+
+def get_staff_by_fb_user(fb_user_id):
+    conn = get_connection()
+    res = conn.execute("SELECT staff_id FROM fb_chat_sessions WHERE fb_user_id = ?", (fb_user_id,)).fetchone()
+    conn.close()
+    return res[0] if res else None
 
 # --- [ RBAC & User Levels ] ---
 def get_user_level(user_id, chat_id):
@@ -718,12 +820,19 @@ def add_linked_msg_id(original_msg_id, chat_id, new_msg_id):
 
 def get_alert_tracking(original_msg_id, chat_id):
     conn = get_connection()
-    res = conn.execute(
-        "SELECT alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids, esc_tier2_msg_id, updates_text FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ?",
-        (original_msg_id, chat_id)
-    ).fetchone()
-    conn.close()
-    return res
+    try:
+        # 💡 Chat ID Mismatch Fix: Handle both -100 prefix and without it
+        clean_id = int(str(chat_id).replace("-100", ""))
+        alt_id = int(f"-100{clean_id}") if not str(chat_id).startswith("-100") else chat_id
+        
+        res = conn.execute(
+            "SELECT alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids, esc_tier2_msg_id, updates_text "
+            "FROM alert_tracking WHERE original_msg_id = ? AND chat_id IN (?, ?, ?)",
+            (original_msg_id, chat_id, clean_id, alt_id)
+        ).fetchone()
+        return res
+    finally:
+        conn.close()
 
 def update_alert_updates_text(original_msg_id, chat_id, updates_text):
     """ Alert Tracking တွင် updates_text ကို update လုပ်ခြင်း """
@@ -984,6 +1093,10 @@ def save_feedback(message_id, chat_id, topic_id, category, original_text, staff_
     finally:
         conn.close()
 
+def log_feedback(chat_id, topic_id, text, category='NOT_PICKUP', msg_id=0):
+    """ AI Learning အတွက် Feedback ကို အလွယ်တကူ သိမ်းဆည်းရန် helper """
+    save_feedback(msg_id, chat_id, topic_id, category, text, 0)
+
 def get_isolated_feedback(chat_id, topic_id, limit=10):
     """ သတ်မှတ်ထားသော chat/topic အတွက် နောက်ဆုံး feedback များကို ယူခြင်း """
     safe_topic_id = topic_id if topic_id and topic_id != 0 else 1
@@ -994,6 +1107,25 @@ def get_isolated_feedback(chat_id, topic_id, limit=10):
             (chat_id, safe_topic_id, limit)
         ).fetchall()
         return res
+    finally:
+        conn.close()
+
+def log_feedback(chat_id, msg_id, text, category='NOT_PICKUP', staff_id=0):
+    """ AI Feedback ကို သိမ်းဆည်းခြင်း (Simplified version for cancellations) """
+    conn = get_connection()
+    try:
+        # Get topic_id from message_logs if available
+        res = conn.execute("SELECT topic_id FROM message_logs WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id)).fetchone()
+        topic_id = res[0] if res else 1
+        
+        conn.execute(
+            "INSERT INTO feedback_logs (message_id, chat_id, topic_id, category, original_text, staff_id, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (msg_id, chat_id, topic_id, category, text, staff_id, int(time.time()))
+        )
+        conn.commit()
+        log.info(f"📝 Feedback logged for AI: {category} (Msg: {msg_id})")
+    except Exception as e:
+        log.error(f"❌ log_feedback Error: {e}")
     finally:
         conn.close()
 
@@ -1258,6 +1390,23 @@ def retry_failed_pickups(chat_id):
 
 
 # --- [ Pickup Duplicate Check ] ---
+def get_stale_pickup_orders():
+    """ ယနေ့မတိုင်မီက တင်ထားပြီး WAITING_CONFIRM သို့မဟုတ် PENDING ဖြစ်နေသော order များကို ရှာဖွေရန် """
+    conn = get_connection()
+    try:
+        # လက်ရှိ မြန်မာစံတော်ချိန်အရ ယနေ့ရက်စွဲ၏ အစ (00:00:00) timestamp ကို ယူမည်
+        import pytz
+        from datetime import datetime
+        tz = pytz.timezone('Asia/Yangon')
+        today_start = int(datetime.now(tz).replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
+        
+        res = conn.execute(
+            "SELECT id, chat_id, orig_msg_id, status FROM pickup_queue WHERE created_at < ? AND status IN ('WAITING_CONFIRM', 'PENDING', 'WAITING_SETUP')",
+            (today_start,)
+        ).fetchall()
+        return res
+    finally:
+        conn.close()
 def check_existing_pickup(chat_id, target_date):
     """ သတ်မှတ်ထားတဲ့ ရက်စွဲနဲ့ ဆိုင် (Chat ID) အတွက် PENDING, PROCESSING သို့မဟုတ် SUCCESS ဖြစ်နေသော Pickup ရှိမရှိ စစ်ဆေးခြင်း """
     conn = get_connection()
@@ -1468,12 +1617,12 @@ def get_pickup_order(queue_id):
         conn.close()
 
 def get_waiting_confirm_order(chat_id):
-    """ လက်ရှိ chat တွင် အတည်ပြုချက်စောင့်ဆိုင်းနေသော (WAITING_CONFIRM) အော်ဒါရှိမရှိ စစ်ဆေးခြင်း """
+    """ လက်ရှိ chat တွင် အတည်ပြုချက်စောင့်ဆိုင်းနေသော (WAITING_CONFIRM သို့မဟုတ် WAITING_SETUP) အော်ဒါရှိမရှိ စစ်ဆေးခြင်း """
     conn = get_connection()
     try:
         res = conn.execute(
             "SELECT id, chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status, created_at "
-            "FROM pickup_queue WHERE chat_id = ? AND status = 'WAITING_CONFIRM' "
+            "FROM pickup_queue WHERE chat_id = ? AND status IN ('WAITING_CONFIRM', 'WAITING_SETUP') "
             "ORDER BY created_at DESC LIMIT 1",
             (chat_id,)
         ).fetchone()

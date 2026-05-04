@@ -123,6 +123,24 @@ def send_manager_notification(text):
     except Exception as e:
         log.error(f"❌ Failed to send manager notification: {e}")
 
+def send_manager_photo(photo_path, caption):
+    """Sends a photo to the manager via Telegram"""
+    if not TELEGRAM_BOT_TOKEN or not MANAGER_ID or not os.path.exists(photo_path):
+        return
+    
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendPhoto"
+    try:
+        with open(photo_path, 'rb') as photo:
+            files = {'photo': photo}
+            data = {
+                "chat_id": MANAGER_ID,
+                "caption": caption,
+                "parse_mode": "HTML"
+            }
+            requests.post(url, files=files, data=data, timeout=30)
+    except Exception as e:
+        log.error(f"❌ Failed to send manager photo: {e}")
+
 def call_gemini_direct(prompt, model="gemini-1.5-flash", response_format=None):
     """Direct Gemini API call (Cheap & Fast)"""
     # Use v1beta for newer models
