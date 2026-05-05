@@ -1476,6 +1476,182 @@ def set_shop_mapping(chat_id, website_os_name):
     finally:
         conn.close()
 
+def get_unified_shop_data():
+    """
+    Shop Mapping နှင့် Topic ID များကို တစ်ကြောင်းတည်းဖြစ်အောင် စုစည်းထုတ်ပေးခြင်း (GSheet Export အတွက်)
+    Returns: list of (chat_id, telegram_name, website_name, pickup_tid, error_tid, finance_tid, updated_at)
+    """
+    conn = get_connection()
+    try:
+        # ၁။ အရင်ဆုံး ရှိသမျှ OS Group အားလုံးကို ယူမည်
+        shops = conn.execute("SELECT DISTINCT chat_id, shop_name FROM os_groups").fetchall()
+        
+        # ၂။ Mapping ရှိပြီးသားဆိုင်များကိုပါ ထည့်သွင်းစဉ်းစားမည် (os_groups မှာ မရှိသေးတာမျိုး ဖြစ်နိုင်၍)
+        mapping_ids = conn.execute("SELECT chat_id FROM shop_mappings").fetchall()
+        all_ids = set([s[0] for s in shops] + [m[0] for m in mapping_ids])
+        
+        results = []
+        for cid in all_ids:
+            # Telegram Name ယူခြင်း
+            name_row = conn.execute("SELECT shop_name FROM os_groups WHERE chat_id = ? LIMIT 1", (cid,)).fetchone()
+            tg_name = name_row[0] if name_row else "Unknown Shop"
+            
+            # Website Mapping ယူခြင်း
+            map_row = conn.execute("SELECT website_os_name, updated_at FROM shop_mappings WHERE chat_id = ?", (cid,)).fetchone()
+            web_name = map_row[0] if map_row else ""
+            updated_at = map_row[1] if map_row else 0
+            
+            # Topics ယူခြင်း (Logic: target_topic_id အပေါ်မူတည်၍ ခွဲခြားမည်)
+            # Pickup (1), Finance (35), Error (37)
+            pickup_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id = ? AND target_topic_id = 1", (cid,)).fetchone()
+            finance_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id = ? AND target_topic_id = 35", (cid,)).fetchone()
+            error_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id = ? AND target_topic_id = 37", (cid,)).fetchone()
+            
+            results.append((
+                cid,
+                tg_name,
+                web_name,
+                pickup_tid[0] if pickup_tid else 0,
+                error_tid[0] if error_tid else 0,
+                finance_tid[0] if finance_tid else 0,
+                updated_at
+            ))
+        return results
+    finally:
+        conn.close()
+
+def get_all_shop_mappings():
+    """ Database ထဲရှိ Mapping အားလုံးကို ဆွဲထုတ်ရန် (GSheet Export အတွက်) """
+    return get_unified_shop_data()
+
+def upsert_shop_mappings_batch(data_list):
+    """ GSheet မှလာသော Mapping များကို Batch အလိုက် Update လုပ်ရန် """
+    conn = get_connection()
+    try:
+        now = int(time.time())
+        # data_list format: [(chat_id, website_os_name), ...]
+        formatted_data = []
+        for chat_id, website_name in data_list:
+            if not chat_id or not website_name: continue
+            
+            # Ensure -100 prefix
+            full_id = chat_id
+            if not str(chat_id).startswith("-100"):
+                try: full_id = int(f"-100{chat_id}")
+                except: pass
+            
+            formatted_data.append((full_id, website_name.strip(), now))
+            
+        if formatted_data:
+            conn.executemany(
+                "INSERT OR REPLACE INTO shop_mappings (chat_id, website_os_name, updated_at) VALUES (?, ?, ?)",
+                formatted_data
+            )
+            conn.commit()
+            return True
+        return False
+    finally:
+        conn.close()
+
+def update_unified_shop_data(data_list):
+    """
+    GSheet မှလာသော Unified Data (Mapping + Topics) များကို Database တွင် Update လုပ်ခြင်း
+    data_list format: [(chat_id, tg_name, web_name, p_tid, e_tid, f_tid), ...]
+    """
+    conn = get_connection()
+    try:
+        now = int(time.time())
+        c = conn.cursor()
+        c.execute("BEGIN TRANSACTION")
+        
+        # ၁။ Sheet ထဲမှာ ပါလာတဲ့ Chat ID စာရင်းကို ယူထားမည်
+        incoming_chat_ids = [int(row[0]) for row in data_list if row[0]]
+        
+        # ၂။ Sheet ထဲမှာ မပါတော့တဲ့ ဆိုင်တွေကို ဖျက်မည် (Manual Register မဟုတ်တာတွေကိုပဲ ဖျက်မည်)
+        if incoming_chat_ids:
+            placeholders = ', '.join(['?'] * len(incoming_chat_ids))
+            # os_groups မှ ဖျက်ခြင်း
+            c.execute(
+                f"DELETE FROM os_groups WHERE chat_id NOT IN ({placeholders}) AND invite_link != 'Manual Register'",
+                tuple(incoming_chat_ids)
+            )
+            # shop_mappings မှ ဖျက်ခြင်း
+            c.execute(
+                f"DELETE FROM shop_mappings WHERE chat_id NOT IN ({placeholders}) AND chat_id IN (SELECT chat_id FROM os_groups WHERE invite_link != 'Manual Register')",
+                tuple(incoming_chat_ids)
+            )
+
+        # ၃။ Sheet ထဲမှ data များဖြင့် Update/Insert လုပ်ခြင်း
+        for chat_id_str, tg_name, web_name, p_tid, e_tid, f_tid in data_list:
+            if not chat_id_str: continue
+            chat_id = int(chat_id_str)
+            
+            # Website Mapping Update
+            if not web_name or web_name.strip() == "":
+                c.execute("DELETE FROM shop_mappings WHERE chat_id = ?", (chat_id,))
+            else:
+                c.execute(
+                    "INSERT OR REPLACE INTO shop_mappings (chat_id, website_os_name, updated_at) VALUES (?, ?, ?)",
+                    (chat_id, web_name.strip(), now)
+                )
+            
+            # Topics Update (os_groups)
+            # Pickup (Target 1)
+            if p_tid and int(p_tid) != 0:
+                update_or_insert_os_topic(c, chat_id, tg_name, "Pick Up", int(p_tid), 1)
+            else:
+                c.execute("DELETE FROM os_groups WHERE chat_id = ? AND target_topic_id = 1", (chat_id,))
+            
+            # Error (Target 37)
+            if e_tid and int(e_tid) != 0:
+                update_or_insert_os_topic(c, chat_id, tg_name, "Error", int(e_tid), 37)
+            else:
+                c.execute("DELETE FROM os_groups WHERE chat_id = ? AND target_topic_id = 37", (chat_id,))
+                
+            # Finance (Target 35)
+            if f_tid and int(f_tid) != 0:
+                update_or_insert_os_topic(c, chat_id, tg_name, "Fin & Voc", int(f_tid), 35)
+            else:
+                c.execute("DELETE FROM os_groups WHERE chat_id = ? AND target_topic_id = 35", (chat_id,))
+
+        conn.commit()
+        return True
+    except Exception as e:
+        conn.rollback()
+        log.error(f"❌ update_unified_shop_data Error: {e}")
+        return False
+    finally:
+        conn.close()
+
+def update_or_insert_os_topic(cursor, chat_id, shop_name, topic_name, topic_id, target_topic_id):
+    """ os_groups ထဲတွင် topic အချက်အလက်များကို update သို့မဟုတ် insert လုပ်ရန် helper """
+    # အရင်ရှိမရှိ စစ်မည် (chat_id နှင့် target_topic_id အလိုက်)
+    cursor.execute(
+        "SELECT 1 FROM os_groups WHERE chat_id = ? AND target_topic_id = ?",
+        (chat_id, target_topic_id)
+    )
+    exists = cursor.fetchone()
+    
+    target_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
+    
+    if exists:
+        cursor.execute(
+            "UPDATE os_groups SET topic_id = ?, topic_name = ?, shop_name = ? WHERE chat_id = ? AND target_topic_id = ?",
+            (topic_id, topic_name, shop_name, chat_id, target_topic_id)
+        )
+    else:
+        # မရှိသေးလျှင် အသစ်ထည့်မည်
+        cursor.execute(
+            """INSERT INTO os_groups
+               (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id, target_chat_id, target_topic_id)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (chat_id, shop_name, chat_id, shop_name, "GSheet Sync", topic_name, topic_id, target_chat, target_topic_id)
+        )
+
+def replace_all_shop_mappings(data_list):
+    """ Legacy support for gsheet_sync.py """
+    return update_unified_shop_data(data_list)
+
 def sync_website_shops(shop_list):
     """ Website မှ ဆိုင်နာမည်များကို Database ထဲသို့ အကုန်သွင်းပေးခြင်း (Cleaning included) """
     conn = get_connection()
@@ -1630,6 +1806,58 @@ def get_temp_data(key):
     try:
         res = conn.execute("SELECT value FROM temp_data WHERE id = ?", (key,)).fetchone()
         return res[0] if res else None
+    finally:
+        conn.close()
+
+def get_manual_register_data():
+    """ Manual Register လုပ်ထားပြီး Sheet ထဲ မရောက်သေးသော data များကို ယူခြင်း """
+    return get_unified_shop_data_filtered(invite_link='Manual Register')
+
+def get_unified_shop_data_filtered(invite_link=None):
+    """ Filter ပါဝင်သော Unified Shop Data ယူခြင်း """
+    conn = get_connection()
+    try:
+        query = "SELECT DISTINCT chat_id, shop_name FROM os_groups"
+        if invite_link:
+            query += " WHERE invite_link = ?"
+            shops = conn.execute(query, (invite_link,)).fetchall()
+        else:
+            shops = conn.execute(query).fetchall()
+            
+        results = []
+        for cid, tg_name in shops:
+            # Website Mapping
+            map_row = conn.execute("SELECT website_os_name, updated_at FROM shop_mappings WHERE chat_id = ?", (cid,)).fetchone()
+            web_name = map_row[0] if map_row else ""
+            updated_at = map_row[1] if map_row else 0
+            
+            # Topics
+            pickup_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id = ? AND target_topic_id = 1", (cid,)).fetchone()
+            finance_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id = ? AND target_topic_id = 35", (cid,)).fetchone()
+            error_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id = ? AND target_topic_id = 37", (cid,)).fetchone()
+            
+            results.append((
+                cid, tg_name, web_name,
+                pickup_tid[0] if pickup_tid else 0,
+                error_tid[0] if error_tid else 0,
+                finance_tid[0] if finance_tid else 0,
+                updated_at
+            ))
+        return results
+    finally:
+        conn.close()
+
+def mark_os_groups_as_synced(chat_ids):
+    """ Manual Register မှ GSheet Sync သို့ ပြောင်းလဲခြင်း """
+    if not chat_ids: return
+    conn = get_connection()
+    try:
+        placeholders = ', '.join(['?'] * len(chat_ids))
+        conn.execute(
+            f"UPDATE os_groups SET invite_link = 'GSheet Sync' WHERE chat_id IN ({placeholders}) AND invite_link = 'Manual Register'",
+            tuple(chat_ids)
+        )
+        conn.commit()
     finally:
         conn.close()
 

@@ -50,14 +50,39 @@ def register_handlers(bot):
 
             # Sync Module ကို ခေါ်ယူခြင်း
             syncer = gsheet_sync.GSheetSync()
-            success, result_msg = syncer.sync_knowledge(sheet_url)
+            # ၁။ Knowledge Base Sync
+            success_kb, result_kb = syncer.sync_knowledge(sheet_url)
+            
+            # ၂။ Shop Mappings Sync (အသစ်ထည့်သွင်းခြင်း)
+            success_map, result_map = syncer.sync_shop_mappings(sheet_url)
+            
+            final_msg = f"📊 **Sync Results:**\n\n"
+            final_msg += f"🧠 Knowledge: {result_kb}\n"
+            final_msg += f"🏪 Mappings: {result_map}"
+            
+            bot.edit_message_text(final_msg, msg.chat.id, msg.message_id)
+        else:
+            bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
+
+    @bot.message_handler(commands=['gsexport'])
+    def handle_gs_export(message):
+        """ Database ထဲရှိ Mapping အားလုံးကို Google Sheet သို့ အကုန်ပြန်ရေးခြင်း (Manual Export) """
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
+            msg = bot.reply_to(message, "📤 **Database မှ data များကို Google Sheet သို့ ပို့နေပါသည်...**")
+            
+            sheet_url = os.getenv('GSHEET_URL')
+            if not sheet_url:
+                bot.edit_message_text("❌ `.env` ထဲမှာ `GSHEET_URL` ထည့်သွင်းထားခြင်း မရှိသေးပါ အစ်ကို။",
+                                     msg.chat.id, msg.message_id)
+                return
+
+            syncer = gsheet_sync.GSheetSync()
+            success, result = syncer.export_mappings_to_sheet(sheet_url)
             
             if success:
-                bot.edit_message_text(f"✅ **Sync Success!**\n\n{result_msg}",
-                                     msg.chat.id, msg.message_id)
+                bot.edit_message_text(f"✅ **Export Success!**\n\n{result}", msg.chat.id, msg.message_id)
             else:
-                bot.edit_message_text(f"❌ **Sync Failed!**\n\n{result_msg}",
-                                     msg.chat.id, msg.message_id)
+                bot.edit_message_text(f"❌ **Export Failed!**\n\n{result}", msg.chat.id, msg.message_id)
         else:
             bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
 
