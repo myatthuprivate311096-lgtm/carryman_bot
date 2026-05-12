@@ -18,13 +18,27 @@ FB_PAGE_ACCESS_TOKEN = os.getenv('FB_PAGE_ACCESS_TOKEN')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 TARGET_GROUP_ID = os.getenv('FB_TARGET_GROUP_ID')
 
+# 💡 Guard: Prevent AttributeError if TARGET_GROUP_ID is None
+if not TARGET_GROUP_ID:
+    TARGET_GROUP_ID = int(os.getenv('ALERT_CHAT_ID', '-1003601049225'))
+    log.warning(f"⚠️ FB_TARGET_GROUP_ID not set. Falling back to ALERT_CHAT_ID: {TARGET_GROUP_ID}")
+else:
+    TARGET_GROUP_ID = int(TARGET_GROUP_ID)
+
 # Initialize Telegram Bot (Only for sending, handlers are in main_bot.py)
-bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
+if not TELEGRAM_BOT_TOKEN:
+    log.error("❌ TELEGRAM_BOT_TOKEN not set. FB Webhook cannot send messages.")
+    bot = None
+else:
+    bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
 app = Flask(__name__)
 
-# Initialize DB Tables
-db_manager.init_db()
+# 💡 DB Health Check before initializing
+try:
+    db_manager.init_db()
+except Exception as e:
+    log.error(f"❌ FB Webhook DB Init Failed: {e}")
 
 @app.before_request
 def log_request_info():

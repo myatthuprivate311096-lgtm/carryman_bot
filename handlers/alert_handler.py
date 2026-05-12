@@ -13,12 +13,12 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('setrt_'))
     def handle_set_routing(call):
-        """ Manager မှ Missing Route အတွက် Topic ရွေးချယ်ပေးခြင်း """
+        """ Manager/Staff မှ Missing Route အတွက် Topic ရွေးချယ်ပေးခြင်း """
         start_time = time.time()
         try:
             user_id = call.from_user.id
-            if not is_manager_func(user_id):
-                bot.answer_callback_query(call.id, "⚠️ Manager သာ လုပ်ဆောင်ခွင့်ရှိပါသည်။", show_alert=True)
+            if not (is_manager_func(user_id) or db_manager.check_if_staff(user_id)):
+                bot.answer_callback_query(call.id, "⚠️ Admin/Staff သာ လုပ်ဆောင်ခွင့်ရှိပါသည်။", show_alert=True)
                 return
 
             # 💡 Immediate answer to stop the loading spinner

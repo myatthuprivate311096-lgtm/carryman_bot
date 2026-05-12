@@ -22,8 +22,8 @@ async def _auto_login_task(page, **kwargs):
     await page.wait_for_load_state('domcontentloaded')
 
     log.info("🔑 Login အချက်အလက်များ ရိုက်ထည့်နေပါသည်...")
-    await page.fill("//input[@type='text']", username)
-    await page.fill("//input[@type='password']", password)
+    await page.locator("//input[@type='text']").fill(username)
+    await page.locator("//input[@type='password']").fill(password)
 
     log.info("🖱️ Login ခလုတ်ကို နှိပ်လိုက်ပါပြီ။")
     await page.click("//button[.//span[contains(translate(text(), 'LOGIN', 'login'), 'login')]]")

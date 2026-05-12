@@ -4,11 +4,12 @@ import json
 import asyncio
 from datetime import datetime, timedelta
 import pytz
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from telebot import types, util
 import db_manager
 from logger import log
 import ai_utils
-from modules import location_service, auto_login, browser_manager
+from modules import location_service, auto_login, browser_manager, duplicate_checker
 
 _bot = None
 
@@ -126,7 +127,7 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
                             log.info(f"🛡️ Attempting to click popup button {i+1}/{count}...")
                             await popups.nth(i).click(timeout=3000)
                             await asyncio.sleep(1)
-                    except:
+                    except Exception:
                         continue
             
             # Wait for overlay to disappear or force remove it
@@ -136,7 +137,7 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
                 log.info(f"🛡️ Found {o_count} popup overlays. Waiting for them to hide...")
                 try:
                     await overlay.first.wait_for(state="hidden", timeout=5000)
-                except:
+                except Exception:
                     log.warning("⚠️ Overlay still present, attempting force removal via JS...")
                     await p.evaluate("() => { document.querySelectorAll('.swal-overlay, .ant-modal-mask, .ant-modal-wrap').forEach(el => el.remove()); document.body.classList.remove('swal-shown', 'ant-scrolling-effect'); }")
                     await asyncio.sleep(1)
@@ -147,7 +148,7 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
         await handle_popups(p)
         try:
             await p.wait_for_selector(".ant-spin, .loading-spinner, .spinner", state="hidden", timeout=10000)
-        except:
+        except Exception:
             pass
         await p.wait_for_selector("form, .ant-form, input[id*='receivedDate'], label:has-text('Received Date')", state="visible", timeout=15000)
 
@@ -287,7 +288,7 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
             log.warning("⚠️ Dropdown still open. Forcing close with Escape...")
             await page.keyboard.press("Escape")
             await asyncio.sleep(1)
-    except: pass
+    except Exception: pass
     
     log.info(f"   ✅ ယာဉ်ရွေးပြီးပါပြီ ({vehicle})")
 
@@ -327,7 +328,7 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
             if await loc.is_visible():
                 save_btn = loc
                 break
-        except:
+        except Exception:
             continue
 
     if save_btn:
@@ -521,7 +522,7 @@ def handle(bot, message, force_pickup=False):
 
         ai_res_content = ai_utils.get_ai_completion(
             prompt=extract_prompt,
-            model="google/gemini-3.1-flash-lite-preview",
+            model="deepseek/deepseek-v4-flash",
             response_format={ "type": "json_object" },
             timeout=30.0
         )
@@ -597,12 +598,30 @@ def handle(bot, message, force_pickup=False):
         if 1 <= current_time <= 1100:
             date_type = "today"
             log.info(f"🕒 Time {current_time}: Auto-assigning TODAY (Strict)")
+            # 🛡️ Morning Duplicate Check: Check if pickup already exists for today
+            today_str = now.strftime("%d-%m-%Y")
+            if duplicate_checker.check_duplicate_pickup(chat_id, today_str):
+                log.info(f"⚠️ Morning duplicate pickup detected for {chat_id} on {today_str}.")
+                if not is_system_off or is_whitelisted:
+                    show_duplicate_alert(bot, message, today_str, message.message_id)
+                return
             if not is_system_off or is_whitelisted:
                 ask_pickup_confirmation(bot, message, "today", message.message_id)
                 return
         elif 1501 <= current_time <= 2359 or current_time == 0:
             date_type = "tomorrow"
             log.info(f"🕒 Time {current_time}: Auto-assigning TOMORROW (Strict)")
+            # 🛡️ Evening: AI may suggest tomorrow; check tomorrow duplicate first
+            tomorrow_str = (now + timedelta(days=1)).strftime("%d-%m-%Y")
+            today_str = now.strftime("%d-%m-%Y")
+            tomorrow_dup = duplicate_checker.check_duplicate_pickup(chat_id, tomorrow_str)
+            today_dup = duplicate_checker.check_duplicate_pickup(chat_id, today_str)
+            if tomorrow_dup or today_dup:
+                dup_date = tomorrow_str if tomorrow_dup else today_str
+                log.info(f"⚠️ Evening duplicate pickup detected for {chat_id} on {dup_date}.")
+                if not is_system_off or is_whitelisted:
+                    show_duplicate_alert(bot, message, dup_date, message.message_id)
+                return
             if not is_system_off or is_whitelisted:
                 ask_pickup_confirmation(bot, message, "tomorrow", message.message_id)
                 return
@@ -610,10 +629,12 @@ def handle(bot, message, force_pickup=False):
             # ၁၁ နာရီနဲ့ ၃ နာရီကြားမှာ Staff အတည်ပြုချက် အမြဲတောင်းပါမည် (ဒီနေ့ ရ/မရ သိရန်)
             log.info(f"🕒 Time {current_time}: Entering Mid-day Staff Decision Flow")
             today_str = now.strftime("%d-%m-%Y")
-            if db_manager.check_existing_pickup(chat_id, today_str) and ai_date_type != "tomorrow":
-                log.info(f"⚠️ Duplicate pickup detected for {chat_id} on {today_str} (Late Morning). Skipping Staff Decision.")
+            # 💡 and→or Logic: Check today OR tomorrow (if either exists, show duplicate)
+            is_dup, dup_date = duplicate_checker.check_any_duplicate(chat_id, 'today')
+            if is_dup:
+                log.info(f"⚠️ Duplicate pickup detected for {chat_id} on {dup_date} (Mid-day).")
                 if not is_system_off or is_whitelisted:
-                    show_duplicate_alert(bot, message, today_str, message.message_id)
+                    show_duplicate_alert(bot, message, dup_date, message.message_id)
                 return
             
             date_type = "today" # Default for alert context
@@ -624,11 +645,12 @@ def handle(bot, message, force_pickup=False):
         
         target_date_str = (msg_dt if date_type == "today" else msg_dt + timedelta(days=1)).strftime("%d-%m-%Y")
         
-        # 🛡️ Duplicate Check: Pending, Processing, Success ရှိနေရင် Admin Alert မပို့တော့ဘဲ Manual Flow သို့ လွှတ်မည်
-        if db_manager.check_existing_pickup(chat_id, target_date_str):
-            log.info(f"⚠️ Duplicate pickup detected for {chat_id} on {target_date_str}. Skipping Pick Up alert to allow Manual Flow.")
+        # 🛡️ Final Duplicate Check: Today OR Tomorrow (and→or logic)
+        is_dup, dup_date = duplicate_checker.check_any_duplicate(chat_id, date_type)
+        if is_dup:
+            log.info(f"⚠️ Duplicate pickup detected for {chat_id} on {dup_date}. Skipping Pick Up alert.")
             if not is_system_off or is_whitelisted:
-                show_duplicate_alert(bot, message, target_date_str, message.message_id)
+                show_duplicate_alert(bot, message, dup_date, message.message_id)
             return
 
         # 1. Admin Group Notification (Unified Photo Message)
@@ -663,11 +685,37 @@ def handle(bot, message, force_pickup=False):
         bot.reply_to(message, "⚠️ Auto Pickup လုပ်ဆောင်စဉ် အမှားတစ်ခု ဖြစ်သွားပါသည်။")
 
 def show_duplicate_alert(bot, message, target_date, orig_msg_id):
-    text = f"ဒီနေ့ ({target_date}) အတွက် pickup တင်ပြီးသားရှိပါတယ် အစ်ကို။"
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("💬 Admin နှင့်ပြောမည်", callback_data=f"ap_admin_0_{orig_msg_id}"))
-    msg = bot.reply_to(message, text, reply_markup=markup)
-    db_manager.add_pickup_intermediate_msg(message.chat.id, orig_msg_id, msg.message_id)
+    """ Enhanced duplicate alert with dynamic date label, cancel button, and split today/tomorrow display """
+    try:
+        chat_id = message.chat.id
+        # Dynamic date label
+        date_label = duplicate_checker.get_date_label(target_date)
+        
+        # Check which dates have existing pickups (for split display)
+        existing_dates = duplicate_checker.get_existing_dates(chat_id)
+        date_parts = []
+        if existing_dates['today_exists']:
+            date_parts.append(f"ယနေ့ ({existing_dates['today']})")
+        if existing_dates['tomorrow_exists']:
+            date_parts.append(f"မနက်ဖြန် ({existing_dates['tomorrow']})")
+        
+        if len(date_parts) > 1:
+            date_text = " နှင့် ".join(date_parts)
+        elif date_parts:
+            date_text = date_parts[0]
+        else:
+            date_text = date_label
+        
+        text = f"{date_text} အတွက် pickup တင်ပြီးသားရှိပါတယ် အစ်ကို။"
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        markup.add(
+            types.InlineKeyboardButton("💬 Admin နှင့်ပြောမည်", callback_data=f"ap_admin_0_{orig_msg_id}"),
+            types.InlineKeyboardButton("❌ Pickup မဟုတ်ပါ", callback_data=f"ap_cancel_{orig_msg_id}")
+        )
+        msg = bot.reply_to(message, text, reply_markup=markup)
+        db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, msg.message_id)
+    except Exception as e:
+        log.error(f"❌ show_duplicate_alert Error: {e}")
 
 def ask_pickup_confirmation(bot, message, date_type, orig_msg_id):
     """ (၁၁)နာရီ အရှေ့ရော (၃)နာရီအနောက်ရော အတည်ပြုချက် အရင်တောင်းခြင်း """
@@ -681,7 +729,9 @@ def ask_pickup_confirmation(bot, message, date_type, orig_msg_id):
         target_date = (msg_dt if date_type == "today" else msg_dt + timedelta(days=1))
         target_date_str = target_date.strftime("%d-%m-%Y")
         
-        text = f"{target_date_str} ရက်နေ့အတွက် Pick up လေးတင်ပေးရမလားရှင့်"
+        # Dynamic date label
+        date_label = duplicate_checker.get_date_label(target_date_str)
+        text = f"{date_label} ရက်နေ့အတွက် Pick up လေးတင်ပေးရမလားရှင့်"
         
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(
@@ -703,8 +753,9 @@ def ask_vehicle(bot, message, date_type, orig_msg_id, show_cancel=True):
     msg_dt = datetime.fromtimestamp(msg_ts, tz)
     
     target_date = (msg_dt if date_type == "today" else msg_dt + timedelta(days=1)).strftime("%d-%m-%Y")
+    date_label = duplicate_checker.get_date_label(target_date)
     
-    text = f"{target_date} pick up လေးရပါတယ်နော်။ pick up တင်ပေးနိုင်ရန် ****လိုတဲ့အချက် (စက်ဘီး၊ကား)*** ကိုပြောပေးပါဦး"
+    text = f"{date_label} pick up လေးရပါတယ်နော်။ pick up တင်ပေးနိုင်ရန် ****လိုတဲ့အချက် (စက်ဘီး၊ကား)*** ကိုပြောပေးပါဦး"
         
     markup = types.InlineKeyboardMarkup(row_width=2)
     markup.add(
@@ -756,9 +807,10 @@ def show_interactive_setup(bot, chat_id, orig_msg_id, date_type, vehicle=None, r
         v_display = vehicle if vehicle else "-"
         r_display = remark if remark else "-"
         
+        date_label = duplicate_checker.get_date_label(target_date_str) if target_date_str != "-" else target_date_str
         text = (
             f"⏳ <b>Auto Pickup အချက်အလက်များ</b>\n"
-            f"📅 ရက်စွဲ: {target_date_str}\n"
+            f"📅 ရက်စွဲ: {date_label}\n"
             f"🏪 ဆိုင်: <b>{util.escape(os_name)}</b>\n"
             f"🚲 ယာဉ်: <b>{v_display}</b>\n"
             f"📝 မှတ်ချက်: {r_display}\n"
@@ -866,7 +918,7 @@ def handle_pickup_error(bot, chat_id, orig_msg_id, os_name, target_date, error_m
     except Exception as e:
         log.error(f"❌ handle_pickup_error Error: {e}")
 
-def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_done=True, photo_path=None, custom_markup=None, queue_id=None):
+def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_done=True, photo_path=None, custom_markup=None, queue_id=None, update_shop=False):
     """ Admin Group နှင့် ဆိုင် Group ရှိ Alert Message များကို Update လုပ်ခြင်း """
     log.info(f"🔄 Updating central alert for msg {orig_msg_id} in chat {chat_id} (Status: {status_text}, Has Custom Markup: {custom_markup is not None})")
     try:
@@ -897,7 +949,7 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
                         os_name = chat_title.split('🤝')[0].strip()
                     else:
                         os_name = db_manager.clean_shop_name(chat_title)
-                except:
+                except Exception:
                     os_name = "Unknown Shop"
             
             target_date = "-"
@@ -967,10 +1019,10 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
         
         clean_chat_id = str(chat_id).replace("-100", "")
         msg_link = f"https://t.me/c/{clean_chat_id}/{orig_msg_id}"
-        if status_text and "Success" in str(status_text):
+        if status_text and "✅" in str(status_text) and "Success" in str(status_text):
             try:
                 bot.delete_message(alert_chat_id, alert_msg_id)
-                log.info(f"🗑️ Deleted central alert {alert_msg_id} in {alert_chat_id} because status is Success")
+                log.info(f"🗑️ Deleted central alert {alert_msg_id} in {alert_chat_id} because status is ✅ Success")
                 return # Exit early as we don't need to edit a deleted message
             except Exception as delete_e:
                 log.debug(f"Failed to delete alert (might be already deleted): {delete_e}")
@@ -1072,8 +1124,8 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
 def send_success_report(bot, orig_msg_id, chat_id, handled_by="System"):
     """ အောင်မြင်သွားသော Pickup စာရင်းကို သီးသန့် Success Group သို့ ပို့ဆောင်ခြင်း """
     try:
-        success_chat = -1003906164269
-        success_topic = 28
+        success_chat = -1003601049225
+        success_topic = 1997
         
         order = None
         with db_manager.get_connection() as conn:
@@ -1100,7 +1152,15 @@ def send_success_report(bot, orig_msg_id, chat_id, handled_by="System"):
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton("🔗 View Message", url=msg_link))
 
-        bot.send_message(success_chat, report_text, parse_mode="HTML", message_thread_id=success_topic, reply_markup=markup)
+        try:
+            bot.send_message(success_chat, report_text, parse_mode="HTML", message_thread_id=success_topic, reply_markup=markup)
+        except Exception:
+            # 💡 Topic fallback: retry without thread ID
+            try:
+                bot.send_message(success_chat, report_text, parse_mode="HTML", reply_markup=markup)
+            except Exception as fallback_e:
+                log.error(f"❌ send_success_report final fallback failed: {fallback_e}")
+                return
         log.info(f"📤 Success Report sent to {success_chat}/{success_topic} for {os_name}")
 
     except Exception as e:
@@ -1194,7 +1254,39 @@ def run_daily_cleanup(bot):
                             log.error(f"❌ Error cleaning up order {order_id}: {oe}")
                 else:
                     log.info("ℹ️ No stale pickup orders found.")
+
+                # 🧹 Graceful Restart: လုပ်လက်စ pickup submission ရှိရင် ပြီးတဲ့ထိ စောင့်ပြီးမှ restart
+                log.info("🔄 Checking for active submissions before graceful restart...")
+                with db_manager.get_connection() as conn:
+                    active = conn.execute(
+                        "SELECT id FROM pickup_queue WHERE status = 'PROCESSING' LIMIT 1"
+                    ).fetchone()
                 
+                if active:
+                    log.info(f"⏳ Active submission found (Queue {active[0]}). Waiting up to 5 minutes...")
+                    waited = 0
+                    while waited < 300:
+                        time.sleep(10)
+                        waited += 10
+                        with db_manager.get_connection() as conn:
+                            still_active = conn.execute(
+                                "SELECT id FROM pickup_queue WHERE id = ? AND status = 'PROCESSING'",
+                                (active[0],)
+                            ).fetchone()
+                        if not still_active:
+                            log.info(f"✅ Submission completed after {waited}s. Proceeding with restart.")
+                            break
+                    else:
+                        log.warning(f"⚠️ Submission still active after 5min timeout. Restarting anyway.")
+
+                log.info("🔄 Triggering graceful PM2 restart for worker...")
+                import subprocess as _sp
+                try:
+                    _sp.run(["pm2", "restart", "carryman-worker"], capture_output=True, timeout=10)
+                    log.info("✅ Graceful worker restart triggered.")
+                except Exception as re:
+                    log.error(f"❌ Graceful restart failed: {re}")
+
                 # တစ်မိနစ် စောင့်လိုက်ခြင်းဖြင့် ထပ်ခါထပ်ခါ မ Run စေရန်
                 time.sleep(65)
             
@@ -1234,14 +1326,21 @@ def run_queue_worker(bot):
 
             log.info(f"📦 Processing Queue Item {queue_id} for {os_name}")
             
-            # --- Strict Mapping Logic ---
+            # --- Strict Mapping Logic (with Stale Mapping Protection) ---
             mapped_name = db_manager.get_shop_mapping(chat_id)
             final_os_name = None
             
             if mapped_name:
-                final_os_name = mapped_name
-                log.info(f"🎯 Using saved mapping: {final_os_name}")
-            else:
+                # 🛡️ Validate: Saved mapping must exist on website, otherwise delete it
+                if db_manager.is_website_shop_exists(mapped_name):
+                    final_os_name = mapped_name
+                    log.info(f"🎯 Using saved mapping: {final_os_name}")
+                else:
+                    log.warning(f"🛑 Stale mapping detected: '{mapped_name}' not on website. Deleting for {os_name}.")
+                    db_manager.delete_shop_mapping(chat_id)
+                    mapped_name = None  # Fall through to unmapped logic
+            
+            if not mapped_name:
                 # Check if the current os_name exists exactly on the website
                 if db_manager.is_website_shop_exists(os_name):
                     final_os_name = os_name
@@ -1274,13 +1373,13 @@ def run_queue_worker(bot):
             db_manager.update_queue_status(queue_id, 'PROCESSING')
             update_central_pickup_alert(bot, orig_msg_id, chat_id, "⏳ Processing", queue_id=queue_id)
 
-            success, msg = submit_pickup_order(target_date, final_os_name, remark, vehicle)
+            success, msg, screenshot_path = execute_pickup_submission(target_date, final_os_name, remark, vehicle)
             
             if success:
-                db_manager.update_queue_status(queue_id, 'SUCCESS')
+                db_manager.update_pickup_status(queue_id, 'SUCCESS')
                 
                 # 1. ဆိုင် Group ကို Success ပြောင်းရန် (Admin Alert ကိုပါ update လုပ်ရန် ကြိုးစားမည်)
-                update_central_pickup_alert(bot, orig_msg_id, chat_id, "✅ Success", queue_id=queue_id)
+                update_central_pickup_alert(bot, orig_msg_id, chat_id, "✅ Success", update_shop=True, queue_id=queue_id)
 
                 # 2. Success Group သို့ Report ပို့ခြင်း
                 send_success_report(bot, orig_msg_id, chat_id, handled_by="စက်ရုပ် (Auto)")
@@ -1291,7 +1390,8 @@ def run_queue_worker(bot):
                     if tracking:
                         central_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
                         bot.delete_message(central_chat, tracking[0])
-                except: pass
+                except Exception:
+                    pass
 
                 db_manager.resolve_message(orig_msg_id, chat_id, 'System (Auto-Pickup)', method='Auto', status='HANDLED_BY_AI')
                 
@@ -1304,24 +1404,21 @@ def run_queue_worker(bot):
                     db_manager.set_shop_mapping(chat_id, final_os_name)
                     log.info(f"📝 Auto-mapped {chat_id} to {final_os_name}")
             else:
-                db_manager.update_queue_status(queue_id, 'FAILED', error_msg=msg)
+                db_manager.update_pickup_status(queue_id, 'FAILED', error_msg=msg)
                 
                 # Update central alert status (Keep as Processing in Shop Group, but show error in Admin)
-                base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-                screenshot_path = os.path.join(base_dir, "before_save.png")
-                
                 # Error ဖြစ်ပါက update_central_pickup_alert မှ ခလုတ်များကို အလိုအလျောက် စီမံပေးပါမည်
                 status_msg = "❌ Failed (Mapping Missing)" if ("ဆိုင်နာမည်" in str(msg) or "OS Name" in str(msg)) else "❌ Failed (Check Admin)"
                 
                 update_central_pickup_alert(
                     bot, orig_msg_id, chat_id,
                     status_msg,
-                    photo_path=screenshot_path if os.path.exists(screenshot_path) else None,
+                    photo_path=screenshot_path if screenshot_path else None,
                     queue_id=queue_id
                 )
 
                 # 💡 Manager ဆီသို့ Screenshot နှင့်တကွ Error Report ပို့ခြင်း
-                if os.path.exists(screenshot_path):
+                if screenshot_path:
                     report_caption = (
                         f"❌ <b>Auto Pickup Failed Report</b>\n"
                         f"━━━━━━━━━━━━━━━━━━\n"
@@ -1333,14 +1430,50 @@ def run_queue_worker(bot):
                     ai_utils.send_manager_photo(screenshot_path, report_caption)
                 
                 # Also send a separate error notification with Fix button if it's a mapping issue
-                if custom_markup:
-                    handle_pickup_error(bot, chat_id, orig_msg_id, final_os_name or os_name, target_date, msg)
+                handle_pickup_error(bot, chat_id, orig_msg_id, final_os_name or os_name, target_date, msg)
 
             time.sleep(10)
 
         except Exception as e:
             log.error(f"❌ Queue Worker Error: {e}")
             time.sleep(10)
+
+def execute_pickup_submission(target_date, final_os_name, remark, vehicle):
+    """
+    Execute pickup submission with 6-minute hard timeout via ThreadPoolExecutor.
+    Staff confirm လုပ်ပြီးရင် website တင် → status update အားလုံးပါဝင်။
+    
+    Returns:
+        (success: bool, message: str, screenshot_path: str or None)
+    """
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    screenshot_path = os.path.join(base_dir, "before_save.png")
+    
+    def _submit_with_timeout():
+        try:
+            return submit_pickup_order(target_date, final_os_name, remark, vehicle)
+        except Exception as e:
+            log.error(f"❌ submit_pickup_order inner error: {e}")
+            return False, str(e)
+    
+    try:
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(_submit_with_timeout)
+            success, msg = future.result(timeout=360)  # 6-minute hard timeout
+            return success, msg, screenshot_path if os.path.exists(screenshot_path) else None
+    except FuturesTimeoutError:
+        log.error(f"❌ Pickup submission timed out after 6 minutes for {final_os_name}")
+        # Capture screenshot on timeout
+        try:
+            import asyncio as _asyncio
+            _asyncio.run(browser_manager.capture_screenshot("error_submission.png"))
+            screenshot_path = os.path.join(base_dir, "error_submission.png")
+        except Exception:
+            pass
+        return False, "Submission timed out after 6 minutes", screenshot_path if os.path.exists(screenshot_path) else None
+    except Exception as e:
+        log.error(f"❌ execute_pickup_submission Error: {e}")
+        return False, str(e), screenshot_path if os.path.exists(screenshot_path) else None
 
 # handle_pickup_error is now integrated into update_central_pickup_alert
 

@@ -5,6 +5,60 @@ import time
 from logger import log
 import os
 
+def _detect_columns(header):
+    """
+    Auto-detect column indices from header row.
+    Supports both formats:
+    - 7-col: Chat ID, Telegram Group Name, Website OS Name, Pickup Topic ID, Error Topic ID, Finance Topic ID, Last Updated
+    - 8-col: OS Group ID, Mapping ID, Telegram Name, Website Name, Pickup TID, Error TID, Finance TID, Last Updated
+    """
+    mapping = {
+        'chat_id': 0,       # Column A: OS Group ID → os_groups table
+        'mapping_id': 0,    # Column B: Mapping ID → shop_mappings table (defaults to chat_id if not present)
+        'tg_name': 1,       # Column C: Telegram Name → os_groups.shop_name
+        'web_name': 2,      # Column D: Website Name → shop_mappings.website_os_name
+        'pickup_tid': 3,    # Column E: Pickup Topic ID
+        'error_tid': 4,     # Column F: Error Topic ID
+        'finance_tid': 5,   # Column G: Finance Topic ID
+    }
+    
+    # Try to detect by header keywords
+    for i, col in enumerate(header):
+        col_lower = col.lower().strip()
+        
+        # OS Group ID (Column A) — for os_groups table
+        if any(kw in col_lower for kw in ['os group id', 'os group']):
+            mapping['chat_id'] = i
+        # Mapping ID (Column B) — for shop_mappings table
+        elif any(kw in col_lower for kw in ['mapping id', 'mapping']):
+            mapping['mapping_id'] = i
+        # Chat ID / Group ID (generic)
+        elif any(kw in col_lower for kw in ['chat id', 'group id']):
+            mapping['chat_id'] = i
+        # Telegram Name
+        elif any(kw in col_lower for kw in ['telegram name', 'tg name', 'telegram group name']):
+            mapping['tg_name'] = i
+        # Website Name
+        elif any(kw in col_lower for kw in ['website name', 'website os name', 'web name', 'os name']):
+            mapping['web_name'] = i
+        # Pickup Topic
+        elif any(kw in col_lower for kw in ['pickup', 'pick up']):
+            mapping['pickup_tid'] = i
+        # Error Topic
+        elif any(kw in col_lower for kw in ['error']):
+            mapping['error_tid'] = i
+        # Finance Topic
+        elif any(kw in col_lower for kw in ['finance', 'fin']):
+            mapping['finance_tid'] = i
+    
+    return mapping
+
+def _safe_get(row, index):
+    """Safely get value from row at index, return '' if out of range."""
+    if index < len(row):
+        return row[index] or ''
+    return ''
+
 class GSheetSync:
     def __init__(self, credentials_file='credentials.json'):
         # API Access အတွက် Scope သတ်မှတ်ခြင်း
@@ -97,36 +151,65 @@ class GSheetSync:
             except gspread.exceptions.WorksheetNotFound:
                 return False, "⚠️ 'Shop Mappings' tab ကို ရှာမတွေ့ပါ။"
 
-            all_records = sheet.get_all_values()[1:] # Header ကျော်မည်
+            all_records = sheet.get_all_values()
+            if len(all_records) <= 1:
+                return False, "⚠️ 'Shop Mappings' tab တွင် ဒေတာမရှိသေးပါ (header only)။"
+            
+            # Detect column mapping from header (handles both 7-col and 8-col formats)
+            header = all_records[0]
+            col_map = _detect_columns(header)
+            log.info(f"📋 Detected columns: chat_id={col_map['chat_id']}, tg_name={col_map['tg_name']}, web_name={col_map['web_name']}")
+            
+            all_records = all_records[1:] # Header ကျော်မည်
             data_to_db = []
+            skipped = 0
             
             for row in all_records:
-                if len(row) >= 6:
-                    chat_id_str = row[0].strip()
-                    tg_name = row[1].strip()
-                    web_name = row[2].strip()
-                    p_tid = row[3].strip()
-                    e_tid = row[4].strip()
-                    f_tid = row[5].strip()
-                    
-                    if chat_id_str:
-                        try:
-                            chat_id = int(chat_id_str)
-                            data_to_db.append((chat_id, tg_name, web_name, p_tid, e_tid, f_tid))
-                        except ValueError:
-                            continue
+                # Filter out completely empty rows
+                if not any(cell.strip() for cell in row):
+                    continue
+                
+                # Get values by detected column index
+                chat_id_str = _safe_get(row, col_map['chat_id']).strip()
+                if not chat_id_str:
+                    continue
+                
+                tg_name = _safe_get(row, col_map['tg_name']).strip()
+                web_name = _safe_get(row, col_map['web_name']).strip()
+                p_tid = _safe_get(row, col_map['pickup_tid']).strip() or "0"
+                e_tid = _safe_get(row, col_map['error_tid']).strip() or "0"
+                f_tid = _safe_get(row, col_map['finance_tid']).strip() or "0"
+                
+                # Column B: Mapping ID (for shop_mappings table, usually same as chat_id)
+                mapping_id_str = _safe_get(row, col_map['mapping_id']).strip()
+                try:
+                    mapping_id = int(mapping_id_str) if mapping_id_str else None
+                except ValueError:
+                    mapping_id = None
+                
+                try:
+                    chat_id = int(chat_id_str)
+                    data_to_db.append((chat_id, mapping_id, tg_name, web_name, p_tid, e_tid, f_tid))
+                except ValueError:
+                    log.warning(f"⚠️ Skipping row with invalid chat_id: '{chat_id_str}' (tg_name: {tg_name})")
+                    skipped += 1
 
             if data_to_db:
+                log.info(f"📥 Found {len(data_to_db)} row(s) in 'Shop Mappings' tab (skipped: {skipped}).")
                 success = db_manager.update_unified_shop_data(data_to_db)
                 if success:
                     # Sync ပြီးတာနဲ့ DB ထဲက Manual Register လုပ်ထားတာတွေကို Sheet ထဲ Append လုပ်ပေးမည်
                     appended_count = self.append_new_mappings_to_sheet(sheet_url)
                     msg = f"✅ Shop Data {len(data_to_db)} ခုကို Sync လုပ်ပြီးပါပြီ။"
+                    if skipped > 0:
+                        msg += f"\n⚠️ Chat ID မမှန်သော row {skipped} ခုကို ကျော်သွားပါသည်။"
                     if appended_count > 0:
                         msg += f"\n🆕 ဆိုင်အသစ် {appended_count} ခုကို Sheet ထဲသို့ ထည့်သွင်းပေးခဲ့ပါသည်။"
                     return True, msg
+            else:
+                log.warning(f"⚠️ No valid rows found in 'Shop Mappings' tab (all rows: {len(all_records)}, skipped: {skipped}).")
             
-            return False, "⚠️ Sync လုပ်ရန် ဒေတာအသစ် မရှိပါ။"
+            return False, "⚠️ 'Shop Mappings' tab တွင် မှန်ကန်သော Chat ID ပါဝင်သည့် ဒေတာမရှိပါ။ Chat ID column (A) ကို စစ်ဆေးပေးပါ။"
 
         except Exception as e:
             log.error(f"❌ Shop Mapping Sync Error: {e}")

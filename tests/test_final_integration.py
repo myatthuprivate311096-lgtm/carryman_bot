@@ -22,8 +22,8 @@ async def test_integration():
     # but we can check if ai_utils was modified correctly.
     with open("carryman_bot/ai_utils.py", "r") as f:
         content = f.read()
-        if "google/gemini-3.1-flash-lite-preview" in content:
-            print("✅ AI Model is correctly set to 3.1 Flash Lite.")
+        if "deepseek/deepseek-v4-flash" in content:
+            print("✅ AI Model is correctly set to deepseek-v4-flash.")
         else:
             print("❌ AI Model is NOT correctly set.")
 

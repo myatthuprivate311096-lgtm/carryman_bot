@@ -71,17 +71,32 @@ def get_connection():
         raise
 
 @contextmanager
-def connection_scope():
-    """ Database connection ကို context manager အဖြစ် အသုံးပြုရန် (Auto-commit/rollback ပါဝင်သည်) """
-    conn = get_connection()
-    try:
-        yield conn
-        conn.commit()
-    except Exception as e:
-        conn.rollback()
-        raise e
-    finally:
-        conn.close()
+def connection_scope(max_retries=5):
+    """ Database connection ကို context manager အဖြစ် အသုံးပြုရန် (Auto-commit/rollback + Retry ပါဝင်သည်) """
+    last_exception = None
+    for attempt in range(max_retries):
+        conn = get_connection()
+        try:
+            yield conn
+            conn.commit()
+            return  # Success — exit retry loop
+        except sqlite3.OperationalError as e:
+            conn.rollback()
+            if "database is locked" in str(e).lower() and attempt < max_retries - 1:
+                wait = 0.1 * (2 ** attempt)  # Exponential backoff: 0.1s, 0.2s, 0.4s, 0.8s
+                log.warning(f"⚠️ Database locked. Retrying in {wait:.1f}s... (Attempt {attempt + 1}/{max_retries})")
+                time.sleep(wait)
+                last_exception = e
+                continue
+            raise e
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            conn.close()
+    # All retries exhausted
+    log.error(f"❌ Database lock persists after {max_retries} retries.")
+    raise last_exception
 
 def init_db():
     """ Database initialization နှင့် migration များကို safe ဖြစ်အောင် လုပ်ဆောင်ပေးသည် (Version 5.0) """
@@ -289,7 +304,7 @@ def init_db():
         # Perform initial maintenance
         try:
             db_maintenance()
-        except:
+        except Exception:
             pass
 
 def db_maintenance():
@@ -806,7 +821,13 @@ def get_topic_context(chat_id, topic_id):
     
     c.execute("SELECT shop_name FROM os_groups WHERE chat_id IN (?, ?, ?) LIMIT 1", (chat_id, clean_id, alt_id))
     g_res = c.fetchone()
-    shop_name = clean_shop_name(g_res[0]) if g_res else "Unknown Shop"
+    if g_res:
+        shop_name = clean_shop_name(g_res[0])
+    else:
+        # 💡 Fallback: shop_mappings table (GSheet has the name but os_groups missing routing)
+        c.execute("SELECT website_os_name FROM shop_mappings WHERE chat_id IN (?, ?) LIMIT 1", (chat_id, clean_id))
+        map_res = c.fetchone()
+        shop_name = clean_shop_name(map_res[0]) if map_res else "Unknown Shop"
     conn.close()
     return pending, resolved, shop_name
 
@@ -975,6 +996,15 @@ def update_routing_entry(chat_id, topic_id, target_chat_id, target_topic_id):
             log.info(f"🆕 New Routing Created: {chat_id}/{topic_id} ({shop_name}) -> {target_chat_id}/{target_topic_id}")
         else:
             log.info(f"✅ Routing Updated: {chat_id}/{topic_id} -> {target_chat_id}/{target_topic_id}")
+        
+        # 💡 Auto-Cleanup: Delete stale entries with same chat_id & target_topic_id but different topic_id
+        # (e.g., GSheet had wrong topic_id=89, staff corrected to topic_id=4 for same target_topic_id=37)
+        deleted = conn.execute(
+            "DELETE FROM os_groups WHERE chat_id IN (?, ?) AND target_topic_id = ? AND topic_id != ?",
+            (chat_id, clean_id, target_topic_id, topic_id)
+        )
+        if deleted.rowcount > 0:
+            log.info(f"🧹 Auto-cleaned {deleted.rowcount} stale routing(s) for chat {chat_id} target_topic {target_topic_id} (correct topic_id={topic_id})")
             
         conn.commit()
     except Exception as e:
@@ -1404,6 +1434,10 @@ def update_queue_status(queue_id, status, error_msg=None):
     finally:
         conn.close()
 
+def update_pickup_status(queue_id, status, error_msg=None):
+    """ Alias for update_queue_status (used by execute_pickup_submission) """
+    return update_queue_status(queue_id, status, error_msg)
+
 def retry_failed_pickups(chat_id):
     """ Mapping ပြင်ပြီးနောက် FAILED ဖြစ်နေသော pickup များကို PENDING ပြန်ပြောင်း၍ Retry လုပ်ခြင်း """
     conn = get_connection()
@@ -1473,6 +1507,17 @@ def set_shop_mapping(chat_id, website_os_name):
             (full_id, website_os_name, int(time.time()))
         )
         conn.commit()
+    finally:
+        conn.close()
+
+def delete_shop_mapping(chat_id):
+    """ သိမ်းထားသော Shop Mapping ကို ဖျက်ခြင်း (Stale mapping cleanup အတွက်) """
+    conn = get_connection()
+    try:
+        clean_id = int(str(chat_id).replace("-100", ""))
+        conn.execute("DELETE FROM shop_mappings WHERE chat_id IN (?, ?)", (chat_id, clean_id))
+        conn.commit()
+        log.info(f"🗑️ Deleted shop mapping for chat {chat_id}")
     finally:
         conn.close()
 
@@ -1556,7 +1601,9 @@ def upsert_shop_mappings_batch(data_list):
 def update_unified_shop_data(data_list):
     """
     GSheet မှလာသော Unified Data (Mapping + Topics) များကို Database တွင် Update လုပ်ခြင်း
-    data_list format: [(chat_id, tg_name, web_name, p_tid, e_tid, f_tid), ...]
+    data_list format: [(chat_id, mapping_id, tg_name, web_name, p_tid, e_tid, f_tid), ...]
+    - chat_id: OS Group ID (Column A) → os_groups table
+    - mapping_id: Mapping ID (Column B) → shop_mappings table
     """
     conn = get_connection()
     try:
@@ -1582,17 +1629,27 @@ def update_unified_shop_data(data_list):
             )
 
         # ၃။ Sheet ထဲမှ data များဖြင့် Update/Insert လုပ်ခြင်း
-        for chat_id_str, tg_name, web_name, p_tid, e_tid, f_tid in data_list:
+        for row in data_list:
+            chat_id_str = row[0]
+            mapping_id = row[1] if len(row) > 1 and row[1] else None
+            tg_name = row[2] if len(row) > 2 else ""
+            web_name = row[3] if len(row) > 3 else ""
+            p_tid = row[4] if len(row) > 4 else "0"
+            e_tid = row[5] if len(row) > 5 else "0"
+            f_tid = row[6] if len(row) > 6 else "0"
             if not chat_id_str: continue
             chat_id = int(chat_id_str)
             
-            # Website Mapping Update
+            # Use mapping_id for shop_mappings table (defaults to chat_id)
+            map_id = int(mapping_id) if mapping_id else chat_id
+            
+            # Website Mapping Update (use mapping_id from Column B for shop_mappings table)
             if not web_name or web_name.strip() == "":
-                c.execute("DELETE FROM shop_mappings WHERE chat_id = ?", (chat_id,))
+                c.execute("DELETE FROM shop_mappings WHERE chat_id = ?", (map_id,))
             else:
                 c.execute(
                     "INSERT OR REPLACE INTO shop_mappings (chat_id, website_os_name, updated_at) VALUES (?, ?, ?)",
-                    (chat_id, web_name.strip(), now)
+                    (map_id, web_name.strip(), now)
                 )
             
             # Topics Update (os_groups)
@@ -1683,19 +1740,10 @@ def get_all_website_shops():
         conn.close()
 
 def is_website_shop_exists(name):
-    """ Website shops ထဲတွင် အမည်အတိအကျ ရှိမရှိ စစ်ဆေးခြင်း """
+    """ Website shops ထဲတွင် အမည်အတိအကျ ရှိမရှိ စစ်ဆေးခြင်း (Case-Insensitive) """
     conn = get_connection()
     try:
-        res = conn.execute("SELECT 1 FROM website_shops WHERE name = ?", (name,)).fetchone()
-        return res is not None
-    finally:
-        conn.close()
-
-def is_website_shop_exists(shop_name):
-    """ Website shops ထဲတွင် အမည်အတိအကျ ရှိမရှိ စစ်ဆေးခြင်း """
-    conn = get_connection()
-    try:
-        res = conn.execute("SELECT 1 FROM website_shops WHERE name = ?", (shop_name,)).fetchone()
+        res = conn.execute("SELECT 1 FROM website_shops WHERE LOWER(name) = LOWER(?)", (name,)).fetchone()
         return res is not None
     finally:
         conn.close()

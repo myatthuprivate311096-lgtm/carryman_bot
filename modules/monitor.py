@@ -56,5 +56,5 @@ def get_uptime():
             return f"{days}d {hours}h {minutes}m"
         else:
             return f"{hours}h {minutes}m"
-    except:
+    except Exception:
         return "Unknown"

@@ -37,38 +37,68 @@ def register_handlers(bot):
     # --- [ Section: Maintenance Control (အသစ်ထည့်ရမည့်နေရာ) ] ---
     @bot.message_handler(commands=['gsupdate'])
     def handle_gs_update(message):
-        """ Google Sheet မှ Data များကို Manual Sync လုပ်ခြင်း """
+        """ Google Sheet မှ Data များကို Manual Sync လုပ်ခြင်း (Bidirectional) """
         if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
-            msg = bot.reply_to(message, "⏳ **Google Sheet မှ ဒေတာများကို ရယူနေပါသည်...**")
+            # Subcommand parsing: /gsupdate map or /gsupdate map run
+            parts = message.text.strip().split()
+            subcmd = parts[1].lower() if len(parts) > 1 else None
             
-            # .env ထဲက URL ကို ယူခြင်း
             sheet_url = os.getenv('GSHEET_URL')
             if not sheet_url:
-                bot.edit_message_text("❌ `.env` ထဲမှာ `GSHEET_URL` ထည့်သွင်းထားခြင်း မရှိသေးပါ အစ်ကို။",
-                                     msg.chat.id, msg.message_id)
+                bot.reply_to(message, "❌ `.env` ထဲမှာ `GSHEET_URL` ထည့်သွင်းထားခြင်း မရှိသေးပါ အစ်ကို။")
                 return
 
-            # Sync Module ကို ခေါ်ယူခြင်း
             syncer = gsheet_sync.GSheetSync()
-            # ၁။ Knowledge Base Sync
-            success_kb, result_kb = syncer.sync_knowledge(sheet_url)
             
-            # ၂။ Shop Mappings Sync (အသစ်ထည့်သွင်းခြင်း)
-            success_map, result_map = syncer.sync_shop_mappings(sheet_url)
-            
-            final_msg = f"📊 **Sync Results:**\n\n"
-            final_msg += f"🧠 Knowledge: {result_kb}\n"
-            final_msg += f"🏪 Mappings: {result_map}"
-            
-            bot.edit_message_text(final_msg, msg.chat.id, msg.message_id)
+            if subcmd == 'map':
+                msg = bot.reply_to(message, "⏳ **Bidirectional Map Sync လုပ်နေပါသည်...**\n\n📥 Sheet → DB (import)...")
+                
+                # Step 1: Import from Sheet → DB (Sheet edits are source of truth)
+                success_map, result_map = syncer.sync_shop_mappings(sheet_url)
+                
+                # Step 2: Export DB → Sheet (append new groups from DB)
+                appended_count = syncer.append_new_mappings_to_sheet(sheet_url)
+                
+                final_msg = f"✅ **Bidirectional Map Sync ပြည့်ပါပြီ!**\n\n"
+                final_msg += f"📥 Import: {result_map}\n"
+                if appended_count > 0:
+                    final_msg += f"📤 Export: ဆိုင်အသစ် {appended_count} ခု Sheet ထဲသို့ ထည့်သွင်းပြီးပါပြီ။"
+                
+                bot.edit_message_text(final_msg, msg.chat.id, msg.message_id)
+            else:
+                msg = bot.reply_to(message, "⏳ **Google Sheet မှ ဒေတာများကို ရယူနေပါသည်...**")
+                
+                # ၁။ Knowledge Base Sync
+                success_kb, result_kb = syncer.sync_knowledge(sheet_url)
+                
+                # ၂။ Shop Mappings Sync (bidirectional)
+                success_map, result_map = syncer.sync_shop_mappings(sheet_url)
+                
+                final_msg = f"📊 **Sync Results:**\n\n"
+                final_msg += f"🧠 Knowledge: {result_kb}\n"
+                final_msg += f"🏪 Mappings: {result_map}"
+                
+                bot.edit_message_text(final_msg, msg.chat.id, msg.message_id)
         else:
             bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
+            
+    def _after_register_export_sheet(chat_id):
+        """ Register လုပ်ပြီးတိုင်း GSheet ကို auto-update လုပ်ခြင်း """
+        try:
+            sheet_url = os.getenv('GSHEET_URL')
+            if sheet_url:
+                syncer = gsheet_sync.GSheetSync()
+                count = syncer.append_new_mappings_to_sheet(sheet_url)
+                if count > 0:
+                    log.info(f"📤 Auto-exported {count} new mapping(s) to GSheet after register.")
+        except Exception as e:
+            log.error(f"❌ Auto-export after register failed: {e}")
 
     @bot.message_handler(commands=['gsexport'])
     def handle_gs_export(message):
-        """ Database ထဲရှိ Mapping အားလုံးကို Google Sheet သို့ အကုန်ပြန်ရေးခြင်း (Manual Export) """
+        """ Smart Bidirectional Export: Sheet → DB → Sheet (ပြင်ထားတာ၊ အသစ်ထည့်တာ၊ ဖျက်တာ အားလုံး sync) """
         if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
-            msg = bot.reply_to(message, "📤 **Database မှ data များကို Google Sheet သို့ ပို့နေပါသည်...**")
+            msg = bot.reply_to(message, "🔄 **Smart Bidirectional Sync လုပ်နေပါသည်...**\n\n📥 Step 1/2: Sheet → DB (import edits)...")
             
             sheet_url = os.getenv('GSHEET_URL')
             if not sheet_url:
@@ -77,12 +107,21 @@ def register_handlers(bot):
                 return
 
             syncer = gsheet_sync.GSheetSync()
-            success, result = syncer.export_mappings_to_sheet(sheet_url)
             
-            if success:
-                bot.edit_message_text(f"✅ **Export Success!**\n\n{result}", msg.chat.id, msg.message_id)
-            else:
-                bot.edit_message_text(f"❌ **Export Failed!**\n\n{result}", msg.chat.id, msg.message_id)
+            # Step 1: Import Sheet → DB (manual edits from Sheet become source of truth)
+            success_import, result_import = syncer.sync_shop_mappings(sheet_url)
+            
+            bot.edit_message_text(f"📥 Import done.\n📤 Step 2/2: DB → Sheet (full export)...",
+                                  msg.chat.id, msg.message_id)
+            
+            # Step 2: Full Export DB → Sheet (consolidate everything clean)
+            success_export, result_export = syncer.export_mappings_to_sheet(sheet_url)
+            
+            final_msg = f"✅ **Smart Bidirectional Sync ပြည့်ပါပြီ!**\n\n"
+            final_msg += f"📥 Import: {result_import}\n"
+            final_msg += f"📤 Export: {result_export}"
+            
+            bot.edit_message_text(final_msg, msg.chat.id, msg.message_id)
         else:
             bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
 
@@ -138,58 +177,60 @@ def register_handlers(bot):
             ai_global = db_manager.get_ai_global_status()
             pickup_global = db_manager.get_auto_pickup_global_status()
             alert_global = db_manager.get_alert_system_global_status()
-            # 2. Process Health (PM2)
-            # Auditor is now a thread inside Ingestion, so we map its status to Ingestion
-            processes = {"carryman-ingestion": "🔴", "carryman-auditor": "🔴"}
+            # 2. Process Health (PM2) — 3 Components: Ingestion, Worker, Sync
+            processes = {
+                "carryman-ingestion": "🔴",
+                "carryman-worker": "🔴",
+                "carryman-sync": "🔴",
+            }
             unhealthy_processes = []
             try:
                 pm2_output = subprocess.check_output(["pm2", "jlist"]).decode('utf-8')
                 import json
                 pm2_data = json.loads(pm2_output)
-                
-                # 💡 Support multiple naming conventions for backward compatibility
-                ingestion_names = ["carryman-ingestion", "carryman-bot", "main_bot"]
-                worker_names = ["carryman-worker", "worker_bot"]
-                
-                found_ingestion = False
-                found_worker = False
-                
+
+                ingestion_names = ["carryman-ingestion"]
+                worker_names = ["carryman-worker"]
+                sync_names = ["carryman-sync"]
+
                 for proc in pm2_data:
                     name = proc.get('name')
                     status = proc.get('pm2_env', {}).get('status')
-                    
-                    if name in ingestion_names:
-                        found_ingestion = True
-                        if status == 'online':
-                            processes["carryman-ingestion"] = "🟢 Online"
-                        else:
-                            processes["carryman-ingestion"] = f"🔴 {status.capitalize()}"
-                            unhealthy_processes.append(name)
-                            
-                    if name in worker_names:
-                        found_worker = True
-                        if status == 'online':
-                            processes["carryman-auditor"] = "🟢 Online"
-                        else:
-                            processes["carryman-auditor"] = f"🔴 {status.capitalize()}"
-                            unhealthy_processes.append(name)
+                    mem = proc.get('monit', {}).get('memory', 0) / (1024*1024) if proc.get('monit') else 0
 
-                # If worker not found in PM2, check if it's running as a thread (Legacy/Combined mode)
-                if not found_worker and found_ingestion:
-                    if processes["carryman-ingestion"] == "🟢 Online":
-                        processes["carryman-auditor"] = "🟢 Online (Thread)"
-                    else:
-                        processes["carryman-auditor"] = "🔴 Parent Offline"
+                    if name in ingestion_names:
+                        marker = "🟢 Online" if status == 'online' else f"🔴 {status.capitalize()}"
+                        processes["carryman-ingestion"] = f"{marker} | RAM: {mem:.0f}MB"
+                        if status != 'online':
+                            unhealthy_processes.append("ingestion")
+
+                    if name in worker_names:
+                        marker = "🟢 Online" if status == 'online' else f"🔴 {status.capitalize()}"
+                        processes["carryman-worker"] = f"{marker} | RAM: {mem:.0f}MB"
+                        if status != 'online':
+                            unhealthy_processes.append("worker")
+
+                    if name in sync_names:
+                        marker = "🟢 Online" if status == 'online' else f"🔴 {status.capitalize()}"
+                        processes["carryman-sync"] = f"{marker} | RAM: {mem:.0f}MB"
+                        if status != 'online':
+                            unhealthy_processes.append("sync")
+
             except Exception as e:
                 log.error(f"PM2 Status Error: {e}")
-                for k in processes: processes[k] = "⚠️ Error"
+                for k in processes:
+                    processes[k] = "⚠️ Error"
 
             # 3. Resources
             cpu_usage = psutil.cpu_percent()
             ram_usage = psutil.virtual_memory().percent
-            
+            ram_used_gb = psutil.virtual_memory().used / (1024**3)
+            ram_total_gb = psutil.virtual_memory().total / (1024**3)
+
+            unhealthy_list = "\n".join([f"  ⚠️ {p}" for p in unhealthy_processes]) if unhealthy_processes else "  ✅ All systems healthy"
+
             status_text = (
-                "🤖 **CarryMan System v4.2 Diagnostics**\n"
+                "🤖 **CarryMan System v5.0 Diagnostics**\n"
                 "━━━━━━━━━━━━━━━━━━\n"
                 "⚙️ **Global Toggles:**\n"
                 f"🧠 AI Answer: **{ai_global}**\n"
@@ -197,25 +238,22 @@ def register_handlers(bot):
                 f"🚨 Alert System: **{alert_global}**\n\n"
                 "📡 **Process Health:**\n"
                 f"📥 Ingestion: {processes['carryman-ingestion']}\n"
-                f"🕵️ Auditor: {processes['carryman-auditor']}\n\n"
+                f"🚚 Worker:   {processes['carryman-worker']}\n"
+                f"🔄 Sync:     {processes['carryman-sync']}\n"
+                f"🛡️ Auditor:  {'🟢 Online' if '🟢' in processes['carryman-ingestion'] else '🔴 Parent Offline'} (Thread)\n\n"
+                f"{unhealthy_list}\n\n"
                 "💻 **Resources:**\n"
                 f"🖥 CPU: {cpu_usage}%\n"
-                f"💾 RAM: {ram_usage}%\n"
+                f"💾 RAM: {ram_usage}% ({ram_used_gb:.1f}/{ram_total_gb:.1f} GB)\n"
                 "━━━━━━━━━━━━━━━━━━\n"
                 "📡 SLA Watchdog: Active"
             )
-            
+
             markup = types.InlineKeyboardMarkup(row_width=2)
             if user_level == 4:
-                # Contextual Buttons based on unhealthy processes
-                for proc in unhealthy_processes:
-                    if proc == "carryman-auditor":
-                        markup.add(types.InlineKeyboardButton("🔇 Disable AI (aioff)", callback_data="sys_aioff"))
-                    elif proc == "carryman-ingestion":
-                        markup.add(types.InlineKeyboardButton("⏸️ Disable Pickup (pickupoff)", callback_data="sys_pickupoff"))
-
+                if unhealthy_processes:
+                    markup.add(types.InlineKeyboardButton("🔄 Restart All", callback_data="sys_restart_confirm"))
                 markup.add(
-                    types.InlineKeyboardButton("🔄 Restart All", callback_data="sys_restart_confirm"),
                     types.InlineKeyboardButton("📋 Last Logs", callback_data="sys_logs_20")
                 )
             
@@ -585,6 +623,8 @@ def register_handlers(bot):
 
         try:
             db_manager.save_manual_register(chat_id, shop_name, topic_payload)
+            # 💡 Auto-update GSheet after manual register
+            _after_register_export_sheet(chat_id)
             bot.reply_to(message, f"✅ {shop_name} အား မှတ်ပုံတင်ပြီးပါပြီ။")
         except Exception as e:
             log.error(f"Manual register failed: {e}")

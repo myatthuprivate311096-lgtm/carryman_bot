@@ -38,10 +38,6 @@ ESCALATION_TOPIC_ID = int(os.getenv('ESCALATION_TOPIC_ID', 5))
 # 🧪 Test Mode Configuration
 TEST_GROUP_ID = int(os.getenv('TEST_GROUP_ID', -1003539520778))
 
-# 🚨 Escalation Configuration
-ESCALATION_GROUP_ID = int(os.getenv('ESCALATION_GROUP_ID', -1003906164269))
-ESCALATION_TOPIC_ID = int(os.getenv('ESCALATION_TOPIC_ID', 5))
-
 _bot = None
 
 def get_bot():
@@ -238,19 +234,19 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
         log.error("❌ send_new_alert: Bot instance not available.")
         return None
 
-    target_chat, target_topic = get_routing_data(chat_id, topic_id, category=category, intent=intent)
-    
-    # 💡 Manual Override for Topic (e.g., forcing to Topic 1 when "Talk to Admin" is clicked)
-    if target_topic_override is not None:
-        target_topic = target_topic_override
-    
-    if target_chat is None or target_topic is None:
-        # 💡 Fallback: Force=True ဖြစ်နေရင် (ဥပမာ - Admin နှင့်ပြောမည် နှိပ်ထားရင်) Default Admin Group ကို ပို့မည်
-        if force:
-            log.info(f"🛡️ Route Fallback: Using default admin group for forced alert ({shop_name})")
-            target_chat = int(os.getenv('ALERT_CHAT_ID', -1003601049225))
-            target_topic = 878 # Default Pickup/Urgent Topic
-        else:
+    # 💡 Force=True ဆိုရင် (ဥပမာ - Admin နှင့်ပြောမည် နှိပ်ထားရင်) routing ကိုကျော်ပြီး Admin Group ကို တိုက်ရိုက်ပို့မည်
+    if force:
+        target_chat = int(os.getenv('ALERT_CHAT_ID', -1003601049225))
+        target_topic = target_topic_override if target_topic_override is not None else 1
+        log.info(f"🛡️ Force routing: Sending directly to Admin Group {target_chat}, Topic {target_topic}")
+    else:
+        target_chat, target_topic = get_routing_data(chat_id, topic_id, category=category, intent=intent)
+        
+        # 💡 Manual Override for Topic (e.g., forcing to Topic 1 when "Talk to Admin" is clicked)
+        if target_topic_override is not None:
+            target_topic = target_topic_override
+        
+        if target_chat is None or target_topic is None:
             log.warning(f"⚠️ No route found for {shop_name} ({chat_id}/{topic_id}). Notifying Manager.")
             db_manager.update_message_status(original_msg_id, chat_id, 'WAITING_ROUTE', topic_id=topic_id, category=category, intent=intent, summary=summary)
             notify_manager_missing_route(chat_id, topic_id, shop_name, text, original_msg_id=original_msg_id)
@@ -271,7 +267,7 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
 
     alert_text = (
         f"<b>{title}</b>\n"
-        f"Customer စာပို့ထားသည်မှာ မိနစ် ၁၅ ပြည့်သွားပါပြီ။\n"
+        + ("" if force else f"Customer စာပို့ထားသည်မှာ မိနစ် ၁၅ ပြည့်သွားပါပြီ။\n") +
         f"━━━━━━━━━━━━━━━━━━\n"
         f"🏪 ဆိုင်: <b>{safe_shop}</b>\n"
         f"💬 စာသား: {safe_text}\n"
@@ -339,7 +335,7 @@ def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_i
         # ၁။ Alert Tracking နှင့် Pickup Status စစ်ဆေးခြင်း
         tracking = db_manager.get_alert_tracking(original_msg_id, chat_id)
         if not tracking:
-            log.error(f"❌ No tracking found for {original_msg_id} in {chat_id}")
+            log.warning(f"⚠️ No tracking found for {original_msg_id} in {chat_id}")
             return
 
         # Pickup Alert ဖြစ်ပါက Status စစ်မည် (Processing/Success ဆိုလျှင် Update မလုပ်တော့ပါ)
@@ -740,7 +736,7 @@ def process_audits(bot_instance=None):
                 # 🧹 Run Database Maintenance hourly
                 try:
                     db_manager.db_maintenance()
-                except:
+                except Exception:
                     pass
                 last_cleanup_time = time.time()
 

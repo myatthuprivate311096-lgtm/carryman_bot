@@ -33,11 +33,16 @@ def run_worker():
     cleanup_thread.start()
     log.info("🧹 Daily Pickup Cleanup thread started.")
 
-    # 🛡️ Start Auditor (Worker 2: AI Brain)
-    # Note: This process does NOT poll, it only sends messages.
-    auditor.set_bot(bot)
-    log.info("🛡️ Auditor (AI Brain) starting...")
-    auditor.process_audits() # This is usually a while True loop
+    # 🛡️ Auditor is now handled by carryman-ingestion (main_bot.py) via alert_handler
+    # to prevent dual-run conflicts and duplicate alert processing.
+    log.info("🛡️ Auditor is handled by ingestion process — skipping in worker.")
+
+    # 🔒 Keep main thread alive (all worker threads are daemon threads)
+    try:
+        while True:
+            time.sleep(60)
+    except KeyboardInterrupt:
+        log.info("🛑 Worker Process stopped by user.")
 
 if __name__ == "__main__":
     try:

@@ -35,10 +35,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
         except Exception as e:
             log.error(f"❌ Pickup Done Callback Error: {e}")
             try: bot.answer_callback_query(call.id, "❌ Error occurred")
-            except: pass
-        finally:
-            try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_dt_') or call.data.startswith('ap_vh_'))
     def handle_auto_pickup_callback(call):
@@ -72,10 +69,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
         except Exception as e:
             log.error(f"❌ Auto Pickup Callback Error: {e}")
             try: bot.answer_callback_query(call.id, "❌ Error occurred", show_alert=True)
-            except: pass
-        finally:
-            try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_st_'))
     def handle_staff_pickup_decision(call):
@@ -89,27 +83,40 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             date_type = parts[4]
             vehicle = parts[5] if parts[5] != "none" else "none"
 
-            markup = telebot.types.InlineKeyboardMarkup(row_width=1)
-            markup.add(
-                telebot.types.InlineKeyboardButton("OK", callback_data=f"ap_pconf_{orig_msg_id}_{date_type}"),
-                telebot.types.InlineKeyboardButton("💬 Admin နှင့်ပြောမည်", callback_data=f"ap_admin_0_{orig_msg_id}"),
-                telebot.types.InlineKeyboardButton("❌ Pick Up မဟုတ်ပါ", callback_data=f"ap_cancel_{orig_msg_id}")
-            )
-
             if date_type == "today":
+                markup = telebot.types.InlineKeyboardMarkup(row_width=1)
+                markup.add(
+                    telebot.types.InlineKeyboardButton("OK", callback_data=f"ap_pconf_{orig_msg_id}_{date_type}"),
+                    telebot.types.InlineKeyboardButton("💬 Admin နှင့်ပြောမည်", callback_data=f"ap_admin_0_{orig_msg_id}"),
+                    telebot.types.InlineKeyboardButton("❌ Pick Up မဟုတ်ပါ", callback_data=f"ap_cancel_{orig_msg_id}")
+                )
                 text = "ဒီနေ့အတွက် Pick up တင်ပေးလို့ရပါတယ်ရှင်။ တင်ပေးရမလားရှင့်"
                 status_admin = "📅 Today (Waiting OS)"
                 log_msg = "✅ **Today** အတွက် OS ထံ အတည်ပြုချက် တောင်းခံထားပါသည် အစ်ကို။"
             else:
-                text = "ဒီနေ့ rider လေးကဝေးလမ်းကြောင်းလေးကျော်သွားပြီမို့လို့ မနက်ဖြန်လေးကောက်ပေးလို့ရမလားရှင့်"
-                status_admin = "📅 Tomorrow (Waiting OS)"
-                log_msg = "✅ **Tomorrow** အတွက် OS ထံ အတည်ပြုချက် တောင်းခံထားပါသည် အစ်ကို။"
+                # Tomorrow: Show actual date + only 2 buttons (OK, Admin)
+                import pytz as _pytz
+                from datetime import datetime as _dt, timedelta as _td
+                _tz = _pytz.timezone('Asia/Yangon')
+                msg_ctx = db_manager.get_message_context(orig_msg_id, chat_id)
+                msg_ts = msg_ctx[4] if msg_ctx else _dt.now(_tz).timestamp()
+                msg_dt = _dt.fromtimestamp(msg_ts, _tz)
+                tomorrow_dt = msg_dt + _td(days=1)
+                tomorrow_str = tomorrow_dt.strftime("%d-%m-%Y")
+                text = f"ဒီနေ့ Pick up လေးကျော်သွားပြီမိုလို မနက်ဖြန် {tomorrow_str} နဲ့ pickup လေးတင်ပေးရမလားရှင့်"
+                status_admin = f"📅 Tomorrow ({tomorrow_str}) (Waiting OS)"
+                log_msg = f"✅ **Tomorrow ({tomorrow_str})** အတွက် OS ထံ အတည်ပြုချက် တောင်းခံထားပါသည် အစ်ကို။"
+                markup = telebot.types.InlineKeyboardMarkup(row_width=1)
+                markup.add(
+                    telebot.types.InlineKeyboardButton("OK", callback_data=f"ap_pconf_{orig_msg_id}_{date_type}"),
+                    telebot.types.InlineKeyboardButton("💬 Admin နှင့်ပြောမည်", callback_data=f"ap_admin_0_{orig_msg_id}")
+                )
 
             # 💡 အပေါ်က "၁၁ နာရီကျော်ပြီ" ဆိုတဲ့ စာကို ဖျက်ခြင်း
             old_msgs = db_manager.get_pickup_intermediate_msgs(chat_id, orig_msg_id)
             for m_id in old_msgs:
                 try: bot.delete_message(chat_id, m_id)
-                except: pass
+                except Exception: pass
             db_manager.delete_pickup_intermediate_msgs(chat_id, orig_msg_id)
 
             sent_msg = bot.send_message(chat_id, text, reply_to_message_id=orig_msg_id, reply_markup=markup)
@@ -121,10 +128,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
         except Exception as e:
             log.error(f"❌ Staff Pickup Decision Error: {e}")
             try: bot.answer_callback_query(call.id, "❌ Error occurred")
-            except: pass
-        finally:
-            try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_pconf_'))
     def handle_pickup_confirm_initial_callback(call):
@@ -173,10 +177,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
         except Exception as e:
             log.error(f"❌ Pickup Confirm Initial Callback Error: {e}")
             try: bot.answer_callback_query(call.id, "❌ Error occurred")
-            except: pass
-        finally:
-            try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_tconf_'))
     def handle_tomorrow_confirm_callback(call):
@@ -186,10 +187,10 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             orig_msg_id = int(call.data.split('_')[2])
             auto_pickup.show_interactive_setup(bot, call.message.chat.id, orig_msg_id, "tomorrow", edit_msg_id=call.message.message_id)
             bot.answer_callback_query(call.id)
-        except: pass
+        except Exception: pass
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_ivh_'))
     def handle_interactive_vehicle_callback(call):
@@ -223,7 +224,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Interactive Vehicle Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_irm_'))
     def handle_interactive_remark_callback(call):
@@ -242,7 +243,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Interactive Remark Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_isb_'))
     def handle_interactive_submit_callback(call):
@@ -302,7 +303,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Interactive Submit Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_cs_'))
     def handle_customer_pickup_decision(call):
@@ -339,7 +340,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Customer Pickup Decision Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_cancel_'))
     def handle_pickup_cancel_callback(call):
@@ -356,7 +357,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 central_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
                 try:
                     bot.delete_message(central_chat, alert_msg_id)
-                except: pass
+                except Exception: pass
                 db_manager.delete_alert_tracking(orig_msg_id, chat_id)
 
             # 💡 Phase 2: AI Learning from Cancellations
@@ -378,7 +379,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Pickup Cancel Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_rm_'))
     def handle_remark_selection(call):
@@ -406,7 +407,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Remark Selection Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_fix_'))
     def handle_fix_mapping_callback(call):
@@ -462,10 +463,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
         except Exception as e:
             log.error(f"❌ Fix Mapping Callback Error: {e}", exc_info=True)
             try: bot.answer_callback_query(call.id, "❌ အမှားတစ်ခု ဖြစ်သွားပါသည်။", show_alert=True)
-            except: pass
-        finally:
-            try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_set_'))
     def handle_set_mapping_callback(call):
@@ -487,7 +485,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Set Mapping Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_manual_'))
     def handle_manual_mapping_callback(call):
@@ -500,7 +498,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Manual Mapping Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_conf_'))
     def handle_pickup_confirm_callback(call):
@@ -543,7 +541,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 for mid in msg_ids:
                     if mid != call.message.message_id: # လက်ရှိ Status ပြနေတဲ့စာကို မဖျက်ပါ
                         try: bot.delete_message(chat_id, mid)
-                        except: pass
+                        except Exception: pass
                 # DB ထဲက စာရင်းကို ရှင်းမည်
                 db_manager.delete_pickup_intermediate_msgs(chat_id, orig_msg_id)
             except Exception as ce:
@@ -555,7 +553,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Pickup Confirm Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_edit_'))
     def handle_pickup_edit_callback(call):
@@ -592,7 +590,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Pickup Edit Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_ed_date_'))
     def handle_edit_date_callback(call):
@@ -610,7 +608,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Edit Date Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_ed_v_'))
     def handle_edit_vehicle_callback(call):
@@ -628,7 +626,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Edit Vehicle Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_ed_rem_'))
     def handle_edit_remark_callback(call):
@@ -648,7 +646,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Edit Remark Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_upd_'))
     def handle_update_field_callback(call):
@@ -682,7 +680,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Update Field Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_ed_back_'))
     def handle_back_to_conf_callback(call):
@@ -698,7 +696,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             bot.answer_callback_query(call.id, "❌ အမှားတစ်ခု ဖြစ်သွားပါသည်။")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_admin_'))
     def handle_pickup_admin_callback(call):
@@ -754,7 +752,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 
                 res = auditor.send_new_alert(
                     chat_id, 1, orig_msg_id, text, "Rider requested Admin support", shop_name, ts,
-                    media_id=media_id, title="🚨 **Urgent Alert (Rider Request)**", force=True,
+                    media_id=media_id, title="💬 Admin နှင့်ပြောမည် (OS Request)", force=True,
                     target_topic_override=1 # Force to Topic 1 (General/Urgent)
                 )
                 log.info(f"✅ send_new_alert result: {res}")
@@ -768,7 +766,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Pickup Admin Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_wrong_back_'))
     def handle_wrong_pickup_back_callback(call):
@@ -814,7 +812,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Wrong Pickup Back Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_wrong_'))
     def handle_wrong_pickup_callback(call):
@@ -850,7 +848,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Wrong Pickup Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_fb_'))
     def handle_pickup_feedback_callback(call):
@@ -901,7 +899,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             log.error(f"❌ Pickup Feedback Callback Error: {e}")
         finally:
             try: bot.answer_callback_query(call.id)
-            except: pass
+            except Exception: pass
 
 # --- Helper Functions ---
 
@@ -914,10 +912,10 @@ def save_manual_remark_interactive(message, bot, orig_msg_id, date_type, edit_ms
         
         # 💡 User ရိုက်လိုက်သော စာနှင့် မှတ်ချက်ရေးခိုင်းသည့်စာကို ချက်ချင်းဖျက်မည်
         try: bot.delete_message(chat_id, message.message_id)
-        except: pass
+        except Exception: pass
         if prompt_msg_id:
             try: bot.delete_message(chat_id, prompt_msg_id)
-            except: pass
+            except Exception: pass
         
         # Update DB state
         tz = pytz.timezone('Asia/Yangon')
