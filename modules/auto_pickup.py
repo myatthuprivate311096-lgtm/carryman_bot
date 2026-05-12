@@ -1068,12 +1068,13 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
             elif is_failed:
                 # Error တက်ချိန် logic
                 mapped_name = db_manager.get_shop_mapping(chat_id)
-                # Mapping မရှိလျှင် သို့မဟုတ် status_text ထဲမှာ Mapping/ဆိုင်နာမည်/OS Name ပါနေလျှင် Fix Shop Mapping ပြမည်
+                # Mapping မရှိလျှင် သို့မဟုတ် status_text ထဲမှာ Mapping/ဆိုင်နာမည်/OS Name ပါနေလျှင် Manual Type ပြမည်
                 is_mapping_issue = not mapped_name or any(x in str(status_text) for x in ["Mapping", "ဆိုင်နာမည်", "OS Name"])
                 
                 if is_mapping_issue:
-                    # ၂။ စက်ရုပ် ပထမအကြိမ် Error တက်ချိန် (သို့မဟုတ် Mapping လိုအပ်ချိန်): View Message နှင့် Fix Shop Mapping ခလုတ်များကို ပြမည်။
-                    markup.add(types.InlineKeyboardButton("🔧 Fix Shop Mapping", callback_data=f"ap_fix_{chat_id}"))
+                    # ၂။ စက်ရုပ် ပထမအကြိမ် Error တက်ချိန် (သို့မဟုတ် Mapping လိုအပ်ချိန်): View Message နှင့် Manual Type ခလုတ်များကို ပြမည်။
+                    _qid = queue_id if queue_id else 0
+                    markup.add(types.InlineKeyboardButton("⌨️ Manual Type", callback_data=f"ap_mantype_{orig_msg_id}_{chat_id}_{_qid}"))
                 else:
                     # ၃။ Mapping ပြင်ပြီးသော်လည်း ထပ်မံ Error တက်ချိန် (သို့မဟုတ် အခြား Error များ): View Message နှင့် Done ခလုတ်များကို ပြမည်။
                     if show_done:
@@ -1349,12 +1350,8 @@ def run_queue_worker(bot):
                 else:
                     log.warning(f"🛑 No mapping found for {os_name} and no exact match in website_shops.")
                     db_manager.update_queue_status(queue_id, 'FAILED', error_msg="Shop Mapping Missing")
+                    # 💡 Single alert only - Manual Type button will be shown inline via update_central_pickup_alert
                     update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Failed (Mapping Missing)", queue_id=queue_id)
-                    
-                    alert_msg = f"<b>Shop Mapping Missing</b>\n🏪 ဆိုင်: {os_name}\n⚠️ ဆိုင်နာမည် Mapping မရှိသေးပါ။ Manager မှ Fix Shop Mapping ကိုနှိပ်၍ အရင်ပြင်ပေးပါရန်။"
-                    asyncio.run(send_pickup_notification(alert_msg, is_alert=True))
-                    
-                    handle_pickup_error(bot, chat_id, orig_msg_id, os_name, target_date, "ဆိုင်နာမည် Mapping မရှိသေးပါ။ Manager မှ Fix Shop Mapping ကိုနှိပ်၍ အရင်ပြင်ပေးပါရန်။")
                     continue
 
             if not all([target_date, final_os_name, vehicle]) or vehicle == "none":

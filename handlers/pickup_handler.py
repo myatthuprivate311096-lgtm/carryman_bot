@@ -500,6 +500,30 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             try: bot.answer_callback_query(call.id)
             except Exception: pass
 
+    @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_mantype_'))
+    def handle_manual_type_mapping_callback(call):
+        """ Pickup Alert ထဲက Manual Type ခလုတ်ကို နှိပ်လိုက်သည့်အခါ (Mapping Missing အတွက်) """
+        try:
+            # format: ap_mantype_{orig_msg_id}_{chat_id}_{queue_id}
+            parts = call.data.split('_')
+            orig_msg_id = int(parts[2])
+            chat_id = int(parts[3])
+            queue_id = int(parts[4]) if len(parts) > 4 and parts[4] != "0" else None
+            topic_id = call.message.message_thread_id  # 💡 Forum topic ထဲမှာ ရှိနေစေရန်
+            
+            sent_msg = bot.send_message(
+                call.message.chat.id,
+                "📝 Website မှာရှိတဲ့ **OS Name အတိအကျ** ကို ရိုက်ထည့်ပေးပါခင်ဗျာ။",
+                reply_markup=telebot.types.ForceReply(),
+                message_thread_id=topic_id
+            )
+            bot.register_next_step_handler(sent_msg, save_manual_type_mapping, bot, chat_id, orig_msg_id, queue_id, sent_msg.message_id, topic_id)
+        except Exception as e:
+            log.error(f"❌ Manual Type Mapping Callback Error: {e}")
+        finally:
+            try: bot.answer_callback_query(call.id)
+            except Exception: pass
+
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_conf_'))
     def handle_pickup_confirm_callback(call):
         """ Rider မှ အချက်အလက်မှန်ကန်ကြောင်း အတည်ပြုသည့်အခါ """
@@ -1077,3 +1101,66 @@ def save_manual_mapping(message, bot, chat_id):
     except Exception as e:
         log.error(f"❌ Save Manual Mapping Error: {e}")
         bot.reply_to(message, "❌ သိမ်းဆည်းစဉ် အမှားတစ်ခု ဖြစ်သွားပါသည်။")
+
+def save_manual_type_mapping(message, bot, chat_id, orig_msg_id, queue_id, prompt_msg_id=None, topic_id=None):
+    """ Manual Type ဖြင့် ရိုက်ထည့်လိုက်သော OS Name ကို Mapping သိမ်း၊ စာများဖျက်၊ Retry လုပ်ခြင်း """
+    try:
+        from modules import auto_pickup
+        website_name = message.text.strip() if message.text else ""
+        # 💡 Forum topic ထဲမှာ ရှိနေစေရန် thread_id သုံးမည်
+        thread_id = topic_id if topic_id else message.message_thread_id
+        
+        # 💡 User ရိုက်လိုက်သော စာနှင့် Prompt စာကို ချက်ချင်းဖျက်မည်
+        try:
+            bot.delete_message(message.chat.id, message.message_id)
+        except Exception:
+            pass
+        if prompt_msg_id:
+            try:
+                bot.delete_message(message.chat.id, prompt_msg_id)
+            except Exception:
+                pass
+        
+        if not website_name:
+            # နာမည်အလွတ်ဖြစ်နေရင် အသိပေးပြီး return
+            err_msg = bot.send_message(
+                message.chat.id,
+                "❌ နာမည် အလွတ်ဖြစ်နေလို့ မသိမ်းပေးနိုင်ပါဘူး။ Manual Type ကို ပြန်နှိပ်ပြီး ထပ်ကြိုးစားပေးပါခင်ဗျာ။",
+                message_thread_id=thread_id
+            )
+            # Auto-delete error message after 10 seconds
+            import threading
+            def _del():
+                import time
+                time.sleep(10)
+                try:
+                    bot.delete_message(message.chat.id, err_msg.message_id)
+                except Exception:
+                    pass
+            threading.Thread(target=_del, daemon=True).start()
+            return
+        
+        # ၁။ Mapping သိမ်းခြင်း
+        db_manager.set_shop_mapping(chat_id, website_name)
+        
+        # ၂။ FAILED Pickup များကို PENDING ပြန်ပြောင်း၍ Retry
+        db_manager.retry_failed_pickups(chat_id)
+        
+        # ၃။ Pickup Alert Status ကို Processing ပြောင်းခြင်း
+        if orig_msg_id:
+            auto_pickup.update_central_pickup_alert(
+                bot, orig_msg_id, chat_id, "⏳ Processing",
+                queue_id=queue_id if queue_id else None
+            )
+        
+        log.info(f"🎯 Manual Type: Mapped chat {chat_id} to '{website_name}', retrying failed pickups. OS: {website_name}")
+    except Exception as e:
+        log.error(f"❌ Save Manual Type Mapping Error: {e}")
+        try:
+            bot.send_message(
+                message.chat.id,
+                "❌ သိမ်းဆည်းစဉ် အမှားတစ်ခု ဖြစ်သွားပါသည်။",
+                message_thread_id=message.message_thread_id
+            )
+        except Exception:
+            pass
