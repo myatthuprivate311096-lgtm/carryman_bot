@@ -1327,32 +1327,22 @@ def run_queue_worker(bot):
 
             log.info(f"📦 Processing Queue Item {queue_id} for {os_name}")
             
-            # --- Strict Mapping Logic (with Stale Mapping Protection) ---
+            # --- Mapping Logic (Trust shop_mappings from GSheet + Manual Type) ---
             mapped_name = db_manager.get_shop_mapping(chat_id)
             final_os_name = None
             
             if mapped_name:
-                # 🛡️ Validate: Saved mapping must exist on website, otherwise delete it
-                if db_manager.is_website_shop_exists(mapped_name):
-                    final_os_name = mapped_name
-                    log.info(f"🎯 Using saved mapping: {final_os_name}")
-                else:
-                    log.warning(f"🛑 Stale mapping detected: '{mapped_name}' not on website. Deleting for {os_name}.")
-                    db_manager.delete_shop_mapping(chat_id)
-                    mapped_name = None  # Fall through to unmapped logic
-            
-            if not mapped_name:
-                # Check if the current os_name exists exactly on the website
-                if db_manager.is_website_shop_exists(os_name):
-                    final_os_name = os_name
-                    db_manager.set_shop_mapping(chat_id, os_name)
-                    log.info(f"✨ Self-learned: Exact match found for {os_name}. Saved to mapping.")
-                else:
-                    log.warning(f"🛑 No mapping found for {os_name} and no exact match in website_shops.")
-                    db_manager.update_queue_status(queue_id, 'FAILED', error_msg="Shop Mapping Missing")
-                    # 💡 Single alert only - Manual Type button will be shown inline via update_central_pickup_alert
-                    update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Failed (Mapping Missing)", queue_id=queue_id)
-                    continue
+                # 💡 Trust shop_mappings directly — GSheet (140+) is more complete than website scraping (20)
+                # If mapping is wrong, website submission will fail with screenshot → manager can fix
+                final_os_name = mapped_name
+                log.info(f"🎯 Using saved mapping: {final_os_name}")
+            else:
+                # No mapping exists at all — fail and let manager use Manual Type
+                log.warning(f"🛑 No mapping found for {os_name}.")
+                db_manager.update_queue_status(queue_id, 'FAILED', error_msg="Shop Mapping Missing")
+                # 💡 Single alert only - Manual Type button will be shown inline via update_central_pickup_alert
+                update_central_pickup_alert(bot, orig_msg_id, chat_id, "❌ Failed (Mapping Missing)", queue_id=queue_id)
+                continue
 
             if not all([target_date, final_os_name, vehicle]) or vehicle == "none":
                 log.error(f"❌ Strict Validation Failed for Queue {queue_id}: Missing required fields.")
