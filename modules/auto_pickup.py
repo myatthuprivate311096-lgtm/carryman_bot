@@ -338,10 +338,139 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
         log.error("❌ Save button ကို ရှာမတွေ့ပါ။")
         return False, "Save button ကို ရှာမတွေ့ပါ။"
     
+    # --- ၄။ Result Verification (အောင်မြင်မှုကို အတည်ပြုခြင်း) ---
     await page.wait_for_load_state('domcontentloaded')
-    await asyncio.sleep(3)
-    log.info("🎉 အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်!")
-    return True, "အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်။"
+    await asyncio.sleep(2)
+    
+    # Capture screenshot for debugging regardless of outcome
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    after_save_path = os.path.join(base_dir, "after_save.png")
+    await page.screenshot(path=after_save_path, full_page=True)
+    log.info(f"📸 SAVE နှိပ်ပြီးနောက် မျက်နှာပြင်ကို '{after_save_path}' အဖြစ် မှတ်တမ်းတင်ထားပါသည်။")
+    
+    # --- Success/Error Detection ---
+    is_success = False
+    error_message = None
+    
+    # 1. Check Ant Design success message/toast
+    try:
+        success_selectors = [
+            ".ant-message-success",
+            ".ant-message .ant-message-notice-content",
+            ".ant-notification-success",
+            ".ant-result-success",
+            "//*[contains(@class, 'success')]//span[contains(text(), 'Success') or contains(text(), 'အောင်မြင်')]",
+            "//*[contains(text(), 'created successfully') or contains(text(), 'Created')]",
+        ]
+        for selector in success_selectors:
+            try:
+                loc = page.locator(selector)
+                if await loc.count() > 0:
+                    for i in range(await loc.count()):
+                        if await loc.nth(i).is_visible():
+                            text = await loc.nth(i).inner_text()
+                            log.info(f"   ✅ Success indicator found: '{text[:100]}'")
+                            is_success = True
+                            break
+                if is_success:
+                    break
+            except Exception:
+                continue
+    except Exception as e:
+        log.debug(f"Success indicator check error: {e}")
+    
+    # 2. Check for Ant Design error message/toast
+    if not is_success:
+        try:
+            error_selectors = [
+                ".ant-message-error",
+                ".ant-notification-error",
+                ".ant-result-error",
+                ".ant-form-item-explain-error",
+                ".ant-alert-error",
+                "//*[contains(@class, 'error') or contains(@class, 'has-error')]",
+                "//*[contains(text(), 'Error') or contains(text(), 'Failed') or contains(text(), 'Duplicate') or contains(text(), 'already exists')]",
+            ]
+            for selector in error_selectors:
+                try:
+                    loc = page.locator(selector)
+                    if await loc.count() > 0:
+                        for i in range(await loc.count()):
+                            if await loc.nth(i).is_visible():
+                                text = await loc.nth(i).inner_text()
+                                if text and text.strip():
+                                    error_message = text.strip()[:200]
+                                    log.warning(f"   ⚠️ Error indicator found: '{error_message}'")
+                                    break
+                    if error_message:
+                        break
+                except Exception:
+                    continue
+        except Exception as e:
+            log.debug(f"Error indicator check error: {e}")
+    
+    # 3. Check for validation errors on form fields
+    if not is_success and not error_message:
+        try:
+            validation_error = page.locator(".ant-form-item-explain-error, .ant-form-item-explain")
+            if await validation_error.count() > 0:
+                errors = []
+                for i in range(await validation_error.count()):
+                    try:
+                        txt = await validation_error.nth(i).inner_text()
+                        if txt and txt.strip():
+                            errors.append(txt.strip())
+                    except Exception:
+                        continue
+                if errors:
+                    error_message = "; ".join(errors)[:200]
+                    log.warning(f"   ⚠️ Validation errors found: '{error_message}'")
+        except Exception as e:
+            log.debug(f"Validation error check error: {e}")
+    
+    # 4. Check URL change (success usually redirects to order list)
+    if not is_success and not error_message:
+        current_url = page.url.lower()
+        log.info(f"   🔗 Current URL after save: {current_url}")
+        # Success indicators by URL pattern
+        if "neworder" not in current_url and ("order" in current_url or "list" in current_url or "detail" in current_url):
+            log.info(f"   ✅ URL changed away from neworder page, treating as success.")
+            is_success = True
+        # Still on neworder page → likely error
+        elif "neworder" in current_url:
+            log.warning(f"   ⚠️ Still on neworder page after save — submission may have failed silently.")
+    
+    # 5. Check for Ant Design message with generic text content
+    if not is_success and not error_message:
+        try:
+            message_loc = page.locator(".ant-message-notice-content, .ant-notification-notice")
+            for i in range(await message_loc.count()):
+                try:
+                    if await message_loc.nth(i).is_visible():
+                        msg_text = await message_loc.nth(i).inner_text()
+                        if msg_text and msg_text.strip():
+                            log.info(f"   💬 Message found: '{msg_text[:100]}'")
+                            if any(word in msg_text.lower() for word in ['success', 'created', 'အောင်မြင်', 'created successfully']):
+                                is_success = True
+                            elif any(word in msg_text.lower() for word in ['error', 'failed', 'duplicate', 'မှား', 'ရှိပြီး']):
+                                error_message = msg_text.strip()[:200]
+                            break
+                except Exception:
+                    continue
+        except Exception as e:
+            log.debug(f"Generic message check error: {e}")
+    
+    # --- Final Decision ---
+    if is_success:
+        log.info("🎉 အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်! (Website မှ အတည်ပြုပြီး)")
+        return True, "အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်။"
+    elif error_message:
+        log.error(f"❌ အော်ဒါတင်ခြင်း မအောင်မြင်ပါ: {error_message}")
+        return False, error_message
+    else:
+        # No explicit success or error detected — treat as uncertain and flag as failed for manual review
+        log.warning("⚠️ အော်ဒါတင်ခြင်း အောင်မြင်ကြောင်း အတည်မပြုနိုင်ပါ။ Error message လည်းမတွေ့ပါ။ Manual review လိုအပ်ပါသည်။")
+        return False, "Website response ကို အတည်မပြုနိုင်ပါ (No success/error indicator found). Screenshot captured for review."
 
 def submit_pickup_order(target_date, os_name, remark, vehicle="Bicycle"):
     log.info("🚀 Auto Pickup စက်ရုပ် (Playwright) စတင်နေပါပြီ...")
