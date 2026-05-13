@@ -339,131 +339,28 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
         return False, "Save button ကို ရှာမတွေ့ပါ။"
     
     # --- ၄။ Result Verification (အောင်မြင်မှုကို အတည်ပြုခြင်း) ---
-    # Wait for network to settle after save click
     await page.wait_for_load_state('domcontentloaded')
-    
-    # 🍬 SweetAlert2 appears ~500ms-2s after save. Wait and capture it before it auto-dismisses.
-    log.info("⏳ Waiting for SweetAlert/notification to appear after save...")
-    swal_detected = False
-    for wait_attempt in range(6):  # Check every 500ms for 3 seconds
-        await asyncio.sleep(0.5)
-        try:
-            swal_popup = page.locator(".swal2-popup, .swal-overlay, .swal2-container")
-            if await swal_popup.count() > 0 and await swal_popup.first.is_visible():
-                swal_detected = True
-                log.info(f"   🍬 SweetAlert detected after {wait_attempt * 0.5:.1f}s")
-                break
-        except Exception:
-            continue
-    
-    # Capture screenshot for debugging regardless of outcome
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    after_save_path = os.path.join(base_dir, "after_save.png")
-    await page.screenshot(path=after_save_path, full_page=True)
-    log.info(f"📸 SAVE နှိပ်ပြီးနောက် မျက်နှာပြင်ကို '{after_save_path}' အဖြစ် မှတ်တမ်းတင်ထားပါသည်။")
     
     # --- Success/Error Detection ---
     is_success = False
     error_message = None
     
-    # 1. 🍬 Check SweetAlert2 (Primary — website uses SweetAlert for confirmations)
-    try:
-        swal_selectors = [
-            ".swal2-popup",
-            ".swal2-title",
-            ".swal2-html-container",
-            ".swal-overlay",
-            ".swal2-container",
-        ]
-        for selector in swal_selectors:
-            try:
-                loc = page.locator(selector)
-                if await loc.count() > 0:
-                    for i in range(min(await loc.count(), 5)):
-                        try:
-                            if await loc.nth(i).is_visible():
-                                text = await loc.nth(i).inner_text()
-                                if text and text.strip():
-                                    clean_text = text.strip()
-                                    log.info(f"   🍬 SweetAlert text: '{clean_text[:150]}'")
-                                    if any(w in clean_text.lower() for w in ['success', 'created', 'saved', 'အောင်မြင်', 'created successfully', 'completed']):
-                                        is_success = True
-                                        log.info(f"   ✅ SweetAlert success detected!")
-                                        break
-                                    elif any(w in clean_text.lower() for w in ['error', 'failed', 'duplicate', 'already exist', 'မှား', 'မအောင်မြင်']):
-                                        error_message = clean_text[:200]
-                                        log.warning(f"   ⚠️ SweetAlert error detected: '{error_message}'")
-                                        break
-                        except Exception:
-                            continue
-                if is_success or error_message:
-                    break
-            except Exception:
-                continue
-    except Exception as e:
-        log.debug(f"SweetAlert check error: {e}")
-    
-    # 2. Check Ant Design success message/toast
-    if not is_success and not error_message:
+    # 1. ⚡ Rapid Polling for "SUCCESSFUL" toast (appears ~1s then disappears)
+    log.info("⏳ Rapid-polling for 'SUCCESSFUL' indicator after save...")
+    for poll_attempt in range(10):  # Check every 200ms for 2 seconds
+        await asyncio.sleep(0.2)
         try:
-            success_selectors = [
-                ".ant-message-success",
-                ".ant-message .ant-message-notice-content",
-                ".ant-notification-success",
-                ".ant-result-success",
-                "//*[contains(@class, 'success')]//span[contains(text(), 'Success') or contains(text(), 'အောင်မြင်')]",
-                "//*[contains(text(), 'created successfully') or contains(text(), 'Created')]",
-            ]
-            for selector in success_selectors:
-                try:
-                    loc = page.locator(selector)
-                    if await loc.count() > 0:
-                        for i in range(await loc.count()):
-                            if await loc.nth(i).is_visible():
-                                text = await loc.nth(i).inner_text()
-                                log.info(f"   ✅ Ant Design success indicator: '{text[:100]}'")
-                                is_success = True
-                                break
-                    if is_success:
-                        break
-                except Exception:
-                    continue
-        except Exception as e:
-            log.debug(f"Ant Design success check error: {e}")
+            # Check all visible text on the page for "SUCCESSFUL"
+            page_text = await page.locator("body").inner_text()
+            if "SUCCESSFUL" in page_text.upper():
+                log.info(f"   ✅ 'SUCCESSFUL' found on page after {(poll_attempt + 1) * 0.2:.1f}s")
+                is_success = True
+                break
+        except Exception:
+            continue
     
-    # 3. Check for Ant Design / SweetAlert error message/toast
-    if not is_success and not error_message:
-        try:
-            error_selectors = [
-                ".swal2-title.swal2-error",
-                ".ant-message-error",
-                ".ant-notification-error",
-                ".ant-result-error",
-                ".ant-form-item-explain-error",
-                ".ant-alert-error",
-                "//*[contains(@class, 'error') or contains(@class, 'has-error')]",
-                "//*[contains(text(), 'Error') or contains(text(), 'Failed') or contains(text(), 'Duplicate') or contains(text(), 'already exists')]",
-            ]
-            for selector in error_selectors:
-                try:
-                    loc = page.locator(selector)
-                    if await loc.count() > 0:
-                        for i in range(await loc.count()):
-                            if await loc.nth(i).is_visible():
-                                text = await loc.nth(i).inner_text()
-                                if text and text.strip():
-                                    error_message = text.strip()[:200]
-                                    log.warning(f"   ⚠️ Error indicator found: '{error_message}'")
-                                    break
-                    if error_message:
-                        break
-                except Exception:
-                    continue
-        except Exception as e:
-            log.debug(f"Error indicator check error: {e}")
-    
-    # 4. Check for validation errors on form fields
-    if not is_success and not error_message:
+    # 2. Check form validation errors (visible error messages on fields)
+    if not is_success:
         try:
             validation_error = page.locator(".ant-form-item-explain-error, .ant-form-item-explain")
             if await validation_error.count() > 0:
@@ -481,37 +378,35 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
         except Exception as e:
             log.debug(f"Validation error check error: {e}")
     
-    # 5. Check URL change (success usually redirects away from neworder page)
+    # 3. 🔄 OS Name Field Cleared Check (reliable success indicator)
     if not is_success and not error_message:
-        current_url = page.url.lower()
-        log.info(f"   🔗 Current URL after save: {current_url}")
-        # Success indicators by URL pattern
-        if "neworder" not in current_url:
-            log.info(f"   ✅ URL changed away from neworder page, treating as success.")
-            is_success = True
-        # Still on neworder page → likely error
-        elif "neworder" in current_url:
-            log.warning(f"   ⚠️ Still on neworder page after save — submission may have failed silently.")
-    
-    # 6. Check for generic message/notification content (catch-all)
-    if not is_success and not error_message:
+        log.info("   🔄 Checking if OS Name field was cleared...")
         try:
-            message_loc = page.locator(".ant-message-notice-content, .ant-notification-notice, .swal2-html-container")
-            for i in range(await message_loc.count()):
+            os_input = page.locator("(//label[contains(text(), 'Os Name')]/following::input)[1]")
+            if await os_input.count() > 0:
                 try:
-                    if await message_loc.nth(i).is_visible():
-                        msg_text = await message_loc.nth(i).inner_text()
-                        if msg_text and msg_text.strip():
-                            log.info(f"   💬 Message found: '{msg_text[:100]}'")
-                            if any(word in msg_text.lower() for word in ['success', 'created', 'saved', 'အောင်မြင်']):
-                                is_success = True
-                            elif any(word in msg_text.lower() for word in ['error', 'failed', 'duplicate', 'မှား', 'ရှိပြီး']):
-                                error_message = msg_text.strip()[:200]
-                            break
+                    current_os_val = await os_input.input_value()
                 except Exception:
-                    continue
-        except Exception as e:
-            log.debug(f"Generic message check error: {e}")
+                    current_os_val = ""
+                log.info(f"   🏪 OS Name field after save: '{current_os_val}' (was '{os_name}')")
+                
+                if not current_os_val or current_os_val.strip() == "":
+                    log.info("   ✅ OS Name field cleared — success confirmed!")
+                    is_success = True
+            else:
+                log.info("   ℹ️ OS Name field not found — page may have navigated away.")
+                # Page navigation away from form = likely success
+                if "neworder" not in page.url.lower():
+                    log.info("   ✅ URL changed away from neworder — treating as success.")
+                    is_success = True
+        except Exception as form_e:
+            log.debug(f"OS Name check error: {form_e}")
+    
+    # Capture screenshot for debugging
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    after_save_path = os.path.join(base_dir, "after_save.png")
+    await page.screenshot(path=after_save_path, full_page=True)
+    log.info(f"📸 SAVE နှိပ်ပြီးနောက် မျက်နှာပြင်ကို '{after_save_path}' အဖြစ် မှတ်တမ်းတင်ထားပါသည်။")
     
     # --- Final Decision ---
     if is_success:
@@ -521,58 +416,7 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
         log.error(f"❌ အော်ဒါတင်ခြင်း မအောင်မြင်ပါ: {error_message}")
         return False, error_message
     else:
-        # If SweetAlert was detected but we couldn't parse its text, check page content as last resort
-        if swal_detected:
-            log.info("   🔍 SweetAlert was visible but text unclear — checking full page content...")
-            try:
-                body_text = await page.locator("body").inner_text()
-                if any(w in body_text.lower() for w in ['created successfully', 'order created', 'saved successfully']):
-                    log.info("   ✅ Success keywords found in page body.")
-                    is_success = True
-                    return True, "အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်။"
-            except Exception:
-                pass
-        
-        # 🔄 Form Cleared Check: Successful submission typically clears the form fields
-        # If date field is now empty (was filled before save), it's a strong success indicator
-        log.info("   🔄 Checking if form was cleared (indicates successful submission)...")
-        try:
-            date_input = page.locator("//label[contains(text(), 'Received Date')]/following::input[1]")
-            if await date_input.count() > 0:
-                current_date_val = await date_input.input_value()
-                log.info(f"   📅 Date field value after save: '{current_date_val}' (was '{target_date}')")
-                
-                os_input = page.locator("(//label[contains(text(), 'Os Name')]/following::input)[1]")
-                current_os_val = ""
-                if await os_input.count() > 0:
-                    try:
-                        current_os_val = await os_input.input_value()
-                    except Exception:
-                        current_os_val = ""
-                log.info(f"   🏪 OS Name field value after save: '{current_os_val}' (was '{os_name}')")
-                
-                # If date field is now empty/cleared → successful submission
-                if not current_date_val or current_date_val.strip() == "":
-                    log.info("   ✅ Date field cleared after save — treating as success (form was reset).")
-                    is_success = True
-                    return True, "အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်။ (Form cleared)"
-                # If both date AND OS name are cleared → almost certainly success
-                if (not current_os_val or current_os_val.strip() == "") and (not current_date_val or current_date_val.strip() == ""):
-                    log.info("   ✅ Both date and OS Name fields cleared — confirming success.")
-                    is_success = True
-                    return True, "အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်။ (Form fully cleared)"
-                # If date still filled but OS name cleared → might be success with auto-refill
-                if current_date_val and current_date_val.strip() and (not current_os_val or current_os_val.strip() == ""):
-                    log.info("   ✅ OS Name cleared (date may be auto-refilled) — treating as success.")
-                    is_success = True
-                    return True, "အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်။ (Fields cleared)"
-            else:
-                log.info("   ℹ️ Date field not found — may have navigated away from form.")
-        except Exception as form_e:
-            log.debug(f"Form cleared check error: {form_e}")
-        
-        # No explicit success or error detected — treat as uncertain and flag as failed for manual review
-        log.warning("⚠️ အော်ဒါတင်ခြင်း အောင်မြင်ကြောင်း အတည်မပြုနိုင်ပါ။ Error message လည်းမတွေ့ပါ။ Manual review လိုအပ်ပါသည်။")
+        log.warning("⚠️ အော်ဒါတင်ခြင်း အောင်မြင်ကြောင်း အတည်မပြုနိုင်ပါ။ Manual review လိုအပ်ပါသည်။")
         return False, "Website response ကို အတည်မပြုနိုင်ပါ (No success/error indicator found). Screenshot captured for review."
 
 def submit_pickup_order(target_date, os_name, remark, vehicle="Bicycle"):
