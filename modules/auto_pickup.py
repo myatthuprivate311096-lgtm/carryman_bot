@@ -533,6 +533,44 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
             except Exception:
                 pass
         
+        # 🔄 Form Cleared Check: Successful submission typically clears the form fields
+        # If date field is now empty (was filled before save), it's a strong success indicator
+        log.info("   🔄 Checking if form was cleared (indicates successful submission)...")
+        try:
+            date_input = page.locator("//label[contains(text(), 'Received Date')]/following::input[1]")
+            if await date_input.count() > 0:
+                current_date_val = await date_input.input_value()
+                log.info(f"   📅 Date field value after save: '{current_date_val}' (was '{target_date}')")
+                
+                os_input = page.locator("(//label[contains(text(), 'Os Name')]/following::input)[1]")
+                current_os_val = ""
+                if await os_input.count() > 0:
+                    try:
+                        current_os_val = await os_input.input_value()
+                    except Exception:
+                        current_os_val = ""
+                log.info(f"   🏪 OS Name field value after save: '{current_os_val}' (was '{os_name}')")
+                
+                # If date field is now empty/cleared → successful submission
+                if not current_date_val or current_date_val.strip() == "":
+                    log.info("   ✅ Date field cleared after save — treating as success (form was reset).")
+                    is_success = True
+                    return True, "အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်။ (Form cleared)"
+                # If both date AND OS name are cleared → almost certainly success
+                if (not current_os_val or current_os_val.strip() == "") and (not current_date_val or current_date_val.strip() == ""):
+                    log.info("   ✅ Both date and OS Name fields cleared — confirming success.")
+                    is_success = True
+                    return True, "အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်။ (Form fully cleared)"
+                # If date still filled but OS name cleared → might be success with auto-refill
+                if current_date_val and current_date_val.strip() and (not current_os_val or current_os_val.strip() == ""):
+                    log.info("   ✅ OS Name cleared (date may be auto-refilled) — treating as success.")
+                    is_success = True
+                    return True, "အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်။ (Fields cleared)"
+            else:
+                log.info("   ℹ️ Date field not found — may have navigated away from form.")
+        except Exception as form_e:
+            log.debug(f"Form cleared check error: {form_e}")
+        
         # No explicit success or error detected — treat as uncertain and flag as failed for manual review
         log.warning("⚠️ အော်ဒါတင်ခြင်း အောင်မြင်ကြောင်း အတည်မပြုနိုင်ပါ။ Error message လည်းမတွေ့ပါ။ Manual review လိုအပ်ပါသည်။")
         return False, "Website response ကို အတည်မပြုနိုင်ပါ (No success/error indicator found). Screenshot captured for review."
