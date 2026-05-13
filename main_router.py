@@ -208,6 +208,8 @@ def handle_ai_query(bot, message, is_automatic=False):
 def route_message(bot, message):
     """
     AI မှ Message ကို ဖတ်ပြီး သက်ဆိုင်ရာ Module ဆီသို့ လမ်းကြောင်းပြောင်းပေးခြင်း
+    Returns: True if a module handled the message (caller should skip duplicate log_message),
+             False/None otherwise (caller should proceed with normal log_message).
     """
     try:
         chat_id = message.chat.id
@@ -221,12 +223,12 @@ def route_message(bot, message):
 
         if not is_private and is_staff:
             log.info(f"🛡️ Staff Exclusion (Group): Skipping AI routing for staff {user_id}")
-            return
+            return False
 
         text = message.text or message.caption
         
         if not text:
-            return
+            return False
 
         # ၁။ Global & Group Status စစ်ဆေးခြင်း (Phase 2)
         global_ai = db_manager.get_ai_global_status()
@@ -286,12 +288,12 @@ def route_message(bot, message):
         intent = ai_utils.get_ai_completion(prompt, timeout=30.0)
         if not intent:
             log.error("❌ Both OpenRouter and Gemini Fallback failed.")
-            return
+            return False
         intent = intent.strip().lower()
         log.info(f"🎯 AI Decision: {intent}")
 
         if intent == "none":
-            return
+            return False
 
         # 🛑 Group Chat Restriction: ONLY allow auto_pickup and auditor.
         # Block support, check_order, and any other general AI routing in Groups.
@@ -299,7 +301,7 @@ def route_message(bot, message):
             allowed_group_intents = ["auto_pickup", "auditor"]
             if intent not in allowed_group_intents:
                 log.info(f"🔇 Blocking general intent '{intent}' in Group Chat {chat_id}. Bot will remain silent.")
-                return
+                return False
 
         # ၃။ Gatekeeper Logic (Phase 2)
         # Auto Pickup: ၂၄ နာရီ (Global ON ဖြစ်ရမည်)
@@ -314,38 +316,38 @@ def route_message(bot, message):
             # Rule: Pickup works ONLY in Group Chats for Non-Staff users.
             if is_private:
                 log.info(f"⏭️ Skipping Auto Pickup: Private Chat detected. Pickup is Group-only.")
-                return
+                return False
             if is_staff:
                 log.info(f"🛡️ Staff Safety Net: Blocking auto_pickup routing for staff {user_id}")
-                return
+                return False
             # Note: Notification is sent regardless of global_pickup status.
             # Silent mode for groups (when OFF) is handled inside the module.
         elif intent == "auditor":
             if is_private and not is_staff:
                 log.info(f"⏭️ Skipping Auditor: Private Chat detected for non-staff")
-                return
+                return False
             if not is_sandbox:
                 if not is_private and global_alert != 'ON':
                     log.info("⏭️ Skipping Auditor: Alert System is OFF")
-                    return
+                    return False
         else:
             # Support (AI Answer) အတွက် စစ်ဆေးခြင်း
             if not is_sandbox:
                 if global_ai != 'ON':
                     log.info(f"⏭️ Skipping AI Answer: Global Status is {global_ai}")
-                    return
+                    return False
                 # Private chat doesn't have group_ai setting, so we skip that check for private
                 if not is_private and group_ai != 'ON':
                     log.info(f"⏭️ Skipping AI Answer: Group Status is {group_ai}")
-                    return
+                    return False
                 if not is_ai_office_hours():
                     log.info("🌙 Skipping AI Answer: Outside Office Hours (09:00 AM - 08:00 PM)")
-                    return
+                    return False
 
         # ၄။ Dynamic Loader (importlib)
         if intent == 'auditor' and is_private and is_staff:
             handle_ai_query(bot, message, is_automatic=True)
-            return
+            return True
 
         if intent in available_modules:
             try:
@@ -362,8 +364,10 @@ def route_message(bot, message):
                 log.error(f"❌ Could not import module {intent}: {ie}")
             except Exception as me:
                 log.error(f"❌ Error executing module {intent}: {me}")
+            return True
         else:
             log.warning(f"⚠️ AI suggested unknown module: {intent}")
+        return False
 
     except Exception as e:
         log.error(f"❌ Router Error: {e}")

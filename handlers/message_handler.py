@@ -12,7 +12,8 @@ def register_message_handlers(bot: telebot.TeleBot, is_manager_func):
         """ Group များအတွင်း စာဝင်လာမှု အားလုံးကို ဖမ်းယူပြီး DB သို့ သိမ်းဆည်းခြင်း """
         try:
             # 🧠 Central AI Router (Sandbox Logic Inside)
-            main_router.route_message(bot, message)
+            # Returns True if a module handled the message (skip duplicate log_message)
+            handled_by_module = main_router.route_message(bot, message)
 
             chat_id = message.chat.id
             user_id = message.from_user.id
@@ -113,9 +114,13 @@ def register_message_handlers(bot: telebot.TeleBot, is_manager_func):
                     return
 
                 # Customer ဆီမှ စာဝင်လာခြင်း
+                # 🛡️ Dual-Run Guard: route_message က module နဲ့ handle ပြီးသွားရင် log_message ထပ်မလုပ်ပါ
                 if not message.from_user.is_bot and not text.startswith('/'):
-                    db_manager.log_message(message.message_id, chat_id, topic_id, user_id, text, message.date, media_id=media_id)
-                    log.info(f"📩 New Pending Message from {user_id} in {chat_id} (Topic: {topic_id})")
+                    if not handled_by_module:
+                        db_manager.log_message(message.message_id, chat_id, topic_id, user_id, text, message.date, media_id=media_id)
+                        log.info(f"📩 New Pending Message from {user_id} in {chat_id} (Topic: {topic_id})")
+                    else:
+                        log.info(f"📩 Message from {user_id} in {chat_id} already handled by module — skipping duplicate log.")
 
         except Exception as e:
             log.error(f"❌ Message Handler Error: {e}")

@@ -275,13 +275,42 @@ def register_handlers(bot):
             msg = bot.reply_to(message, "⏳ **System Updating...**\nGit Pull လုပ်နေပါသည်...")
             try:
                 output = subprocess.check_output(["git", "pull"]).decode('utf-8')
-                bot.edit_message_text(f"✅ **Git Pull Success!**\n\n`{output}`\n\n🔄 စနစ်ကို Deep Restart ချနေပါပြီ...", msg.chat.id, msg.message_id)
+                bot.edit_message_text(f"✅ **Git Pull Success!**\n\n`{output}`\n\n🔄 စနစ်ကို Graceful Sequential Restart ချနေပါပြီ...", msg.chat.id, msg.message_id)
                 
-                # 💡 Deep Restart Logic
-                os.system('pkill -9 -f "main_bot.py" || true')
-                os.system('pkill -9 -f "auditor.py" || true')
-                time.sleep(2)
-                os.system("pm2 restart all")
+                # 💡 Graceful Sequential Restart: Active jobs စောင့်ပြီးမှ တစ်ခုချင်း restart
+                try:
+                    # ၁။ Active processing ရှိမရှိ စစ်ဆေးပြီး စောင့်ခြင်း
+                    with db_manager.get_connection() as conn:
+                        active = conn.execute(
+                            "SELECT id FROM pickup_queue WHERE status = 'PROCESSING' LIMIT 1"
+                        ).fetchone()
+                    if active:
+                        log.warning(f"⏳ Active submission found (Queue {active[0]}). Waiting up to 5 minutes...")
+                        waited = 0
+                        while waited < 300:
+                            time.sleep(10)
+                            waited += 10
+                            with db_manager.get_connection() as conn:
+                                still = conn.execute(
+                                    "SELECT id FROM pickup_queue WHERE id = ? AND status = 'PROCESSING'",
+                                    (active[0],)
+                                ).fetchone()
+                            if not still:
+                                log.info(f"✅ Submission completed after {waited}s.")
+                                break
+                except Exception as we:
+                    log.warning(f"⚠️ Active job wait error (proceeding anyway): {we}")
+
+                # ၂။ Sequential Graceful Restart (ingestion → worker → sync)
+                for svc in ["carryman-ingestion", "carryman-worker", "carryman-sync"]:
+                    try:
+                        subprocess.run(["pm2", "restart", svc], capture_output=True, timeout=10)
+                        log.info(f"🔄 Restarted {svc}")
+                        time.sleep(5)  # ၅ စက္ကန့်ခြားပြီးမှ နောက်တစ်ခုကို restart လုပ်မည်
+                    except Exception as re:
+                        log.error(f"❌ Failed to restart {svc}: {re}")
+                
+                bot.send_message(msg.chat.id, "✅ **Sequential Graceful Restart Complete!**")
             except Exception as e:
                 bot.edit_message_text(f"❌ **Update Failed!**\n\nError: {e}", msg.chat.id, msg.message_id)
         else:
@@ -397,17 +426,46 @@ def register_handlers(bot):
     @bot.callback_query_handler(func=lambda call: call.data == "sys_restart_all")
     def callback_sys_restart_all(call):
         if db_manager.get_user_level(call.from_user.id, call.message.chat.id) == 4:
-            bot.edit_message_text("🔄 **Deep Restarting All Processes...**\n၁၀ စက္ကန့်ခန့် စောင့်ပေးပါဗျ။",
-                                  call.message.chat.id, call.message.message_id)
-            log.warning(f"⚠️ Deep System Restart triggered by {call.from_user.id}")
+            bot.edit_message_text("🔄 **Graceful Sequential Restart...**\nActive jobs များစောင့်ပြီး တစ်ခုချင်း restart ချနေပါသည်...",
+                                   call.message.chat.id, call.message.message_id)
+            log.warning(f"⚠️ Graceful System Restart triggered by {call.from_user.id}")
             
-            # 💡 Orphaned Process Cleanup (PM2 အပြင်ဘက်က ပရိုဆက်များကို အရင်သတ်မည်)
-            os.system('pkill -9 -f "main_bot.py" || true')
-            os.system('pkill -9 -f "auditor.py" || true')
+            # 💡 Graceful Sequential Restart: Active jobs စောင့်ပြီးမှ တစ်ခုချင်း restart
+            try:
+                # ၁။ Active processing ရှိမရှိ စစ်ဆေးပြီး ၅ မိနစ်ထိ စောင့်ခြင်း
+                with db_manager.get_connection() as conn:
+                    active = conn.execute(
+                        "SELECT id FROM pickup_queue WHERE status = 'PROCESSING' LIMIT 1"
+                    ).fetchone()
+                if active:
+                    log.warning(f"⏳ Active submission found (Queue {active[0]}). Waiting up to 5 minutes...")
+                    waited = 0
+                    while waited < 300:
+                        time.sleep(10)
+                        waited += 10
+                        with db_manager.get_connection() as conn:
+                            still = conn.execute(
+                                "SELECT id FROM pickup_queue WHERE id = ? AND status = 'PROCESSING'",
+                                (active[0],)
+                            ).fetchone()
+                        if not still:
+                            log.info(f"✅ Submission completed after {waited}s.")
+                            break
+            except Exception as we:
+                log.warning(f"⚠️ Active job wait error (proceeding anyway): {we}")
             
-            time.sleep(2)
-            os.system("pm2 restart all")
-            # No need to exit here as PM2 will restart the process
+            # ၂။ Sequential Graceful Restart (ingestion → worker → sync)
+            for svc in ["carryman-ingestion", "carryman-worker", "carryman-sync"]:
+                try:
+                    subprocess.run(["pm2", "restart", svc], capture_output=True, timeout=10)
+                    log.info(f"🔄 Restarted {svc}")
+                    time.sleep(5)
+                except Exception as re:
+                    log.error(f"❌ Failed to restart {svc}: {re}")
+            
+            log.info("✅ All processes restarted gracefully.")
+            bot.edit_message_text("✅ **System Restarted!**\nစနစ်အားလုံး Graceful Restart ဖြင့် ပြန်တက်လာပါပြီ။",
+                                   call.message.chat.id, call.message.message_id)
 
     @bot.callback_query_handler(func=lambda call: call.data == "sys_cancel")
     def callback_sys_cancel(call):
@@ -469,6 +527,8 @@ def register_handlers(bot):
     def handle_new_group(message):
         if is_manager(message.from_user.id):
             group_creator.create_new_group(bot, message)
+            # 💡 Auto-update GSheet after new group creation
+            _after_register_export_sheet(message.chat.id)
 
     # --- [ Section ၆: Instant Alert ] ---
     @bot.message_handler(commands=['alert'])

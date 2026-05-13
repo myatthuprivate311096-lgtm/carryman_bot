@@ -1307,12 +1307,24 @@ def run_daily_cleanup(bot):
     """ မနက် ၄ နာရီ (Myanmar Time) တွင် မနေ့က request များကို အလိုအလျောက် ရှင်းလင်းပေးမည့် Scheduler """
     log.info("⏰ Daily Pickup Cleanup Scheduler is running (Target: 04:00 AM MMT)...")
     tz = pytz.timezone('Asia/Yangon')
+    CLEANUP_SENTINEL_DIR = "/tmp"
     
     while True:
         try:
             now = datetime.now(tz)
+            today_str = now.strftime("%Y%m%d")
+            sentinel_file = os.path.join(CLEANUP_SENTINEL_DIR, f"carryman_cleanup_{today_str}.done")
+            
             # မနက် ၄ နာရီ ဖြစ်မဖြစ် စစ်ဆေးခြင်း
             if now.hour == 4 and now.minute == 0:
+                # 🛡️ Sentinel Guard: ဒီနေ့ cleanup ပြီးသွားပြီလား စစ်ဆေးခြင်း (Restart Loop ကာကွယ်ရန်)
+                if os.path.exists(sentinel_file):
+                    log.info(f"🛡️ Daily cleanup already done today ({today_str}). Skipping restart loop guard.")
+                    # ၄ နာရီကျော်တဲ့ထိ စောင့်ပြီးမှ ဆက်လုပ်မည်
+                    while datetime.now(tz).hour == 4:
+                        time.sleep(60)
+                    continue
+                
                 log.info("🧹 Starting Daily Pickup Cleanup...")
                 stale_orders = db_manager.get_stale_pickup_orders()
                 
@@ -1355,6 +1367,14 @@ def run_daily_cleanup(bot):
                             break
                     else:
                         log.warning(f"⚠️ Submission still active after 5min timeout. Restarting anyway.")
+
+                # 🛡️ Sentinel File ကို restart မလုပ်ခင် ရေးမှတ်ထားခြင်း (Restart ပြီးပါက Loop မဖြစ်စေရန်)
+                try:
+                    with open(sentinel_file, 'w') as sf:
+                        sf.write(f"cleanup_completed_at={now.isoformat()}\n")
+                    log.info(f"📝 Sentinel file created: {sentinel_file}")
+                except Exception as se:
+                    log.error(f"❌ Failed to create sentinel file: {se}")
 
                 log.info("🔄 Triggering graceful PM2 restart for worker...")
                 import subprocess as _sp
