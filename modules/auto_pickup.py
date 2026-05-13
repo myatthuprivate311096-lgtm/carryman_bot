@@ -339,8 +339,22 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
         return False, "Save button ကို ရှာမတွေ့ပါ။"
     
     # --- ၄။ Result Verification (အောင်မြင်မှုကို အတည်ပြုခြင်း) ---
+    # Wait for network to settle after save click
     await page.wait_for_load_state('domcontentloaded')
-    await asyncio.sleep(2)
+    
+    # 🍬 SweetAlert2 appears ~500ms-2s after save. Wait and capture it before it auto-dismisses.
+    log.info("⏳ Waiting for SweetAlert/notification to appear after save...")
+    swal_detected = False
+    for wait_attempt in range(6):  # Check every 500ms for 3 seconds
+        await asyncio.sleep(0.5)
+        try:
+            swal_popup = page.locator(".swal2-popup, .swal-overlay, .swal2-container")
+            if await swal_popup.count() > 0 and await swal_popup.first.is_visible():
+                swal_detected = True
+                log.info(f"   🍬 SweetAlert detected after {wait_attempt * 0.5:.1f}s")
+                break
+        except Exception:
+            continue
     
     # Capture screenshot for debugging regardless of outcome
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -352,37 +366,76 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
     is_success = False
     error_message = None
     
-    # 1. Check Ant Design success message/toast
+    # 1. 🍬 Check SweetAlert2 (Primary — website uses SweetAlert for confirmations)
     try:
-        success_selectors = [
-            ".ant-message-success",
-            ".ant-message .ant-message-notice-content",
-            ".ant-notification-success",
-            ".ant-result-success",
-            "//*[contains(@class, 'success')]//span[contains(text(), 'Success') or contains(text(), 'အောင်မြင်')]",
-            "//*[contains(text(), 'created successfully') or contains(text(), 'Created')]",
+        swal_selectors = [
+            ".swal2-popup",
+            ".swal2-title",
+            ".swal2-html-container",
+            ".swal-overlay",
+            ".swal2-container",
         ]
-        for selector in success_selectors:
+        for selector in swal_selectors:
             try:
                 loc = page.locator(selector)
                 if await loc.count() > 0:
-                    for i in range(await loc.count()):
-                        if await loc.nth(i).is_visible():
-                            text = await loc.nth(i).inner_text()
-                            log.info(f"   ✅ Success indicator found: '{text[:100]}'")
-                            is_success = True
-                            break
-                if is_success:
+                    for i in range(min(await loc.count(), 5)):
+                        try:
+                            if await loc.nth(i).is_visible():
+                                text = await loc.nth(i).inner_text()
+                                if text and text.strip():
+                                    clean_text = text.strip()
+                                    log.info(f"   🍬 SweetAlert text: '{clean_text[:150]}'")
+                                    if any(w in clean_text.lower() for w in ['success', 'created', 'saved', 'အောင်မြင်', 'created successfully', 'completed']):
+                                        is_success = True
+                                        log.info(f"   ✅ SweetAlert success detected!")
+                                        break
+                                    elif any(w in clean_text.lower() for w in ['error', 'failed', 'duplicate', 'already exist', 'မှား', 'မအောင်မြင်']):
+                                        error_message = clean_text[:200]
+                                        log.warning(f"   ⚠️ SweetAlert error detected: '{error_message}'")
+                                        break
+                        except Exception:
+                            continue
+                if is_success or error_message:
                     break
             except Exception:
                 continue
     except Exception as e:
-        log.debug(f"Success indicator check error: {e}")
+        log.debug(f"SweetAlert check error: {e}")
     
-    # 2. Check for Ant Design error message/toast
-    if not is_success:
+    # 2. Check Ant Design success message/toast
+    if not is_success and not error_message:
+        try:
+            success_selectors = [
+                ".ant-message-success",
+                ".ant-message .ant-message-notice-content",
+                ".ant-notification-success",
+                ".ant-result-success",
+                "//*[contains(@class, 'success')]//span[contains(text(), 'Success') or contains(text(), 'အောင်မြင်')]",
+                "//*[contains(text(), 'created successfully') or contains(text(), 'Created')]",
+            ]
+            for selector in success_selectors:
+                try:
+                    loc = page.locator(selector)
+                    if await loc.count() > 0:
+                        for i in range(await loc.count()):
+                            if await loc.nth(i).is_visible():
+                                text = await loc.nth(i).inner_text()
+                                log.info(f"   ✅ Ant Design success indicator: '{text[:100]}'")
+                                is_success = True
+                                break
+                    if is_success:
+                        break
+                except Exception:
+                    continue
+        except Exception as e:
+            log.debug(f"Ant Design success check error: {e}")
+    
+    # 3. Check for Ant Design / SweetAlert error message/toast
+    if not is_success and not error_message:
         try:
             error_selectors = [
+                ".swal2-title.swal2-error",
                 ".ant-message-error",
                 ".ant-notification-error",
                 ".ant-result-error",
@@ -409,7 +462,7 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
         except Exception as e:
             log.debug(f"Error indicator check error: {e}")
     
-    # 3. Check for validation errors on form fields
+    # 4. Check for validation errors on form fields
     if not is_success and not error_message:
         try:
             validation_error = page.locator(".ant-form-item-explain-error, .ant-form-item-explain")
@@ -428,29 +481,29 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
         except Exception as e:
             log.debug(f"Validation error check error: {e}")
     
-    # 4. Check URL change (success usually redirects to order list)
+    # 5. Check URL change (success usually redirects away from neworder page)
     if not is_success and not error_message:
         current_url = page.url.lower()
         log.info(f"   🔗 Current URL after save: {current_url}")
         # Success indicators by URL pattern
-        if "neworder" not in current_url and ("order" in current_url or "list" in current_url or "detail" in current_url):
+        if "neworder" not in current_url:
             log.info(f"   ✅ URL changed away from neworder page, treating as success.")
             is_success = True
         # Still on neworder page → likely error
         elif "neworder" in current_url:
             log.warning(f"   ⚠️ Still on neworder page after save — submission may have failed silently.")
     
-    # 5. Check for Ant Design message with generic text content
+    # 6. Check for generic message/notification content (catch-all)
     if not is_success and not error_message:
         try:
-            message_loc = page.locator(".ant-message-notice-content, .ant-notification-notice")
+            message_loc = page.locator(".ant-message-notice-content, .ant-notification-notice, .swal2-html-container")
             for i in range(await message_loc.count()):
                 try:
                     if await message_loc.nth(i).is_visible():
                         msg_text = await message_loc.nth(i).inner_text()
                         if msg_text and msg_text.strip():
                             log.info(f"   💬 Message found: '{msg_text[:100]}'")
-                            if any(word in msg_text.lower() for word in ['success', 'created', 'အောင်မြင်', 'created successfully']):
+                            if any(word in msg_text.lower() for word in ['success', 'created', 'saved', 'အောင်မြင်']):
                                 is_success = True
                             elif any(word in msg_text.lower() for word in ['error', 'failed', 'duplicate', 'မှား', 'ရှိပြီး']):
                                 error_message = msg_text.strip()[:200]
@@ -468,6 +521,18 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
         log.error(f"❌ အော်ဒါတင်ခြင်း မအောင်မြင်ပါ: {error_message}")
         return False, error_message
     else:
+        # If SweetAlert was detected but we couldn't parse its text, check page content as last resort
+        if swal_detected:
+            log.info("   🔍 SweetAlert was visible but text unclear — checking full page content...")
+            try:
+                body_text = await page.locator("body").inner_text()
+                if any(w in body_text.lower() for w in ['created successfully', 'order created', 'saved successfully']):
+                    log.info("   ✅ Success keywords found in page body.")
+                    is_success = True
+                    return True, "အော်ဒါတင်ခြင်း အောင်မြင်ပါသည်။"
+            except Exception:
+                pass
+        
         # No explicit success or error detected — treat as uncertain and flag as failed for manual review
         log.warning("⚠️ အော်ဒါတင်ခြင်း အောင်မြင်ကြောင်း အတည်မပြုနိုင်ပါ။ Error message လည်းမတွေ့ပါ။ Manual review လိုအပ်ပါသည်။")
         return False, "Website response ကို အတည်မပြုနိုင်ပါ (No success/error indicator found). Screenshot captured for review."
