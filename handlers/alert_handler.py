@@ -46,11 +46,11 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
                     text, summary, category, intent, ts, media_id = ctx
                     auditor.send_new_alert(
                         chat_id, topic_id, original_msg_id, text, summary, shop_name, ts,
-                        category=category, intent=intent, media_id=media_id
+                        category=category, intent=intent, media_id=media_id, force=True
                     )
                     
                     # 💡 Step 3: Final Status Update (Short Scope)
-                    with db_manager.write_scope() as conn:
+                    with db_manager.connection_scope() as conn:
                         conn.execute(
                             "UPDATE message_logs SET status='ALERTED' WHERE chat_id=? AND topic_id=? AND status='WAITING_ROUTE'",
                             (chat_id, topic_id)

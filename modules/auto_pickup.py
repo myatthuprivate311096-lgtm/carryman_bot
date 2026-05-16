@@ -1208,21 +1208,51 @@ def send_success_report(bot, orig_msg_id, chat_id, handled_by="System"):
         with db_manager.get_connection() as conn:
             order = conn.execute("SELECT os_name, target_date, remark, vehicle FROM pickup_queue WHERE orig_msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id)).fetchone()
         
-        if not order:
-            return
+        if order:
+            os_name, target_date, remark, vehicle = order
+        else:
+            # 💡 Fallback: pickup_queue ထဲမှာ order မတွေ့ရင် message_logs, os_groups တွေကနေ ဆွဲထုတ်မည်
+            log.info(f"ℹ️ pickup_queue entry not found for msg {orig_msg_id}, using fallback context for success report.")
+            os_name = get_best_shop_name(bot, chat_id)
+            vehicle = "-"
+            remark = "-"
+            target_date = "-"
+            
+            # Try to get remark from message_logs
+            ctx = db_manager.get_message_context(orig_msg_id, chat_id)
+            if ctx:
+                if ctx[1]:  # summary
+                    remark = ctx[1]
+                # Derive target_date from message timestamp
+                if ctx[4]:  # timestamp
+                    tz = pytz.timezone('Asia/Yangon')
+                    msg_dt = datetime.fromtimestamp(ctx[4], tz)
+                    target_date = msg_dt.strftime("%d-%m-%Y")
+            
+            # Try to get vehicle/target_date from alert_tracking updates_text
+            tracking = db_manager.get_alert_tracking(orig_msg_id, chat_id)
+            if tracking:
+                updates = tracking[7] if len(tracking) > 7 else ""
+                if updates:
+                    import re
+                    v_match = re.search(r'Vehicle:\s*(\w+)', updates)
+                    if v_match:
+                        vehicle = v_match.group(1)
+                    d_match = re.search(r'Date:\s*([\d-]+)', updates)
+                    if d_match:
+                        target_date = d_match.group(1)
 
-        os_name, target_date, remark, vehicle = order
         clean_chat_id = str(chat_id).replace("-100", "")
         msg_link = f"https://t.me/c/{clean_chat_id}/{orig_msg_id}"
 
         report_text = (
             f"✅ **Auto Pickup Success**\n"
             f"━━━━━━━━━━━━━━━━━━\n"
-            f"🏪 ဆိုင်: <b>{util.escape(os_name)}</b>\n"
-            f"📅 ရက်စွဲ: <b>{target_date}</b>\n"
-            f"🚲 ယာဉ်: <b>{vehicle}</b>\n"
-            f"📝 မှတ်ချက်: {remark}\n"
-            f"👤 အတည်ပြုသူ: <b>{handled_by}</b>\n"
+            f"🏪 ဆိုင်: <b>{util.escape(str(os_name)) if os_name else '-'}</b>\n"
+            f"📅 ရက်စွဲ: <b>{util.escape(str(target_date)) if target_date else '-'}</b>\n"
+            f"🚲 ယာဉ်: <b>{util.escape(str(vehicle)) if vehicle else '-'}</b>\n"
+            f"📝 မှတ်ချက်: {util.escape(str(remark)) if remark else '-'}\n"
+            f"👤 အတည်ပြုသူ: <b>{util.escape(str(handled_by)) if handled_by else '-'}</b>\n"
             f"━━━━━━━━━━━━━━━━━━"
         )
 

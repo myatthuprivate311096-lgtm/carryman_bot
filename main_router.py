@@ -269,20 +269,26 @@ def route_message(bot, message):
         Task: Analyze the user message and decide which module should handle it.
         
         Available Modules:
-        - auto_pickup: Use for NEW pickup requests OR inquiries about pickup availability (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ", "မနက်ဖြန်အတွက် တင်ပေးပါ", "pick up ရဦးမလား", "ဒီနေ့ pickup ရှိလား").
-          CRITICAL: If the message is just sharing a list (e.g., "စာရင်းလေးပါ", "pickup စာရင်းလေးပါ"), discussing a past order, or mentioning "pickup" without requesting a new one or inquiring about availability, output 'none'.
+        - auto_pickup: Use for NEW pickup requests OR messages that contain structured pickup/order information.
+          THIS INCLUDES:
+          1. Explicit pickup requests: "pick up လာယူပေးပါ", "လာကောက်ပေးပါ", "မနက်ဖြန်အတွက် တင်ပေးပါ", "တင်ပေးပါ", "ခေါ်ပေးပါ", "pick up ရဦးမလား", "ဒီနေ့ pickup ရှိလား"
+          2. Structured order lists with OS Name/Date/Parcel info: e.g., "OS Name - ShopX\\nDate -16/5/2026\\nစုစုပေါင်း ပါဆယ် - (5)ထုတ်", "16.5.2026။ 24ထုတ်"
+          3. Messages indicating order submission: "တင်ထားပါတယ်", "တင်ပေးလိုက်ပါတယ်", "တင်လိုက်ပါတယ်"
+          4. Inquiries about pickup availability or timing
+          DO NOT output 'none' for any of the above -- they ARE pickup requests even if they look like lists.
         - check_order: Use for checking order status, tracking numbers, or finding specific orders.
-        - auditor: Use for complaints or when the user is asking about an ALREADY PLACED pickup (e.g., "pick up မလာသေးဘူးလား", "ဘယ်အချိန်လာမှာလဲ").
-        - none: Use if the message is just a greeting, spam, sharing a list, general question, or irrelevant.
+        - auditor: Use for complaints, questions about past/delayed pickups, or when the user is asking about an ALREADY PLACED pickup (e.g., "pick up မလာသေးဘူးလား", "ဘယ်အချိန်လာမှာလဲ").
+        - none: Use ONLY if the message is: a greeting, casual chit-chat, spam, or completely unrelated to logistics. If in doubt between auto_pickup and none, choose auto_pickup.
 
         User Message: "{text}"
 
         Output Rules:
         1. Output ONLY the module name in lowercase.
-        2. If the message is just sharing a list or info (e.g., "စာရင်းလေးပါ") without requesting a new pickup, output 'none'.
-        3. If the message is a general question (e.g., office location, contact info) without /ai, output 'none'.
-        4. If unsure, output 'auditor'.
-        5. If irrelevant, output 'none'.
+        2. Structured order data (OS Name + Date format) -> output 'auto_pickup'.
+        3. "တင်ထားပါတယ်" or similar submission confirmations -> output 'auto_pickup'.
+        4. General question (office location, contact info) without /ai -> output 'none'.
+        5. Casual chit-chat or greetings -> output 'none'.
+        6. If truly unsure, output 'auto_pickup' (better to check than miss a pickup).
         """
 
         intent = ai_utils.get_ai_completion(prompt, timeout=30.0)
