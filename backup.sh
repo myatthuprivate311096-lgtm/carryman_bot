@@ -24,7 +24,7 @@ docker-compose pause
 
 # ခေတ္တရပ်နေချိန်မှာ Project folder တစ်ခုလုံးကို tar file အဖြစ်ချုံ့ပါ (venv folder ကို ချန်လှပ်ခဲ့ပါ)
 echo "Creating archive (excluding venv): $BACKUP_FILENAME"
-tar --exclude='./venv' -czf $BACKUP_FILENAME .
+tar --exclude='./venv' --exclude='./qdrant_storage' --exclude='./.git' --exclude='./logs' -czf $BACKUP_FILENAME .
 
 # Container တွေကို ပြန် run စေပါ (Unpause)
 echo "Resuming containers..."
