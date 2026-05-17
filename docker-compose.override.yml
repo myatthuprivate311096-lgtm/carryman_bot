@@ -1,0 +1,15 @@
+# Development-Only Overrides
+# Automatically merged by docker-compose when running `docker-compose up`
+# Mounts local source code into containers — no rebuild needed on code changes
+# Remove this file or rename it to disable live mount for production
+
+services:
+  ingestion:
+    volumes:
+      - .:/app
+  sync:
+    volumes:
+      - .:/app
+  worker:
+    volumes:
+      - .:/app

@@ -84,17 +84,41 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             vehicle = parts[5] if parts[5] != "none" else "none"
 
             if date_type == "today":
-                markup = telebot.types.InlineKeyboardMarkup(row_width=1)
-                markup.add(
-                    telebot.types.InlineKeyboardButton("OK", callback_data=f"ap_pconf_{orig_msg_id}_{date_type}"),
-                    telebot.types.InlineKeyboardButton("💬 Admin နှင့်ပြောမည်", callback_data=f"ap_admin_0_{orig_msg_id}"),
-                    telebot.types.InlineKeyboardButton("❌ Pick Up မဟုတ်ပါ", callback_data=f"ap_cancel_{orig_msg_id}")
-                )
-                text = "ဒီနေ့အတွက် Pick up တင်ပေးလို့ရပါတယ်ရှင်။ တင်ပေးရမလားရှင့်"
-                status_admin = "📅 Today (Waiting OS)"
-                log_msg = "✅ **Today** အတွက် OS ထံ အတည်ပြုချက် တောင်းခံထားပါသည် အစ်ကို။"
+                # 💡 Today ဆိုရင် OK/Admin မေးစရာမလိုဘဲ Interactive Setup တန်းပြမည်
+                import pytz as _pytz
+                from datetime import datetime as _dt, timedelta as _td
+                _tz = _pytz.timezone('Asia/Yangon')
+                msg_ctx = db_manager.get_message_context(orig_msg_id, chat_id)
+                msg_ts = msg_ctx[4] if msg_ctx else _dt.now(_tz).timestamp()
+                msg_dt = _dt.fromtimestamp(msg_ts, _tz)
+                target_date_str = msg_dt.strftime("%d-%m-%Y")
+
+                # 💡 အပေါ်က "၁၁ နာရီကျော်ပြီ" ဆိုတဲ့ စာကို ဖျက်ခြင်း
+                old_msgs = db_manager.get_pickup_intermediate_msgs(chat_id, orig_msg_id)
+                for m_id in old_msgs:
+                    try: bot.delete_message(chat_id, m_id)
+                    except Exception: pass
+                db_manager.delete_pickup_intermediate_msgs(chat_id, orig_msg_id)
+
+                with db_manager.connection_scope() as conn:
+                    msg_data = conn.execute("SELECT text, summary FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id)).fetchone()
+
+                shop_name = auto_pickup.get_best_shop_name(bot, chat_id)
+                if msg_data:
+                    orig_text, clean_remark = msg_data
+                    # Admin alert မရှိသေးရင် ပို့မည်
+                    if not db_manager.get_alert_tracking(orig_msg_id, chat_id):
+                        auto_pickup.send_admin_pickup_alert(bot, chat_id, orig_msg_id, shop_name, target_date_str, None, clean_remark, orig_text)
+
+                db_manager.upsert_pickup_queue(chat_id, orig_msg_id, target_date_str, shop_name, None, None, status='WAITING_SETUP')
+                auto_pickup.show_interactive_setup(bot, chat_id, orig_msg_id, date_type)
+
+                status_admin = "📅 Today (Setting Up)"
+                log_msg = "✅ **Today** — Interactive Setup တန်းပြလိုက်ပါပြီ အစ်ကို။"
+                bot.edit_message_text(log_msg, call.message.chat.id, call.message.message_id)
+                auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, status_admin)
             else:
-                # Tomorrow: Show actual date + only 2 buttons (OK, Admin)
+                # Tomorrow: Show actual date + OK/Admin buttons (OS အတည်ပြုချက် လိုအပ်)
                 import pytz as _pytz
                 from datetime import datetime as _dt, timedelta as _td
                 _tz = _pytz.timezone('Asia/Yangon')
@@ -112,18 +136,18 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                     telebot.types.InlineKeyboardButton("💬 Admin နှင့်ပြောမည်", callback_data=f"ap_admin_0_{orig_msg_id}")
                 )
 
-            # 💡 အပေါ်က "၁၁ နာရီကျော်ပြီ" ဆိုတဲ့ စာကို ဖျက်ခြင်း
-            old_msgs = db_manager.get_pickup_intermediate_msgs(chat_id, orig_msg_id)
-            for m_id in old_msgs:
-                try: bot.delete_message(chat_id, m_id)
-                except Exception: pass
-            db_manager.delete_pickup_intermediate_msgs(chat_id, orig_msg_id)
+                # 💡 အပေါ်က "၁၁ နာရီကျော်ပြီ" ဆိုတဲ့ စာကို ဖျက်ခြင်း
+                old_msgs = db_manager.get_pickup_intermediate_msgs(chat_id, orig_msg_id)
+                for m_id in old_msgs:
+                    try: bot.delete_message(chat_id, m_id)
+                    except Exception: pass
+                db_manager.delete_pickup_intermediate_msgs(chat_id, orig_msg_id)
 
-            sent_msg = bot.send_message(chat_id, text, reply_to_message_id=orig_msg_id, reply_markup=markup)
-            db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, sent_msg.message_id)
-            
-            bot.edit_message_text(log_msg, call.message.chat.id, call.message.message_id)
-            auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, status_admin)
+                sent_msg = bot.send_message(chat_id, text, reply_to_message_id=orig_msg_id, reply_markup=markup)
+                db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, sent_msg.message_id)
+
+                bot.edit_message_text(log_msg, call.message.chat.id, call.message.message_id)
+                auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, status_admin)
 
         except Exception as e:
             log.error(f"❌ Staff Pickup Decision Error: {e}")
@@ -345,6 +369,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_cancel_'))
     def handle_pickup_cancel_callback(call):
         """ AI မှ Pickup ဟု မှားယွင်းယူဆမိပါက Rider မှ ပယ်ဖျက်ခြင်း """
+        import time as _time
         try:
             from modules import auto_pickup
             orig_msg_id = int(call.data.split('_')[2])
@@ -367,11 +392,21 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 topic_id = db_manager.get_message_topic(orig_msg_id, chat_id)
                 db_manager.log_feedback(chat_id, topic_id, orig_text, category='NOT_PICKUP', msg_id=orig_msg_id)
 
-            # 2. Status ကို PENDING သို့ ပြန်ပြောင်းခြင်း (15 mins alert ပြန်တက်စေရန်)
+            # 2. Status ကို PENDING သို့ ပြန်ပြောင်းခြင်း
+            # 💡 Reset timestamp so 15-min alert clock starts from NOW, not from original message time
             db_manager.update_message_status(orig_msg_id, chat_id, 'PENDING')
+            now_ts = int(_time.time())
+            db_manager.reset_message_timestamp(orig_msg_id, chat_id, now_ts)
+            log.info(f"🔄 Pickup cancelled: msg {orig_msg_id} in chat {chat_id} reset to PENDING with fresh timestamp {now_ts}")
             
-            # 3. Shop Group ရှိ Bot စာများကို ရှင်းလင်းခြင်း
-            bot.delete_message(chat_id, call.message.message_id)
+            # 3. Shop Group (OS GP) ရှိ Bot စာများကို ရှင်းလင်းခြင်း
+            # 💡 try-except wrapper to ensure deletion errors don't block the rest
+            try:
+                bot.delete_message(chat_id, call.message.message_id)
+                log.info(f"🗑️ Deleted OS Group bot message {call.message.message_id} in chat {chat_id}")
+            except Exception as del_e:
+                log.warning(f"⚠️ Failed to delete OS Group bot message {call.message.message_id}: {del_e}")
+            
             auto_pickup.cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id)
             
             bot.answer_callback_query(call.id, "✅ Pickup မဟုတ်ကြောင်း မှတ်သားပြီး ပုံမှန်စာအဖြစ် ပြန်ပြောင်းလိုက်ပါပြီ။")

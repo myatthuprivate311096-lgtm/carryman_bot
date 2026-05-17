@@ -1,5 +1,7 @@
 import os
 import time
+import json
+import http.client
 import subprocess
 import telebot
 import psutil
@@ -177,52 +179,50 @@ def register_handlers(bot):
             ai_global = db_manager.get_ai_global_status()
             pickup_global = db_manager.get_auto_pickup_global_status()
             alert_global = db_manager.get_alert_system_global_status()
-            # 2. Process Health (PM2) — 3 Components: Ingestion, Worker, Sync
+            # 2. Process Health (Docker Socket) — 3 Components: Ingestion, Worker, Sync
             processes = {
-                "carryman-ingestion": "🔴",
-                "carryman-worker": "🔴",
-                "carryman-sync": "🔴",
+                "carryman-ingestion": "🔴 Not Found",
+                "carryman-worker": "🔴 Not Found",
+                "carryman-sync": "🔴 Not Found",
             }
             unhealthy_processes = []
             try:
-                pm2_output = subprocess.check_output(["pm2", "jlist"]).decode('utf-8')
-                import json
-                pm2_data = json.loads(pm2_output)
+                # Query Docker API via Unix socket (no extra packages needed)
+                conn = http.client.HTTPConnection("localhost")
+                conn.sock = __import__('socket').socket(__import__('socket').AF_UNIX, __import__('socket').SOCK_STREAM)
+                conn.sock.connect("/var/run/docker.sock")
+                conn.request("GET", "/containers/json?all=true")
+                resp = conn.getresponse()
+                containers = json.loads(resp.read().decode('utf-8'))
+                conn.close()
 
-                ingestion_names = ["carryman-ingestion"]
-                worker_names = ["carryman-worker"]
-                sync_names = ["carryman-sync"]
+                for container in containers:
+                    # container["Names"] is like ["/carryman-ingestion"]
+                    names = container.get("Names", [])
+                    state = container.get("State", "unknown")
+                    status = container.get("Status", "")
+                    c_name = names[0].lstrip("/") if names else ""
 
-                for proc in pm2_data:
-                    name = proc.get('name')
-                    status = proc.get('pm2_env', {}).get('status')
-                    mem = proc.get('monit', {}).get('memory', 0) / (1024*1024) if proc.get('monit') else 0
+                    service_name = None
+                    if "ingestion" in c_name: service_name = "carryman-ingestion"
+                    elif "worker" in c_name: service_name = "carryman-worker"
+                    elif "sync" in c_name: service_name = "carryman-sync"
 
-                    if name in ingestion_names:
-                        marker = "🟢 Online" if status == 'online' else f"🔴 {status.capitalize()}"
-                        processes["carryman-ingestion"] = f"{marker} | RAM: {mem:.0f}MB"
-                        if status != 'online':
-                            unhealthy_processes.append("ingestion")
-
-                    if name in worker_names:
-                        marker = "🟢 Online" if status == 'online' else f"🔴 {status.capitalize()}"
-                        processes["carryman-worker"] = f"{marker} | RAM: {mem:.0f}MB"
-                        if status != 'online':
-                            unhealthy_processes.append("worker")
-
-                    if name in sync_names:
-                        marker = "🟢 Online" if status == 'online' else f"🔴 {status.capitalize()}"
-                        processes["carryman-sync"] = f"{marker} | RAM: {mem:.0f}MB"
-                        if status != 'online':
-                            unhealthy_processes.append("sync")
+                    if service_name:
+                        if state == "running":
+                            processes[service_name] = f"🟢 Running | {status}"
+                        else:
+                            processes[service_name] = f"🔴 {state.capitalize()}"
+                            unhealthy_processes.append(service_name)
 
             except Exception as e:
-                log.error(f"PM2 Status Error: {e}")
+                log.error(f"Docker Socket Status Error: {e}")
                 for k in processes:
                     processes[k] = "⚠️ Error"
+                    unhealthy_processes.append(k)
 
             # 3. Resources
-            cpu_usage = psutil.cpu_percent()
+            cpu_usage = psutil.cpu_percent(interval=1)
             ram_usage = psutil.virtual_memory().percent
             ram_used_gb = psutil.virtual_memory().used / (1024**3)
             ram_total_gb = psutil.virtual_memory().total / (1024**3)
@@ -265,52 +265,26 @@ def register_handlers(bot):
             markup = types.InlineKeyboardMarkup()
             markup.add(types.InlineKeyboardButton("✅ အတည်ပြုသည် (Confirm)", callback_data="sys_restart_all"))
             markup.add(types.InlineKeyboardButton("❌ မလုပ်တော့ပါ (Cancel)", callback_data="sys_cancel"))
-            bot.reply_to(message, "🔄 **System Restart**\n\nစနစ်တစ်ခုလုံးကို Restart ချရန် သေချာပါသလား အစ်ကို?", reply_markup=markup)
+            bot.reply_to(message, "🔄 **System Restart**\n\nContainer အားလုံးကို Restart ချရန် သေချာပါသလား အစ်ကို?", reply_markup=markup)
         else:
             bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
 
     @bot.message_handler(commands=['sys_update'])
     def handle_sys_update(message):
         if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
-            msg = bot.reply_to(message, "⏳ **System Updating...**\nGit Pull လုပ်နေပါသည်...")
+            msg = bot.reply_to(message, "⏳ **System Updating...**\nStep 1/2: Git Pull လုပ်နေပါသည်...")
             try:
-                output = subprocess.check_output(["git", "pull"]).decode('utf-8')
-                bot.edit_message_text(f"✅ **Git Pull Success!**\n\n`{output}`\n\n🔄 စနစ်ကို Graceful Sequential Restart ချနေပါပြီ...", msg.chat.id, msg.message_id)
+                # Step 1: Git Pull
+                git_output = subprocess.check_output(["git", "pull"], cwd=os.path.dirname(os.path.abspath(__file__)) ).decode('utf-8')
+                bot.edit_message_text(f"✅ **Git Pull Success!**\n`{git_output}`\n\nStep 2/2: Docker image များကို အသစ်ပြန်လည်တည်ဆောက်နေပါသည်... (ဒါက အချိန်အနည်းငယ်ကြာနိုင်ပါတယ်)", msg.chat.id, msg.message_id)
                 
-                # 💡 Graceful Sequential Restart: Active jobs စောင့်ပြီးမှ တစ်ခုချင်း restart
-                try:
-                    # ၁။ Active processing ရှိမရှိ စစ်ဆေးပြီး စောင့်ခြင်း
-                    with db_manager.get_connection() as conn:
-                        active = conn.execute(
-                            "SELECT id FROM pickup_queue WHERE status = 'PROCESSING' LIMIT 1"
-                        ).fetchone()
-                    if active:
-                        log.warning(f"⏳ Active submission found (Queue {active[0]}). Waiting up to 5 minutes...")
-                        waited = 0
-                        while waited < 300:
-                            time.sleep(10)
-                            waited += 10
-                            with db_manager.get_connection() as conn:
-                                still = conn.execute(
-                                    "SELECT id FROM pickup_queue WHERE id = ? AND status = 'PROCESSING'",
-                                    (active[0],)
-                                ).fetchone()
-                            if not still:
-                                log.info(f"✅ Submission completed after {waited}s.")
-                                break
-                except Exception as we:
-                    log.warning(f"⚠️ Active job wait error (proceeding anyway): {we}")
+                # Step 2: Rebuild and restart containers with new code
+                build_output = subprocess.check_output(
+                    ["docker-compose", "up", "-d", "--build"],
+                    cwd=os.path.dirname(os.path.abspath(__file__))
+                ).decode('utf-8')
 
-                # ၂။ Sequential Graceful Restart (ingestion → worker → sync)
-                for svc in ["carryman-ingestion", "carryman-worker", "carryman-sync"]:
-                    try:
-                        subprocess.run(["pm2", "restart", svc], capture_output=True, timeout=10)
-                        log.info(f"🔄 Restarted {svc}")
-                        time.sleep(5)  # ၅ စက္ကန့်ခြားပြီးမှ နောက်တစ်ခုကို restart လုပ်မည်
-                    except Exception as re:
-                        log.error(f"❌ Failed to restart {svc}: {re}")
-                
-                bot.send_message(msg.chat.id, "✅ **Sequential Graceful Restart Complete!**")
+                bot.send_message(msg.chat.id, f"✅ **System Update & Restart Complete!**\n\n`{build_output}`")
             except Exception as e:
                 bot.edit_message_text(f"❌ **Update Failed!**\n\nError: {e}", msg.chat.id, msg.message_id)
         else:
@@ -320,12 +294,16 @@ def register_handlers(bot):
     def handle_sys_logs(message):
         if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
             try:
-                # PM2 logs are usually in ~/.pm2/logs/
-                # But we can use pm2 logs --nostream --lines 20
-                output = subprocess.check_output(["pm2", "logs", "--nostream", "--lines", "20"]).decode('utf-8')
+                # Use docker-compose logs to get logs from all services
+                output = subprocess.check_output(
+                    ["docker-compose", "logs", "--no-color", "--tail", "30"],
+                    cwd=os.path.dirname(os.path.abspath(__file__)) # Run in correct directory
+                ).decode('utf-8')
+                
                 # Telegram limit 4096
                 if len(output) > 4000: output = output[-4000:]
-                bot.reply_to(message, f"📋 **System Logs (Last 20 lines):**\n\n`<pre>{html.escape(output)}</pre>`", parse_mode="HTML")
+                
+                bot.reply_to(message, f"📋 **System Logs (Last 30 lines):**\n\n`<pre>{html.escape(output)}</pre>`", parse_mode="HTML")
             except Exception as e:
                 bot.reply_to(message, f"❌ Log ဖတ်၍မရပါ: {e}")
         else:
@@ -455,10 +433,15 @@ def register_handlers(bot):
                 log.warning(f"⚠️ Active job wait error (proceeding anyway): {we}")
             
             # ၂။ Sequential Graceful Restart (ingestion → worker → sync)
-            for svc in ["carryman-ingestion", "carryman-worker", "carryman-sync"]:
+            compose_dir = os.path.dirname(os.path.abspath(__file__))
+            for svc in ["ingestion", "worker", "sync"]:
                 try:
-                    subprocess.run(["pm2", "restart", svc], capture_output=True, timeout=10)
-                    log.info(f"🔄 Restarted {svc}")
+                    subprocess.run(
+                        ["docker-compose", "restart", svc],
+                        capture_output=True, timeout=30,
+                        cwd=compose_dir
+                    )
+                    log.info(f"🔄 Restarted {svc} (Docker)")
                     time.sleep(5)
                 except Exception as re:
                     log.error(f"❌ Failed to restart {svc}: {re}")
@@ -491,7 +474,11 @@ def register_handlers(bot):
     def callback_sys_logs_20(call):
         if db_manager.get_user_level(call.from_user.id, call.message.chat.id) == 4:
             try:
-                output = subprocess.check_output(["pm2", "logs", "--nostream", "--lines", "20"]).decode('utf-8')
+                compose_dir = os.path.dirname(os.path.abspath(__file__))
+                output = subprocess.check_output(
+                    ["docker-compose", "logs", "--no-color", "--tail", "20"],
+                    cwd=compose_dir
+                ).decode('utf-8')
                 if len(output) > 4000: output = output[-4000:]
                 bot.send_message(call.message.chat.id, f"📋 **System Logs (Last 20 lines):**\n\n`<pre>{html.escape(output)}</pre>`", parse_mode="HTML")
             except Exception as e:

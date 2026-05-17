@@ -8,18 +8,17 @@ import os
 def _detect_columns(header):
     """
     Auto-detect column indices from header row.
-    Supports both formats:
-    - 7-col: Chat ID, Telegram Group Name, Website OS Name, Pickup Topic ID, Error Topic ID, Finance Topic ID, Last Updated
-    - 8-col: OS Group ID, Mapping ID, Telegram Name, Website Name, Pickup TID, Error TID, Finance TID, Last Updated
+    8-column format:
+    OS Group ID | Mapping ID | Telegram Name | Website Name | Pickup TID | Error TID | Finance TID | Last Updated
     """
     mapping = {
         'chat_id': 0,       # Column A: OS Group ID → os_groups table
-        'mapping_id': 0,    # Column B: Mapping ID → shop_mappings table (defaults to chat_id if not present)
-        'tg_name': 1,       # Column C: Telegram Name → os_groups.shop_name
-        'web_name': 2,      # Column D: Website Name → shop_mappings.website_os_name
-        'pickup_tid': 3,    # Column E: Pickup Topic ID
-        'error_tid': 4,     # Column F: Error Topic ID
-        'finance_tid': 5,   # Column G: Finance Topic ID
+        'mapping_id': 1,    # Column B: Mapping ID → shop_mappings table
+        'tg_name': 2,       # Column C: Telegram Name → os_groups.shop_name
+        'web_name': 3,      # Column D: Website Name → shop_mappings.website_os_name
+        'pickup_tid': 4,    # Column E: Pickup Topic ID
+        'error_tid': 5,     # Column F: Error Topic ID
+        'finance_tid': 6,   # Column G: Finance Topic ID
     }
     
     # Try to detect by header keywords
@@ -231,11 +230,12 @@ class GSheetSync:
             for m in new_data:
                 chat_id, tg_name, web_name, p_tid, e_tid, f_tid, updated_at = m
                 updated_str = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(updated_at)) if updated_at else "-"
-                rows.append([str(chat_id), tg_name, web_name, str(p_tid), str(e_tid), str(f_tid), updated_str])
+                # 8-col format: OS Group ID | Mapping ID | Telegram Name | Website Name | Pickup TID | Error TID | Finance TID | Last Updated
+                rows.append([str(chat_id), str(chat_id), tg_name, web_name, str(p_tid), str(e_tid), str(f_tid), updated_str])
                 chat_ids.append(chat_id)
 
             if rows:
-                sheet.append_rows(rows)
+                sheet.append_rows(rows, value_input_option='USER_ENTERED')
                 db_manager.mark_os_groups_as_synced(chat_ids)
                 return len(rows)
             return 0
@@ -253,9 +253,9 @@ class GSheetSync:
             try:
                 sheet = workbook.worksheet("Shop Mappings")
             except gspread.exceptions.WorksheetNotFound:
-                sheet = workbook.add_worksheet(title="Shop Mappings", rows="1000", cols="7")
+                sheet = workbook.add_worksheet(title="Shop Mappings", rows="1000", cols="8")
 
-            header = ["Chat ID", "Telegram Group Name", "Website OS Name", "Pickup Topic ID", "Error Topic ID", "Finance Topic ID", "Last Updated"]
+            header = ["OS Group ID", "Mapping ID", "Telegram Name", "Website Name", "Pickup TID", "Error TID", "Finance TID", "Last Updated"]
             sheet.clear()
             sheet.update('A1', [header])
 
@@ -265,12 +265,12 @@ class GSheetSync:
             for m in mappings:
                 chat_id, tg_name, web_name, p_tid, e_tid, f_tid, updated_at = m
                 updated_str = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(updated_at)) if updated_at else "-"
-                rows.append([str(chat_id), tg_name, web_name, str(p_tid), str(e_tid), str(f_tid), updated_str])
+                rows.append([str(chat_id), str(chat_id), tg_name, web_name, str(p_tid), str(e_tid), str(f_tid), updated_str])
                 chat_ids.append(chat_id)
 
             if rows:
-                rows.sort(key=lambda x: x[1])
-                sheet.update(f'A2:G{len(rows)+1}', rows)
+                rows.sort(key=lambda x: x[3])  # sort by Telegram Name (Column C → index 3)
+                sheet.update(f'A2:H{len(rows)+1}', rows)
                 db_manager.mark_os_groups_as_synced(chat_ids)
                 return True, f"✅ Shop Data {len(rows)} ခုကို GSheet သို့ Export လုပ်ပြီးပါပြီ။"
             return False, "⚠️ Export လုပ်ရန် ဒေတာ မရှိပါ။"

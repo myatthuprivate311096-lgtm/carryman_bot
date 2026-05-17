@@ -804,6 +804,21 @@ def update_message_status(msg_id, chat_id, status, topic_id=None, category=None,
     finally:
         conn.close()
 
+def reset_message_timestamp(msg_id, chat_id, new_timestamp):
+    """ Pickup Cancel လုပ်သည့်အခါ ၁၅ မိနစ် alert system က အခုမှစပြီး ပြန်ရေတွက်စေရန် timestamp ကို reset လုပ်ခြင်း """
+    conn = get_connection()
+    try:
+        conn.execute(
+            "UPDATE message_logs SET timestamp = ? WHERE msg_id = ? AND chat_id = ?",
+            (new_timestamp, msg_id, chat_id)
+        )
+        conn.commit()
+    except Exception as e:
+        log.error(f"❌ reset_message_timestamp failed for msg_id={msg_id}, chat_id={chat_id}: {e}")
+        raise
+    finally:
+        conn.close()
+
 def get_topic_context(chat_id, topic_id):
     """ AI Analysis အတွက် မဖြေရသေးသောစာများနှင့် နောက်ဆုံးဖြေထားသောစာ ၅ ကြောင်းကို ယူသည် """
     conn = get_connection()

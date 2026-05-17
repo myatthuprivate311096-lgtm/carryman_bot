@@ -173,12 +173,13 @@ def create_new_group(bot, message):
             elif any(x in t_name_l for x in ["pick up", "urgent", "စုံစမ်းရန်"]):
                 target_topic = 1
             
-            full_record = (record[1], record[0], record[1], record[0], record[2], record[3], record[4], target_chat, target_topic)
+            # 💡 Use "Manual Register" as invite_link flag so GSheet export picks up new groups
+            full_record = (record[1], record[0], record[1], record[0], "Manual Register", record[3], record[4], target_chat, target_topic)
             c.execute("INSERT INTO os_groups (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id, target_chat_id, target_topic_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", full_record)
         conn.commit()
         conn.close()
         
-        bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, 
+        bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id,
                               text=f"✅ **{group_name}** ကို အောင်မြင်စွာ ဖန်တီးပြီး Database သို့ သိမ်းဆည်းပြီးပါပြီ။\n🔗 {invite_link}")
     except Exception as e:
         bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text=f"❌ Error: {e}")

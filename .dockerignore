@@ -1,0 +1,105 @@
+# Git files
+.git
+.gitignore
+
+# Virtual environment
+venv
+
+# Python cach# Git files
+.git
+.gitignore
+
+# Virtual environment
+venv
+
+# Python cache
+__pycache__
+*.pyc
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# OS files
+.DS_Store
+
+# Logs and databases (these should be mounted as volumes, not included in the image)
+*.log
+*.db
+*.db-shm
+*.db-wal
+*.session
+
+# Backup files
+*.tar.gz
+*.sql
+
+# Images and other large files
+*.png
+
+# Environment file
+.env
+e
+__pycache__
+*.pyc
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# OS files# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Git files
+.git
+.gitignore
+
+# Python virtual environment and cache
+venv
+__pycache__
+*.pyc
+
+# IDE and OS specific files
+.vscode
+.idea
+.DS_Store
+
+# Log files and databases (mounted as volumes, not part of the image)
+*.log
+*.db
+*.db-shm
+*.db-wal
+*.session
+
+# Backup and large files
+*.tar.gz
+*.sql
+*.png
+*.csv
+
+# Local user files
+credentials.json
+ai_learning_context.json
+state.json
+
+# Storage directories
+qdrant_storage
+logs/
+
+.DS_Store
+
+# Logs and databases (these should be mounted as volumes, not included in the image)
+*.log
+*.db
+*.db-shm
+*.db-wal
+*.session
+
+# Backup files
+*.tar.gz
+*.sql
+
+# Images and other large files
+*.png

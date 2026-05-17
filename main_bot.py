@@ -69,43 +69,7 @@ def start_bot():
     threading.Thread(target=auditor.process_audits, args=(bot,), daemon=True).start()
     log.info("🛡️ Auditor worker thread started in ingestion process.")
 
-    # 🏥 Health Monitor: Alert Manager if any component goes down
-    _health_state = {"ingestion": True, "worker": True, "sync": True}
-    def health_monitor_loop():
-        manager_id = int(os.getenv('MANAGER_ID', 0))
-        if not manager_id:
-            return
-        while True:
-            try:
-                pm2_data = _json.loads(subprocess.check_output(["pm2", "jlist"]).decode('utf-8'))
-                current = {"ingestion": False, "worker": False, "sync": False}
-                for proc in pm2_data:
-                    name = proc.get('name', '')
-                    online = proc.get('pm2_env', {}).get('status') == 'online'
-                    if 'ingestion' in name: current['ingestion'] = online
-                    if 'worker' in name: current['worker'] = online
-                    if 'sync' in name: current['sync'] = online
-                
-                for comp in ['ingestion', 'worker', 'sync']:
-                    if _health_state[comp] and not current[comp]:
-                        # Went down
-                        log.warning(f"🏥 Health Alert: {comp} is DOWN!")
-                        try:
-                            bot.send_message(manager_id, f"🚨 **Health Alert!**\n`{comp}` process is **DOWN** 🔴\nPlease check `pm2 status`.")
-                        except: pass
-                    elif not _health_state[comp] and current[comp]:
-                        # Recovered
-                        log.info(f"🏥 Health: {comp} recovered")
-                        try:
-                            bot.send_message(manager_id, f"✅ **Recovered**\n`{comp}` is back **ONLINE** 🟢")
-                        except: pass
-                    _health_state[comp] = current[comp]
-            except Exception as e:
-                log.error(f"Health monitor error: {e}")
-            time.sleep(120)  # Check every 2 minutes
-
-    threading.Thread(target=health_monitor_loop, daemon=True).start()
-    log.info("🏥 Health monitor thread started.")
+    # PM2-based health monitor is removed as it's redundant in Docker.
 
     while True:
         try:

@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # Service 1: The Main Bot (Ingestion)
+  ingestion:
+    build: .
+    container_name: carryman-ingestion
+    command: python main_bot.py
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./carryman.db:/app/carryman.db
+      - ./carryman.db-shm:/app/carryman.db-shm
+      - ./carryman.db-wal:/app/carryman.db-wal
+      - ./carryman.session:/app/carryman.session
+      - ./credentials.json:/app/credentials.json
+      - ./logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  # Service 2: The Sync Scheduler
+  sync:
+    build: .
+    container_name: carryman-sync
+    command: python sync_scheduler.py
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./carryman.db:/app/carryman.db
+      - ./carryman.db-shm:/app/carryman.db-shm
+      - ./carryman.db-wal:/app/carryman.db-wal
+      - ./credentials.json:/app/credentials.json
+      - ./logs:/app/logs
+
+  # Service 3: The Worker Bot
+  worker:
+    build: .
+    container_name: carryman-worker
+    command: python worker_bot.py
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./carryman.db:/app/carryman.db
+      - ./carryman.db-shm:/app/carryman.db-shm
+      - ./carryman.db-wal:/app/carryman.db-wal
+      - ./carryman.session:/app/carryman.session
+      - ./credentials.json:/app/credentials.json
+      - ./logs:/app/logs

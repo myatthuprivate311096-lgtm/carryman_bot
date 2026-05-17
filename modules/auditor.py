@@ -474,8 +474,8 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
     tracking = db_manager.get_alert_tracking(msg_id, chat_id)
     
     if tracking:
-        # alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids, esc_tier2_msg_id
-        alert_msg_id, alert_chat_id, _, esc_msg_id, linked_ids_json, linked_customer_ids_json, esc_tier2_msg_id = tracking
+        # alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids, esc_tier2_msg_id, updates_text
+        alert_msg_id, alert_chat_id, _, esc_msg_id, linked_ids_json, linked_customer_ids_json, esc_tier2_msg_id, _updates_text = tracking
         bot = get_bot()
         try:
             if bot:
@@ -595,8 +595,8 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
         
     tracking = db_manager.get_alert_tracking(msg_id, chat_id)
     if tracking:
-        # alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids, esc_tier2_msg_id
-        _, _, _, _, _, _, esc_tier2_msg_id = tracking
+        # alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids, esc_tier2_msg_id, updates_text
+        _, _, _, _, _, _, esc_tier2_msg_id, _ = tracking
         conn = db_manager.get_connection()
         msg_data = conn.execute("SELECT timestamp FROM message_logs WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id)).fetchone()
         conn.close()
