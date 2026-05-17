@@ -50,7 +50,7 @@ def register_handlers(bot):
                 bot.reply_to(message, "❌ `.env` ထဲမှာ `GSHEET_URL` ထည့်သွင်းထားခြင်း မရှိသေးပါ အစ်ကို။")
                 return
 
-            syncer = gsheet_sync.GSheetSync()
+            syncer = gsheet_sync.GSheetSync(bot=bot)
             
             if subcmd == 'map':
                 msg = bot.reply_to(message, "⏳ **Bidirectional Map Sync လုပ်နေပါသည်...**\n\n📥 Sheet → DB (import)...")
@@ -58,7 +58,7 @@ def register_handlers(bot):
                 # Step 1: Import from Sheet → DB (Sheet edits are source of truth)
                 success_map, result_map = syncer.sync_shop_mappings(sheet_url)
                 
-                # Step 2: Export DB → Sheet (append new groups from DB)
+                # Step 2: Export DB → Sheet (append new groups + resolve unknown names)
                 appended_count = syncer.append_new_mappings_to_sheet(sheet_url)
                 
                 final_msg = f"✅ **Bidirectional Map Sync ပြည့်ပါပြီ!**\n\n"
@@ -89,7 +89,7 @@ def register_handlers(bot):
         try:
             sheet_url = os.getenv('GSHEET_URL')
             if sheet_url:
-                syncer = gsheet_sync.GSheetSync()
+                syncer = gsheet_sync.GSheetSync()  # No bot here, runs in background
                 count = syncer.append_new_mappings_to_sheet(sheet_url)
                 if count > 0:
                     log.info(f"📤 Auto-exported {count} new mapping(s) to GSheet after register.")
@@ -108,7 +108,7 @@ def register_handlers(bot):
                                      msg.chat.id, msg.message_id)
                 return
 
-            syncer = gsheet_sync.GSheetSync()
+            syncer = gsheet_sync.GSheetSync(bot=bot)
             
             # Step 1: Import Sheet → DB (manual edits from Sheet become source of truth)
             success_import, result_import = syncer.sync_shop_mappings(sheet_url)
@@ -913,6 +913,113 @@ def register_handlers(bot):
         except Exception as e:
             log.error(f"❌ Missing Pickup Command Error: {e}")
             bot.reply_to(message, "⚠️ Pickup Trigger လုပ်ဆောင်စဉ် အမှားတစ်ခု ဖြစ်သွားပါသည်။")
+
+    @bot.message_handler(commands=['pickup'])
+    def handle_pickup_command(message):
+        """ /pickup today OR /pickup tom — Direct Pickup Interactive Form (No Duplicate Check, AI Learning on Reply) """
+        try:
+            from modules import auto_pickup
+            import pytz as _pytz
+            from datetime import datetime as _dt, timedelta as _td
+
+            chat_id = message.chat.id
+            user_id = message.from_user.id
+            SANDBOX_CHAT_ID = -1003539520778
+            is_sandbox = (chat_id == SANDBOX_CHAT_ID)
+
+            # ၁။ OS Group ဟုတ်မဟုတ် စစ်ဆေးခြင်း (Sandbox ကို bypass)
+            if not is_sandbox and not db_manager.check_if_os_group(chat_id):
+                bot.reply_to(message, "⚠️ ဤ Command ကို OS Group များအတွင်းသာ အသုံးပြုနိုင်ပါသည်။")
+                return
+
+            # ၂။ Staff Exclusion (ဝန်ထမ်းများ မသုံးနိုင်ပါ — Sandbox ကို bypass)
+            user_level = db_manager.get_user_level(user_id, chat_id)
+            if not is_sandbox and user_level >= 3:
+                log.info(f"🛡️ Staff {user_id} attempted /pickup — blocked.")
+                bot.reply_to(message, "⚠️ ဝန်ထမ်းများ ဤ Command ကို အသုံးပြုခွင့်မရှိပါ။")
+                return
+
+            # ၃။ Date Type Parse (today / tom / tomorrow / 2moro)
+            parts = message.text.strip().split()
+            date_type = "today"  # default
+            if len(parts) > 1:
+                sub = parts[1].lower()
+                if sub in ("tom", "tomorrow", "2moro", "မနက်ဖြန်"):
+                    date_type = "tomorrow"
+                elif sub in ("today", "ဒီနေ့", "ယနေ့"):
+                    date_type = "today"
+
+            # ၄။ Reply ဟုတ်မဟုတ် စစ် → AI Learning + orig_msg_id သတ်မှတ်
+            is_reply = message.reply_to_message is not None
+            if is_reply:
+                orig_msg = message.reply_to_message
+                orig_msg_id = orig_msg.message_id
+                orig_text = orig_msg.text or orig_msg.caption or "📦 Media Content"
+                topic_id = orig_msg.message_thread_id if getattr(orig_msg, 'is_topic_message', False) and orig_msg.message_thread_id else 1
+
+                # AI Learning: Reply ဆွဲထားတဲ့ မူရင်းစာကို PICKUP အဖြစ် Feedback သိမ်းမည်
+                db_manager.save_feedback(orig_msg_id, chat_id, topic_id, 'PICKUP', orig_text, user_id)
+                log.info(f"📝 AI Learning: Saved PICKUP feedback from replied msg {orig_msg_id} in chat {chat_id}")
+
+                # Replied-to message ကို DB ထဲမှာ ရှိမရှိစစ်၊ မရှိရင် log လုပ်မည်
+                msg_ctx = db_manager.get_message_context(orig_msg_id, chat_id)
+                if not msg_ctx:
+                    db_manager.log_message(
+                        orig_msg_id, chat_id, topic_id,
+                        orig_msg.from_user.id if orig_msg.from_user else user_id,
+                        orig_text, orig_msg.date, media_id=None
+                    )
+                    log.info(f"📩 Logged replied-to message {orig_msg_id} for /pickup flow")
+
+            else:
+                # Direct command (No reply) — use command message as orig
+                orig_msg_id = message.message_id
+                topic_id = message.message_thread_id if getattr(message, 'is_topic_message', False) and message.message_thread_id else 1
+
+                # Command message ကို DB ထဲ log လုပ်မည် (context အတွက်)
+                db_manager.log_message(
+                    orig_msg_id, chat_id, topic_id, user_id,
+                    f"/pickup {date_type}", message.date, media_id=None
+                )
+
+            # ၅။ Date String ပြင်ဆင်ခြင်း
+            tz = _pytz.timezone('Asia/Yangon')
+            now = _dt.now(tz)
+            target_date_str = (
+                now.strftime("%d-%m-%Y") if date_type == "today"
+                else (now + _td(days=1)).strftime("%d-%m-%Y")
+            )
+
+            # ၆။ Shop Name ရယူခြင်း
+            shop_name = auto_pickup.get_best_shop_name(bot, chat_id)
+
+            # ၇။ Pickup Queue ထဲထည့်ခြင်း (Duplicate မစစ် — အစ်ကို့ညွှန်ကြားချက်အတိုင်း)
+            # 💡 WAITING_SETUP status ဖြင့် ထည့်မည်
+            queue_id = db_manager.upsert_pickup_queue(
+                chat_id, orig_msg_id, target_date_str, shop_name,
+                remark=None, vehicle=None, status='WAITING_SETUP'
+            )
+
+            # ၈။ Admin Alert ပို့ခြင်း (မရှိသေးမှသာ ပို့မည်)
+            if not db_manager.get_alert_tracking(orig_msg_id, chat_id):
+                auto_pickup.send_admin_pickup_alert(
+                    bot, chat_id, orig_msg_id, shop_name, target_date_str,
+                    vehicle=None, remark=None, orig_text=(
+                        orig_msg.text or orig_msg.caption or "/pickup command"
+                    ) if is_reply else f"/pickup {date_type}"
+                )
+
+            # ၉။ Interactive Setup Form ပြခြင်း
+            auto_pickup.show_interactive_setup(bot, chat_id, orig_msg_id, date_type)
+
+            log.info(f"✅ /pickup {date_type} — Interactive Setup shown for {shop_name} (chat={chat_id}, orig_msg={orig_msg_id})")
+
+        except Exception as e:
+            log.error(f"❌ /pickup Command Error: {e}", exc_info=True)
+            try:
+                bot.reply_to(message, "⚠️ Pickup Form ပြသစဉ် အမှားတစ်ခု ဖြစ်သွားပါသည်။")
+            except Exception:
+                pass
 
     @bot.message_handler(commands=['mapshops'])
     def handle_map_shops(message):
