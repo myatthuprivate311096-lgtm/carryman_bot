@@ -433,22 +433,28 @@ def register_handlers(bot):
                 log.warning(f"⚠️ Active job wait error (proceeding anyway): {we}")
             
             # ၂။ Sequential Graceful Restart (ingestion → worker → sync)
-            compose_dir = os.path.dirname(os.path.abspath(__file__))
-            for svc in ["ingestion", "worker", "sync"]:
+            # 💡 Docker SDK သုံး၍ socket မှတဆင့် container restart လုပ်ခြင်း
+            import docker as _docker
+            failed = []
+            client = _docker.DockerClient(base_url='unix://var/run/docker.sock')
+            for svc in ["carryman-ingestion", "carryman-worker", "carryman-sync"]:
                 try:
-                    subprocess.run(
-                        ["docker-compose", "restart", svc],
-                        capture_output=True, timeout=30,
-                        cwd=compose_dir
-                    )
-                    log.info(f"🔄 Restarted {svc} (Docker)")
+                    container = client.containers.get(svc)
+                    container.restart()
+                    log.info(f"🔄 Restarted {svc} (Docker SDK)")
                     time.sleep(5)
                 except Exception as re:
                     log.error(f"❌ Failed to restart {svc}: {re}")
+                    failed.append(svc)
             
-            log.info("✅ All processes restarted gracefully.")
-            bot.edit_message_text("✅ **System Restarted!**\nစနစ်အားလုံး Graceful Restart ဖြင့် ပြန်တက်လာပါပြီ။",
-                                   call.message.chat.id, call.message.message_id)
+            if not failed:
+                log.info("✅ All processes restarted gracefully.")
+                bot.edit_message_text("✅ **System Restarted!**\nစနစ်အားလုံး Graceful Restart ဖြင့် ပြန်တက်လာပါပြီ။",
+                                       call.message.chat.id, call.message.message_id)
+            else:
+                log.error(f"❌ Restart failed for: {', '.join(failed)}")
+                bot.edit_message_text(f"⚠️ **System Restart Failed!**\n\nအောက်ပါ container များ restart မအောင်မြင်ပါ:\n- {', '.join(failed)}\n\nHost ပေါ်မှ `docker-compose restart` ဖြင့် manual restart လုပ်ပေးပါ။",
+                                       call.message.chat.id, call.message.message_id)
 
     @bot.callback_query_handler(func=lambda call: call.data == "sys_cancel")
     def callback_sys_cancel(call):
@@ -932,14 +938,7 @@ def register_handlers(bot):
                 bot.reply_to(message, "⚠️ ဤ Command ကို OS Group များအတွင်းသာ အသုံးပြုနိုင်ပါသည်။")
                 return
 
-            # ၂။ Staff Exclusion (ဝန်ထမ်းများ မသုံးနိုင်ပါ — Sandbox ကို bypass)
-            user_level = db_manager.get_user_level(user_id, chat_id)
-            if not is_sandbox and user_level >= 3:
-                log.info(f"🛡️ Staff {user_id} attempted /pickup — blocked.")
-                bot.reply_to(message, "⚠️ ဝန်ထမ်းများ ဤ Command ကို အသုံးပြုခွင့်မရှိပါ။")
-                return
-
-            # ၃။ Date Type Parse (today / tom / tomorrow / 2moro)
+            # ၂။ Date Type Parse (today / tom / tomorrow / 2moro)
             parts = message.text.strip().split()
             date_type = "today"  # default
             if len(parts) > 1:
