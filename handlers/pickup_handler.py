@@ -375,6 +375,17 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             orig_msg_id = int(call.data.split('_')[2])
             chat_id = call.message.chat.id
             
+            # 🔒 Step 0: Delete bot messages FIRST before any DB ops that might throw
+            # This ensures the pickup inquiry disappears from the group even if later steps fail.
+            try:
+                bot.delete_message(chat_id, call.message.message_id)
+                log.info(f"🗑️ Deleted OS Group bot message {call.message.message_id} in chat {chat_id}")
+            except Exception as del_e:
+                log.warning(f"⚠️ Failed to delete OS Group bot message {call.message.message_id}: {del_e}")
+
+            # Clean up all intermediate bot messages
+            auto_pickup.cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id)
+            
             # 1. Admin Group ရှိ Notification ကို ဖျက်ခြင်း
             tracking = db_manager.get_alert_tracking(orig_msg_id, chat_id)
             if tracking:
@@ -389,8 +400,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             msg_ctx = db_manager.get_message_context(orig_msg_id, chat_id)
             if msg_ctx:
                 orig_text = msg_ctx[0]
-                topic_id = db_manager.get_message_topic(orig_msg_id, chat_id)
-                db_manager.log_feedback(chat_id, topic_id, orig_text, category='NOT_PICKUP', msg_id=orig_msg_id)
+                db_manager.log_feedback(chat_id, orig_msg_id, orig_text, category='NOT_PICKUP')
 
             # 2. Status ကို PENDING သို့ ပြန်ပြောင်းခြင်း
             # 💡 Reset timestamp so 15-min alert clock starts from NOW, not from original message time
@@ -398,16 +408,6 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             now_ts = int(_time.time())
             db_manager.reset_message_timestamp(orig_msg_id, chat_id, now_ts)
             log.info(f"🔄 Pickup cancelled: msg {orig_msg_id} in chat {chat_id} reset to PENDING with fresh timestamp {now_ts}")
-            
-            # 3. Shop Group (OS GP) ရှိ Bot စာများကို ရှင်းလင်းခြင်း
-            # 💡 try-except wrapper to ensure deletion errors don't block the rest
-            try:
-                bot.delete_message(chat_id, call.message.message_id)
-                log.info(f"🗑️ Deleted OS Group bot message {call.message.message_id} in chat {chat_id}")
-            except Exception as del_e:
-                log.warning(f"⚠️ Failed to delete OS Group bot message {call.message.message_id}: {del_e}")
-            
-            auto_pickup.cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id)
             
             bot.answer_callback_query(call.id, "✅ Pickup မဟုတ်ကြောင်း မှတ်သားပြီး ပုံမှန်စာအဖြစ် ပြန်ပြောင်းလိုက်ပါပြီ။")
         except Exception as e:

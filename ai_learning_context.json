@@ -1,0 +1,334 @@
+{
+    "-1003513582211_1": [
+        "Do not alert on messages containing only the word 'Pickup' or similar single-word pickup statuses without additional context",
+        "Ignore messages containing informal confirmation phrases like 'စက်ဘီးလေးဆိုရတယ်နော့်' or 'စက်ဘီးလေးလာသွားပီနော့်'",
+        "Exclude messages that function as delivery confirmation notifications from delivery personnel",
+        "Ignore messages containing sender-provided parcel update summaries where transaction status is marked as 'မရှင်းခဲ့ပါ'"
+    ],
+    "-1003587400346_6": [
+        "Ignore messages that are questions about COD pickup availability (e.g., \"မန္တ​လေးက COD ​ကောက်​ပေးလို့ရတယ်​နော်?\")",
+        "Ignore customer requests for 2-way pickup (e.g., \"2 ways အပ်ဖို့ရှိပါတယ် လာ​ကောက်​ပေးပါ\")"
+    ],
+    "-1003633412428_4": [
+        "Ignore messages with pickup intent keywords (e.g., 'ယူပါမယ်') when containing contact details",
+        "Do not alert 'NOT_PICKUP' for messages that include address and phone number with pickup phrases"
+    ],
+    "-1003633412428_1": [
+        "Ignore messages where the only meaningful word is a pickup time/number (e.g., '23 တွက်နော်ရှင် pickup က') without order details.",
+        "Do not alert on messages that are purely confirmations or clarifications of pickup times with no scam indicators.",
+        "Ignore text that splits phone numbers across lines without spaces or delimiters (false positive for phone number pattern)",
+        "Do not alert on Burmese script combined with phone numbers in natural language requests",
+        "Ignore alerts for single-word messages like 'ဟုတ်'",
+        "Do not alert on messages containing only 'မကောက်နဲ့တော့နော်'"
+    ],
+    "-1003674067425_6": [
+        "Ignore alerts containing 'pick.up' or 'pick up' in the context of arranging a pickup, not reporting a scam",
+        "Do not alert on messages with 'pick.up' when combined with polite request words like 'လာကောက်ပေးပါဦးနော်'",
+        "Do not alert on messages containing only the word 'ဟုတ်ကဲ့'"
+    ],
+    "-1003692715477_1": [
+        "Ignore messages starting with pickup logs containing tracking details",
+        "Do not alert on messages with delivery instructions or pickup notes",
+        "Ignore messages with payment summaries and itemized parcel data",
+        "Do not alert on messages referencing order confirmations or delivery requests",
+        "Do not alert on duplicate photos."
+    ],
+    "-1003723204023_1": [
+        "Do not alert on messages containing only pickup availability keywords like 'pick up ရှိပါတယ်'",
+        "Ignore messages containing only pickup availability announcements like 'Today pick up'"
+    ],
+    "-1003734659970_1": [
+        "Ignore pickup requests that include a complete address and phone number",
+        "Ignore messages containing 'စက်ဘီးpickup' or similar service-specific pickup notifications"
+    ],
+    "-1003752062728_4": [
+        "Do not alert on messages containing 'Return လိုက်' or similar short return confirmations"
+    ],
+    "-1003798966794_1": [
+        "Ignore messages containing 'ပါဆယ်' with pickup details like 'OS Name' and 'Date'",
+        "Do not trigger on delivery instructions including 'ပစ္စည်းလေး သွားပို့ရန်' and 'ပို့ပေးပါ'",
+        "Ignore structured shipping info with order total and pre-payment amounts",
+        "Ignore messages that are delivery logistics inquiries (e.g., returns, exchanging items).",
+        "Do not alert on short, action-specific customer service queries not requiring brand protection investigation."
+    ],
+    "-1003810399961_1": [
+        "Ignore messages containing marketplace/reply patterns like 'ဒါလေးကလိပ်စာအတိုင်းသွားယူပေးပါတဲ့' (ordering address confirmation)",
+        "Do not alert on customer instructions confirming delivery address/point",
+        "Ignore messages containing only a number followed by casual Burmese phrases like 'ပဲကောက်လိုက်နော်' (just take) indicating simple transaction amounts",
+        "Ignore messages inquiring about payment schedules or billing cycles",
+        "Exclude messages containing personal contact information or physical addresses",
+        "Discard messages consisting purely of follow-up inquiries like 'I've asked' or 'Waiting for update'",
+        "Filter out messages addressing specific individuals by name followed by contact details"
+    ],
+    "-1003816497641_1": [
+        "Ignore messages exclusively about wanting to call a pickup service"
+    ],
+    "-1003830048503_4": [
+        "Do not alert on messages containing delivery instructions or confirmations (e.g., 'ပို့ဆောင်ပေးပါ', 'ဂိတ်တင်လို့ရပါပီ')",
+        "Ignore messages with @mentions that are likely addressing another party"
+    ],
+    "-1003837115331_1": [
+        "Ignore customer pickup request messages in Burmese like 'လာယူပေးပါအုံ'",
+        "Do not alert on messages containing only acknowledgment of payment received"
+    ],
+    "-1003896183863_1": [
+        "Ignore messages with 'မနက်ဆက်ဆက် ကောက်ပေးပါရှင့်' or similar deferral phrases (e.g., 'take tomorrow', 'next time') as they indicate future action, not a missed pickup",
+        "Do not alert when message contains polite requests with 'ပါရှင့်' or similar honorifics combined with future time references",
+        "Do not alert on single-word affirmative replies like 'ဟုတ်' (yes/okay) in greeting contexts",
+        "Ignore messages consisting solely of common short acknowledgments in greeting topics"
+    ],
+    "-1003946708392_1": [
+        "Ignore Burmese message containing 'pick up' with 'အမနက်ဖန်' (tomorrow morning) as it is not a scam",
+        "Do not alert on pickup requests referencing future time (e.g., 'tomorrow morning')"
+    ],
+    "-1003345675653_1": [
+        "Ignore the single-word 'Pickup' as a false positive, likely a status update."
+    ],
+    "-1003801077622_1": [
+        "Ignore messages containing 'ပါဆယ်ကောက်' (pickup parcel) regardless of other text",
+        "Ignore messages containing 'ကြိုရှင်းလေး' (prepayment) as they are routine delivery updates",
+        "Do not alert on messages with time references like 'မနက်ပိုင်း' (morning) for pickup arrangements",
+        "Ignore messages containing only images",
+        "Do not alert on inquiry keywords like 'ပို့လား' or 'ပို့ပေးပါ' when unaccompanied by specific transaction IDs",
+        "Ignore messages containing solely gratitude or courtesy markers",
+        "Exclude follow-up confirmation requests that lack transactional intent",
+        "Filter out repetitive conversational fillers like 'ဟုတ်' or 'ကျေးဇူပါ' occurring without context"
+    ],
+    "-1003823820784_1": [
+        "Ignore structured pickup messages containing 'ပါဆယ်' (parcel) and monetary amounts like 'ကျပ်' (kyat) without other trigger keywords",
+        "Do not alert on messages with date patterns 'DD/MM/YYYY' followed by Myanmar script parcel counts and payment details",
+        "Silence alerts for text with 'ငွေကောက်ပမာဏ' (amount to collect) and 'ကြိုရှင်းခဲ့ငွေ' (prepaid amount) in the same message",
+        "Ignore addresses containing common office/building names like 'Kantharyar office tower' when combined with delivery logistics terms",
+        "Ignore structured delivery/pickup messages containing pick-up number, dates, and amounts",
+        "Do not alert on messages with mixed Burmese/English order details like 'ပါဆယ်' and 'ကျပ်'",
+        "Ignore messages containing pre-paid (ကြိုရှင်းခဲ့ငွေ) amounts matching total",
+        "Do not alert on messages containing only greetings like 'ဟုတ်ကဲ့ရှင့်' or 'ဟုတ်ကဲ့ပါရှင့်'."
+    ],
+    "-1003881120872_6": [
+        "Ignore messages asking to remind customer to pick up item (product not yet picked up)",
+        "Do not alert on messages where customer hasn't collected item yet, requesting to instruct pickup"
+    ],
+    "-1003964662754_1": [
+        "Ignore messages that confirm pickup schedules or operations.",
+        "Ignore messages that only confirm a pickup date or schedule, e.g., '20ရက်နေ့အတွက် pickupပါ'."
+    ],
+    "-1003415524543_1": [
+        "Ignore messages containing 'လွှတ်ပေး' (release) in the context of 'မရေစက်ဘီးသမားလေး' (a person on a bicycle), as it is a safe interaction.",
+        "Do not alert on requests phrased as polite or casual commands ('လွှတ်ပေးပါအုံးနော်') regarding persons or non-restricted items.",
+        "Contextually filter out messages that involve asking for release of a delivery person (bicycle rider) rather than prohibited content."
+    ],
+    "-1003725320528_1": [
+        "Ignore messages requesting order pickups",
+        "Ignore messages containing general courier delivery inquiries or shipping status requests",
+        "Do not alert on conversational greetings or routine logistics scheduling questions"
+    ],
+    "-1003801802038_6": [
+        "Ignore messages containing payment amounts and transaction-related Burmese text",
+        "Ignore messages consisting solely of greetings or polite acknowledgments like 'Ok', 'Thanks', or 'Mingalarpar'",
+        "Do not alert on 'Ok' only messages in Topic 6 of chat -1003801802038"
+    ],
+    "-1003809238809_1": [
+        "Do not flag messages containing 'Pick Up' and an address as NOT_PICKUP"
+    ],
+    "-1003816497641_6": [
+        "Ignore messages containing Burmese phrase 'နောက်တစ်ခေါက်' (next time) referencing future pickup arrangements"
+    ],
+    "-1003830048503_1": [
+        "Ignore messages containing gate or customs status updates",
+        "Ignore messages containing only the phrase 'အဲ့ဆို မနက်ဖန်လာပီး မနက်ဖန်မှပဲ ကားဂိတ်တင်ပေးလို့ရောရမလားရှင့်' in Chat -1003830048503, Topic 1"
+    ],
+    "-1003506710131_1": [
+        "Ignore messages that confirm a pickup or delivery schedule, especially in Burmese."
+    ],
+    "-1003539520778_1": [
+        "Ignore messages containing only 'Pick Up' or 'PICKUP' without additional order context",
+        "Ignore messages containing recurring logistic pickup requests",
+        "Do not alert on routine service coordination queries marked as 'Duplicate' or 'Old matter'"
+    ],
+    "-1003819601608_4": [
+        "Ignore messages that are only polite greetings or thank-you phrases in Burmese, e.g., 'ဟုတ်သဲကျေးဇူးပါရှင့်'",
+        "Ignore single-word acknowledgments like 'ဟုတ်ကဲ့' (Yes) that are duplicate or resolved-topic replies"
+    ],
+    "-1003823820784_6": [
+        "Ignore Burmese greetings like 'ဟူတ်ကဲ့ပါရှင့်' and similar common salutations"
+    ],
+    "-1003881120872_4": [
+        "Ignore messages indicating pickup scheduling with dates",
+        "Ignore messages containing only phone numbers or simple request phrases like 'send this phone number'",
+        "Ignore messages categorized as 'Duplicate' or referencing previous dates (e.g., '6ရက်နေ့မှတဲ့')",
+        "Ignore instructional phrases requesting to forward information or contact specific numbers"
+    ],
+    "-1003345675653_6": [
+        "Ignore Burmese greetings like 'ဟုတ်ညီမ'"
+    ],
+    "-1003567788792_4": [
+        "Do not alert on messages containing 'ပါဆယ်' (package) when inquiring about delivery date or status",
+        "Ignore customer or agent messages asking for package arrival estimates",
+        "Suppress alerts for trailing patterns that are package tracking updates without complaint or urgency",
+        "Ignore messages containing 'ဟုတ်ကဲ့' followed by customer service related terms",
+        "Ignore messages containing only greetings and polite phrases like 'cus ကိုဖုန်းကိုင်ပေးဖို့ ပြောထားပါတယ်ရှင့်'"
+    ],
+    "-1003812868558_6": [
+        "Ignore single-word polite responses like 'ဟုတ်ကဲ့ရှင့်' (Yes, sir/madam) in greeting contexts",
+        "Do not alert on messages that only contain a greeting or acknowledgment without actionable content"
+    ],
+    "-1003863853821_5": [
+        "Ignore concise single-date excursion requests in Burmese (e.g., patterns matching 'X/Y/Z for Y days')",
+        "Do not alert on messages asking for trip duration confirmations without suspicious keywords",
+        "Suppress alerts for messages containing only a date and duration phrase (e.g., 'for 3 days')"
+    ],
+    "-1003868121514_6": [
+        "Do not alert on Burmese greeting confirmations like 'လက်ခံရရှိပါတယ်' (meaning 'Received/Acknowledged')",
+        "Ignore messages that are only standard acknowledgment phrases (e.g., 'လက်ခံရရှိပါတယ်') in topic responses",
+        "Filter out passive confirmations (e.g., 'Receiver acknowledged') that are not spam or policy violations"
+    ],
+    "-1003702835668_1": [
+        "Ignore messages containing solely personal requests or meeting appointments",
+        "Filter out messages consisting primarily of repetitive user-specific jargon or internal return codes"
+    ],
+    "-1003762652335_6": [
+        "Ignore messages containing localized delivery coordination or request phrasing in Burmese locale",
+        "Exclude delivery-related status updates from internal communications"
+    ],
+    "-1003808909519_1": [
+        "Ignore short conversational inquiries about availability such as 'မှီသေးလား'"
+    ],
+    "-1003650157592_1": [
+        "Ignore messages containing phrases indicative of customer correction or data update requests",
+        "Ignore messages that contain a combination of phone numbers and address-related text",
+        "Do not alert on status update reports containing both contact information and descriptive address text"
+    ],
+    "-1003798739565_4": [
+        "Ignore messages containing delivery address requests or location-based instructions",
+        "Ignore messages containing specific building or room identifier patterns",
+        "Ignore messages lacking keywords related to financial transactions or security alerts"
+    ],
+    "-1003812325795_1": [
+        "Ignore single-word greeting messages in Burmese",
+        "Do not alert on messages containing only affirmation particles"
+    ],
+    "-1003707562121_4": [
+        "Ignore Burmese conversational scheduling messages related to 'coming to pick up'",
+        "Filter out short affirmative logistical statements"
+    ],
+    "-1003529688950_1": [
+        "Ignore logistical status inquiries like 'Did you send this parcel?'",
+        "Ignore messages containing phone numbers marked as 'Duplicate (ကိစ္စဟောင်း)' or 'Already Resolved (ဖြေရှင်းပြီး)'",
+        "Ignore messages containing phrases indicating call forwarding requests, such as 'ဒီနံပါတ်ကိုဆက်ပေးပါတဲ့' or 'အဲ့နံပါတ်ကိုဆက်ပြီး'",
+        "Ignore messages containing phrases complaining about retweets without context, such as 'ဘာမှလဲလာမပြောပဲ rt တန်းချပေးနေတယ်'"
+    ],
+    "-1003552853303_1": [
+        "Ignore messages containing only status updates like 'Already Resolved' or 'ဖြေရှင်းပြီး'",
+        "Exclude messages mentioning usernames prefixed with '@' if the intent serves as a resolution marker",
+        "Filter out messages consisting solely of internal team coordination keywords or status notifications",
+        "Ignore messages containing only 'ခဏနော် စစ်ပေးပါ့မယ်' followed by 'မှန်ပါတယ်' and '@cmfinance2'"
+    ],
+    "-1003768834039_1": [
+        "Ignore messages containing only images or media attachments",
+        "Exclude simple greeting-only messages from triggering alerts",
+        "Ignore messages containing phrases like 'Payment ကောက်စရာ မလို' regarding payment status clarification",
+        "Exclude messages confirming refund or payment handling status as already resolved",
+        "Ignore conversational support messages clarifying previous payment instructions to customers",
+        "Do not alert on messages stating 'Payment ကောက်စရာ မလိုဘူး' or similar variations"
+    ],
+    "-1003780967023_1": [
+        "Ignore messages containing only status updates such as 'Already Resolved' or their localized Burmese equivalents like 'ဖြေရှင်းပြီး'"
+    ],
+    "-1003672811205_1": [
+        "Ignore messages containing common travel status inquiry keywords like 'ဂိတ်', 'ရလား', or 'သွားလို့ရလား'",
+        "Filter out repeated patterns of known geographic inquiries in Wa and Lashio regions",
+        "Implement debouncing for identical repetitive messages within a short feedback window",
+        "Ignore short query-based messages that follow a repeated conversational template"
+    ],
+    "-1003707562121_1": [
+        "Ignore messages containing only names or 'saying' requests",
+        "Do not alert on status notification messages such as 'Already Resolved' or 'Solved'"
+    ],
+    "-1003720313785_1": [
+        "Ignore messages consisting only of conversational fillers or acknowledgement phrases like 'Rtပေးလိုက်နော်'",
+        "Ignore delivery-related inquiry patterns involving 'ရလား', 'ပို့ခ', or 'pickup'"
+    ],
+    "-1003760073283_1": [
+        "Ignore messages inquiring about customer identity or status confirmation",
+        "Ignore short procedural replies containing phone numbers or confirmation tags",
+        "Exclude messages containing transactional follow-up phrases like 'စာရင်းတင်တာ' or 'နာမည်ပြောပေး'",
+        "Filter out informal customer service conversational filler such as 'ညီမ' or 'မမ'"
+    ],
+    "-1003813366869_1": [
+        "Ignore messages consisting solely of numeric quantities or unit abbreviations without commercial context"
+    ],
+    "-1003862716436_1": [
+        "Ignore messages containing solely local affirmative confirmations like 'ဟုတ်ကဲ့'",
+        "Suppress alerts for logistical follow-up requests regarding pickup schedules",
+        "Filter out short, conversational status updates indicating location follow-ups"
+    ],
+    "-1003849260656_6": [
+        "Ignore single-word greeting messages in Burmese",
+        "Exclude minimal conversational affirmations with less than 5 characters",
+        "Do not alert on messages containing only the greeting 'ဟုတ်ကဲ့ရှင့်' in Burmese language chats."
+    ],
+    "-1003883905797_1": [
+        "Ignore short, polite social greetings such as 'ဟုတ်ကဲ့ပါ'",
+        "Do not alert on phone numbers alone in Burmese script",
+        "Ignore messages containing location names in Burmese script",
+        "Do not alert if message is a pharmacy related name in Burmese script",
+        "Ignore messages containing Su latt phyu followed by Burmese script",
+        "Do not alert on messages containing thank you in Burmese script",
+        "Ignore messages containing emojis only",
+        "Do not alert on short replies of appreciation"
+    ],
+    "-1003494945433_1": [
+        "Do not flag duplicate images."
+    ],
+    "-1003567788792_1": [
+        "Do not alert on messages containing only the greeting 'ဟုတ်ကဲ့ရှင့်'"
+    ],
+    "-1003731394148_1": [
+        "Ignore messages containing '🖼️ Photo', '2wayရှိ', and 'ကြိုရှင်း 77000' patterns.",
+        "Suppress alerts for images followed by '2wayရှိ' and 'ကြိုရှင်း 77000'."
+    ],
+    "-1003752706100_1": [
+        "Do not alert on messages containing only the word 'ဟုတ်' (Hout)",
+        "Ignore single-word affirmative responses such as 'ဟုတ်'"
+    ],
+    "-1003783350266_1": [
+        "Do not alert on messages containing only short Burmese greetings like 'ဟုတ်ကဲ့ပါ'"
+    ],
+    "-1003766245638_1": [
+        "Ignore messages containing only 'ကိစ္စဟောင်း'",
+        "Ignore messages labeled as 'Duplicate (ကိစ္စဟောင်း)'"
+    ],
+    "-1003796096237_1": [
+        "Ignore messages related to package delivery requests.",
+        "Do not alert on messages containing 'အထုပ်လေး' (package) and delivery terms."
+    ],
+    "-1003791802416_8": [
+        "Do not alert on messages containing only the greeting 'ဟုတ်ကဲ့'"
+    ],
+    "-1003797626402_1": [
+        "Ignore 'Hi' only messages followed by trailing patterns including usernames and 'pick up' requests.",
+        "Do not alert on short messages containing solely greetings or single words."
+    ],
+    "-1003801077622_6": [
+        "Do not alert on messages containing only Burmese greetings"
+    ],
+    "-1003812868558_4": [
+        "Ignore messages containing only 'ဒ်ိနံပတ်လေးမ'",
+        "Do not alert on voice messages"
+    ],
+    "-1003819601608_1": [
+        "Ignore messages containing only greetings like 'ဟုတ်'",
+        "Do not alert on messages containing 'ဟုတ်' that are likely responses to queries",
+        "Ignore messages containing 'ဂိတ်ချခလေး' followed by a monetary value",
+        "Ignore messages with OS Name 'Dreamy Fancies', date, order details, and payment information"
+    ],
+    "-1003871976559_4": [
+        "Ignore messages indicating a different OS",
+        "Do not alert on messages labeled as 'Already Resolved (ဖြေရှင်းပြီး)'"
+    ],
+    "-1003898476625_1": [
+        "Ignore requests for specific items/services when preceded by respectful address terms (e.g., 'အမကို')",
+        "Do not alert on messages containing politeness markers and requests (e.g., 'လို့ရမလားရှင့်')",
+        "Ignore messages containing time-related requests and promises (e.g., 'ညနေလာအပ်ရင်ယူမယ်ရှင့်')"
+    ]
+}

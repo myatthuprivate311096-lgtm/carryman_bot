@@ -228,17 +228,9 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
         
     if not found:
         log.error(f"   ❌ OS Name ({os_name}) ကို Website ထဲတွင် ရှာမတွေ့ပါ။")
-        # Last resort: Try ArrowDown + Enter if there are any options at all
-        options = page.locator(".ant-select-item-option-content, .select-option, [role='option']")
-        if await options.count() > 0:
-            log.warning("   ⚠️ Option တိုက်ရိုက်နှိပ်မရသဖြင့် Keyboard ဖြင့် ရွေးချယ်ကြည့်ပါမည်...")
-            await page.keyboard.press("ArrowDown")
-            await asyncio.sleep(0.5)
-            await page.keyboard.press("Enter")
-            found = True
-            log.info("   ✅ Keyboard ဖြင့် ပထမဆုံး option ကို ရွေးချယ်လိုက်ပါသည်")
-        else:
-            return False, f"Website ထဲတွင် ဆိုင်နာမည် ({os_name}) ကို ရှာမတွေ့ပါ။"
+        # 💡 FAIL immediately — do NOT fallback to first option (would submit under wrong shop name)
+        # Admin should fix the shop_mappings to match the correct website name
+        return False, f"Website ထဲတွင် ဆိုင်နာမည် ({os_name}) ကို ရှာမတွေ့ပါ။ Mapping ပြင်ဆင်ရန် လိုအပ်ပါသည်။"
 
     log.info(f"   ✅ OS Name ရွေးပြီးပါပြီ")
     
@@ -598,7 +590,6 @@ def handle(bot, message, force_pickup=False):
 
         ai_res_content = ai_utils.get_ai_completion(
             prompt=extract_prompt,
-            model="deepseek/deepseek-v4-flash",
             response_format={ "type": "json_object" },
             timeout=30.0
         )
@@ -687,16 +678,14 @@ def handle(bot, message, force_pickup=False):
         elif 1501 <= current_time <= 2359 or current_time == 0:
             date_type = "tomorrow"
             log.info(f"🕒 Time {current_time}: Auto-assigning TOMORROW (Strict)")
-            # 🛡️ Evening: AI may suggest tomorrow; check tomorrow duplicate first
+            # 🛡️ Evening: AI assigns tomorrow; only check tomorrow duplicate
+            # 💡 Today's pickup does NOT block tomorrow's pickup request
             tomorrow_str = (now + timedelta(days=1)).strftime("%d-%m-%Y")
-            today_str = now.strftime("%d-%m-%Y")
             tomorrow_dup = duplicate_checker.check_duplicate_pickup(chat_id, tomorrow_str)
-            today_dup = duplicate_checker.check_duplicate_pickup(chat_id, today_str)
-            if tomorrow_dup or today_dup:
-                dup_date = tomorrow_str if tomorrow_dup else today_str
-                log.info(f"⚠️ Evening duplicate pickup detected for {chat_id} on {dup_date}.")
+            if tomorrow_dup:
+                log.info(f"⚠️ Evening duplicate pickup detected for {chat_id} on {tomorrow_str}.")
                 if not is_system_off or is_whitelisted:
-                    show_duplicate_alert(bot, message, dup_date, message.message_id)
+                    show_duplicate_alert(bot, message, tomorrow_str, message.message_id)
                 return
             if not is_system_off or is_whitelisted:
                 ask_pickup_confirmation(bot, message, "tomorrow", message.message_id)

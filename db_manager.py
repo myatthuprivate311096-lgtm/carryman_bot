@@ -965,11 +965,17 @@ def get_routing_entry(chat_id, topic_id):
     """
     OS Group ၏ topic အလိုက် alert ပို့ရမည့် group နှင့် topic ကို ရှာဖွေခြင်း။
     Type casting ထည့်သွင်းထားသဖြင့် String/Integer ကွဲလွဲမှုများကို ဖြေရှင်းပေးသည်။
+    
+    💡 topic_id=0/None → topic_id=1 (General Topic) အဖြစ် auto-convert.
     """
     try:
         # ၁။ Type Casting (String ဖြစ်နေပါက Integer သို့ ပြောင်းခြင်း)
         c_id = int(chat_id)
         t_id = int(topic_id) if topic_id is not None else 0
+        
+        # 💡 topic_id=0 → General Topic (1) အဖြစ် convert
+        if t_id == 0:
+            t_id = 1
         
         conn = get_connection()
         # 💡 Chat ID Mismatch Fix
@@ -977,6 +983,17 @@ def get_routing_entry(chat_id, topic_id):
         res = conn.execute(
             "SELECT target_chat_id, target_topic_id FROM os_groups WHERE chat_id IN (?, ?) AND topic_id = ? LIMIT 1",
             (c_id, clean_id, t_id)
+        ).fetchone()
+        conn.close()
+        
+        if res:
+            return res
+        
+        # 💡 Fallback: topic_id အတိအကျမတွေ့ရင် chat_id တူတဲ့ ဘယ် route ကိုမဆို ယူမည်
+        conn = get_connection()
+        res = conn.execute(
+            "SELECT target_chat_id, target_topic_id FROM os_groups WHERE chat_id IN (?, ?) AND target_chat_id IS NOT NULL AND target_topic_id IS NOT NULL LIMIT 1",
+            (c_id, clean_id)
         ).fetchone()
         conn.close()
         
@@ -989,7 +1006,12 @@ def update_routing_entry(chat_id, topic_id, target_chat_id, target_topic_id):
     """
     OS Group ၏ topic တစ်ခုအတွက် alert ပို့ရမည့် target ကို update လုပ်ခြင်း။
     မရှိသေးပါက အသစ်ထည့်သွင်းမည်။
+    💡 topic_id=0 → topic_id=1 (General Topic) အဖြစ် auto-convert.
     """
+    # 💡 topic_id=0/None → General Topic (1)
+    if topic_id == 0 or topic_id is None:
+        topic_id = 1
+    
     conn = get_connection()
     try:
         # ၁။ အရင်ရှိမရှိ စစ်ဆေးခြင်း (သို့မဟုတ် INSERT OR REPLACE သုံးခြင်း)
@@ -1167,10 +1189,6 @@ def save_feedback(message_id, chat_id, topic_id, category, original_text, staff_
         conn.commit()
     finally:
         conn.close()
-
-def log_feedback(chat_id, topic_id, text, category='NOT_PICKUP', msg_id=0):
-    """ AI Learning အတွက် Feedback ကို အလွယ်တကူ သိမ်းဆည်းရန် helper """
-    save_feedback(msg_id, chat_id, topic_id, category, text, 0)
 
 def get_isolated_feedback(chat_id, topic_id, limit=10):
     """ သတ်မှတ်ထားသော chat/topic အတွက် နောက်ဆုံး feedback များကို ယူခြင်း """
@@ -1920,6 +1938,21 @@ def mark_os_groups_as_synced(chat_ids):
         conn.execute(
             f"UPDATE os_groups SET invite_link = 'GSheet Sync' WHERE chat_id IN ({placeholders}) AND invite_link = 'Manual Register'",
             tuple(chat_ids)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+def update_os_group_shop_name(chat_id, shop_name):
+    """ os_groups ထဲရှိ shop_name ကို update လုပ်ခြင်း (bot.get_chat() မှ title ရပြီးနောက်) """
+    if not shop_name or shop_name == "Unknown Shop":
+        return
+    conn = get_connection()
+    try:
+        clean_id = int(str(chat_id).replace("-100", ""))
+        conn.execute(
+            "UPDATE os_groups SET shop_name = ?, group_name = ? WHERE chat_id IN (?, ?) AND (shop_name = 'Unknown Shop' OR shop_name IS NULL OR shop_name = '')",
+            (shop_name, shop_name, chat_id, clean_id)
         )
         conn.commit()
     finally:

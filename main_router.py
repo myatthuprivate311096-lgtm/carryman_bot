@@ -230,6 +230,11 @@ def route_message(bot, message):
         if not text:
             return False
 
+        # 🛡️ Skip slash commands — they are handled by commands_handler.py
+        # Prevents race condition where command handler AND AI router both process the same message
+        if text.startswith('/'):
+            return False
+
         # ၁။ Global & Group Status စစ်ဆေးခြင်း (Phase 2)
         global_ai = db_manager.get_ai_global_status()
         

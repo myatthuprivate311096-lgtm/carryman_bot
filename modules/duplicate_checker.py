@@ -127,8 +127,12 @@ def check_any_duplicate(chat_id, date_type='today'):
     if check_duplicate_pickup(chat_id, target_date):
         return True, target_date
 
-    # Also check the other date (and→or logic)
-    other_date = tomorrow_str if date_type == 'today' else today_str
+    # 💡 For 'tomorrow', only check tomorrow — today's pickup does NOT block tomorrow's request
+    if date_type == 'tomorrow':
+        return False, None
+
+    # For 'today', also check tomorrow (and→or logic, used in Mid-day Staff Decision Flow)
+    other_date = tomorrow_str
     if check_duplicate_pickup(chat_id, other_date):
         return True, other_date
 

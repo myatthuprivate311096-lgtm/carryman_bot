@@ -7,6 +7,49 @@ from datetime import datetime
 from logger import log
 import db_manager
 from modules import auditor
+import gsheet_sync
+
+def _sync_routing_to_gsheet(chat_id, target_topic, topic_id):
+    """ Routing set လုပ်ပြီးတိုင်း GSheet 'Shop Mappings' tab ကို auto-update လုပ်ခြင်း """
+    try:
+        sheet_url = os.getenv('GSHEET_URL')
+        if not sheet_url:
+            return
+        
+        syncer = gsheet_sync.GSheetSync()
+        workbook = syncer.connect(sheet_url)
+        if not workbook:
+            return
+        
+        sheet = workbook.worksheet("Shop Mappings")
+        all_vals = sheet.get_all_values()
+        
+        # Map target_topic → Sheet column letter
+        # Column E = Pickup TID, Column F = Error TID, Column G = Finance TID
+        col_map = {1: 'E', 37: 'F', 35: 'G'}
+        col_letter = col_map.get(target_topic)
+        if not col_letter:
+            return
+        
+        # Find the row for this chat_id
+        for i, row in enumerate(all_vals):
+            if i == 0:
+                continue
+            if row and row[0].strip():
+                try:
+                    row_chat_id = int(row[0].strip())
+                    clean_id = int(str(chat_id).replace("-100", ""))
+                    if row_chat_id == chat_id or row_chat_id == clean_id:
+                        row_num = i + 1
+                        sheet.update(f'{col_letter}{row_num}', [[str(topic_id)]])
+                        log.info(f"📤 GSheet auto-updated: row {row_num}, col {col_letter} = {topic_id} (target={target_topic})")
+                        return
+                except ValueError:
+                    pass
+        
+        log.warning(f"⚠️ GSheet sync: chat_id {chat_id} not found in Sheet.")
+    except Exception as e:
+        log.error(f"❌ GSheet routing sync failed: {e}")
 
 def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
     """ Alert Management (Done, Wrong, Feedback, Routing) အတွက် Callback များကို Register လုပ်ပေးသည် """
@@ -35,6 +78,9 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
 
             # 💡 Step 1: Update Routing (Short Scope)
             db_manager.update_routing_entry(chat_id, topic_id, target_chat, target_topic)
+            
+            # 💡 Step 1.5: Auto-sync routing to GSheet
+            _sync_routing_to_gsheet(chat_id, target_topic, topic_id)
             
             # 💡 Step 2: Gather Context & Send Alert (OUTSIDE DB Scope)
             if original_msg_id != 0:

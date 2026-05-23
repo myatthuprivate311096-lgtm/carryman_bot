@@ -1,5 +1,5 @@
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 import db_manager
 import time
 from logger import log
@@ -59,22 +59,58 @@ def _safe_get(row, index):
     return ''
 
 class GSheetSync:
-    def __init__(self, credentials_file='credentials.json'):
-        # API Access အတွက် Scope သတ်မှတ်ခြင်း
+    def __init__(self, credentials_file='credentials.json', bot=None):
+        # API Access အတွက် Scope သတ်မှတ်ခြင်း (google-auth format)
         self.scope = [
-            "https://spreadsheets.google.com/feeds", 
+            "https://www.googleapis.com/auth/spreadsheets",
             "https://www.googleapis.com/auth/drive"
         ]
         self.credentials_file = credentials_file
+        self.bot = bot  # Optional: Telegram bot instance for resolving group titles
+
+    def _resolve_unknown_shops(self, data_list):
+        """ 'Unknown Shop' များကို Telegram API မှ group title အမှန်ဖြင့် resolve လုပ်ခြင်း """
+        if not self.bot:
+            return data_list
+        
+        resolved = []
+        for m in data_list:
+            chat_id, tg_name = m[0], m[1]
+            if tg_name == "Unknown Shop" or not tg_name or tg_name.strip() == "":
+                try:
+                    chat_info = self.bot.get_chat(chat_id)
+                    real_title = chat_info.title if chat_info.title else tg_name
+                    if real_title and real_title != "Unknown Shop":
+                        log.info(f"🔍 Resolved group title: {chat_id} → \"{real_title}\"")
+                        db_manager.update_os_group_shop_name(chat_id, real_title)
+                        # Replace tg_name in the tuple
+                        m = (m[0], real_title) + m[2:]
+                except Exception as e:
+                    log.warning(f"⚠️ Could not resolve title for {chat_id}: {e}")
+            resolved.append(m)
+        return resolved
 
     def connect(self, sheet_url):
         """ Google Sheet သို့ ချိတ်ဆက်ခြင်း """
         try:
-            creds = ServiceAccountCredentials.from_json_keyfile_name(self.credentials_file, self.scope)
+            if not os.path.exists(self.credentials_file):
+                log.error(f"❌ Credentials file not found: {self.credentials_file}")
+                return None
+            creds = Credentials.from_service_account_file(self.credentials_file, scopes=self.scope)
             client = gspread.authorize(creds)
             return client.open_by_url(sheet_url)
+        except FileNotFoundError as e:
+            log.error(f"❌ GSheet Connection Failed - File not found: {self.credentials_file}")
+            return None
         except Exception as e:
-            log.error(f"❌ GSheet Connection Failed: {e}")
+            error_type = type(e).__name__
+            error_msg = str(e)
+            if "invalid_grant" in error_msg.lower() or "invalid jwt" in error_msg.lower():
+                log.error(f"❌ GSheet Auth Failed: Service Account Key is invalid/revoked. Regenerate credentials.json from Google Cloud Console.")
+            elif "not found" in error_msg.lower():
+                log.error(f"❌ GSheet Not Found: Check if the sheet URL is correct and shared with the service account.")
+            else:
+                log.error(f"❌ GSheet Connection Failed [{error_type}]: {error_msg}")
             return None
 
     def sync_knowledge(self, sheet_url):
@@ -214,31 +250,147 @@ class GSheetSync:
             log.error(f"❌ Shop Mapping Sync Error: {e}")
             return False, f"အမှားတစ်ခုရှိနေပါတယ်: {str(e)}"
 
+    def _get_existing_sheet_chat_ids(self, sheet):
+        """ Sheet ထဲမှာ ရှိပြီးသား chat_id များကို စုစည်းခြင်း (duplicate ကာကွယ်ရန်) """
+        try:
+            all_values = sheet.get_all_values()
+            if len(all_values) <= 1:
+                return set()
+            existing_ids = set()
+            for row in all_values[1:]:  # skip header
+                if row and row[0].strip():
+                    try:
+                        existing_ids.add(int(row[0].strip()))
+                    except ValueError:
+                        pass
+            return existing_ids
+        except Exception as e:
+            log.warning(f"⚠️ Could not read existing chat_ids from Sheet: {e}")
+            return set()
+
+    def _fix_existing_unknown_shops_in_sheet(self, sheet):
+        """ Sheet ထဲမှာ ရှိပြီးသား 'Unknown Shop' row များကို Telegram API မှ resolve လုပ်ပြီး Sheet cell update လုပ်ခြင်း """
+        if not self.bot:
+            return 0
+        
+        try:
+            all_values = sheet.get_all_values()
+            if len(all_values) <= 1:
+                return 0
+            
+            updates = []  # List of (row_number, resolved_name)
+            for i, row in enumerate(all_values):
+                if i == 0:  # skip header
+                    continue
+                if not row or len(row) < 3:
+                    continue
+                tg_name = row[2].strip() if len(row) > 2 else ""
+                if tg_name == "Unknown Shop" or tg_name == "":
+                    try:
+                        chat_id = int(row[0].strip())
+                        chat_info = self.bot.get_chat(chat_id)
+                        real_title = chat_info.title if chat_info.title else None
+                        if real_title and real_title != "Unknown Shop":
+                            row_num = i + 1  # 1-based for gspread
+                            updates.append((row_num, real_title))
+                            db_manager.update_os_group_shop_name(chat_id, real_title)
+                            log.info(f"🔧 Fixed existing row {row_num}: {chat_id} → \"{real_title}\"")
+                    except ValueError:
+                        pass
+                    except Exception as e:
+                        log.warning(f"⚠️ Could not fix existing row {i+1}: {e}")
+            
+            # Batch update cells (one API call per row, but grouped by close rows if possible)
+            fixed = 0
+            for row_num, name in updates:
+                try:
+                    sheet.update(f'C{row_num}', [[name]])
+                    fixed += 1
+                except Exception as e:
+                    log.error(f"❌ Failed to update row {row_num}: {e}")
+            
+            if fixed > 0:
+                log.info(f"🔧 Fixed {fixed} existing 'Unknown Shop' row(s) in Sheet.")
+            return fixed
+        except Exception as e:
+            log.error(f"❌ _fix_existing_unknown_shops_in_sheet Error: {e}")
+            return 0
+
     def append_new_mappings_to_sheet(self, sheet_url):
-        """ Manual Register လုပ်ထားသော ဆိုင်အသစ်များကို Sheet အောက်ဆုံးတွင် သွားပေါင်းပေးခြင်း """
+        """ Manual Register + Unmapped Groups များကို Sheet အောက်ဆုံးတွင် သွားပေါင်းပေးခြင်း (Duplicate ကာကွယ်) """
         log.info("📤 Appending New Shop Mappings to GSheet...")
         workbook = self.connect(sheet_url)
         if not workbook: return 0
 
         try:
             sheet = workbook.worksheet("Shop Mappings")
-            new_data = db_manager.get_manual_register_data()
-            if not new_data: return 0
-
+            
+            # ၁။ Sheet ထဲမှာ ရှိပြီးသား chat_id များကို စုစည်းမည် (duplicate ကာကွယ်ရန်)
+            existing_ids = self._get_existing_sheet_chat_ids(sheet)
+            log.info(f"📋 Found {len(existing_ids)} existing chat_ids in Sheet.")
+            
+            # ၂။ Manual Register data ယူမည်
+            manual_data = db_manager.get_manual_register_data() or []
+            
+            # ၃။ Unmapped OS Groups (bot ရှိပေမယ့် Sheet ထဲမရှိသေး) ကိုပါ ယူမည်
+            unmapped = db_manager.get_unmapped_os_groups() or []
+            # Convert unmapped format: [(chat_id, shop_name), ...] → unified format
+            unmapped_data = []
+            for chat_id, shop_name in unmapped:
+                unmapped_data.append((chat_id, shop_name, "", 0, 0, 0, 0))
+            
+            # ၄။ Merge + Deduplicate (unmapped data ကို ဦးစားပေး၊ duplicate chat_id ကျော်မည်)
+            seen_ids = set()
+            merged = []
+            # Manual Register ကို အရင်ထည့် (ဒေတာပိုပြည့်စုံ)
+            for m in manual_data:
+                cid = m[0]
+                if cid not in seen_ids:
+                    seen_ids.add(cid)
+                    merged.append(m)
+            # Unmapped ကို ထပ်ထည့် (Manual Register မှာမပါတဲ့ ဟာတွေပဲ)
+            for m in unmapped_data:
+                cid = m[0]
+                if cid not in seen_ids:
+                    seen_ids.add(cid)
+                    merged.append(m)
+            
+            # ၄.၅။ "Unknown Shop" များကို Telegram API မှ resolve လုပ်မည်
+            merged = self._resolve_unknown_shops(merged)
+            
+            # ၄.၆။ Sheet ထဲမှာ ရှိပြီးသား "Unknown Shop" row များကိုလည်း resolve + update လုပ်မည်
+            fixed_existing = self._fix_existing_unknown_shops_in_sheet(sheet)
+            
+            # ၅။ Sheet ထဲ မရှိသေးတာတွေကိုပဲ append လုပ်မည်
             rows = []
             chat_ids = []
-            for m in new_data:
-                chat_id, tg_name, web_name, p_tid, e_tid, f_tid, updated_at = m
+            skipped = 0
+            for m in merged:
+                chat_id = m[0]
+                if chat_id in existing_ids:
+                    skipped += 1
+                    continue
+                tg_name, web_name, p_tid, e_tid, f_tid, updated_at = m[1], m[2], m[3], m[4], m[5], m[6]
                 updated_str = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(updated_at)) if updated_at else "-"
                 # 8-col format: OS Group ID | Mapping ID | Telegram Name | Website Name | Pickup TID | Error TID | Finance TID | Last Updated
                 rows.append([str(chat_id), str(chat_id), tg_name, web_name, str(p_tid), str(e_tid), str(f_tid), updated_str])
                 chat_ids.append(chat_id)
 
+            if skipped > 0:
+                log.info(f"⏭️ Skipped {skipped} already-existing chat_id(s) in Sheet.")
+            
+            total_changes = 0
             if rows:
                 sheet.append_rows(rows, value_input_option='USER_ENTERED')
                 db_manager.mark_os_groups_as_synced(chat_ids)
-                return len(rows)
-            return 0
+                log.info(f"✅ Appended {len(rows)} new row(s) to Sheet (Manual Register + Unmapped).")
+                total_changes += len(rows)
+            if fixed_existing > 0:
+                total_changes += fixed_existing
+            
+            if total_changes == 0:
+                log.info("ℹ️ No new groups to append, no Unknown Shop names to fix.")
+            return total_changes
         except Exception as e:
             log.error(f"❌ Append Mappings Error: {e}")
             return 0
