@@ -15,6 +15,10 @@ FALLBACK_GEMINI_API_KEY = os.getenv('FALLBACK_GEMINI_API_KEY')
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 MANAGER_ID = os.getenv('MANAGER_ID')
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+PRIMARY_AI_PROVIDER = os.getenv('PRIMARY_AI_PROVIDER', 'openrouter').strip().lower()
+OPENROUTER_MODEL = os.getenv('OPENROUTER_MODEL', 'deepseek/deepseek-v4-flash')
+FALLBACK_GEMINI_MODEL = os.getenv('FALLBACK_GEMINI_MODEL', 'gemini-1.5-flash')
+FALLBACK_GROQ_MODEL = os.getenv('FALLBACK_GROQ_MODEL', 'llama-3.3-70b-versatile')
 
 # State tracking to avoid redundant notifications
 # 0 = Primary (OpenRouter), 1 = Fallback (Gemini)
@@ -141,10 +145,11 @@ def send_manager_photo(photo_path, caption):
     except Exception as e:
         log.error(f"❌ Failed to send manager photo: {e}")
 
-def call_gemini_direct(prompt, model="gemini-1.5-flash", response_format=None):
+def call_gemini_direct(prompt, model=None, response_format=None):
     """Direct Gemini API call (Cheap & Fast)"""
+    selected_model = model or FALLBACK_GEMINI_MODEL
     # Use v1beta for newer models
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={FALLBACK_GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{selected_model}:generateContent?key={FALLBACK_GEMINI_API_KEY}"
     headers = {'Content-Type': 'application/json'}
     
     # Handle response format if needed (Gemini 1.5 supports JSON mode)
@@ -166,15 +171,16 @@ def call_gemini_direct(prompt, model="gemini-1.5-flash", response_format=None):
         log.error(f"❌ Gemini Direct Exception: {e}")
         return None
 
-def call_groq_direct(prompt, model="llama-3.3-70b-versatile", response_format=None):
+def call_groq_direct(prompt, model=None, response_format=None):
     """Direct Groq API call (Ultra Fast Fallback)"""
+    selected_model = model or FALLBACK_GROQ_MODEL
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json"
     }
     data = {
-        "model": model,
+        "model": selected_model,
         "messages": [{"role": "user", "content": prompt}]
     }
     
@@ -192,13 +198,29 @@ def call_groq_direct(prompt, model="llama-3.3-70b-versatile", response_format=No
         log.error(f"❌ Groq Direct Exception: {e}")
         return None
 
-def get_ai_completion(prompt, model="deepseek/deepseek-v4-flash", response_format=None, timeout=30.0, tools=None, tool_choice=None, user_level=1):
+def get_ai_completion(prompt, model=None, response_format=None, timeout=30.0, tools=None, tool_choice=None, user_level=1):
     """
     Centralized AI call with Auto-Recovery and Manager Notifications.
-    Always tries OpenRouter first.
+    Primary provider and models are configured from .env.
     """
     global _current_ai_mode, _last_openrouter_fail_time, _openrouter_fail_count, _last_critical_alert_time
     
+    selected_provider = PRIMARY_AI_PROVIDER if PRIMARY_AI_PROVIDER in {"openrouter", "gemini", "groq"} else "openrouter"
+    if selected_provider != PRIMARY_AI_PROVIDER:
+        log.warning(f"⚠️ Invalid PRIMARY_AI_PROVIDER '{PRIMARY_AI_PROVIDER}'. Falling back to 'openrouter'.")
+
+    openrouter_model = model or OPENROUTER_MODEL
+
+    # Respect PRIMARY_AI_PROVIDER from .env before using default failover chain.
+    if selected_provider == "gemini" and FALLBACK_GEMINI_API_KEY:
+        primary_content = call_gemini_direct(prompt, response_format=response_format)
+        if primary_content:
+            return primary_content
+    elif selected_provider == "groq" and GROQ_API_KEY:
+        primary_content = call_groq_direct(prompt, response_format=response_format)
+        if primary_content:
+            return primary_content
+
     # 1. Try Primary (OpenRouter)
     can_try_openrouter = False
     if OPENROUTER_API_KEY:
@@ -223,7 +245,7 @@ def get_ai_completion(prompt, model="deepseek/deepseek-v4-flash", response_forma
             
             # Prepare arguments for OpenAI client
             kwargs = {
-                "model": model,
+                "model": openrouter_model,
                 "messages": [{"role": "user", "content": prompt}],
                 "timeout": timeout
             }
@@ -254,7 +276,7 @@ def get_ai_completion(prompt, model="deepseek/deepseek-v4-flash", response_forma
                 
                 # Second call to get the final answer
                 final_response = client.chat.completions.create(
-                    model=model,
+                    model=openrouter_model,
                     messages=messages,
                     timeout=timeout
                 )
@@ -286,15 +308,14 @@ def get_ai_completion(prompt, model="deepseek/deepseek-v4-flash", response_forma
                     f"Last Error: `{str(e)[:100]}`"
                 )
 
-    # 2. Try Fallback (Gemini Direct)
-    if FALLBACK_GEMINI_API_KEY:
-        # Use gemini-1.5-flash as it's the cheapest and very capable
-        fallback_content = call_gemini_direct(prompt, model="gemini-1.5-flash", response_format=response_format)
+    # 2. Try Gemini Direct fallback
+    if selected_provider != "gemini" and FALLBACK_GEMINI_API_KEY:
+        fallback_content = call_gemini_direct(prompt, response_format=response_format)
         if fallback_content:
             return fallback_content
 
-    # 3. Try Tertiary Fallback (Groq)
-    if GROQ_API_KEY:
+    # 3. Try Groq fallback
+    if selected_provider != "groq" and GROQ_API_KEY:
         groq_content = call_groq_direct(prompt, response_format=response_format)
         if groq_content:
             log.info("⚡ Groq Fallback used successfully.")

@@ -35,6 +35,29 @@ register_group_data = {}
 
 def register_handlers(bot):
     """ Bot Command အားလုံးကို ဤနေရာတွင် စုစည်းမှတ်ပုံတင်ပေးသည် """
+
+    def _detect_compose_command():
+        """Detect available compose command (docker compose > docker-compose)."""
+        compose_dir = os.path.dirname(os.path.abspath(__file__))
+        candidates = [
+            ["docker", "compose"],
+            ["docker-compose"]
+        ]
+        for candidate in candidates:
+            try:
+                subprocess.check_output(candidate + ["version"], stderr=subprocess.STDOUT, cwd=compose_dir, timeout=20)
+                return candidate
+            except Exception:
+                continue
+        return None
+
+    def _get_processing_count():
+        """Return current number of active pickup processing jobs."""
+        with db_manager.get_connection() as conn:
+            row = conn.execute(
+                "SELECT COUNT(1) FROM pickup_queue WHERE status = 'PROCESSING'"
+            ).fetchone()
+        return int(row[0]) if row and row[0] is not None else 0
     
     # --- [ Section: Maintenance Control (အသစ်ထည့်ရမည့်နေရာ) ] ---
     @bot.message_handler(commands=['gsupdate'])
@@ -185,6 +208,11 @@ def register_handlers(bot):
                 "carryman-worker": "🔴 Not Found",
                 "carryman-sync": "🔴 Not Found",
             }
+            service_health = {
+                "carryman-ingestion": {"running": False},
+                "carryman-worker": {"running": False},
+                "carryman-sync": {"running": False},
+            }
             unhealthy_processes = []
             try:
                 # Query Docker API via Unix socket (no extra packages needed)
@@ -210,16 +238,23 @@ def register_handlers(bot):
 
                     if service_name:
                         if state == "running":
+                            # Keep running status even if another legacy container is exited.
                             processes[service_name] = f"🟢 Running | {status}"
-                        else:
+                            service_health[service_name]["running"] = True
+                        elif not service_health[service_name]["running"]:
                             processes[service_name] = f"🔴 {state.capitalize()}"
-                            unhealthy_processes.append(service_name)
+
+                unhealthy_processes = [
+                    service_name
+                    for service_name, health in service_health.items()
+                    if not health["running"]
+                ]
 
             except Exception as e:
                 log.error(f"Docker Socket Status Error: {e}")
                 for k in processes:
                     processes[k] = "⚠️ Error"
-                    unhealthy_processes.append(k)
+                unhealthy_processes = list(processes.keys())
 
             # 3. Resources
             cpu_usage = psutil.cpu_percent(interval=1)
@@ -404,57 +439,117 @@ def register_handlers(bot):
     @bot.callback_query_handler(func=lambda call: call.data == "sys_restart_all")
     def callback_sys_restart_all(call):
         if db_manager.get_user_level(call.from_user.id, call.message.chat.id) == 4:
-            bot.edit_message_text("🔄 **Graceful Sequential Restart...**\nActive jobs များစောင့်ပြီး တစ်ခုချင်း restart ချနေပါသည်...",
+            bot.edit_message_text("🔄 **Graceful Restart + Rebuild...**\nActive jobs များပြီးသွားမှ down/build/up လုပ်ပါမည်...",
                                    call.message.chat.id, call.message.message_id)
             log.warning(f"⚠️ Graceful System Restart triggered by {call.from_user.id}")
-            
-            # 💡 Graceful Sequential Restart: Active jobs စောင့်ပြီးမှ တစ်ခုချင်း restart
+
+            compose_cmd = _detect_compose_command()
+            if not compose_cmd:
+                bot.edit_message_text(
+                    "❌ **Restart မလုပ်နိုင်ပါ**\n\n`docker compose` သို့မဟုတ် `docker-compose` command ကို မတွေ့ပါ။\nHost ပေါ်တွင် Docker Compose ကို အရင် install ပြုလုပ်ပြီး ပြန်စမ်းပေးပါ အစ်ကို။",
+                    call.message.chat.id,
+                    call.message.message_id,
+                    parse_mode="Markdown"
+                )
+                return
+
+            # 1) Graceful Wait: Active processing jobs ပြီးမှ ဆက်လုပ်မည် (Max 5 mins)
+            max_wait_seconds = 300
+            poll_seconds = 10
+            waited = 0
             try:
-                # ၁။ Active processing ရှိမရှိ စစ်ဆေးပြီး ၅ မိနစ်ထိ စောင့်ခြင်း
-                with db_manager.get_connection() as conn:
-                    active = conn.execute(
-                        "SELECT id FROM pickup_queue WHERE status = 'PROCESSING' LIMIT 1"
-                    ).fetchone()
-                if active:
-                    log.warning(f"⏳ Active submission found (Queue {active[0]}). Waiting up to 5 minutes...")
-                    waited = 0
-                    while waited < 300:
-                        time.sleep(10)
-                        waited += 10
-                        with db_manager.get_connection() as conn:
-                            still = conn.execute(
-                                "SELECT id FROM pickup_queue WHERE id = ? AND status = 'PROCESSING'",
-                                (active[0],)
-                            ).fetchone()
-                        if not still:
-                            log.info(f"✅ Submission completed after {waited}s.")
-                            break
+                active_count = _get_processing_count()
+                while active_count > 0 and waited < max_wait_seconds:
+                    log.warning(f"⏳ {active_count} active processing job(s) found. Waiting... ({waited}/{max_wait_seconds}s)")
+                    time.sleep(poll_seconds)
+                    waited += poll_seconds
+                    active_count = _get_processing_count()
             except Exception as we:
-                log.warning(f"⚠️ Active job wait error (proceeding anyway): {we}")
-            
-            # ၂။ Sequential Graceful Restart (ingestion → worker → sync)
-            # 💡 Docker SDK သုံး၍ socket မှတဆင့် container restart လုပ်ခြင်း
-            import docker as _docker
-            failed = []
-            client = _docker.DockerClient(base_url='unix://var/run/docker.sock')
-            for svc in ["carryman-ingestion", "carryman-worker", "carryman-sync"]:
-                try:
-                    container = client.containers.get(svc)
-                    container.restart()
-                    log.info(f"🔄 Restarted {svc} (Docker SDK)")
-                    time.sleep(5)
-                except Exception as re:
-                    log.error(f"❌ Failed to restart {svc}: {re}")
-                    failed.append(svc)
-            
-            if not failed:
-                log.info("✅ All processes restarted gracefully.")
-                bot.edit_message_text("✅ **System Restarted!**\nစနစ်အားလုံး Graceful Restart ဖြင့် ပြန်တက်လာပါပြီ။",
-                                       call.message.chat.id, call.message.message_id)
-            else:
-                log.error(f"❌ Restart failed for: {', '.join(failed)}")
-                bot.edit_message_text(f"⚠️ **System Restart Failed!**\n\nအောက်ပါ container များ restart မအောင်မြင်ပါ:\n- {', '.join(failed)}\n\nHost ပေါ်မှ `docker-compose restart` ဖြင့် manual restart လုပ်ပေးပါ။",
-                                       call.message.chat.id, call.message.message_id)
+                log.error(f"❌ Active job check failed. Aborting restart for safety: {we}")
+                bot.edit_message_text(
+                    "⚠️ **Safety Abort**\n\nActive jobs ကို စစ်ဆေးမရသောကြောင့် restart ကို မလုပ်တော့ပါ။ Process မထိခိုက်စေရန် manual check ပြီးမှ ထပ်မံ run ပေးပါ အစ်ကို။",
+                    call.message.chat.id,
+                    call.message.message_id,
+                    parse_mode="Markdown"
+                )
+                return
+
+            if active_count > 0:
+                bot.edit_message_text(
+                    f"⏸️ **Restart Deferred**\n\nလက်ရှိ `PROCESSING` job {active_count} ခုရှိနေသဖြင့် restart ကိုမလုပ်ပါ။\nProcess မထိခိုက်အောင် jobs ပြီးသွားလျှင် `/restart` ပြန်နှိပ်ပေးပါ အစ်ကို။",
+                    call.message.chat.id,
+                    call.message.message_id,
+                    parse_mode="Markdown"
+                )
+                return
+
+            compose_dir = os.path.dirname(os.path.abspath(__file__))
+            cmd_text = " ".join(compose_cmd)
+            try:
+                # 2) Full Recreate: down -> up --build
+                down_output = subprocess.check_output(
+                    compose_cmd + ["down", "--remove-orphans"],
+                    cwd=compose_dir,
+                    stderr=subprocess.STDOUT,
+                    timeout=240
+                ).decode('utf-8')
+
+                up_output = subprocess.check_output(
+                    compose_cmd + ["up", "-d", "--build"],
+                    cwd=compose_dir,
+                    stderr=subprocess.STDOUT,
+                    timeout=900
+                ).decode('utf-8')
+
+                ps_output = subprocess.check_output(
+                    compose_cmd + ["ps"],
+                    cwd=compose_dir,
+                    stderr=subprocess.STDOUT,
+                    timeout=60
+                ).decode('utf-8')
+
+                expected_services = ["carryman-ingestion", "carryman-worker", "carryman-sync"]
+                not_ready = []
+                for svc in expected_services:
+                    svc_lines = [line for line in ps_output.splitlines() if svc in line]
+                    if not svc_lines or not any("Up" in line for line in svc_lines):
+                        not_ready.append(svc)
+
+                if not not_ready:
+                    log.info("✅ System rebuilt and restarted successfully via compose.")
+                    bot.edit_message_text(
+                        f"✅ **System Restarted (Rebuild Mode)!**\n\n`{cmd_text} down --remove-orphans` + `up -d --build` အောင်မြင်ပြီး service အားလုံးပြန်တက်ပါပြီ အစ်ကို။",
+                        call.message.chat.id,
+                        call.message.message_id,
+                        parse_mode="Markdown"
+                    )
+                else:
+                    log.error(f"⚠️ Rebuild completed but not-ready services: {not_ready}")
+                    bot.edit_message_text(
+                        f"⚠️ **Partial Restart**\n\nBuild ပြီးသော်လည်း service အချို့ မတက်သေးပါ:\n- {', '.join(not_ready)}\n\n`{cmd_text} ps` ဖြင့် စစ်ပြီး log ကိုစစ်ပေးပါ အစ်ကို။",
+                        call.message.chat.id,
+                        call.message.message_id,
+                        parse_mode="Markdown"
+                    )
+
+            except subprocess.CalledProcessError as ce:
+                output = (ce.output.decode('utf-8', errors='ignore') if ce.output else str(ce))
+                output = output[-1800:] if len(output) > 1800 else output
+                log.error(f"❌ Restart+Rebuild failed: {output}")
+                bot.edit_message_text(
+                    f"❌ **System Restart Failed**\n\n`{cmd_text}` command error ဖြစ်နေပါသည်။\n\nLast output:\n<pre>{html.escape(output)}</pre>",
+                    call.message.chat.id,
+                    call.message.message_id,
+                    parse_mode="HTML"
+                )
+            except Exception as e:
+                log.error(f"❌ Unexpected restart error: {e}")
+                bot.edit_message_text(
+                    f"❌ **System Restart Failed**\n\nUnexpected error: `{e}`",
+                    call.message.chat.id,
+                    call.message.message_id,
+                    parse_mode="Markdown"
+                )
 
     @bot.callback_query_handler(func=lambda call: call.data == "sys_cancel")
     def callback_sys_cancel(call):
@@ -982,8 +1077,10 @@ def register_handlers(bot):
                 )
 
             # ၅။ Date String ပြင်ဆင်ခြင်း
+            # 💡 Use message.date instead of datetime.now() for consistent date calculation
+            # Avoids server clock drift issues and matches auto_pickup.py's approach
             tz = _pytz.timezone('Asia/Yangon')
-            now = _dt.now(tz)
+            now = _dt.fromtimestamp(message.date, tz)
             target_date_str = (
                 now.strftime("%d-%m-%Y") if date_type == "today"
                 else (now + _td(days=1)).strftime("%d-%m-%Y")
