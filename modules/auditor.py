@@ -81,7 +81,8 @@ def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs
     try:
         active_context = "\n".join([f"- AlertID: {a[0]} | Content: {a[2]}" for a in active_alerts]) if active_alerts else "None"
         preceding_context = "\n".join([f"- {'Staff' if db_manager.check_if_staff(p[1]) else 'Customer'} ({p[3]}): {p[0]}" for p in preceding_msgs]) if preceding_msgs else "None"
-        targets_context = "\n".join([f"ID: {m[0]} | Text: {m[1]}" for m in target_msgs_list])
+        # target_msgs_list tuple format: (msg_id, chat_id, topic_id, text, timestamp, media_id)
+        targets_context = "\n".join([f"ID: {m[0]} | Text: {m[3]}" for m in target_msgs_list])
         filtered_subsequent = [s for s in subsequent_msgs if s[0] not in [a[2] for a in active_alerts]]
         subsequent_context = "\n".join([f"- {'Staff' if db_manager.check_if_staff(s[1]) else 'Customer'} ({s[3]}): {s[0]}" for s in filtered_subsequent]) if filtered_subsequent else "None"
 

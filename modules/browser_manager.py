@@ -77,7 +77,13 @@ class BrowserManager:
                 await self._restart_browser_internal()
                 self._task_count = 1
 
-            context = await self.browser.new_context(storage_state=storage_state)
+            context_kwargs = {}
+            if storage_state:
+                if os.path.exists(storage_state):
+                    context_kwargs["storage_state"] = storage_state
+                else:
+                    log.warning(f"⚠️ storage_state not found: {storage_state}. Using fresh context.")
+            context = await self.browser.new_context(**context_kwargs)
             page = await context.new_page()
             try:
                 result = await coro_func(page, *args, **kwargs)

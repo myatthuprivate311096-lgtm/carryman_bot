@@ -1,7 +1,7 @@
 # Version: 1.0 — GSheet Sync Scheduler (restored after git reset)
 """
 Periodic Google Sheet sync scheduler.
-Runs export every 6 hours to keep GSheet in sync with DB.
+Runs Sheet → DB import every 6 hours.
 """
 import time
 import os
@@ -27,15 +27,10 @@ if __name__ == "__main__":
     while True:
         try:
             if GSHEET_URL:
-                log.info("🔄 Running bidirectional GSheet sync...")
+                log.info("🔄 Running Sheet → DB sync (import only)...")
                 # 1. Import from Sheet → DB (preserve manual edits from Sheet)
                 success_map, result_map = syncer.sync_shop_mappings(GSHEET_URL)
                 log.info(f"📥 Import: {result_map}")
-                
-                # 2. Export DB → Sheet (consolidate without clearing — append new rows only)
-                appended_count = syncer.append_new_mappings_to_sheet(GSHEET_URL)
-                if appended_count > 0:
-                    log.info(f"📤 Appended {appended_count} new shop(s) to Sheet.")
             else:
                 log.warning("⚠️ GSHEET_URL not set in .env. Skipping sync cycle.")
         except Exception as e:

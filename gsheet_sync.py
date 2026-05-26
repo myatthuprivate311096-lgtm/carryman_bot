@@ -233,13 +233,10 @@ class GSheetSync:
                 log.info(f"📥 Found {len(data_to_db)} row(s) in 'Shop Mappings' tab (skipped: {skipped}).")
                 success = db_manager.update_unified_shop_data(data_to_db)
                 if success:
-                    # Sync ပြီးတာနဲ့ DB ထဲက Manual Register လုပ်ထားတာတွေကို Sheet ထဲ Append လုပ်ပေးမည်
-                    appended_count = self.append_new_mappings_to_sheet(sheet_url)
                     msg = f"✅ Shop Data {len(data_to_db)} ခုကို Sync လုပ်ပြီးပါပြီ။"
                     if skipped > 0:
                         msg += f"\n⚠️ Chat ID မမှန်သော row {skipped} ခုကို ကျော်သွားပါသည်။"
-                    if appended_count > 0:
-                        msg += f"\n🆕 ဆိုင်အသစ် {appended_count} ခုကို Sheet ထဲသို့ ထည့်သွင်းပေးခဲ့ပါသည်။"
+                    # Policy: Sheet is source of truth, so importer does not write back to Sheet.
                     return True, msg
             else:
                 log.warning(f"⚠️ No valid rows found in 'Shop Mappings' tab (all rows: {len(all_records)}, skipped: {skipped}).")

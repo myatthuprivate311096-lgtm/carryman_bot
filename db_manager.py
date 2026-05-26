@@ -590,6 +590,56 @@ def set_manual_alert(msg_id, chat_id):
     finally:
         conn.close()
 
+def has_active_pickup_flow(msg_id, chat_id):
+    """Auto-pickup queue ထဲတွင် မပြီးသေးသော order ရှိပါက react/reply resolve မလုပ်ပါ"""
+    conn = get_connection()
+    try:
+        res = conn.execute(
+            """SELECT 1 FROM pickup_queue
+               WHERE orig_msg_id = ? AND chat_id = ?
+               AND status IN ('PENDING', 'PROCESSING', 'WAITING_CONFIRM', 'WAITING_SETUP')
+               LIMIT 1""",
+            (msg_id, chat_id)
+        ).fetchone()
+        return bool(res)
+    finally:
+        conn.close()
+
+def message_was_staff_handled(msg_id, chat_id):
+    """Staff reply/reaction သို့မဟုတ် SLA alert ပို့ပြီးသော message"""
+    conn = get_connection()
+    try:
+        row = conn.execute(
+            "SELECT resolved_by, status FROM message_logs WHERE msg_id = ? AND chat_id = ?",
+            (msg_id, chat_id)
+        ).fetchone()
+        if not row:
+            return False
+        resolved_by, status = row
+        if resolved_by:
+            return True
+        if status in ('ALERTED', 'ESCALATED'):
+            return True
+        tracking = conn.execute(
+            "SELECT 1 FROM alert_tracking WHERE original_msg_id = ? AND chat_id = ? LIMIT 1",
+            (msg_id, chat_id)
+        ).fetchone()
+        return bool(tracking)
+    finally:
+        conn.close()
+
+def cancel_pickup_queue_for_message(orig_msg_id, chat_id):
+    """Pickup flow queue entry ကို message တစ်ခုအတွက် ရှင်းခြင်း"""
+    conn = get_connection()
+    try:
+        conn.execute(
+            "DELETE FROM pickup_queue WHERE orig_msg_id = ? AND chat_id = ?",
+            (orig_msg_id, chat_id)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
 def resolve_message(msg_id, chat_id, staff_name, method='Reply', topic_id=None, status='RESOLVED'):
     """
     Message တစ်ခု သို့မဟုတ် Topic တစ်ခုလုံးကို Resolved အဖြစ် သတ်မှတ်ခြင်း။

@@ -86,30 +86,26 @@ def register_message_handlers(bot: telebot.TeleBot, is_manager_func):
                         if db_manager.is_manual_alert(original_id, chat_id):
                             return
 
+                        # မူရင်းစာသားကို db ကနေ ပြန်ယူရန်
+                        conn = db_manager.get_connection()
+                        msg_data = conn.execute("SELECT text FROM message_logs WHERE msg_id = ? AND chat_id = ?", (original_id, chat_id)).fetchone()
+                        conn.close()
+
+                        orig_text = msg_data[0] if msg_data else "[Unknown]"
+
+                        # 💡 Active pickup queue order ရှိသေးမှသာ resolve မလုပ်ပါ (category='PICKUP' မသုံး)
+                        if db_manager.has_active_pickup_flow(original_id, chat_id):
+                            log.info(f"ℹ️ Message {original_id} has active pickup flow. Skipping auto-resolve on reply.")
+                            return
+
+                        _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
+
                         # ၁။ DB တွင် Resolve လုပ်ခြင်း
                         db_manager.resolve_message(original_id, chat_id, staff_name, method='Reply', topic_id=orig_topic_id)
-                        
-                        # ၂။ Alert Cleanup & Record Group သို့ ပို့ခြင်း (Alert ရှိမှသာ ပို့မည်)
-                        _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
-                        
-                        # မူရင်းစာသားနှင့် Category ကို db ကနေ ပြန်ယူရန်
-                        conn = db_manager.get_connection()
-                        msg_data = conn.execute("SELECT text, category, intent FROM message_logs WHERE msg_id = ? AND chat_id = ?", (original_id, chat_id)).fetchone()
-                        conn.close()
-                        
-                        orig_text = msg_data[0] if msg_data else "[Unknown]"
-                        category = msg_data[1] if msg_data else None
-                        intent = msg_data[2] if msg_data else None
 
-                        # 💡 Pick Up Alert ဖြစ်ပါက Reply ဖြင့် Resolve လုပ်ခွင့်မပေးပါ (Auto-Pickup Flow အတိုင်းသွားရန်)
-                        if category == 'PICKUP' or intent == 'PICKUP':
-                            log.info(f"ℹ️ Message {original_id} is PICKUP. Skipping auto-resolve on reply.")
-                            return
-                        
-                        # 💡 resolve_and_cleanup ထဲတွင် Alert ရှိ/မရှိ စစ်ဆေးပြီးသားဖြစ်သည်
-                        # manual_resolve=True ထည့်ပေးခြင်းဖြင့် Office Hours ပြင်ပဖြစ်စေ Record ပို့မည်
+                        # ၂။ Alert Cleanup & Record Group သို့ ပို့ခြင်း (Alert ရှိမှသာ ပို့မည်)
                         auditor.resolve_and_cleanup(original_id, chat_id, shop_name, orig_text, f"{staff_name} (Reply)", manual_resolve=True)
-                        
+
                         log.info(f"✅ Message {original_id} marked as RESOLVED via Reply by {staff_name}")
                     return
 

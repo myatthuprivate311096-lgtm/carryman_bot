@@ -385,8 +385,41 @@ def register_pickup_handlers(bot: telebot.TeleBot):
 
             # Clean up all intermediate bot messages
             auto_pickup.cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id)
-            
-            # 1. Admin Group ရှိ Notification ကို ဖျက်ခြင်း
+
+            db_manager.cancel_pickup_queue_for_message(orig_msg_id, chat_id)
+
+            # 💡 Phase 2: AI Learning from Cancellations
+            msg_ctx = db_manager.get_message_context(orig_msg_id, chat_id)
+            orig_text = msg_ctx[0] if msg_ctx else "[Unknown]"
+            if msg_ctx:
+                db_manager.log_feedback(chat_id, orig_msg_id, orig_text, category='NOT_PICKUP')
+
+            topic_id = db_manager.get_message_topic(orig_msg_id, chat_id)
+            _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
+
+            if db_manager.message_was_staff_handled(orig_msg_id, chat_id):
+                staff_name = call.from_user.first_name
+                with db_manager.connection_scope() as conn:
+                    row = conn.execute(
+                        "SELECT resolved_by FROM message_logs WHERE msg_id = ? AND chat_id = ?",
+                        (orig_msg_id, chat_id)
+                    ).fetchone()
+                if row and row[0]:
+                    staff_name = str(row[0]).split(' (')[0].strip() or staff_name
+
+                auditor.resolve_and_cleanup(
+                    orig_msg_id, chat_id, shop_name, orig_text,
+                    f"{staff_name} (Not Pickup)", manual_resolve=True
+                )
+                db_manager.resolve_message(
+                    orig_msg_id, chat_id, staff_name,
+                    method='Not Pickup', topic_id=topic_id
+                )
+                log.info(f"✅ Pickup cancelled with staff-handled resolve for msg {orig_msg_id} in chat {chat_id}")
+                bot.answer_callback_query(call.id, "✅ Staff မှ ဖြေရှင်းပြီးသား — Resolved အဖြစ် မှတ်သားပြီးပါပြီ။")
+                return
+
+            # Admin Group ရှိ Pickup Notification ကို ဖျက်ခြင်း (staff မဖြေရှင်းရသေးပါက)
             tracking = db_manager.get_alert_tracking(orig_msg_id, chat_id)
             if tracking:
                 alert_msg_id = tracking[0]
@@ -396,19 +429,12 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 except Exception: pass
                 db_manager.delete_alert_tracking(orig_msg_id, chat_id)
 
-            # 💡 Phase 2: AI Learning from Cancellations
-            msg_ctx = db_manager.get_message_context(orig_msg_id, chat_id)
-            if msg_ctx:
-                orig_text = msg_ctx[0]
-                db_manager.log_feedback(chat_id, orig_msg_id, orig_text, category='NOT_PICKUP')
-
-            # 2. Status ကို PENDING သို့ ပြန်ပြောင်းခြင်း
-            # 💡 Reset timestamp so 15-min alert clock starts from NOW, not from original message time
+            # Status ကို PENDING သို့ ပြန်ပြောင်းခြင်း — 15-min alert clock အသစ်ပြန်စ
             db_manager.update_message_status(orig_msg_id, chat_id, 'PENDING')
             now_ts = int(_time.time())
             db_manager.reset_message_timestamp(orig_msg_id, chat_id, now_ts)
             log.info(f"🔄 Pickup cancelled: msg {orig_msg_id} in chat {chat_id} reset to PENDING with fresh timestamp {now_ts}")
-            
+
             bot.answer_callback_query(call.id, "✅ Pickup မဟုတ်ကြောင်း မှတ်သားပြီး ပုံမှန်စာအဖြစ် ပြန်ပြောင်းလိုက်ပါပြီ။")
         except Exception as e:
             log.error(f"❌ Pickup Cancel Callback Error: {e}")

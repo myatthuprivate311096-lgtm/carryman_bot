@@ -62,7 +62,7 @@ def register_handlers(bot):
     # --- [ Section: Maintenance Control (အသစ်ထည့်ရမည့်နေရာ) ] ---
     @bot.message_handler(commands=['gsupdate'])
     def handle_gs_update(message):
-        """ Google Sheet မှ Data များကို Manual Sync လုပ်ခြင်း (Bidirectional) """
+        """ Google Sheet မှ Data များကို Manual Sync လုပ်ခြင်း (Import Only) """
         if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
             # Subcommand parsing: /gsupdate map or /gsupdate map run
             parts = message.text.strip().split()
@@ -76,19 +76,9 @@ def register_handlers(bot):
             syncer = gsheet_sync.GSheetSync(bot=bot)
             
             if subcmd == 'map':
-                msg = bot.reply_to(message, "⏳ **Bidirectional Map Sync လုပ်နေပါသည်...**\n\n📥 Sheet → DB (import)...")
-                
-                # Step 1: Import from Sheet → DB (Sheet edits are source of truth)
+                msg = bot.reply_to(message, "⏳ **Map Sync (Import Only) လုပ်နေပါသည်...**\n\n📥 Sheet → DB (import)...")
                 success_map, result_map = syncer.sync_shop_mappings(sheet_url)
-                
-                # Step 2: Export DB → Sheet (append new groups + resolve unknown names)
-                appended_count = syncer.append_new_mappings_to_sheet(sheet_url)
-                
-                final_msg = f"✅ **Bidirectional Map Sync ပြည့်ပါပြီ!**\n\n"
-                final_msg += f"📥 Import: {result_map}\n"
-                if appended_count > 0:
-                    final_msg += f"📤 Export: ဆိုင်အသစ် {appended_count} ခု Sheet ထဲသို့ ထည့်သွင်းပြီးပါပြီ။"
-                
+                final_msg = f"✅ **Map Import ပြီးပါပြီ!**\n\n📥 Import: {result_map}"
                 bot.edit_message_text(final_msg, msg.chat.id, msg.message_id)
             else:
                 msg = bot.reply_to(message, "⏳ **Google Sheet မှ ဒေတာများကို ရယူနေပါသည်...**")
@@ -96,7 +86,7 @@ def register_handlers(bot):
                 # ၁။ Knowledge Base Sync
                 success_kb, result_kb = syncer.sync_knowledge(sheet_url)
                 
-                # ၂။ Shop Mappings Sync (bidirectional)
+                # ၂။ Shop Mappings Sync (import only)
                 success_map, result_map = syncer.sync_shop_mappings(sheet_url)
                 
                 final_msg = f"📊 **Sync Results:**\n\n"
@@ -108,23 +98,27 @@ def register_handlers(bot):
             bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
             
     def _after_register_export_sheet(chat_id):
-        """ Register လုပ်ပြီးတိုင်း GSheet ကို auto-update လုပ်ခြင်း """
+        """ Register ပြီးနောက် Sheet ကို auto-write မလုပ်ရန် policy guard """
         try:
-            sheet_url = os.getenv('GSHEET_URL')
-            if sheet_url:
-                syncer = gsheet_sync.GSheetSync()  # No bot here, runs in background
-                count = syncer.append_new_mappings_to_sheet(sheet_url)
-                if count > 0:
-                    log.info(f"📤 Auto-exported {count} new mapping(s) to GSheet after register.")
+            log.info(f"🛡️ Sheet write protection active: skip auto-export after register (chat_id={chat_id}).")
         except Exception as e:
             log.error(f"❌ Auto-export after register failed: {e}")
 
     @bot.message_handler(commands=['gsexport'])
     def handle_gs_export(message):
-        """ Smart Bidirectional Export: Sheet → DB → Sheet (ပြင်ထားတာ၊ အသစ်ထည့်တာ၊ ဖျက်တာ အားလုံး sync) """
+        """ Safety-guarded export (disabled by default to protect Sheet source of truth) """
         if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
-            msg = bot.reply_to(message, "🔄 **Smart Bidirectional Sync လုပ်နေပါသည်...**\n\n📥 Step 1/2: Sheet → DB (import edits)...")
-            
+            parts = message.text.strip().split()
+            force_export = len(parts) > 1 and parts[1].lower() == "force"
+            if not force_export:
+                bot.reply_to(
+                    message,
+                    "🛡️ Sheet source of truth policy အရ `/gsexport` ကို default ပိတ်ထားပါသည်။\n"
+                    "တကယ်လိုအပ်မှသာ `/gsexport force` ဖြင့် run လုပ်ပါ အစ်ကို။"
+                )
+                return
+
+            msg = bot.reply_to(message, "⚠️ **Force Export Mode**\n📥 Sheet → DB import ပြီးနောက် DB → Sheet full export လုပ်နေပါသည်...")
             sheet_url = os.getenv('GSHEET_URL')
             if not sheet_url:
                 bot.edit_message_text("❌ `.env` ထဲမှာ `GSHEET_URL` ထည့်သွင်းထားခြင်း မရှိသေးပါ အစ်ကို။",
@@ -132,20 +126,9 @@ def register_handlers(bot):
                 return
 
             syncer = gsheet_sync.GSheetSync(bot=bot)
-            
-            # Step 1: Import Sheet → DB (manual edits from Sheet become source of truth)
             success_import, result_import = syncer.sync_shop_mappings(sheet_url)
-            
-            bot.edit_message_text(f"📥 Import done.\n📤 Step 2/2: DB → Sheet (full export)...",
-                                  msg.chat.id, msg.message_id)
-            
-            # Step 2: Full Export DB → Sheet (consolidate everything clean)
             success_export, result_export = syncer.export_mappings_to_sheet(sheet_url)
-            
-            final_msg = f"✅ **Smart Bidirectional Sync ပြည့်ပါပြီ!**\n\n"
-            final_msg += f"📥 Import: {result_import}\n"
-            final_msg += f"📤 Export: {result_export}"
-            
+            final_msg = f"✅ **Force Export ပြီးပါပြီ။**\n\n📥 Import: {result_import}\n📤 Export: {result_export}"
             bot.edit_message_text(final_msg, msg.chat.id, msg.message_id)
         else:
             bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
