@@ -416,11 +416,14 @@ def submit_pickup_order(target_date, os_name, remark, vehicle="Bicycle"):
     
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     state_path = os.path.join(base_dir, "state.json")
+    storage_state = state_path if os.path.exists(state_path) else None
+    if not storage_state:
+        log.warning(f"⚠️ Session file not found: {state_path}. Proceeding with fresh browser session.")
     
     try:
         return browser_manager.browser_manager.run_task(
             _submit_pickup_task, 
-            storage_state=state_path,
+            storage_state=storage_state,
             target_date=target_date,
             os_name=os_name,
             remark=remark,
@@ -434,8 +437,9 @@ def sync_shops_from_website():
     """Website မှ ဆိုင်စာရင်းများကို Browser ဖြင့် Sync လုပ်ခြင်း (Sync Wrapper)"""
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     state_path = os.path.join(base_dir, "state.json")
+    storage_state = state_path if os.path.exists(state_path) else None
     try:
-        shops = browser_manager.browser_manager.run_task(_sync_shops_task, storage_state=state_path)
+        shops = browser_manager.browser_manager.run_task(_sync_shops_task, storage_state=storage_state)
         if shops:
             count = db_manager.sync_website_shops(shops)
             return True, f"Synced {count} shops."
@@ -991,10 +995,10 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
         order = None
         with db_manager.connection_scope() as conn:
             if queue_id:
-                order = conn.execute("SELECT os_name, target_date, remark, vehicle, status, shop_msg_id FROM pickup_queue WHERE id = ?", (queue_id,)).fetchone()
+                order = conn.execute("SELECT os_name, target_date, remark, vehicle, status, shop_msg_id, error_msg FROM pickup_queue WHERE id = ?", (queue_id,)).fetchone()
             else:
                 # If no queue_id, get the latest one for this message
-                order = conn.execute("SELECT os_name, target_date, remark, vehicle, status, shop_msg_id FROM pickup_queue WHERE orig_msg_id = ? AND chat_id = ? ORDER BY id DESC", (orig_msg_id, chat_id)).fetchone()
+                order = conn.execute("SELECT os_name, target_date, remark, vehicle, status, shop_msg_id, error_msg FROM pickup_queue WHERE orig_msg_id = ? AND chat_id = ? ORDER BY id DESC", (orig_msg_id, chat_id)).fetchone()
         
         if not order:
             ctx = db_manager.get_message_context(orig_msg_id, chat_id)
@@ -1021,8 +1025,9 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
             remark = ctx[1] if ctx and ctx[1] else "-"
             vehicle = "-"
             shop_msg_id = None
+            error_reason = None
         else:
-            os_name, target_date, remark, vehicle, _, shop_msg_id = order
+            os_name, target_date, remark, vehicle, _, shop_msg_id, error_reason = order
 
         # 💡 Fallback: If shop_msg_id is missing, try to find it in the database
         if not shop_msg_id:
@@ -1110,12 +1115,17 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
             f"📊 Status: <b>{util.escape(str(status_text)) if status_text else '-'}</b>\n"
             f"💬 မူရင်းစာ: <i>{util.escape(orig_text[:200])}{'...' if len(orig_text) > 200 else ''}</i>"
         )
+        is_processing = status_text and "Processing" in str(status_text)
+        is_failed = status_text and ("Failed" in str(status_text) or "❌" in str(status_text))
+        if is_failed:
+            fail_reason = str(error_reason).strip() if error_reason else str(status_text).strip()
+            new_caption += (
+                f"\n⚠️ အကြောင်းရင်း: <i>{util.escape(fail_reason)}</i>\n"
+                f"စက်ရုပ်ဖြင့် တင်မရပါက Manual တင်ပြီး Done နှိပ်ပေးပါရန်။"
+            )
         
         if updates_text:
             new_caption += f"\n➕ <b>Updates:</b>\n<i>{util.escape(updates_text)}</i>"
-
-        is_processing = status_text and "Processing" in str(status_text)
-        is_failed = status_text and ("Failed" in str(status_text) or "❌" in str(status_text))
 
         if custom_markup:
             markup = custom_markup
@@ -1186,6 +1196,51 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
 
     except Exception as e:
         log.error(f"❌ update_central_pickup_alert Error: {e}")
+
+def send_pickup_failed_report(bot, chat_id, orig_msg_id, os_name, target_date, error_msg, screenshot_path=None):
+    """Auto Pickup Fail Report — Ops Group (Topic 5) သို့ Screenshot + Done/View ပို့ခြင်း"""
+    try:
+        report_chat_id = int(os.getenv('PICKUP_FAILED_REPORT_CHAT_ID', -1003906164269))
+        report_topic_id = int(os.getenv('PICKUP_FAILED_REPORT_TOPIC_ID', 5))
+
+        clean_chat_id = str(chat_id).replace("-100", "")
+        msg_link = f"https://t.me/c/{clean_chat_id}/{orig_msg_id}"
+
+        markup = types.InlineKeyboardMarkup()
+        markup.add(
+            types.InlineKeyboardButton("🔗 View Message", url=msg_link),
+            types.InlineKeyboardButton("✅ Done", callback_data=f"pdone_{orig_msg_id}_{chat_id}")
+        )
+
+        report_caption = (
+            f"❌ <b>Auto Pickup Failed Report</b>\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"🏪 ဆိုင်: {util.escape(str(os_name))}\n"
+            f"📅 ရက်စွဲ: {util.escape(str(target_date))}\n"
+            f"⚠️ Error: {util.escape(str(error_msg))}\n"
+            f"━━━━━━━━━━━━━━━━━━\n"
+            f"စက်ရုပ်ဖြင့် တင်မရပါက Manual တင်ပြီး Done နှိပ်ပေးပါရန်။"
+        )
+
+        if screenshot_path and os.path.exists(screenshot_path):
+            with open(screenshot_path, 'rb') as photo:
+                bot.send_photo(
+                    report_chat_id, photo,
+                    caption=report_caption,
+                    parse_mode="HTML",
+                    message_thread_id=report_topic_id,
+                    reply_markup=markup
+                )
+        else:
+            bot.send_message(
+                report_chat_id, report_caption,
+                parse_mode="HTML",
+                message_thread_id=report_topic_id,
+                reply_markup=markup
+            )
+        log.info(f"📤 Pickup failed report sent to {report_chat_id}/{report_topic_id} for {os_name}")
+    except Exception as e:
+        log.error(f"❌ send_pickup_failed_report Error: {e}")
 
 def send_success_report(bot, orig_msg_id, chat_id, handled_by="System"):
     """ အောင်မြင်သွားသော Pickup စာရင်းကို သီးသန့် Success Group သို့ ပို့ဆောင်ခြင်း """
@@ -1425,6 +1480,20 @@ def run_queue_worker(bot):
     except Exception as re:
         log.error(f"❌ Recovery Logic Error: {re}")
 
+    # 🛡️ Session Warmup: Ensure state.json exists before first pickup attempt.
+    try:
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        state_path = os.path.join(base_dir, "state.json")
+        if not os.path.exists(state_path):
+            log.warning("⚠️ state.json not found at worker startup. Attempting auto-login warmup...")
+            success, msg = auto_login.auto_login()
+            if success:
+                log.info("✅ state.json warmup completed.")
+            else:
+                log.warning(f"⚠️ state.json warmup failed: {msg}")
+    except Exception as se:
+        log.error(f"❌ state.json warmup check failed: {se}")
+
     while True:
         try:
             item = db_manager.get_next_queued_pickup()
@@ -1519,20 +1588,8 @@ def run_queue_worker(bot):
                     queue_id=queue_id
                 )
 
-                # 💡 Manager ဆီသို့ Screenshot နှင့်တကွ Error Report ပို့ခြင်း
-                if screenshot_path:
-                    report_caption = (
-                        f"❌ <b>Auto Pickup Failed Report</b>\n"
-                        f"━━━━━━━━━━━━━━━━━━\n"
-                        f"🏪 ဆိုင်: {os_name}\n"
-                        f"📅 ရက်စွဲ: {target_date}\n"
-                        f"⚠️ Error: {msg}\n"
-                        f"━━━━━━━━━━━━━━━━━━"
-                    )
-                    ai_utils.send_manager_photo(screenshot_path, report_caption)
-                
-                # Also send a separate error notification with Fix button if it's a mapping issue
-                handle_pickup_error(bot, chat_id, orig_msg_id, final_os_name or os_name, target_date, msg)
+                # 💡 Ops Group (Topic 5) သို့ Screenshot + Error Report ပို့ခြင်း
+                send_pickup_failed_report(bot, chat_id, orig_msg_id, os_name, target_date, msg, screenshot_path)
 
             time.sleep(10)
 
