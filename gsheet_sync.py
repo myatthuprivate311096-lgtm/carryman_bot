@@ -113,6 +113,68 @@ class GSheetSync:
                 log.error(f"❌ GSheet Connection Failed [{error_type}]: {error_msg}")
             return None
 
+    @staticmethod
+    def _is_delivery_flag_value(value):
+        """Location table delivery flags (Yes/No) ဖြစ်မဖြစ် စစ်ဆေးခြင်း。"""
+        val = str(value or "").strip().lower()
+        if not val:
+            return True
+        return val in ("yes", "no", "y", "n")
+
+    @staticmethod
+    def _format_location_delivery_row(row):
+        """
+        Location/Delivery table row (numeric ID in col A) ကို AI-readable text အဖြစ် ပြောင်းခြင်း。
+        Expected columns (Customer Inquire tab):
+        ID, State, City, Township, MM_Name, HomeDel, COD, GateDrop,
+        BaseFee, BaseKg, ExtraFee, Days, Special_Remarks, Rider Name
+        """
+        if len(row) < 8 or not str(row[0]).strip().isdigit():
+            return None
+
+        # Staff/Billing sheets also use numeric IDs — require Yes/No delivery flags in cols F-H
+        for idx in (5, 6, 7):
+            if idx < len(row) and not GSheetSync._is_delivery_flag_value(row[idx]):
+                return None
+
+        loc_id = row[0].strip()
+        state = row[1].strip() if len(row) > 1 else ""
+        city = row[2].strip() if len(row) > 2 else ""
+        township = row[3].strip() if len(row) > 3 else ""
+        mm_name = row[4].strip() if len(row) > 4 else ""
+        home = row[5].strip() if len(row) > 5 else ""
+        cod = row[6].strip() if len(row) > 6 else ""
+        gate = row[7].strip() if len(row) > 7 else ""
+        base_fee = row[8].strip() if len(row) > 8 else ""
+        base_kg = row[9].strip() if len(row) > 9 else ""
+        extra_fee = row[10].strip() if len(row) > 10 else ""
+        days = row[11].strip() if len(row) > 11 else ""
+        special_remarks = row[12].strip() if len(row) > 12 else ""
+        rider_name = row[13].strip() if len(row) > 13 else ""
+
+        if not (state or city or township):
+            return None
+
+        question = f"{state} | {city} | {township}"
+        answer = (
+            f"Township: {township} | City: {city} | State: {state} ({mm_name})\n"
+            f"Home Delivery: {home} | COD: {cod} | Gate Drop: {gate}\n"
+            f"Delivery Fee: {base_fee} MMK (base {base_kg}kg, extra {extra_fee} MMK per kg)\n"
+            f"Estimated Days: {days}"
+        )
+        if special_remarks:
+            answer += f"\nSpecial Remarks: {special_remarks}"
+        if rider_name:
+            answer += f"\nRider Name: {rider_name}"
+
+        tag_parts = [mm_name, township, city, state, loc_id, "delivery", "location"]
+        if special_remarks:
+            tag_parts.append(special_remarks)
+        if rider_name:
+            tag_parts.append(rider_name)
+        tags = "|".join(filter(None, tag_parts))
+        return loc_id, question, answer, tags
+
     def sync_knowledge(self, sheet_url):
         """ Sheet အမည်များကို ဖတ်ပြီး Level ကို အလိုအလျောက် ခွဲခြားကာ Sync လုပ်ခြင်း """
         log.info("🔄 Starting Dynamic Multi-Level Sync...")
@@ -131,14 +193,20 @@ class GSheetSync:
             for sheet in all_sheets:
                 sheet_name = sheet.title
                 name_lower = sheet_name.lower()
+
+                # Staff HR sheet — not for AI knowledge_base (prevents numeric-ID corruption)
+                if "staff" in name_lower and "info" in name_lower:
+                    log.info(f"⏭️ Skipping sheet: {sheet_name} (Staff HR data — excluded from knowledge_base)")
+                    continue
                 
-                # 💡 Sheet နာမည်ပေါ် မူတည်ပြီး Level သတ်မှတ်ခြင်း (Dynamic Checking)
+                # 💡 Sheet နာမည်ပေါ် မူတည်ပြီး Level သတ်မှတ်ခြင်း
+                # Customer Inquire sheet MUST be Level 1 (checked before OS keyword)
                 if "staff" in name_lower:
                     level = 3
+                elif "inquire" in name_lower or "customer" in name_lower:
+                    level = 1
                 elif "os" in name_lower:
                     level = 2
-                elif "customer" in name_lower:
-                    level = 1
                 else:
                     # သတ်မှတ်ထားသော Keyword မပါလျှင် ကျော်သွားမည် (ဥပမာ - Sheet4 လိုမျိုး)
                     log.info(f"⏭️ Skipping sheet: {sheet_name} (Keyword မပါဝင်ပါ)")
@@ -148,15 +216,24 @@ class GSheetSync:
                 count = 0
                 
                 for row in all_records:
-                    if len(row) >= 3:
-                        category = row[0].strip()
-                        question = row[1].strip()
-                        answer = row[2].strip()
-                        tags = row[3].strip() if len(row) > 3 else ""
-                        
-                        if question and answer:
-                            data_to_db.append((category, question, answer, tags, level, timestamp))
-                            count += 1
+                    if len(row) < 3:
+                        continue
+
+                    parsed = self._format_location_delivery_row(row)
+                    if parsed:
+                        category, question, answer, tags = parsed
+                        data_to_db.append((category, question, answer, tags, level, timestamp))
+                        count += 1
+                        continue
+
+                    category = row[0].strip()
+                    question = row[1].strip()
+                    answer = row[2].strip()
+                    tags = row[3].strip() if len(row) > 3 else ""
+                    
+                    if question and answer:
+                        data_to_db.append((category, question, answer, tags, level, timestamp))
+                        count += 1
                             
                 messages.append(f"- {sheet_name} (Level {level}): {count} ခု")
 

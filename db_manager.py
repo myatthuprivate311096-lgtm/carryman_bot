@@ -1336,36 +1336,253 @@ def upsert_knowledge_batch(data_list):
     finally:
         conn.close()
 
-def search_knowledge(query, user_level):
-    """
-    User ရဲ့ Level အလိုက် Database ထဲမှာ မေးခွန်းရှာပေးခြင်း
-    Level 4: 1,2,3,4 အကုန်ရမည်
-    Level 3: 1,2,3 ရမည်
-    Level 2: 1,2 ရမည်
-    Level 1: 1 ပဲရမည်
-    """
+def _extract_search_tokens(query):
+    """Query ကို keyword/token အဖြစ် ခွဲထုတ်ခြင်း (Myanmar + English support)."""
+    import re
+    if not query:
+        return []
+
+    def _add_token(bucket, seen, token):
+        token = str(token).strip()
+        if not token or len(token) < 2:
+            return
+        key = token.lower()
+        if key in seen:
+            return
+        seen.add(key)
+        bucket.append(token)
+
+    raw_tokens = re.findall(r'[\u1000-\u109F]+|[a-zA-Z0-9]{2,}', str(query))
+    seen = set()
+    tokens = []
+
+    myanmar_split = re.compile(
+        r'(?:ကို|မှာ|သို့|နဲ့|လို့|ရလား|ရမလား|ပို့|လာ|ရ|မလား|ဆို|လဲ|လား|နော်|နော|ခင်ဗျ|ခင်ဗျာ|ဟု|အား|တွင်|နှင့်)'
+    )
+
+    for token in raw_tokens:
+        _add_token(tokens, seen, token)
+
+        if re.search(r'[\u1000-\u109F]', token):
+            for part in myanmar_split.split(token):
+                _add_token(tokens, seen, part)
+
+            for myanmar_name, aliases in _LOCATION_ALIASES.items():
+                if myanmar_name in token or token.startswith(myanmar_name[:3]):
+                    _add_token(tokens, seen, myanmar_name)
+                    for alias in aliases:
+                        _add_token(tokens, seen, alias)
+
+        token_lower = token.lower()
+        for myanmar_name, aliases in _LOCATION_ALIASES.items():
+            if token_lower in [a.lower() for a in aliases]:
+                _add_token(tokens, seen, myanmar_name)
+                for alias in aliases:
+                    _add_token(tokens, seen, alias)
+
+    return tokens[:16]
+
+
+_LOCATION_ALIASES = {
+    "မြစ်ကြီးနား": ["Myitkyina", "myitkyina"],
+    "ကျိုင်းတုံ": ["Kengtung", "kengtung"],
+    "မုံရွာ": ["Monywa", "monywa"],
+    "သထုံ": ["Dawei", "dawei"],
+    "မန္တလေး": ["Mandalay", "mandalay"],
+    "နေပြည်တော်": ["Naypyidaw", "naypyidaw"],
+    "ပြင်ဦးလွင်": ["Pyin Oo Lwin", "pyin oo lwin"],
+    "လားရှိုး": ["Lashio", "lashio"],
+    "တာချို": ["Taunggyi", "taunggyi"],
+    "စစ်တွေ": ["Sittwe", "sittwe"],
+    "ဘားအံ": ["Hpa-An", "hpa-an", "Hpa An"],
+    "ရန်ကုန်": ["Yangon", "yangon", "Rangoon"],
+    "ကျိုက်ထို": ["Kyaikto", "kyaikto"],
+    "ပုသိမ်": ["Pathein", "pathein"],
+    "မကွေး": ["Magway", "magway"],
+    "မော်လမြိုင်": ["Mawlamyine", "mawlamyine"],
+}
+
+
+def search_location_delivery(query, user_level):
+    """Location table (numeric category ID) မှ delivery fee/COD/days ရှာခြင်း。"""
+    if not query or not str(query).strip():
+        return None
+
+    terms = _extract_search_tokens(query)
+    if not terms:
+        return None
+
     conn = get_connection()
     try:
         c = conn.cursor()
-        search_query = f"%{query}%"
-        # 💡 Broadened Search Logic: Search across question, answer, tags, and category
-        # This ensures Myanmar keywords match even if the question is in English but answer contains Myanmar.
-        # 💡 Broadened Search Logic: Search across question, answer, tags, and category
-        # Increased limit to 10 to provide more context for reasoning.
-        c.execute('''SELECT category, question, answer FROM knowledge_base
-                     WHERE (question LIKE ? OR answer LIKE ? OR tags LIKE ? OR category LIKE ?)
-                     AND level <= ?
-                     ORDER BY level DESC LIMIT 10''',
-                     (search_query, search_query, search_query, search_query, user_level))
-        
-        results = c.fetchall()
-        if results:
-            # Combine multiple results for better context
-            combined_context = ""
-            for cat, q, a in results:
-                combined_context += f"Category: {cat}\nQuestion: {q}\nAnswer: {a}\n---\n"
-            return combined_context
+        best_row = None
+        best_score = 0
+
+        sql = '''SELECT category, question, answer, tags FROM knowledge_base
+                 WHERE category GLOB '[0-9]*'
+                 AND (question LIKE ? OR answer LIKE ? OR tags LIKE ?)
+                 AND level <= ?
+                 ORDER BY length(answer) DESC
+                 LIMIT 8'''
+
+        for term in terms:
+            pattern = f"%{term}%"
+            c.execute(sql, (pattern, pattern, pattern, user_level))
+            for cat, question, answer, tags in c.fetchall():
+                haystack = f"{question} {answer} {tags}".lower()
+                score = sum(2 for t in terms if t.lower() in haystack)
+                if "delivery fee:" in answer.lower() or "ပို့ခ:" in answer:
+                    score += 10
+                if score > best_score:
+                    best_score = score
+                    best_row = (cat, question, answer, tags)
+
+        if not best_row or best_score < 2:
+            return None
+
+        cat, question, answer, tags = best_row
+        return f"Location ID: {cat}\n{question}\n{answer}\nTags: {tags}"
+    except Exception as e:
+        log.error(f"❌ Search Location Delivery Error: {e}")
         return None
+    finally:
+        conn.close()
+
+
+def format_location_delivery_reply(location_text):
+    """Synced location row ကနေ customer-facing Burmese reply ထုတ်ခြင်း (OS tone)。"""
+    import re
+    if not location_text:
+        return None
+
+    fee_match = re.search(
+        r"Delivery Fee:\s*(\d+)\s*MMK\s*\(base\s*(\d+)\s*kg,\s*extra\s*(\d+)\s*MMK per kg\)",
+        location_text,
+        re.IGNORECASE,
+    )
+    if not fee_match:
+        return None
+
+    base_fee, base_kg, extra_fee = fee_match.group(1), fee_match.group(2), fee_match.group(3)
+    mm_name = ""
+    mm_match = re.search(r"\(([^)]+)\)", location_text)
+    if mm_match:
+        mm_name = mm_match.group(1).strip()
+
+    township = re.search(r"Township:\s*([^|]+)", location_text)
+    state = re.search(r"State:\s*([^(\n|]+)", location_text)
+    home = re.search(r"Home Delivery:\s*(\S+)", location_text, re.IGNORECASE)
+    cod = re.search(r"COD:\s*(\S+)", location_text, re.IGNORECASE)
+    gate = re.search(r"Gate Drop:\s*(\S+)", location_text, re.IGNORECASE)
+    days = re.search(r"Estimated Days:\s*(\d+)", location_text, re.IGNORECASE)
+    rider = re.search(r"Rider Name:\s*(.+)", location_text, re.IGNORECASE)
+    rider_name = rider.group(1).strip() if rider else ""
+
+    def _is_yes(value):
+        return str(value or "").strip().lower() in ("yes", "y", "true", "1")
+
+    home_yes = _is_yes(home.group(1) if home else "")
+    cod_yes = _is_yes(cod.group(1) if cod else "")
+    gate_yes = _is_yes(gate.group(1) if gate else "")
+
+    state_mm_map = {
+        "yangon": "ရန်ကုန်တိုင်း",
+        "mon": "မွန်ပြည်နယ်",
+        "mandalay": "မန္တလေးတိုင်း",
+        "kachin": "ကချင်ပြည်နယ်",
+        "kayin": "ကရင်ပြည်နယ်",
+        "kayah": "ကယားပြည်နယ်",
+        "chin": "ချင်းပြည်နယ်",
+        "sagaing": "စစ်ကိုင်းတိုင်း",
+        "tanintharyi": "တနင်္သာရီတိုင်း",
+        "bago": "ပဲခူးတိုင်း",
+        "magway": "မကွေးတိုင်း",
+        "ayeyarwady": "ဧရာဝတီတိုင်း",
+        "shan": "ရှမ်းပြည်နယ်",
+        "naypyidaw": "နေပြည်တော်ပြည်ထောင်စုနယ်မြ",
+    }
+    state_en = state.group(1).strip() if state else ""
+    state_mm = state_mm_map.get(state_en.lower(), state_en)
+    township_label = mm_name or (township.group(1).strip() if township else "ဒီနေရာ")
+    location_label = f"{state_mm}၊ {township_label}" if state_mm else township_label
+
+    service_parts = []
+    if home_yes and cod_yes:
+        service_parts.append("အရောက်ပို့ငွေကောက်ပေးခြင်း")
+    elif home_yes:
+        service_parts.append("အိမ်ရောက်ပို့ပေးခြင်း")
+    elif cod_yes:
+        service_parts.append("အရောက်ငွေကောက်ပေးခြင်း")
+
+    if gate_yes:
+        service_parts.append("ဂိတ်ချပေးခြင်း")
+
+    if not service_parts:
+        service_text = "ပို့ဆောင်မှု"
+    elif len(service_parts) == 1:
+        service_text = service_parts[0]
+    else:
+        service_text = f"{service_parts[0]} (သို့မဟုတ်) {service_parts[1]}"
+
+    is_royal_express = "royal express" in rider_name.lower()
+
+    if is_royal_express:
+        intro = f"{location_label}ကို Royal Express ဖြင့် {service_text} ဝန်ဆောင်မှုရပါတယ်ခင်ဗျ။"
+    else:
+        intro = f"{location_label}ကို {service_text} ဝန်ဆောင်မှုရပါတယ်ခင်ဗျ။"
+
+    lines = [
+        intro,
+        f"ပို့ခ: {base_kg} kg ထိ {base_fee} ကျပ်၊ အပို 1 kg လျှင် {extra_fee} ကျပ် ကျသင့်ပါမယ်နော်။",
+    ]
+    if days:
+        lines.append(f"ပစ္စည်းအပ်ရက်မပါပဲ ခန့်မှန်းပို့ရောက်ချိန်: {days.group(1)} ရက်ဝန်းကျင်ပါခင်ဗျ။")
+
+    remarks = re.search(r"Special Remarks:\s*(.+)", location_text, re.IGNORECASE)
+    if remarks and remarks.group(1).strip():
+        lines.append(f"မှတ်ချက်: {remarks.group(1).strip()}")
+
+    return "\n".join(lines)
+
+
+def search_knowledge(query, user_level):
+    """
+    User ရဲ့ Level အလိုက် Database (Google Sheet sync) ထဲမှာ မေးခွန်းရှာပေးခြင်း。
+    Multi-token scoring + Myanmar location alias support.
+    Level 1 = Customer Inquire sheet | Level 2 = OS | Level 3 = Staff
+    """
+    if not query or not str(query).strip():
+        return None
+
+    conn = get_connection()
+    try:
+        c = conn.cursor()
+        scored_rows = {}
+        search_terms = [str(query).strip()]
+        search_terms.extend(_extract_search_tokens(query))
+
+        sql = '''SELECT category, question, answer FROM knowledge_base
+                 WHERE (question LIKE ? OR answer LIKE ? OR tags LIKE ? OR category LIKE ?)
+                 AND level <= ?'''
+
+        for term in search_terms:
+            if not term:
+                continue
+            pattern = f"%{term}%"
+            weight = 3 if term == search_terms[0] else 1
+            c.execute(sql, (pattern, pattern, pattern, pattern, user_level))
+            for cat, q, a in c.fetchall():
+                key = (cat, q, a)
+                scored_rows[key] = scored_rows.get(key, 0) + weight
+
+        if not scored_rows:
+            return None
+
+        ranked = sorted(scored_rows.items(), key=lambda item: item[1], reverse=True)[:12]
+        combined_context = ""
+        for (cat, q, a), _score in ranked:
+            combined_context += f"Category: {cat}\nQuestion: {q}\nAnswer: {a}\n---\n"
+        return combined_context
     except Exception as e:
         log.error(f"❌ Search Knowledge Error: {e}")
         return None

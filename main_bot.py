@@ -30,15 +30,12 @@ db_manager.init_db()
 # Register Commands & Handlers
 auditor.set_bot(bot)
 commands_handler.register_handlers(bot)
+# /ai must register BEFORE catch-all message_handler (telebot uses first matching handler)
+main_router.register_ai_handler(bot)
 alert_handler.register_alert_handlers(bot, is_manager)
 pickup_handler.register_pickup_handlers(bot)
 message_handler.register_message_handlers(bot, is_manager)
 fb_handler.register_fb_handlers(bot)
-
-@bot.message_handler(commands=['ai'])
-def handle_ai_command(message):
-    """ /ai command handler for Smart AI Support """
-    main_router.handle_ai_query(bot, message)
 
 # 🚀 Stability & Auto-Recovery Polling
 # ==========================================

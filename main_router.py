@@ -13,12 +13,60 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 SANDBOX_CHAT_ID = -1003539520778
 
+def register_ai_handler(bot):
+    """Register /ai BEFORE catch-all message handlers (telebot first-match wins)."""
+    @bot.message_handler(commands=['ai'])
+    def handle_ai_command(message):
+        handle_ai_query(bot, message, is_automatic=False)
+
 def is_ai_office_hours():
     """
     AI Auto-Answer အလုပ်လုပ်မည့်အချိန် (၂၄ နာရီ ဖွင့်ထားသည်)
     အစ်ကို့တောင်းဆိုချက်အရ Private Chat AI Reply အတွက် ၂၄ နာရီ ဖွင့်ပေးထားခြင်း ဖြစ်ပါသည်။
     """
     return True
+
+def _normalize_ai_query(text):
+    """/ai query မှ noise (quotes, command prefix) ဖယ်ရှားခြင်း。"""
+    if not text:
+        return ""
+    cleaned = str(text).replace('/ai', '').strip()
+    return cleaned.strip('"').strip("'").strip()
+
+
+def _format_rag_fallback_answer(rag_context):
+    """AI API မအောင်မြင်ရင် Sheet data ကနေ တိုက်ရိုက်ဖြေကြားခြင်း。"""
+    if not rag_context:
+        return None
+    answers = []
+    seen = set()
+    for block in rag_context.split('---\n'):
+        if 'Answer:' not in block:
+            continue
+        answer = block.split('Answer:', 1)[1].strip()
+        if answer and answer not in seen:
+            seen.add(answer)
+            answers.append(answer)
+        if len(answers) >= 2:
+            break
+    if not answers:
+        return None
+    return "\n\n".join(answers)
+
+
+def _send_ai_reply(bot, message, answer):
+    """Telegram reply with 4096 char split。"""
+    full_response = f"🤖 **CarryMan AI Agent**\n\n{answer}"
+    if len(full_response) > 4000:
+        parts = [full_response[i:i + 4000] for i in range(0, len(full_response), 4000)]
+        for idx, part in enumerate(parts):
+            if idx == 0:
+                bot.reply_to(message, part)
+            else:
+                bot.send_message(message.chat.id, part)
+    else:
+        bot.reply_to(message, full_response)
+
 
 def handle_ai_query(bot, message, is_automatic=False):
     """
@@ -45,6 +93,10 @@ def handle_ai_query(bot, message, is_automatic=False):
             _, human_needed = db_manager.get_user_state(user_id)
             if human_needed:
                 log.info(f"🔇 AI Muted for user {user_id} due to human_intervention_needed")
+                bot.reply_to(
+                    message,
+                    "⚠️ AI auto-reply ကို ယာယီရပ်ထားပါတယ်ခင်ဗျာ။ Admin ဆီက ဆက်သွယ်ပေးပါ (သို့) `/unmute` ဖြင့် ပြန်ဖွင့်နိုင်ပါတယ်။"
+                )
                 return
 
             # Staff Exemption (Level 3/4)
@@ -57,9 +109,9 @@ def handle_ai_query(bot, message, is_automatic=False):
                 pass # Will be handled during intent/scope check
 
         # ၂။ မေးခွန်းကို ရယူခြင်း
-        query = message.text.replace('/ai', '').strip() if not is_automatic else (message.text or message.caption or '')
+        query = _normalize_ai_query(message.text) if not is_automatic else _normalize_ai_query(message.text or message.caption or '')
         if not query and message.reply_to_message:
-            query = message.reply_to_message.text or message.reply_to_message.caption
+            query = _normalize_ai_query(message.reply_to_message.text or message.reply_to_message.caption)
             
         if not query:
             bot.reply_to(message, "💡 **ဘယ်လိုကူညီပေးရမလဲခင်ဗျာ?**\n\nမေးခွန်းကို တွဲရိုက်ပါ (သို့) မေးလိုသောစာကို Reply ပြန်ပြီး `/ai` လို့ ရိုက်ပါ။")
@@ -67,9 +119,35 @@ def handle_ai_query(bot, message, is_automatic=False):
 
         log.info(f"🤖 AI Query from {user_id}: {query[:50]}...")
 
-        # ၃။ Step 1: AI Response with Tool Access Control
+        # 📍 Location/Delivery table (full fee row) — direct reply when Sheet data is complete
+        location_context = db_manager.search_location_delivery(query, user_level)
+        direct_location_answer = db_manager.format_location_delivery_reply(location_context)
+        if direct_location_answer:
+            log.info("📍 Direct location delivery reply from synced Sheet data.")
+            _send_ai_reply(bot, message, direct_location_answer)
+            db_manager.update_message_status(message.message_id, chat_id, 'HANDLED_BY_AI')
+            return
+
+        # ၃။ Google Sheet → DB synced knowledge (pre-fetch for all AI providers)
         is_staff = user_level >= 3
-        
+        rag_context = db_manager.search_knowledge(query, user_level)
+        if location_context:
+            rag_context = (location_context + "\n---\n" + rag_context) if rag_context else location_context
+        if rag_context:
+            rag_block = f"""
+[Retrieved Knowledge Base Data (synced from Google Sheet)]:
+{rag_context}
+CRITICAL: Use the retrieved data above as your PRIMARY source for fees, locations, COD, and delivery rules.
+Do NOT invent numbers or locations that are not supported by this data or Core Policies.
+"""
+            log.info(f"📚 RAG pre-fetch: matched knowledge rows for query ({len(rag_context)} chars)")
+        else:
+            rag_block = """
+[Retrieved Knowledge Base Data]: No direct match found for this query in the synced database.
+Use Core Policies and Base Company Info only. If still insufficient, reply with the standard 'don't know' message for Level 1 users.
+"""
+            log.info("📚 RAG pre-fetch: no knowledge rows matched")
+
         scope_check_prompt = ""
         if is_private and not is_staff:
             scope_check_prompt = """
@@ -103,14 +181,16 @@ def handle_ai_query(bot, message, is_automatic=False):
 
         {core_policies}
 
-        RULE: You must apply LOGICAL REASONING using the Base Context (including the Dynamic Core Policies) and retrieved data.
+        {rag_block}
+
+        RULE: You must apply LOGICAL REASONING using the Base Context (including the Dynamic Core Policies), Retrieved Knowledge Base Data, and any additional tool results.
         If a user asks about an item (e.g., plates, guns, glass, liquid), evaluate it against the provided Terms and Conditions instead of looking for exact word matches.
         - Example: If asked about 'plates' (ပန်းကန်), reason that it is a 'Fragile Item' and apply the fragile item rule found in the policies.
-        - Example: If asked about 'Kyaikto' (ကျိုက်ထို), use the 'search_database' tool to find the specific rules for that location.
+        - Example: If asked about 'Kyaikto' (ကျိုက်ထို), use the Retrieved Knowledge Base Data first; if still incomplete, use the 'search_database' tool.
 
-        CRITICAL: You MUST use the 'search_database' tool to look up specific details (locations, pricing) BEFORE deciding you don't know the answer.
+        CRITICAL: Prefer Retrieved Knowledge Base Data first. Use 'search_database' only if you need additional lookup.
 
-        Comprehensive Data Extraction: 'When a user asks about delivery to a specific location, you MUST use the search_database tool and extract:
+        Comprehensive Data Extraction: 'When a user asks about delivery to a specific location, extract from Retrieved Knowledge Base Data:
         - Whether Home Delivery is available.
         - The Delivery Fee (Base weight and extra charge).
         - Whether COD (Cash on Delivery) is accepted.
@@ -127,9 +207,15 @@ def handle_ai_query(bot, message, is_automatic=False):
         tools = ai_utils.get_ai_tools(user_level)
         
         # Initial AI Call
-        response = ai_utils.get_ai_completion(ai_prompt, timeout=30.0, tools=tools, user_level=user_level)
+        response = ai_utils.get_ai_completion(ai_prompt, timeout=45.0, tools=tools, user_level=user_level)
         
         if not response:
+            fallback_answer = _format_rag_fallback_answer(rag_context)
+            if fallback_answer:
+                log.warning("⚠️ AI API unavailable — replying from synced Sheet data (RAG fallback).")
+                _send_ai_reply(bot, message, fallback_answer)
+                db_manager.update_message_status(message.message_id, chat_id, 'HANDLED_BY_AI')
+                return
             bot.reply_to(message, "⚠️ တောင်းပန်ပါတယ်ခင်ဗျာ။ အဖြေရှာနေစဉ် အမှားတစ်ခု ဖြစ်သွားလို့ပါ။")
             return
 
@@ -186,17 +272,7 @@ def handle_ai_query(bot, message, is_automatic=False):
             bot.reply_to(message, "⚠️ တောင်းပန်ပါတယ်ခင်ဗျာ။ အဖြေရှာနေစဉ် အမှားတစ်ခု ဖြစ်သွားလို့ပါ။")
             return
         
-        # Split message if too long (Telegram limit 4096)
-        full_response = f"🤖 **CarryMan AI Agent**\n\n{answer}"
-        if len(full_response) > 4000:
-            parts = [full_response[i:i+4000] for i in range(0, len(full_response), 4000)]
-            for idx, part in enumerate(parts):
-                if idx == 0:
-                    bot.reply_to(message, part)
-                else:
-                    bot.send_message(message.chat.id, part)
-        else:
-            bot.reply_to(message, full_response)
+        _send_ai_reply(bot, message, answer)
             
         # Mark as Handled by AI to suppress escalations
         db_manager.update_message_status(message.message_id, chat_id, 'HANDLED_BY_AI')
@@ -230,30 +306,28 @@ def route_message(bot, message):
         if not text:
             return False
 
-        # 🛡️ Skip slash commands — they are handled by commands_handler.py
-        # Prevents race condition where command handler AND AI router both process the same message
-        if text.startswith('/'):
-            return False
-
-        # ၁။ Global & Group Status စစ်ဆေးခြင်း (Phase 2)
+        # 💡 Manual /ai must be handled before generic slash-command skip
         global_ai = db_manager.get_ai_global_status()
-        
-        # 💡 Manual AI Trigger Check (/ai)
-        # အစ်ကို့တောင်းဆိုချက်အရ /ai ပါမှသာ AI Answer အလုပ်လုပ်ပါမည်။
-        is_manual_ai = text.strip().startswith('/ai')
-        
-        if is_manual_ai:
-            is_sandbox = (chat_id == SANDBOX_CHAT_ID)
-            if global_ai == 'ON' or is_sandbox:
+        is_sandbox = (chat_id == SANDBOX_CHAT_ID)
+        stripped = text.strip()
+        if stripped.startswith('/ai') or stripped.split()[0] == '/ai':
+            if global_ai == 'ON' or is_sandbox or is_private:
                 handle_ai_query(bot, message, is_automatic=False)
             else:
                 log.info(f"🔇 AI Command (/ai) ignored because global_ai_answer is {global_ai}")
-            return
+                bot.reply_to(
+                    message,
+                    "🔇 AI Support ကို ယာယီပိတ်ထားပါတယ်ခင်ဗျာ။ Admin က `/aion` ဖြင့် ပြန်ဖွင့်ပေးနိုင်ပါတယ်။"
+                )
+            return True
+
+        # 🛡️ Skip other slash commands — handled by commands_handler.py
+        if text.startswith('/'):
+            return False
+
         group_ai = db_manager.get_group_ai_status(chat_id)
         global_pickup = db_manager.get_auto_pickup_global_status()
         global_alert = db_manager.get_alert_system_global_status()
-        
-        is_sandbox = (chat_id == SANDBOX_CHAT_ID)
         
         if is_sandbox:
             log.info(f"🧪 Sandbox Mode: Bypassing all global/group/time restrictions for chat {chat_id}")

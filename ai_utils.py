@@ -281,6 +281,15 @@ def get_ai_completion(prompt, model=None, response_format=None, timeout=30.0, to
                     timeout=timeout
                 )
                 content = final_response.choices[0].message.content
+                if not content:
+                    tool_contents = [
+                        m.get("content") for m in messages
+                        if isinstance(m, dict) and m.get("role") == "tool" and m.get("content")
+                    ]
+                    if tool_contents:
+                        log.warning("⚠️ OpenRouter empty after tool call — using database search result directly.")
+                        return tool_contents[0][:3500]
+                    log.warning("⚠️ OpenRouter returned empty content after tool call.")
             
             # Success! Reset fail count
             _openrouter_fail_count = 0
