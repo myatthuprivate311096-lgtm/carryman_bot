@@ -37,6 +37,7 @@ ESCALATION_TOPIC_ID = int(os.getenv('ESCALATION_TOPIC_ID', 5))
 
 # 🧪 Test Mode Configuration
 TEST_GROUP_ID = int(os.getenv('TEST_GROUP_ID', -1003539520778))
+COMPLAINT_MIRROR_GROUP_ID = int(os.getenv('COMPLAINT_MIRROR_GROUP_ID', -1003949372390))
 
 _bot = None
 
@@ -326,6 +327,45 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
         
         log.error(f"❌ Failed to send alert: {e}")
         return None
+
+def send_complaint_mirror_alert(chat_id, topic_id, original_msg_id, text, shop_name):
+    """
+    AI က complaint/issue အဖြစ် NEW_ALERT သတ်မှတ်သည့်အချိန်,
+    သတ်မှတ်ထားသော GP သို့ mirror alert ပို့ပေးမည်။
+    """
+    try:
+        bot = get_bot()
+        if bot is None:
+            log.error("❌ send_complaint_mirror_alert: Bot instance not available.")
+            return False
+
+        safe_shop = html.escape(str(shop_name or "Unknown Shop"))
+        safe_text = html.escape(str(text or "-"))
+        clean_chat_id = str(chat_id).replace("-100", "")
+        msg_link = f"tg://privatepost?channel={clean_chat_id}&post={original_msg_id}"
+        mirror_text = (
+            "🚨 <b>AI Complaint Alert</b>\n"
+            "━━━━━━━━━━━━━━━━━━\n"
+            f"🏪 ဆိုင်: <b>{safe_shop}</b>\n"
+            f"🧵 Topic: <b>{topic_id}</b>\n"
+            f"💬 စာသား: {safe_text}\n"
+            "━━━━━━━━━━━━━━━━━━"
+        )
+
+        markup = telebot.types.InlineKeyboardMarkup()
+        markup.add(telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link))
+
+        bot.send_message(
+            COMPLAINT_MIRROR_GROUP_ID,
+            mirror_text,
+            parse_mode="HTML",
+            reply_markup=markup
+        )
+        log.info(f"📣 Complaint mirror alert sent to {COMPLAINT_MIRROR_GROUP_ID} for msg {original_msg_id}")
+        return True
+    except Exception as e:
+        log.error(f"❌ Failed to send complaint mirror alert: {e}")
+        return False
 
 def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_id, chat_id, topic_id=None):
     """
@@ -834,6 +874,13 @@ def process_audits(bot_instance=None):
                         media_id=trigger_media_id
                     )
                     if alert_id:
+                        send_complaint_mirror_alert(
+                            chat_id=chat_id,
+                            topic_id=topic_id,
+                            original_msg_id=trigger_msg_id,
+                            text=combined_text,
+                            shop_name=shop_name
+                        )
                         for mid in grouped_ids:
                             if mid != trigger_msg_id:
                                 db_manager.add_linked_customer_id(trigger_msg_id, chat_id, mid)
