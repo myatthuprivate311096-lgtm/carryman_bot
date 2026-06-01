@@ -3,6 +3,7 @@ import telebot
 import html
 import pytz
 import time
+import json
 from datetime import datetime
 from logger import log
 import db_manager
@@ -53,6 +54,52 @@ def _sync_routing_to_gsheet(chat_id, target_topic, topic_id):
 
 def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
     """ Alert Management (Done, Wrong, Feedback, Routing) အတွက် Callback များကို Register လုပ်ပေးသည် """
+
+    def _cleanup_alert_messages(orig_id: int, chat_id: int):
+        """
+        Wrong Alert feedback နှိပ်သောအခါ Alert copies အားလုံးကို ရှင်းလင်းပေးခြင်း။
+        """
+        try:
+            tracking = db_manager.get_alert_tracking(orig_id, chat_id)
+            if not tracking:
+                return
+
+            # alert_msg_id, alert_chat_id, created_at, esc_msg_id, linked_msg_ids, linked_customer_ids, esc_tier2_msg_id, updates_text
+            alert_msg_id, alert_chat_id, _, esc_msg_id, linked_ids_json, _, esc_tier2_msg_id, _ = tracking
+
+            try:
+                bot.delete_message(alert_chat_id, alert_msg_id)
+            except Exception as e:
+                log.warning(f"⚠️ Failed to delete main alert {alert_msg_id}: {e}")
+
+            if esc_msg_id:
+                try:
+                    manager_id = int(os.getenv('MANAGER_ID', 7261311241))
+                    bot.delete_message(manager_id, esc_msg_id)
+                except Exception as e:
+                    log.warning(f"⚠️ Failed to delete manager escalation {esc_msg_id}: {e}")
+
+            if esc_tier2_msg_id:
+                try:
+                    escalation_group_id = int(os.getenv('ESCALATION_GROUP_ID', -1003906164269))
+                    bot.delete_message(escalation_group_id, esc_tier2_msg_id)
+                except Exception as e:
+                    log.warning(f"⚠️ Failed to delete tier2 escalation {esc_tier2_msg_id}: {e}")
+
+            if linked_ids_json:
+                try:
+                    linked_ids = json.loads(linked_ids_json)
+                    for linked_msg_id in linked_ids:
+                        try:
+                            bot.delete_message(alert_chat_id, linked_msg_id)
+                        except Exception as e:
+                            log.warning(f"⚠️ Failed to delete linked alert {linked_msg_id}: {e}")
+                except Exception as e:
+                    log.warning(f"⚠️ Failed to parse linked ids for {orig_id}/{chat_id}: {e}")
+
+            db_manager.delete_alert_tracking(orig_id, chat_id)
+        except Exception as e:
+            log.error(f"❌ cleanup_alert_messages Error: {e}")
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('setrt_'))
     def handle_set_routing(call):
@@ -188,6 +235,8 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
             markup = telebot.types.InlineKeyboardMarkup(row_width=1)
             markup.add(
                 telebot.types.InlineKeyboardButton("👋 Greeting (နှုတ်ဆက်စာ)", callback_data=f"fb_greet_{orig_id}_{chat_id}"),
+                telebot.types.InlineKeyboardButton("⚪ Soft Complaint (အပျော့စား)", callback_data=f"fb_soft_{orig_id}_{chat_id}"),
+                telebot.types.InlineKeyboardButton("🧩 Other Meaning (အဓိပ္ပာယ်ကွဲ)", callback_data=f"fb_other_{orig_id}_{chat_id}"),
                 telebot.types.InlineKeyboardButton("🔄 Wrong Topic (Topic မှားနေသည်)", callback_data=f"fb_topic_{orig_id}_{chat_id}"),
                 telebot.types.InlineKeyboardButton("📑 Duplicate (ကိစ္စဟောင်း)", callback_data=f"fb_dup_{orig_id}_{chat_id}"),
                 telebot.types.InlineKeyboardButton("✅ Already Resolved (ဖြေရှင်းပြီး)", callback_data=f"fb_done_{orig_id}_{chat_id}"),
@@ -231,6 +280,8 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
 
             category_map = {
                 "greet": "Greeting (နှုတ်ဆက်စာ)",
+                "soft": "Soft Complaint (အပျော့စား / complain မပြင်း)",
+                "other": "Other Meaning (အဓိပ္ပာယ်ကွဲ)",
                 "dup": "Duplicate (ကိစ္စဟောင်း)",
                 "done": "Already Resolved (ဖြေရှင်းပြီး)"
             }
@@ -244,8 +295,9 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
 
             # 💡 Step 2: Save Feedback & Update Status (Short Scopes)
             db_manager.save_feedback(orig_id, chat_id, topic_id, category, orig_text, user_id)
-            db_manager.delete_alert_tracking(orig_id, chat_id)
-            db_manager.update_message_status(orig_id, chat_id, 'RESOLVED' if action != "greet" else 'IGNORED', topic_id=topic_id)
+            _cleanup_alert_messages(orig_id, chat_id)
+            ignored_actions = {"greet", "soft", "other"}
+            db_manager.update_message_status(orig_id, chat_id, 'IGNORED' if action in ignored_actions else 'RESOLVED', topic_id=topic_id)
             
             try:
                 bot.delete_message(call.message.chat.id, call.message.message_id)
