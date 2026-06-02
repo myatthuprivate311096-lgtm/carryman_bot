@@ -48,3 +48,4 @@ services:
       - ./carryman.session:/app/carryman.session
       - ./credentials.json:/app/credentials.json
       - ./logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock

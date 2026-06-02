@@ -30,6 +30,16 @@ OPENROUTER_COOLDOWN = 900  # 15 minutes in seconds
 MAX_OPENROUTER_FAILS = 3   # Number of consecutive fails before cooldown
 CRITICAL_ALERT_COOLDOWN = 1800 # 30 minutes between critical alerts
 
+def is_groq_key_configured():
+    """Skip Groq fallback when .env still has a placeholder or empty key."""
+    key = (GROQ_API_KEY or "").strip()
+    if not key:
+        return False
+    upper = key.upper()
+    if "REPLACE_WITH" in upper or upper in {"YOUR_GROQ_API_KEY", "CHANGEME"}:
+        return False
+    return key.startswith("gsk_") and len(key) > 20
+
 def clean_json_response(text):
     """
     Cleans AI response to extract only the JSON part.
@@ -173,6 +183,9 @@ def call_gemini_direct(prompt, model=None, response_format=None):
 
 def call_groq_direct(prompt, model=None, response_format=None):
     """Direct Groq API call (Ultra Fast Fallback)"""
+    if not is_groq_key_configured():
+        return None
+
     selected_model = model or FALLBACK_GROQ_MODEL
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {
@@ -216,7 +229,7 @@ def get_ai_completion(prompt, model=None, response_format=None, timeout=30.0, to
         primary_content = call_gemini_direct(prompt, response_format=response_format)
         if primary_content:
             return primary_content
-    elif selected_provider == "groq" and GROQ_API_KEY:
+    elif selected_provider == "groq" and is_groq_key_configured():
         primary_content = call_groq_direct(prompt, response_format=response_format)
         if primary_content:
             return primary_content
@@ -324,7 +337,7 @@ def get_ai_completion(prompt, model=None, response_format=None, timeout=30.0, to
             return fallback_content
 
     # 3. Try Groq fallback
-    if selected_provider != "groq" and GROQ_API_KEY:
+    if selected_provider != "groq" and is_groq_key_configured():
         groq_content = call_groq_direct(prompt, response_format=response_format)
         if groq_content:
             log.info("⚡ Groq Fallback used successfully.")

@@ -128,12 +128,17 @@ def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs
         1. DUPLICATE/APPEND: If these messages concern the same issue as an existing 'Active Alert', return APPEND.
         2. AUTO-RESOLVE: ONLY return RESOLVE if there is a CLEAR reply or reaction from a STAFF member in the [Subsequent Conversation Flow] that addresses the issue. If only the customer is talking, NEVER return RESOLVE.
         3. INTENT GROUPING: Group multiple messages into ONE ticket if they are related. Do NOT issue one ticket per line.
-        4. IGNORE: ONLY return IGNORE for pure noise (e.g., "hi", "hello", "thanks", "ok", "sticker", "emoji").
-        5. STATUS INQUIRIES: Messages asking about delivery status, payment status, or "have you sent it yet?" (e.g., "အထုတ်တွေပို့ပြီးပြီလား", "ရောက်ပြီလား", "ဘယ်တော့ပို့မှာလဲ") are CRITICAL. NEVER return IGNORE or RESOLVE for these unless a staff has already replied.
+        4. IGNORE: Return IGNORE for pure noise (e.g., "hi", "hello", "thanks", "ok", "sticker", "emoji") AND for soft polite inquiries that lack negative sentiment or urgency (e.g., "ဘယ်နေ့လောက်တင်ပေးနိုင်မလဲ", "ရောက်ပြီလား ရှင့်", "ဘယ်တော့ပို့မှာလဲ", scheduling/availability questions with honorifics like "ရှင့်"/"နော်"). Routine pickup/delivery coordination messages are also IGNORE unless there is clear blame or non-performance.
+        5. SEVERITY CLASSIFICATION:
+           - COMPLAINT: Explicit negative sentiment, blame, repeated follow-ups, claims of non-performance, urgency/threat, or missed SLA (e.g., "မလာသေးဘူး", "မပို့သေးဘူးလား", "ကြာနေပြီ", "တိုင်ကြားမယ်"). Use NEW_ALERT with severity COMPLAINT.
+           - INQUIRY: Customer needs a staff reply but tone is neutral/polite without complaint (e.g., unanswered payment confirmation, address correction). Use NEW_ALERT with severity INQUIRY.
+           - ROUTINE: Greetings, acknowledgments, routine logistics, soft status checks. Use IGNORE with severity ROUTINE.
+        6. NEVER return IGNORE or RESOLVE for COMPLAINT-level messages unless a staff member has already replied.
 
         Output ONLY JSON:
         {{
             "action": "NEW_ALERT" | "APPEND" | "RESOLVE" | "IGNORE",
+            "severity": "COMPLAINT" | "INQUIRY" | "ROUTINE",
             "target_alert_id": alert_msg_id (if APPEND, else null),
             "grouped_msg_ids": [list of msg_ids that belong to this ticket],
             "summary": "Combined Burmese summary of the issue (Strictly follow OS Tone, maintain a humble and respectful persona, concise human-like paragraph)",
@@ -155,22 +160,36 @@ def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs
             return "NEW_ALERT", {"summary": "AI Format Error - Defaulting to New Alert"}
 
         action = res_data.get("action", "NEW_ALERT")
+        severity = str(res_data.get("severity", "INQUIRY")).upper()
+        if severity not in ("COMPLAINT", "INQUIRY", "ROUTINE"):
+            severity = "INQUIRY"
         
-        # 🛡️ Safety Net: ဝန်ထမ်းဘက်က စာပြန်တာမျိုး မရှိဘဲ RESOLVE သို့မဟုတ် IGNORE လုပ်ခြင်းကို တားဆီးရန်
+        # 🛡️ Safety Net: ဝန်ထမ်းဘက်က စာပြန်တာမျိုး မရှိဘဲ RESOLVE/IGNORE လုပ်ခြင်းကို တားဆီးရန်
+        # Soft polite inquiries ကို override မလုပ်ပါ — COMPLAINT/urgent keyword ပါမှသာ NEW_ALERT ပြောင်းမည်
         has_staff_reply = any(db_manager.check_if_staff(s[1]) for s in subsequent_msgs)
+        urgent_complaint_keywords = [
+            "မလာသေး", "မရသေး", "မပို့သေး", "မပို့ရ", "မရရ", "ကြာနေ", "တိုင်ကြား",
+            "complaint", "angry", "မဖြေ", "မကြား", "waiting too long", "still not",
+        ]
+        is_urgent_complaint = any(kw in targets_context.lower() for kw in urgent_complaint_keywords)
         
         if action in ["RESOLVE", "IGNORE"] and not has_staff_reply:
-            # စာသားထဲတွင် စုံစမ်းသည့် စကားလုံးများ ပါ/မပါ ထပ်မံစစ်ဆေးခြင်း (Heuristic Safety)
-            inquiry_keywords = ["ပို့ပြီးပြီလား", "ရောက်ပြီလား", "ဘယ်တော့", "မရသေးဘူး", "ကြာနေ", "sent", "status", "tracking"]
-            is_inquiry = any(kw in targets_context for kw in inquiry_keywords)
-            
-            if is_inquiry:
-                log.info(f"🛡️ Safety Net Triggered: Inquiry detected without staff reply. Overriding {action} to NEW_ALERT.")
+            if is_urgent_complaint:
+                log.info(f"🛡️ Safety Net Triggered: Urgent complaint detected without staff reply. Overriding {action} to NEW_ALERT.")
                 action = "NEW_ALERT"
+                severity = "COMPLAINT"
             elif action == "RESOLVE":
                 action = "NEW_ALERT"
+                if severity == "ROUTINE":
+                    severity = "INQUIRY"
+        elif action == "NEW_ALERT" and severity == "ROUTINE":
+            action = "IGNORE"
+        elif action == "IGNORE" and severity == "COMPLAINT":
+            action = "NEW_ALERT"
+
+        res_data["severity"] = severity
             
-        log.info(f"🤖 AI Decision for {group_name}: {action} (Staff Reply: {has_staff_reply})")
+        log.info(f"🤖 AI Decision for {group_name}: {action} / {severity} (Staff Reply: {has_staff_reply})")
         return action, res_data
     except Exception as e:
         log.error(f"❌ Auditor AI Error for {group_name} ({chat_id}/{topic_id}): {e}")
@@ -352,8 +371,12 @@ def send_complaint_mirror_alert(chat_id, topic_id, original_msg_id, text, shop_n
             "━━━━━━━━━━━━━━━━━━"
         )
 
-        markup = telebot.types.InlineKeyboardMarkup()
-        markup.add(telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link))
+        markup = telebot.types.InlineKeyboardMarkup(row_width=2)
+        markup.add(
+            telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
+            telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{original_msg_id}_{chat_id}"),
+            telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{original_msg_id}_{chat_id}")
+        )
 
         bot.send_message(
             COMPLAINT_MIRROR_GROUP_ID,
@@ -873,7 +896,7 @@ def process_audits(bot_instance=None):
                         intent=ai_res.get("intent", "အထွေထွေစုံစမ်းမှု"),
                         media_id=trigger_media_id
                     )
-                    if alert_id:
+                    if alert_id and str(ai_res.get("severity", "")).upper() == "COMPLAINT":
                         send_complaint_mirror_alert(
                             chat_id=chat_id,
                             topic_id=topic_id,

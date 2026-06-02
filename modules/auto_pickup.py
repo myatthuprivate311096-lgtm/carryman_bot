@@ -13,6 +13,24 @@ from modules import location_service, auto_login, browser_manager, duplicate_che
 
 _bot = None
 
+WORKER_CONTAINER_NAME = os.getenv("WORKER_CONTAINER_NAME", "carryman-worker")
+
+def trigger_graceful_worker_restart():
+    """
+    Daily cleanup ပြီးနောက် worker container ကို Docker API ဖြင့် restart လုပ်မည်။
+    Docker မရရင် process exit + restart:always policy ကို fallback အသုံးပြုမည်။
+    """
+    try:
+        import docker
+        client = docker.from_env()
+        container = client.containers.get(WORKER_CONTAINER_NAME)
+        container.restart(timeout=30)
+        log.info(f"✅ Graceful worker restart triggered via Docker ({WORKER_CONTAINER_NAME}).")
+        return True
+    except Exception as e:
+        log.warning(f"⚠️ Docker worker restart unavailable ({e}). Exiting for container auto-restart.")
+        os._exit(0)
+
 def get_best_shop_name(bot, chat_id):
     """
     Centralized helper to get the most accurate shop name.
@@ -92,6 +110,150 @@ async def _sync_shops_task(page):
     
     log.info(f"✅ Found {len(shops)} shops on website.")
     return shops
+
+REMARK_MAX_LENGTH = 200
+
+def prepare_remark_for_website(remark):
+    """Website remark field — server-side limit ~200 chars; trim while keeping pickup essentials."""
+    if not remark:
+        return "-"
+    text = str(remark).strip()
+    if len(text) <= REMARK_MAX_LENGTH:
+        return text
+
+    priority_markers = ("deli", "way", "ကောက်", "ကျပ်", "ks", "လိပ်စာ", "ရက်", "ငွေ", "ကြည")
+    lines = [ln.strip() for ln in text.replace("\r", "").split("\n") if ln.strip()]
+    kept, kept_len = [], 0
+    for ln in lines:
+        lower = ln.lower()
+        if any(m in lower for m in priority_markers):
+            add_len = len(ln) + (1 if kept else 0)
+            if kept_len + add_len <= REMARK_MAX_LENGTH:
+                kept.append(ln)
+                kept_len += add_len
+
+    if kept:
+        result = "\n".join(kept)
+        if len(result) <= REMARK_MAX_LENGTH:
+            log.info(f"📝 Remark trimmed {len(text)}→{len(result)} chars (priority lines kept)")
+            return result
+
+    result = text[:REMARK_MAX_LENGTH - 3].rstrip() + "..."
+    log.warning(f"📝 Remark truncated {len(text)}→{len(result)} chars for website limit")
+    return result
+
+async def _find_save_button(page):
+    """Locate the form SAVE button — avoid clicking unrelated ant-btn-primary in header."""
+    save_selectors = [
+        "form button:has-text('SAVE')",
+        "form button:has-text('Save')",
+        "button:has-text('SAVE')",
+        "button:has-text('Save')",
+        "//button[descendant::span[contains(text(), 'SAVE') or contains(text(), 'Save')]]",
+    ]
+    for selector in save_selectors:
+        try:
+            loc = page.locator(selector).first
+            if await loc.is_visible():
+                return loc
+        except Exception:
+            continue
+    try:
+        primaries = page.locator("button.ant-btn-primary")
+        for i in range(await primaries.count()):
+            btn = primaries.nth(i)
+            if await btn.is_visible() and "SAVE" in (await btn.inner_text()).upper():
+                return btn
+    except Exception:
+        pass
+    return None
+
+async def _detect_save_result(page, os_name):
+    """Poll SweetAlert / page text / form reset to confirm SAVE outcome."""
+    is_success = False
+    error_message = None
+    success_keywords = ("SUCCESSFUL", "SUCCESS", "SAVED")
+    error_keywords = ("FAILED", "ERROR", "INVALID", "DUPLICATE", "EXCEEDED", "UNABLE")
+
+    log.info("⏳ Polling for save result after SAVE click...")
+    for poll_attempt in range(40):
+        await asyncio.sleep(0.2)
+        try:
+            for sel in (".swal-title", ".swal-text", ".ant-message-notice-content", ".ant-notification-notice-message"):
+                loc = page.locator(sel)
+                for i in range(await loc.count()):
+                    if not await loc.nth(i).is_visible():
+                        continue
+                    txt = (await loc.nth(i).inner_text()).strip()
+                    if not txt:
+                        continue
+                    upper = txt.upper()
+                    if any(k in upper for k in success_keywords):
+                        log.info(f"   ✅ Success indicator ({sel}): '{txt[:80]}'")
+                        is_success = True
+                        try:
+                            ok_btn = page.locator(".swal-button--confirm, .swal-button").first
+                            if await ok_btn.is_visible():
+                                await ok_btn.click(timeout=2000)
+                                await asyncio.sleep(0.5)
+                        except Exception:
+                            pass
+                        break
+                    if any(k in upper for k in error_keywords):
+                        error_message = txt[:200]
+                        log.warning(f"   ⚠️ Error indicator ({sel}): '{error_message}'")
+                        break
+                if is_success or error_message:
+                    break
+            if is_success or error_message:
+                break
+
+            if "SUCCESSFUL" in (await page.locator("body").inner_text()).upper():
+                log.info(f"   ✅ 'SUCCESSFUL' found on page after {(poll_attempt + 1) * 0.2:.1f}s")
+                is_success = True
+                break
+        except Exception:
+            continue
+
+    if not is_success and not error_message:
+        try:
+            validation_error = page.locator(".ant-form-item-explain-error, .ant-form-item-explain")
+            if await validation_error.count() > 0:
+                errors = []
+                for i in range(await validation_error.count()):
+                    try:
+                        txt = await validation_error.nth(i).inner_text()
+                        if txt and txt.strip():
+                            errors.append(txt.strip())
+                    except Exception:
+                        continue
+                if errors:
+                    error_message = "; ".join(errors)[:200]
+                    log.warning(f"   ⚠️ Validation errors found: '{error_message}'")
+        except Exception as e:
+            log.debug(f"Validation error check error: {e}")
+
+    if not is_success and not error_message:
+        log.info("   🔄 Checking if OS Name field was cleared...")
+        await asyncio.sleep(2)
+        try:
+            os_input = page.locator("(//label[contains(text(), 'Os Name')]/following::input)[1]")
+            if await os_input.count() > 0:
+                try:
+                    current_os_val = await os_input.input_value()
+                except Exception:
+                    current_os_val = ""
+                log.info(f"   🏪 OS Name field after save: '{current_os_val}' (was '{os_name}')")
+                if not current_os_val or current_os_val.strip() == "":
+                    log.info("   ✅ OS Name field cleared — success confirmed!")
+                    is_success = True
+            elif "neworder" not in page.url.lower():
+                log.info("   ✅ URL changed away from neworder — treating as success.")
+                is_success = True
+        except Exception as form_e:
+            log.debug(f"OS Name check error: {form_e}")
+
+    return is_success, error_message
 
 async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
     """Async task for pickup submission logic"""
@@ -247,30 +409,41 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
     await asyncio.sleep(1)
     await vehicle_input.fill("")
     await vehicle_input.press_sequentially(vehicle, delay=100)
-    await asyncio.sleep(2)
-    
-    # More robust dropdown selection for Ant Design
+
     v_found = False
-    try:
-        # Wait for dropdown to be visible
-        await page.wait_for_selector(".ant-select-dropdown:not(.ant-select-dropdown-hidden)", timeout=5000)
-        v_options = page.locator(".ant-select-item-option")
-        v_count = await v_options.count()
-        for i in range(v_count):
-            v_text = await v_options.nth(i).inner_text()
-            if vehicle.lower() in v_text.lower():
-                log.info(f"   🎯 Found vehicle option: {v_text.strip()}. Clicking...")
-                await v_options.nth(i).click(force=True)
-                v_found = True
-                await asyncio.sleep(1)
-                break
-    except Exception as ve:
-        log.debug(f"Vehicle dropdown click failed: {ve}")
+    for attempt in range(3):
+        log.info(f"   ⏳ Vehicle options ရှာဖွေနေပါသည် (Attempt {attempt+1}/3)...")
+        if attempt > 0:
+            await vehicle_input.click()
+            await vehicle_input.fill("")
+            await vehicle_input.press_sequentially(vehicle, delay=100)
+        await asyncio.sleep(2)
+        try:
+            await page.wait_for_selector(".ant-select-dropdown:not(.ant-select-dropdown-hidden)", timeout=3000)
+            v_options = page.locator(
+                ".ant-select-dropdown:not(.ant-select-dropdown-hidden) "
+                ".ant-select-item-option-content, "
+                ".ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option"
+            )
+            v_count = await v_options.count()
+            for i in range(v_count):
+                v_text = (await v_options.nth(i).inner_text()).strip()
+                if vehicle.lower() in v_text.lower():
+                    log.info(f"   🎯 Found vehicle option: {v_text}. Clicking...")
+                    await v_options.nth(i).click(force=True)
+                    v_found = True
+                    await asyncio.sleep(1)
+                    break
+        except Exception as ve:
+            log.debug(f"Vehicle dropdown attempt {attempt+1} failed: {ve}")
+        if v_found:
+            break
 
     if not v_found:
-        log.warning(f"⚠️ Vehicle option '{vehicle}' not found via direct click. Trying keyboard fallback...")
+        log.warning(f"⚠️ Vehicle option '{vehicle}' not found via dropdown. Trying keyboard fallback...")
+        await vehicle_input.click()
         await page.keyboard.press("ArrowDown")
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.5)
         await page.keyboard.press("Enter")
         await asyncio.sleep(1)
 
@@ -285,11 +458,12 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
     log.info(f"   ✅ ယာဉ်ရွေးပြီးပါပြီ ({vehicle})")
 
     # (ဃ) Remark (Fill this LAST to ensure it's not overwritten by website auto-fill)
-    log.info(f"📝 မှတ်ချက် နောက်ဆုံးမှ ထပ်မံဖြည့်သွင်းနေပါသည် ({remark})...")
+    website_remark = prepare_remark_for_website(remark)
+    log.info(f"📝 မှတ်ချက် နောက်ဆုံးမှ ထပ်မံဖြည့်သွင်းနေပါသည် ({website_remark})...")
     remark_input = page.locator("textarea[name='order.remark']")
     await remark_input.click(click_count=3) # Select all existing text
     await page.keyboard.press("Backspace")
-    await remark_input.fill(remark)
+    await remark_input.fill(website_remark)
     await asyncio.sleep(1)
     log.info(f"   ✅ မှတ်ချက်ဖြည့်ပြီးပါပြီ")
 
@@ -305,24 +479,7 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
     await handle_popups(page)
     await asyncio.sleep(1)
     
-    # Try multiple selectors for the Save button
-    save_selectors = [
-        "button.ant-btn-primary",
-        "button:has-text('SAVE')",
-        "button:has-text('Save')",
-        "//button[descendant::span[contains(text(), 'SAVE') or contains(text(), 'Save')]]"
-    ]
-    
-    save_btn = None
-    for selector in save_selectors:
-        try:
-            loc = page.locator(selector).first
-            if await loc.is_visible():
-                save_btn = loc
-                break
-        except Exception:
-            continue
-
+    save_btn = await _find_save_button(page)
     if save_btn:
         log.info("💾 SAVE ခလုတ်ကို နှိပ်လိုက်ပါပြီ။")
         await save_btn.click(force=True)
@@ -331,68 +488,12 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
         return False, "Save button ကို ရှာမတွေ့ပါ။"
     
     # --- ၄။ Result Verification (အောင်မြင်မှုကို အတည်ပြုခြင်း) ---
-    await page.wait_for_load_state('domcontentloaded')
-    
-    # --- Success/Error Detection ---
-    is_success = False
-    error_message = None
-    
-    # 1. ⚡ Rapid Polling for "SUCCESSFUL" toast (appears ~1s then disappears)
-    log.info("⏳ Rapid-polling for 'SUCCESSFUL' indicator after save...")
-    for poll_attempt in range(10):  # Check every 200ms for 2 seconds
-        await asyncio.sleep(0.2)
-        try:
-            # Check all visible text on the page for "SUCCESSFUL"
-            page_text = await page.locator("body").inner_text()
-            if "SUCCESSFUL" in page_text.upper():
-                log.info(f"   ✅ 'SUCCESSFUL' found on page after {(poll_attempt + 1) * 0.2:.1f}s")
-                is_success = True
-                break
-        except Exception:
-            continue
-    
-    # 2. Check form validation errors (visible error messages on fields)
-    if not is_success:
-        try:
-            validation_error = page.locator(".ant-form-item-explain-error, .ant-form-item-explain")
-            if await validation_error.count() > 0:
-                errors = []
-                for i in range(await validation_error.count()):
-                    try:
-                        txt = await validation_error.nth(i).inner_text()
-                        if txt and txt.strip():
-                            errors.append(txt.strip())
-                    except Exception:
-                        continue
-                if errors:
-                    error_message = "; ".join(errors)[:200]
-                    log.warning(f"   ⚠️ Validation errors found: '{error_message}'")
-        except Exception as e:
-            log.debug(f"Validation error check error: {e}")
-    
-    # 3. 🔄 OS Name Field Cleared Check (reliable success indicator)
-    if not is_success and not error_message:
-        log.info("   🔄 Checking if OS Name field was cleared...")
-        try:
-            os_input = page.locator("(//label[contains(text(), 'Os Name')]/following::input)[1]")
-            if await os_input.count() > 0:
-                try:
-                    current_os_val = await os_input.input_value()
-                except Exception:
-                    current_os_val = ""
-                log.info(f"   🏪 OS Name field after save: '{current_os_val}' (was '{os_name}')")
-                
-                if not current_os_val or current_os_val.strip() == "":
-                    log.info("   ✅ OS Name field cleared — success confirmed!")
-                    is_success = True
-            else:
-                log.info("   ℹ️ OS Name field not found — page may have navigated away.")
-                # Page navigation away from form = likely success
-                if "neworder" not in page.url.lower():
-                    log.info("   ✅ URL changed away from neworder — treating as success.")
-                    is_success = True
-        except Exception as form_e:
-            log.debug(f"OS Name check error: {form_e}")
+    try:
+        await page.wait_for_load_state('networkidle', timeout=8000)
+    except Exception:
+        await page.wait_for_load_state('domcontentloaded')
+
+    is_success, error_message = await _detect_save_result(page, os_name)
     
     # Capture screenshot for debugging
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -1450,13 +1551,8 @@ def run_daily_cleanup(bot):
                 except Exception as se:
                     log.error(f"❌ Failed to create sentinel file: {se}")
 
-                log.info("🔄 Triggering graceful PM2 restart for worker...")
-                import subprocess as _sp
-                try:
-                    _sp.run(["pm2", "restart", "carryman-worker"], capture_output=True, timeout=10)
-                    log.info("✅ Graceful worker restart triggered.")
-                except Exception as re:
-                    log.error(f"❌ Graceful restart failed: {re}")
+                log.info("🔄 Triggering graceful Docker restart for worker...")
+                trigger_graceful_worker_restart()
 
                 # တစ်မိနစ် စောင့်လိုက်ခြင်းဖြင့် ထပ်ခါထပ်ခါ မ Run စေရန်
                 time.sleep(65)
