@@ -84,14 +84,9 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             vehicle = parts[5] if parts[5] != "none" else "none"
 
             if date_type == "today":
-                # 💡 Today ဆိုရင် OK/Admin မေးစရာမလိုဘဲ Interactive Setup တန်းပြမည်
-                import pytz as _pytz
-                from datetime import datetime as _dt, timedelta as _td
-                _tz = _pytz.timezone('Asia/Yangon')
-                msg_ctx = db_manager.get_message_context(orig_msg_id, chat_id)
-                msg_ts = msg_ctx[4] if msg_ctx else _dt.now(_tz).timestamp()
-                msg_dt = _dt.fromtimestamp(msg_ts, _tz)
-                target_date_str = msg_dt.strftime("%d-%m-%Y")
+                # 💡 Staff chose Today — Yangon calendar now (not orig message date)
+                from modules.pickup_dates import get_target_date_str
+                target_date_str = get_target_date_str("today", use_message_timestamp=False)
 
                 # 💡 အပေါ်က "၁၁ နာရီကျော်ပြီ" ဆိုတဲ့ စာကို ဖျက်ခြင်း
                 old_msgs = db_manager.get_pickup_intermediate_msgs(chat_id, orig_msg_id)
@@ -119,14 +114,8 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 auto_pickup.update_central_pickup_alert(bot, orig_msg_id, chat_id, status_admin)
             else:
                 # Tomorrow: Show actual date + OK/Admin buttons (OS အတည်ပြုချက် လိုအပ်)
-                import pytz as _pytz
-                from datetime import datetime as _dt, timedelta as _td
-                _tz = _pytz.timezone('Asia/Yangon')
-                msg_ctx = db_manager.get_message_context(orig_msg_id, chat_id)
-                msg_ts = msg_ctx[4] if msg_ctx else _dt.now(_tz).timestamp()
-                msg_dt = _dt.fromtimestamp(msg_ts, _tz)
-                tomorrow_dt = msg_dt + _td(days=1)
-                tomorrow_str = tomorrow_dt.strftime("%d-%m-%Y")
+                from modules.pickup_dates import get_target_date_str
+                tomorrow_str = get_target_date_str("tomorrow", use_message_timestamp=False)
                 text = f"ဒီနေ့ Pick up လေးကျော်သွားပြီမိုလို မနက်ဖြန် {tomorrow_str} နဲ့ pickup လေးတင်ပေးရမလားရှင့်"
                 status_admin = f"📅 Tomorrow ({tomorrow_str}) (Waiting OS)"
                 log_msg = f"✅ **Tomorrow ({tomorrow_str})** အတွက် OS ထံ အတည်ပြုချက် တောင်းခံထားပါသည် အစ်ကို။"
@@ -168,14 +157,12 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             chat_id = call.message.chat.id
             
             # 1. Admin Group (Topic 878) သို့ Alert ပို့ခြင်း
-            tz = pytz.timezone('Asia/Yangon')
-            
-            # 💡 Midnight Bug Fix: Use original message timestamp instead of current time
+            from modules.pickup_dates import get_target_date_str
             msg_ctx = db_manager.get_message_context(orig_msg_id, chat_id)
-            msg_ts = msg_ctx[4] if msg_ctx else datetime.now(tz).timestamp()
-            msg_dt = datetime.fromtimestamp(msg_ts, tz)
-            
-            target_date_str = (msg_dt if date_type == "today" else msg_dt + timedelta(days=1)).strftime("%d-%m-%Y")
+            msg_ts = msg_ctx[4] if msg_ctx else None
+            target_date_str = get_target_date_str(
+                date_type, msg_ts=msg_ts, use_message_timestamp=True
+            )
             
             # Get context for alert
             with db_manager.connection_scope() as conn:
@@ -228,15 +215,8 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             vehicle = parts[4]
             chat_id = call.message.chat.id
 
-            # Update DB state
-            tz = pytz.timezone('Asia/Yangon')
-            
-            # 💡 Midnight Bug Fix: Use original message timestamp instead of current time
-            msg_ctx = db_manager.get_message_context(orig_msg_id, chat_id)
-            msg_ts = msg_ctx[4] if msg_ctx else datetime.now(tz).timestamp()
-            msg_dt = datetime.fromtimestamp(msg_ts, tz)
-            
-            target_date = (msg_dt if date_type == "today" else msg_dt + timedelta(days=1)).strftime("%d-%m-%Y")
+            from modules.pickup_dates import get_target_date_str
+            target_date = get_target_date_str(date_type, use_message_timestamp=False)
             shop_name = auto_pickup.get_best_shop_name(bot, chat_id)
             
             db_manager.upsert_pickup_queue(chat_id, orig_msg_id, target_date, shop_name, None, vehicle, status='WAITING_SETUP')
@@ -288,12 +268,8 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 bot.answer_callback_query(call.id, "⚠️ စက်ဘီး/ကား ကိုတော့မဖြစ်မနေရွေးပေးပါနော်", show_alert=True)
                 return
 
-            # Finalize and Submit directly to Robot Queue (No more confirm step)
-            tz = pytz.timezone('Asia/Yangon')
-            msg_ctx = db_manager.get_message_context(orig_msg_id, chat_id)
-            msg_ts = msg_ctx[4] if msg_ctx else datetime.now(tz).timestamp()
-            msg_dt = datetime.fromtimestamp(msg_ts, tz)
-            target_date = (msg_dt if date_type == "today" else msg_dt + timedelta(days=1)).strftime("%d-%m-%Y")
+            from modules.pickup_dates import get_target_date_str
+            target_date = get_target_date_str(date_type, use_message_timestamp=False)
             
             with db_manager.connection_scope() as conn:
                 msg_data = conn.execute("SELECT summary FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id)).fetchone()
@@ -462,7 +438,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 bot.delete_message(chat_id, call.message.message_id)
             else:
                 bot.edit_message_text("🙏 ဟုတ်ကဲ့ပါခင်ဗျာ။", chat_id, call.message.message_id)
-                finalize_pickup_queue(bot, chat_id, orig_msg_id, date_type, vehicle, None)
+                finalize_pickup_queue(bot, chat_id, orig_msg_id, date_type, vehicle, None, use_message_timestamp=True)
 
         except Exception as e:
             log.error(f"❌ Remark Selection Error: {e}")
@@ -743,18 +719,8 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             value = parts[4]
             
             if field_type == "date":
-                tz = pytz.timezone('Asia/Yangon')
-                
-                # 💡 Midnight Bug Fix: Use original message timestamp instead of current time
-                order = db_manager.get_pickup_order(queue_id)
-                orig_msg_id = order[2] if order else 0
-                chat_id = order[1] if order else 0
-                
-                msg_ctx = db_manager.get_message_context(orig_msg_id, chat_id)
-                msg_ts = msg_ctx[4] if msg_ctx else datetime.now(tz).timestamp()
-                msg_dt = datetime.fromtimestamp(msg_ts, tz)
-                
-                value = (msg_dt if value == "today" else msg_dt + timedelta(days=1)).strftime("%d-%m-%Y")
+                from modules.pickup_dates import get_target_date_str
+                value = get_target_date_str(value, use_message_timestamp=False)
                 db_manager.update_pickup_field(queue_id, 'target_date', value)
             elif field_type == "v":
                 db_manager.update_pickup_field(queue_id, 'vehicle', value)
@@ -1002,15 +968,8 @@ def save_manual_remark_interactive(message, bot, orig_msg_id, date_type, edit_ms
             try: bot.delete_message(chat_id, prompt_msg_id)
             except Exception: pass
         
-        # Update DB state
-        tz = pytz.timezone('Asia/Yangon')
-        
-        # 💡 Midnight Bug Fix: Use original message timestamp instead of current time
-        msg_ctx = db_manager.get_message_context(orig_msg_id, chat_id)
-        msg_ts = msg_ctx[4] if msg_ctx else datetime.now(tz).timestamp()
-        msg_dt = datetime.fromtimestamp(msg_ts, tz)
-        
-        target_date = (msg_dt if date_type == "today" else msg_dt + timedelta(days=1)).strftime("%d-%m-%Y")
+        from modules.pickup_dates import get_target_date_str
+        target_date = get_target_date_str(date_type, use_message_timestamp=False)
         _, _, shop_name = db_manager.get_topic_context(chat_id, 1)
         
         # Get existing vehicle if any
@@ -1038,21 +997,19 @@ def save_manual_remark(message, bot, orig_msg_id, date_type, vehicle):
             sent_msg = bot.reply_to(message, "⚠️ မှတ်ချက် အလွတ်ဖြစ်နေလို့ မူရင်းစာသားအတိုင်းပဲ တင်ပေးလိုက်ပါမယ်။")
             db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, sent_msg.message_id)
             remark = None
-        finalize_pickup_queue(bot, chat_id, orig_msg_id, date_type, vehicle, remark)
+        finalize_pickup_queue(bot, chat_id, orig_msg_id, date_type, vehicle, remark, use_message_timestamp=True)
     except Exception as e:
         log.error(f"❌ Save Manual Remark Error: {e}")
 
-def finalize_pickup_queue(bot, chat_id, orig_msg_id, date_type, vehicle, manual_remark):
+def finalize_pickup_queue(bot, chat_id, orig_msg_id, date_type, vehicle, manual_remark, use_message_timestamp=True):
     """ အချက်အလက်အားလုံး စုံပြီဖြစ်၍ အတည်ပြုချက်တောင်းခံခြင်း """
     try:
-        tz = pytz.timezone('Asia/Yangon')
-        
-        # 💡 Midnight Bug Fix: Use original message timestamp instead of current time
+        from modules.pickup_dates import get_target_date_str
         msg_ctx = db_manager.get_message_context(orig_msg_id, chat_id)
-        msg_ts = msg_ctx[4] if msg_ctx else datetime.now(tz).timestamp()
-        msg_dt = datetime.fromtimestamp(msg_ts, tz)
-        
-        target_date = (msg_dt if date_type == "today" else msg_dt + timedelta(days=1)).strftime("%d-%m-%Y")
+        msg_ts = msg_ctx[4] if msg_ctx else None
+        target_date = get_target_date_str(
+            date_type, msg_ts=msg_ts, use_message_timestamp=use_message_timestamp
+        )
         
         with db_manager.connection_scope() as conn:
             msg_data = conn.execute("SELECT text, summary FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id)).fetchone()

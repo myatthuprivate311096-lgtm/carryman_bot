@@ -1003,9 +1003,6 @@ def register_handlers(bot):
         """ /pickup today OR /pickup tom — Direct Pickup Interactive Form (No Duplicate Check, AI Learning on Reply) """
         try:
             from modules import auto_pickup
-            import pytz as _pytz
-            from datetime import datetime as _dt, timedelta as _td
-
             chat_id = message.chat.id
             user_id = message.from_user.id
             SANDBOX_CHAT_ID = -1003539520778
@@ -1059,15 +1056,9 @@ def register_handlers(bot):
                     f"/pickup {date_type}", message.date, media_id=None
                 )
 
-            # ၅။ Date String ပြင်ဆင်ခြင်း
-            # 💡 Use message.date instead of datetime.now() for consistent date calculation
-            # Avoids server clock drift issues and matches auto_pickup.py's approach
-            tz = _pytz.timezone('Asia/Yangon')
-            now = _dt.fromtimestamp(message.date, tz)
-            target_date_str = (
-                now.strftime("%d-%m-%Y") if date_type == "today"
-                else (now + _td(days=1)).strftime("%d-%m-%Y")
-            )
+            # ၅။ Date String — explicit /pickup today|tom uses Yangon calendar now (not replied-to msg date)
+            from modules.pickup_dates import get_target_date_str
+            target_date_str = get_target_date_str(date_type, use_message_timestamp=False)
 
             # ၆။ Shop Name ရယူခြင်း
             shop_name = auto_pickup.get_best_shop_name(bot, chat_id)
