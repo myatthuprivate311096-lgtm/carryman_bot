@@ -1166,6 +1166,16 @@ def get_os_group_names():
     finally:
         conn.close()
 
+def get_distinct_os_group_chats():
+    """Distinct OS Telegram group chat_ids for staff membership sync."""
+    conn = get_connection()
+    try:
+        return conn.execute(
+            "SELECT DISTINCT chat_id, shop_name FROM os_groups WHERE chat_id IS NOT NULL ORDER BY shop_name"
+        ).fetchall()
+    finally:
+        conn.close()
+
 def delete_os_group_by_chat_id(chat_id):
     conn = get_connection()
     try:

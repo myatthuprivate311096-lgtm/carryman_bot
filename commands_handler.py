@@ -11,7 +11,7 @@ import gsheet_sync
 from telebot import types
 from logger import log
 import db_manager
-from modules import group_creator
+from modules import group_creator, staff_group_sync
 
 # Environment Variable
 MANAGER_ID = int(os.getenv('MANAGER_ID'))
@@ -19,6 +19,10 @@ MANAGER_IDS = [int(i.strip()) for i in os.getenv('MANAGER_IDS', str(MANAGER_ID))
 
 def is_manager(user_id):
     return user_id in MANAGER_IDS
+
+def is_office_user(user_id):
+    """Manager သို့မဟုတ် staff DB ထဲမှတ်ထားသူ"""
+    return is_manager(user_id) or db_manager.check_if_staff(user_id)
 
 # --- [ အစ်ကို့ရဲ့ မူရင်း စာရင်းများ ] ---
 BRANCHES = ["Yangon", "Insein", "Htauk Kyant", "Mandalay"]
@@ -596,10 +600,12 @@ def register_handlers(bot):
 
     @bot.message_handler(commands=['newgroup'])
     def handle_new_group(message):
-        if is_manager(message.from_user.id):
+        if is_office_user(message.from_user.id):
             group_creator.create_new_group(bot, message)
             # 💡 Auto-update GSheet after new group creation
             _after_register_export_sheet(message.chat.id)
+        else:
+            bot.reply_to(message, "⚠️ ဤ Command ကို Manager/ဝန်ထမ်းသာ အသုံးပြုခွင့်ရှိပါသည်။\n`/addstaff` ဖြင့် စာရင်းသွင်းထားရပါမည်။", parse_mode="Markdown")
 
     # --- [ Section ၆: Instant Alert ] ---
     @bot.message_handler(commands=['alert'])
@@ -679,7 +685,7 @@ def register_handlers(bot):
     @bot.message_handler(commands=['register'])
     def handle_register_group(message):
         user_id = message.from_user.id
-        if is_manager(user_id):
+        if is_office_user(user_id):
             if message.chat.type not in ['group', 'supergroup']:
                 bot.reply_to(message, "⚠️ ဤ Command ကို OS Group ထဲမှာပဲ ရိုက်ပေးပါ။")
                 return
@@ -691,6 +697,8 @@ def register_handlers(bot):
             }
             msg = bot.reply_to(message, "၁။ 🎧 Pick Up Topic ရဲ့ ID ကို ရိုက်ထည့်ပါ (မရှိလျှင် 0 ဟုရိုက်ပါ):")
             bot.register_next_step_handler(msg, process_reg_pickup)
+        else:
+            bot.reply_to(message, "⚠️ ဤ Command ကို Manager/ဝန်ထမ်းသာ အသုံးပြုခွင့်ရှိပါသည်။\n`/addstaff` ဖြင့် စာရင်းသွင်းထားရပါမည်။", parse_mode="Markdown")
 
     def process_reg_pickup(message):
         chat_id = message.chat.id
@@ -807,25 +815,44 @@ def register_handlers(bot):
                 log.error(f"Pending Check Error: {e}")
                 bot.reply_to(message, f"⚠️ Error: {e}")
 
-    @bot.message_handler(commands=['broadcast'])
+    @bot.message_handler(commands=['broadcast'], content_types=['text', 'photo'])
     def handle_broadcast(message):
-        if is_manager(message.from_user.id):
-            text = message.text.replace('/broadcast', '').strip()
-            if not text:
-                bot.reply_to(message, "⚠️ ပို့ချင်သော စာသားကို ထည့်ပါ။\nဥပမာ - `/broadcast ဒီနေ့ နေ့လယ် ရုံးခဏပိတ်ပါမည်`")
-                return
-            
-            staffs = db_manager.get_all_staff()
-            success_count = 0
-            
-            for u_id, name, branch, dept in staffs:
-                try:
-                    bot.send_message(u_id, f"📢 **[Manager ထံမှ အသိပေးချက်]**\n\n{text}", parse_mode="Markdown")
-                    success_count += 1
-                except Exception as e:
-                    log.warning(f"Broadcast failed for {name} ({u_id}): {e}")
-            
-            bot.reply_to(message, f"✅ ဝန်ထမ်းစရုပ္ {success_count} ဦးဆီသို့ အသိပေးချက် ပို့ပြီးပါပြီ။")
+        if not is_manager(message.from_user.id):
+            return
+
+        raw = (message.text or message.caption or '').replace('/broadcast', '', 1).strip()
+        photo_id = message.photo[-1].file_id if message.photo else None
+
+        if not raw and not photo_id:
+            bot.reply_to(
+                message,
+                "⚠️ ပို့ချင်သော အကြောင်းအရာကို ထည့်ပါ။\n\n"
+                "📝 **စာသား + Link:**\n"
+                "`/broadcast ဒီနေ့ ရုံးခဏပိတ်ပါမည် https://example.com`\n\n"
+                "🖼 **ပုံ + စာသား + Link:**\n"
+                "ပုံတစ်ပုံ ရွေးပြီး Caption မှာ `/broadcast ...` ရိုက်ပါ။",
+                parse_mode="Markdown",
+            )
+            return
+
+        header = "📢 <b>Manager ထံမှ အသိပေးချက်</b>"
+        payload = f"{header}\n\n{html.escape(raw)}" if raw else header
+
+        staffs = db_manager.get_all_staff()
+        success_count = 0
+
+        for u_id, name, branch, dept in staffs:
+            try:
+                if photo_id:
+                    bot.send_photo(u_id, photo_id, caption=payload, parse_mode="HTML")
+                else:
+                    bot.send_message(u_id, payload, parse_mode="HTML")
+                success_count += 1
+            except Exception as e:
+                log.warning(f"Broadcast failed for {name} ({u_id}): {e}")
+
+        media_hint = " (ပုံပါ)" if photo_id else ""
+        bot.reply_to(message, f"✅ ဝန်ထမ်းစုပ် {success_count} ဦးဆီသို့ အသိပေးချက်{media_hint} ပို့ပြီးပါပြီ။")
 
     @bot.message_handler(commands=['logs'])
     def handle_logs(message):
@@ -1090,6 +1117,62 @@ def register_handlers(bot):
                 bot.reply_to(message, "⚠️ Pickup Form ပြသစဉ် အမှားတစ်ခု ဖြစ်သွားပါသည်။")
             except Exception:
                 pass
+
+    @bot.message_handler(commands=['syncstaff'])
+    def handle_sync_staff(message):
+        """
+        Staff DB ↔ OS Telegram groups membership sync (Telegram ToS compliant).
+        /syncstaff check — dry run (missing list only)
+        /syncstaff run   — invite missing staff + DM invite links on privacy block
+        """
+        if not is_office_user(message.from_user.id):
+            bot.reply_to(message, "⚠️ ဤ Command ကို Manager/ဝန်ထမ်းသာ အသုံးပြုခွင့်ရှိပါသည်။")
+            return
+
+        parts = message.text.strip().split()
+        sub = parts[1].lower() if len(parts) > 1 else 'check'
+        dry_run = sub in ('check', 'dry', 'scan')
+        run_all = sub in ('runall', 'all', 'full')
+        do_run = sub in ('run', 'go', 'invite', 'sync') or run_all
+
+        if sub == 'reset':
+            staff_group_sync.reset_sync_cursor()
+            bot.reply_to(message, "✅ Staff sync cursor reset — next run starts from group #0.")
+            return
+
+        if dry_run:
+            hint = (
+                "🔍 <b>Check mode</b>\n"
+                "<code>/syncstaff run</code> — one batch (80 invites)\n"
+                "<code>/syncstaff runall</code> — all groups (background)\n"
+                "<code>/syncstaff reset</code> — restart from first group\n\n"
+            )
+        elif run_all:
+            hint = f"🔄 <b>Run All mode</b> — batches of {staff_group_sync.MAX_ACTIONS_PER_RUN}, {staff_group_sync.BATCH_PAUSE_SEC}s pause...\n\n"
+        elif do_run:
+            hint = "⏳ <b>Batch sync</b> — continues from last position...\n\n"
+        else:
+            hint = "🔍 <b>Check mode</b>\n\n"
+
+        status_msg = bot.reply_to(message, hint + "စစ်ဆေးနေပါသည်...", parse_mode="HTML")
+
+        import threading
+
+        def _run():
+            try:
+                if run_all:
+                    report = staff_group_sync.sync_staff_groups_all(bot, message.chat.id, status_msg.message_id)
+                else:
+                    report = staff_group_sync.sync_staff_groups(bot, dry_run=dry_run, resume=do_run)
+                bot.edit_message_text(report, message.chat.id, status_msg.message_id, parse_mode="HTML")
+            except Exception as e:
+                log.error(f"❌ syncstaff Error: {e}", exc_info=True)
+                try:
+                    bot.edit_message_text(f"❌ Sync staff error: {e}", message.chat.id, status_msg.message_id)
+                except Exception:
+                    pass
+
+        threading.Thread(target=_run, daemon=True).start()
 
     @bot.message_handler(commands=['mapshops'])
     def handle_map_shops(message):
