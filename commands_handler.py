@@ -8,7 +8,7 @@ import psutil
 import html
 from modules import auditor
 import gsheet_sync
-from telebot import types
+from telebot import types, util
 from logger import log
 import db_manager
 from modules import group_creator, staff_group_sync
@@ -24,6 +24,62 @@ def is_office_user(user_id):
     """Manager သို့မဟုတ် staff DB ထဲမှတ်ထားသူ"""
     return is_manager(user_id) or db_manager.check_if_staff(user_id)
 
+CAPTION_MAX_LEN = 1024
+
+def _is_broadcast_message(message):
+    """Photo caption /broadcast ကို commands filter မဖမ်းနိုင်သောကြောင့် func filter သုံးသည်."""
+    text = message.text or message.caption or ''
+    return util.extract_command(text) == 'broadcast'
+
+def _parse_broadcast_message(message):
+    text = message.text or message.caption or ''
+    body = (util.extract_arguments(text) or '').strip()
+    photo_id = None
+    if message.photo:
+        photo_id = message.photo[-1].file_id
+    elif message.reply_to_message and message.reply_to_message.photo:
+        photo_id = message.reply_to_message.photo[-1].file_id
+    return body, photo_id
+
+def _send_broadcast_payload(bot, chat_id, photo_id, body, topic_ids=None):
+    chat_id = db_manager.normalize_bot_chat_id(chat_id)
+    payload = html.escape(body) if body else None
+
+    def _dispatch(thread_kw):
+        if photo_id:
+            if payload and len(payload) <= CAPTION_MAX_LEN:
+                bot.send_photo(chat_id, photo_id, caption=payload, parse_mode="HTML", **thread_kw)
+            elif payload:
+                bot.send_photo(chat_id, photo_id, **thread_kw)
+                bot.send_message(chat_id, payload, parse_mode="HTML", **thread_kw)
+            else:
+                bot.send_photo(chat_id, photo_id, **thread_kw)
+        elif payload:
+            bot.send_message(chat_id, payload, parse_mode="HTML", **thread_kw)
+
+    candidates = []
+    for tid in (topic_ids or []):
+        if tid not in candidates:
+            candidates.append(tid)
+    candidates.append(None)
+
+    last_error = None
+    for topic_id in candidates:
+        thread_kw = {"message_thread_id": topic_id} if topic_id is not None else {}
+        try:
+            _dispatch(thread_kw)
+            return
+        except Exception as e:
+            last_error = e
+            err = str(e).lower()
+            if "thread not found" in err:
+                continue
+            if topic_id is not None and ("chat not found" in err or "group chat was upgraded" in err):
+                continue
+            raise
+    if last_error:
+        raise last_error
+
 # --- [ အစ်ကို့ရဲ့ မူရင်း စာရင်းများ ] ---
 BRANCHES = ["Yangon", "Insein", "Htauk Kyant", "Mandalay"]
 DEPARTMENTS = [
@@ -36,6 +92,22 @@ staff_reg_data = {}
 register_group_data = {}
 
 # ... (အပေါ်က စာကြောင်းတွေက အရင်အတိုင်းထားပါ) ...
+
+def register_bot_commands(bot):
+    """Telegram BotFather command menu ကို auto-sync လုပ်ခြင်း"""
+    try:
+        cmds = [
+            telebot.types.BotCommand("a", "Alert: reply /a fin OR /a fin text"),
+            telebot.types.BotCommand("status", "System status"),
+            telebot.types.BotCommand("pending", "Pending messages"),
+            telebot.types.BotCommand("pickup", "Pickup helper"),
+            telebot.types.BotCommand("start", "Start bot"),
+        ]
+        bot.set_my_commands(cmds)
+        log.info("✅ BotFather command menu synced (/a).")
+    except Exception as e:
+        log.error(f"❌ Failed to sync BotFather commands: {e}")
+
 
 def register_handlers(bot):
     """ Bot Command အားလုံးကို ဤနေရာတွင် စုစည်းမှတ်ပုံတင်ပေးသည် """
@@ -102,11 +174,17 @@ def register_handlers(bot):
             bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
             
     def _after_register_export_sheet(chat_id):
-        """ Register ပြီးနောက် Sheet ကို auto-write မလုပ်ရန် policy guard """
+        """ Register / newgroup ပြီးနောက် Sheet အောက်ဆုံးတွင် append (full overwrite မဟုတ်) """
         try:
-            log.info(f"🛡️ Sheet write protection active: skip auto-export after register (chat_id={chat_id}).")
+            sheet_url = os.getenv('GSHEET_URL')
+            if not sheet_url:
+                log.warning(f"⚠️ GSHEET_URL not set; skip sheet append after register (chat_id={chat_id}).")
+                return
+            syncer = gsheet_sync.GSheetSync(bot=bot)
+            appended = syncer.append_new_mappings_to_sheet(sheet_url)
+            log.info(f"📤 Sheet append after register: {appended} row(s) added (triggered by chat_id={chat_id}).")
         except Exception as e:
-            log.error(f"❌ Auto-export after register failed: {e}")
+            log.error(f"❌ Auto-append to Sheet after register failed: {e}")
 
     @bot.message_handler(commands=['gsexport'])
     def handle_gs_export(message):
@@ -325,7 +403,7 @@ def register_handlers(bot):
                 # Telegram limit 4096
                 if len(output) > 4000: output = output[-4000:]
                 
-                bot.reply_to(message, f"📋 **System Logs (Last 30 lines):**\n\n`<pre>{html.escape(output)}</pre>`", parse_mode="HTML")
+                bot.reply_to(message, f"📋 <b>System Logs (Last 30 lines):</b>\n\n<pre>{html.escape(output)}</pre>", parse_mode="HTML")
             except Exception as e:
                 bot.reply_to(message, f"❌ Log ဖတ်၍မရပါ: {e}")
         else:
@@ -338,7 +416,7 @@ def register_handlers(bot):
             if staffs:
                 msg = "👥 **ဝန်ထမ်းစာရင်း:**\n"
                 for u, n, b, d in staffs:
-                    msg += f"• {n} (`{u}`) | {b} | {d}\n"
+                    msg += f"• {util.escape(n)} (`{u}`) | {util.escape(b)} | {util.escape(d)}\n"
             else:
                 msg = "⚠️ ဝန်ထမ်းစာရင်း မရှိသေးပါ။"
             bot.reply_to(message, msg, parse_mode="Markdown")
@@ -568,7 +646,7 @@ def register_handlers(bot):
                     cwd=compose_dir
                 ).decode('utf-8')
                 if len(output) > 4000: output = output[-4000:]
-                bot.send_message(call.message.chat.id, f"📋 **System Logs (Last 20 lines):**\n\n`<pre>{html.escape(output)}</pre>`", parse_mode="HTML")
+                bot.send_message(call.message.chat.id, f"📋 <b>System Logs (Last 20 lines):</b>\n\n<pre>{html.escape(output)}</pre>", parse_mode="HTML")
             except Exception as e:
                 bot.answer_callback_query(call.id, f"❌ Error: {e}")
 
@@ -580,7 +658,8 @@ def register_handlers(bot):
                 if os.path.exists(fix_file):
                     with open(fix_file, 'r', encoding='utf-8') as f:
                         fix_prompt = f.read()
-                    bot.send_message(call.message.chat.id, f"📋 **Fix-Prompt (Copy-Paste this):**\n\n`{fix_prompt}`", parse_mode="Markdown")
+                    safe_prompt = util.escape(fix_prompt[:3500])
+                    bot.send_message(call.message.chat.id, f"📋 **Fix-Prompt (Copy-Paste this):**\n\n`{safe_prompt}`", parse_mode="Markdown")
                 else:
                     bot.answer_callback_query(call.id, "⚠️ Fix-Prompt မတွေ့ပါ။")
             except Exception as e:
@@ -593,7 +672,7 @@ def register_handlers(bot):
         report = f"📊 **Performance ({period.capitalize()})**\n\n"
         if stats:
             for name, total, avg in stats:
-                report += f"👤 {name}: {total} စောင် (Avg: {round(avg, 2)} mins)\n"
+                report += f"👤 {util.escape(name)}: {total} စောင် (Avg: {round(avg, 2)} mins)\n"
         else:
             report += "ဒေတာမရှိပါ။"
         bot.edit_message_text(report, call.message.chat.id, call.message.message_id, parse_mode="Markdown")
@@ -608,54 +687,164 @@ def register_handlers(bot):
             bot.reply_to(message, "⚠️ ဤ Command ကို Manager/ဝန်ထမ်းသာ အသုံးပြုခွင့်ရှိပါသည်။\n`/addstaff` ဖြင့် စာရင်းသွင်းထားရပါမည်။", parse_mode="Markdown")
 
     # --- [ Section ၆: Instant Alert ] ---
-    @bot.message_handler(commands=['alert'])
+    _ALERT_DEPT_TARGETS = {
+        'fin': (35, 'Finance'),
+        'finance': (35, 'Finance'),
+        'cs': (1, 'CS'),
+        'pickup': (1, 'CS'),
+        'error': (37, 'Error'),
+        'err': (37, 'Error'),
+    }
+
+    def _parse_a_command(message_text):
+        """ /a command မှ ဌာန (fin/cs/error) နှင့် inline စာသား ခွဲထုတ်ခြင်း """
+        if not message_text:
+            return '', ''
+        parts = message_text.strip().split(maxsplit=1)
+        if len(parts) < 2:
+            return '', ''
+        rest = parts[1].strip()
+        if not rest:
+            return '', ''
+        tokens = rest.split(maxsplit=1)
+        first = tokens[0].lower().rstrip(',')
+        if first in _ALERT_DEPT_TARGETS:
+            inline = tokens[1].strip() if len(tokens) > 1 else ''
+            return first, inline
+        return '', rest
+
+    def _allowed_manual_alert(message):
+        """OS Group (အားလုံး) | Central/Alert Group | Staff/Manager (ဘယ် Group မဆို)"""
+        chat_id = int(message.chat.id)
+        user_id = message.from_user.id if message.from_user else 0
+        if db_manager.check_if_os_group(chat_id):
+            return True, True
+        central = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
+        alert_chat = int(os.getenv('ALERT_CHAT_ID', -1003601049225))
+        if chat_id in (central, alert_chat):
+            return True, False
+        if is_office_user(user_id):
+            return True, False
+        return False, False
+
+    @bot.message_handler(commands=['a'])
     def handle_manual_alert(message):
-        """ Reply ဆွဲပြီး /alert ရိုက်ပါက Office Hours မကြည့်ဘဲ ချက်ချင်း Alert ထုတ်ပေးခြင်း """
-        # 💡 အစ်ကို့တောင်းဆိုချက်အရ ဘယ်သူမဆို သုံးခွင့်ပေးမည်
-        if not message.reply_to_message:
-            bot.reply_to(message, "⚠️ Alert ထုတ်လိုသော စာကို Reply ဆွဲပြီးမှ `/alert` ဟု ရိုက်ပေးပါဗျာ။")
+        """ Reply ဆွဲ (သို့) စာသားတွဲရိုက် — Office Hours မကြည့်ဘဲ ချက်ချင်း Alert ထုတ်ပေးခြင်း """
+        chat_id = message.chat.id
+        allowed, is_os_group = _allowed_manual_alert(message)
+        if not allowed:
+            bot.reply_to(
+                message,
+                "⚠️ `/a` ကို OS Group များတွင် အသုံးပြုနိုင်ပါသည်။\n"
+                "သို့မဟုတ် Staff/Manager အဖြစ် မှတ်ထားသူများက ဘယ် Group မဆို သုံးနိုင်ပါသည်။",
+                parse_mode="Markdown"
+            )
             return
 
-        orig_msg = message.reply_to_message
-        chat_id = message.chat.id
-        topic_id = orig_msg.message_thread_id if orig_msg.is_topic_message else 0
-        
-        # OS Group ဟုတ်မဟုတ် စစ်ဆေးခြင်း
-        if not db_manager.check_if_os_group(chat_id):
-            bot.reply_to(message, "⚠️ ဤ Command ကို OS Group များအတွင်းသာ အသုံးပြုနိုင်ပါသည်။")
+        dept_arg, inline_text = _parse_a_command(message.text)
+        media_id = None
+
+        if message.reply_to_message:
+            orig_msg = message.reply_to_message
+            topic_id = orig_msg.message_thread_id if orig_msg.is_topic_message else 0
+            orig_msg_id = orig_msg.message_id
+            orig_ts = orig_msg.date
+            text = orig_msg.text or orig_msg.caption
+            if not text:
+                if orig_msg.photo:
+                    text = "🖼️ Photo"
+                    media_id = orig_msg.photo[-1].file_id
+                elif orig_msg.voice:
+                    text = "🎙️ Voice Message"
+                    media_id = orig_msg.voice.file_id
+                elif orig_msg.video:
+                    text = "📹 Video"
+                    media_id = orig_msg.video.file_id
+                else:
+                    text = "📦 Media Content"
+            if inline_text:
+                text = f"{text}\n\n📝 {inline_text}" if text else inline_text
+        elif inline_text:
+            topic_id = message.message_thread_id if (message.is_topic_message and message.message_thread_id) else 1
+            orig_msg_id = message.message_id
+            orig_ts = message.date
+            text = inline_text
+        else:
+            bot.reply_to(
+                message,
+                "⚠️ အောက်ပါ နည်းလမ်း ၂ မျိုးထဲ တစ်ခု သုံးပေးပါဗျာ။\n"
+                "① Reply ဆွဲပြီး `/a fin` ရိုက်\n"
+                "② `/a fin စာသား...` ဟု တိုက်ရိုက်ရိုက်",
+                parse_mode="Markdown"
+            )
             return
+
+        # OS Group မဟုတ်သော Group များတွင် ဌာန (fin/cs/error) မပါရင် alert topic မသတ်မှတ်နိုင်
+        if not is_os_group and not dept_arg:
+            bot.reply_to(
+                message,
+                "⚠️ OS Group မဟုတ်သော Group များတွင် ဌာနရိုက်ပေးပါဗျာ။\n"
+                "`/a fin` — Finance | `/a cs` — CS | `/a error` — Error",
+                parse_mode="Markdown"
+            )
+            return
+
+        # 💡 Manual Alert အားလုံး force=True — Office Hours (၆:၁၅ PM နောက်ပိုင်း) မပိတ်ပါ
+        target_topic_override = None
+        force_route = True
+        alert_title = "🚨 **Urgent Alert (Manual)**"
+        if dept_arg:
+            dept_route = _ALERT_DEPT_TARGETS.get(dept_arg)
+            if not dept_route:
+                bot.reply_to(
+                    message,
+                    "⚠️ မှန်ကန်သော ဌာနကို ရိုက်ပေးပါဗျာ။\n"
+                    "`/a fin` — Finance\n"
+                    "`/a cs` — CS/Pickup\n"
+                    "`/a error` — Error",
+                    parse_mode="Markdown"
+                )
+                return
+            target_topic_override, dept_label = dept_route
+            alert_title = f"🚨 **Urgent Alert (Manual → {dept_label})**"
+        elif is_os_group:
+            route = db_manager.get_routing_entry(chat_id, topic_id)
+            if route and route[1] is not None:
+                target_topic_override = int(route[1])
+            else:
+                target_topic_override = 1
+        else:
+            target_topic_override = 1
 
         # 💡 DB တွင် Manual Alert အဖြစ် မှတ်သားခြင်း (Strict Resolution အတွက်)
-        db_manager.set_manual_alert(orig_msg.message_id, chat_id)
+        db_manager.set_manual_alert(orig_msg_id, chat_id)
 
         _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
-        
-        # Media Type စစ်ဆေးခြင်း
-        text = orig_msg.text or orig_msg.caption
-        media_id = None
-        if not text:
-            if orig_msg.photo: text = "🖼️ Photo"; media_id = orig_msg.photo[-1].file_id
-            elif orig_msg.voice: text = "🎙️ Voice Message"; media_id = orig_msg.voice.file_id
-            elif orig_msg.video: text = "📹 Video"; media_id = orig_msg.video.file_id
-            else: text = "📦 Media Content"
+        if not is_os_group:
+            shop_name = message.chat.title or shop_name
+            if shop_name in ("Unknown Shop", "", None):
+                shop_name = "Staff Alert"
 
         # ချက်ချင်း Alert ပို့ခြင်း
         alert_id = auditor.send_new_alert(
-            chat_id, topic_id, orig_msg.message_id,
-            text, "Manual Alert", shop_name, orig_msg.date,
+            chat_id, topic_id, orig_msg_id,
+            text, "Manual Alert", shop_name, orig_ts,
             media_id=media_id,
-            title="🚨 **Urgent Alert (Manual)**"
+            title=alert_title,
+            force=force_route,
+            target_topic_override=target_topic_override
         )
         
         # 💡 အစ်ကို့တောင်းဆိုချက်အရ Silent ဖြစ်စေရန် Confirmation Message ကို ပိတ်ထားပြီး Command ကို ပြန်ဖျက်ပေးမည်
         try:
             bot.delete_message(chat_id, message.message_id)
         except Exception as e:
-            log.error(f"Error deleting /alert command: {e}")
+            log.error(f"Error deleting /a command: {e}")
 
-        if not alert_id:
-            # Alert မအောင်မြင်ပါက Admin သိစေရန် Log ထုတ်မည် (သို့မဟုတ်) လိုအပ်ပါက Reply ပြန်နိုင်သည်
-            log.error(f"Manual Alert failed for chat_id: {chat_id}")
+        if not alert_id or isinstance(alert_id, str):
+            log.error(f"Manual Alert failed for chat_id: {chat_id}, topic: {topic_id}, dept: {dept_arg or 'default'}, result: {alert_id}")
+        else:
+            log.info(f"✅ Manual Alert sent: chat={chat_id}, msg={orig_msg_id}, dept={dept_arg or 'default'}, alert_id={alert_id}")
 
     # --- [ Section ၇: OS Group စာရင်းနှင့် Register စနစ် ] ---
     @bot.message_handler(commands=['oslist'])
@@ -808,51 +997,56 @@ def register_handlers(bot):
 
                 msg = "⏳ **လက်ရှိ ပြန်မဖြေရသေးသော (Pending) စာရင်း:**\n\n"
                 for shop_name, count in rows:
-                    msg += f"• {shop_name}: **{count}** စောင်\n"
+                    msg += f"• {util.escape(shop_name)}: **{count}** စောင်\n"
                 
                 bot.reply_to(message, msg, parse_mode="Markdown")
             except Exception as e:
                 log.error(f"Pending Check Error: {e}")
                 bot.reply_to(message, f"⚠️ Error: {e}")
 
-    @bot.message_handler(commands=['broadcast'], content_types=['text', 'photo'])
+    @bot.message_handler(func=_is_broadcast_message, content_types=['text', 'photo'])
     def handle_broadcast(message):
         if not is_manager(message.from_user.id):
             return
 
-        raw = (message.text or message.caption or '').replace('/broadcast', '', 1).strip()
-        photo_id = message.photo[-1].file_id if message.photo else None
+        raw, photo_id = _parse_broadcast_message(message)
 
         if not raw and not photo_id:
             bot.reply_to(
                 message,
                 "⚠️ ပို့ချင်သော အကြောင်းအရာကို ထည့်ပါ။\n\n"
-                "📝 **စာသား + Link:**\n"
+                "📝 **စာသား + Link → OS Group အားလုံး:**\n"
                 "`/broadcast ဒီနေ့ ရုံးခဏပိတ်ပါမည် https://example.com`\n\n"
                 "🖼 **ပုံ + စာသား + Link:**\n"
-                "ပုံတစ်ပုံ ရွေးပြီး Caption မှာ `/broadcast ...` ရိုက်ပါ။",
+                "• ပုံ attach → Caption ပထမစာကြောင်း `/broadcast` + စာသား\n"
+                "• သို့မဟုတ် ပုံပို့ပြီး `/broadcast စာသား` ကို Reply လုပ်ပါ",
                 parse_mode="Markdown",
             )
             return
 
-        header = "📢 <b>Manager ထံမှ အသိပေးချက်</b>"
-        payload = f"{header}\n\n{html.escape(raw)}" if raw else header
+        groups = db_manager.get_os_group_broadcast_targets()
+        if not groups:
+            bot.reply_to(message, "⚠️ OS Group စာရင်း မတွေ့ပါ။ `/register` သို့ `/newgroup` ဖြင့် group များ မှတ်ပုံတင်ထားရပါမည်။", parse_mode="Markdown")
+            return
 
-        staffs = db_manager.get_all_staff()
         success_count = 0
+        failed = []
 
-        for u_id, name, branch, dept in staffs:
+        for chat_id, shop_name, topic_ids in groups:
             try:
-                if photo_id:
-                    bot.send_photo(u_id, photo_id, caption=payload, parse_mode="HTML")
-                else:
-                    bot.send_message(u_id, payload, parse_mode="HTML")
+                _send_broadcast_payload(bot, chat_id, photo_id, raw, topic_ids=topic_ids)
                 success_count += 1
             except Exception as e:
-                log.warning(f"Broadcast failed for {name} ({u_id}): {e}")
+                log.warning(f"Broadcast failed for {shop_name} ({chat_id}): {e}")
+                failed.append(shop_name)
 
         media_hint = " (ပုံပါ)" if photo_id else ""
-        bot.reply_to(message, f"✅ ဝန်ထမ်းစုပ် {success_count} ဦးဆီသို့ အသိပေးချက်{media_hint} ပို့ပြီးပါပြီ။")
+        reply = f"✅ OS Group {success_count}/{len(groups)} ခုသို့ အသိပေးချက်{media_hint} ပို့ပြီးပါပြီ။"
+        if failed:
+            preview = ", ".join(failed[:5])
+            extra = f" (+{len(failed) - 5})" if len(failed) > 5 else ""
+            reply += f"\n❌ မအောင်မြင် {len(failed)} ခု: {preview}{extra}"
+        bot.reply_to(message, reply)
 
     @bot.message_handler(commands=['logs'])
     def handle_logs(message):
@@ -865,7 +1059,7 @@ def register_handlers(bot):
                     bot.reply_to(message, "မှတ်တမ်း (Log) ထဲတွင် ဘာမှ မရှိသေးပါ။")
                     return
                 
-                log_text = "".join(lines)
+                log_text = util.escape("".join(lines))
                 bot.reply_to(message, f"🛠 **နောက်ဆုံး Log (၁၀) ကြောင်း:**\n\n`{log_text}`", parse_mode="Markdown")
             except FileNotFoundError:
                 bot.reply_to(message, "⚠️ `logs/carryman_system.log` ဖိုင်ကို မတွေ့ပါ။")
@@ -884,9 +1078,9 @@ def register_handlers(bot):
                 rows = db_manager.find_os_groups_by_keyword(keyword)
 
                 if rows:
-                    msg = f"🔍 **'{keyword}' ဖြင့် ရှာဖွေတွေ့ရှိမှုများ:**\n\n"
+                    msg = f"🔍 **'{util.escape(keyword)}' ဖြင့် ရှာဖွေတွေ့ရှိမှုများ:**\n\n"
                     for chat_id, shop_name in rows:
-                        msg += f"• {shop_name} (`{chat_id}`)\n"
+                        msg += f"• {util.escape(shop_name)} (`{chat_id}`)\n"
                     bot.reply_to(message, msg, parse_mode="Markdown")
                 else:
                     bot.reply_to(message, f"⚠️ '{keyword}' နှင့် တူသော ဆိုင်ကို မတွေ့ရှိပါ။")
@@ -929,7 +1123,7 @@ def register_handlers(bot):
             success = db_manager.add_function(name, description, module_path)
             
             if success:
-                bot.reply_to(message, f"✅ **Function Registered Successfully!**\n\n📌 Name: `{name}`\n📝 Description: {description}\n📂 Path: `{module_path}`", parse_mode="Markdown")
+                bot.reply_to(message, f"✅ **Function Registered Successfully!**\n\n📌 Name: `{name}`\n📝 Description: {util.escape(description)}\n📂 Path: `{module_path}`", parse_mode="Markdown")
             else:
                 bot.reply_to(message, "❌ Database ထဲသို့ ထည့်သွင်းရာတွင် အမှားအယွင်း ရှိသွားပါသည် အစ်ကို။")
         else:
@@ -1220,12 +1414,12 @@ def register_handlers(bot):
                 
                 # ၃။ အောင်မြင်ကြောင်း အကြောင်းကြားခြင်း
                 response = (
-                    "♻️ **Today's Pickup Reset Success!**\n"
+                    "♻️ **Pickup Reset Success!**\n"
                     "━━━━━━━━━━━━━━━━━━\n"
                     f"🗑 Deleted Queue: **{q_count}** items\n"
                     f"🔄 Reset Logs: **{l_count}** messages\n"
                     "━━━━━━━━━━━━━━━━━━\n"
-                    "ယနေ့အတွက် Pick Up အသစ် ထပ်မံစမ်းသပ်နိုင်ပါပြီ အစ်ကို။"
+                    "ယနေ့ နှင့် မနက်ဖြန် Pick Up အသစ် ထပ်မံစမ်းသပ်နိုင်ပါပြီ အစ်ကို။"
                 )
                 bot.reply_to(message, response, parse_mode="Markdown")
                 log.info(f"🚀 /pkreset executed by Manager {user_id} in chat {chat_id}")

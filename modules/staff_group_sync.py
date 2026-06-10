@@ -7,6 +7,7 @@ Staff ↔ OS Telegram Group membership sync (Telegram ToS aware).
 """
 import os
 import json
+import html
 import asyncio
 from dotenv import load_dotenv
 from telethon import TelegramClient
@@ -385,6 +386,10 @@ async def _sync_staff_async(dry_run=False, resume=True, max_actions=None, start_
     return stats
 
 
+def _html_esc(value):
+    return html.escape(str(value or ""))
+
+
 def _send_invite_dms(bot, pending_dms):
     sent, failed = 0, 0
     for uid, name, shop_name, link, reason in pending_dms:
@@ -397,13 +402,13 @@ def _send_invite_dms(bot, pending_dms):
         }.get(reason, 'Join link ပို့ပေးပါသည်')
         text = (
             f"📢 <b>CarryMan Office — Group Join</b>\n\n"
-            f"👤 {name}\n"
-            f"🏪 Group: <b>{shop_name}</b>\n\n"
+            f"👤 {_html_esc(name)}\n"
+            f"🏪 Group: <b>{_html_esc(shop_name)}</b>\n\n"
             f"ℹ️ {reason_note}.\n"
             f"Office group သို့ ဝင်ရောက်ပါရန် link:\n"
         )
         if link:
-            text += f"\n🔗 {link}\n"
+            text += f"\n🔗 {_html_esc(link)}\n"
         else:
             text += "\n⚠️ Invite link မရနိုင်ပါ — Manager ထံ ဆက်သွယ်ပါ.\n"
         text += (
@@ -421,7 +426,7 @@ def _send_invite_dms(bot, pending_dms):
 
 def _format_report(stats):
     if stats.get('error'):
-        return f"❌ {stats['error']}"
+        return f"❌ {_html_esc(stats['error'])}"
 
     mode = "🔍 <b>Check Only (Dry Run)</b>" if stats.get('dry_run') else "✅ <b>Staff Group Sync</b>"
     lines = [
@@ -438,7 +443,9 @@ def _format_report(stats):
         lines.append(f"\n⚠️ <b>Missing / needs join ({len(missing)}):</b>")
         for item in missing[:25]:
             shop, _cid, uid, name, reason = item
-            lines.append(f"• {name} ({uid}) → {shop} [{reason}]")
+            lines.append(
+                f"• {_html_esc(name)} ({uid}) → {_html_esc(shop)} [{_html_esc(reason)}]"
+            )
         if len(missing) > 25:
             lines.append(f"... +{len(missing) - 25} more")
 
@@ -446,7 +453,7 @@ def _format_report(stats):
     if errors:
         lines.append(f"\n❌ <b>Errors ({len(errors)}):</b>")
         for err in errors[:10]:
-            lines.append(f"• {err}")
+            lines.append(f"• {_html_esc(err)}")
 
     if stats.get('complete'):
         lines.append("\n🎉 <b>All groups synced!</b> Cursor reset.")
@@ -457,7 +464,7 @@ def _format_report(stats):
         lines.append("▶️ Auto-all: <code>/syncstaff runall</code> (background batches)")
 
     if stats.get('stopped_early'):
-        lines.append(f"\n⏸ Stopped: {stats['stopped_early']}")
+        lines.append(f"\n⏸ Stopped: {_html_esc(stats['stopped_early'])}")
 
     if not stats.get('dry_run'):
         lines.append(

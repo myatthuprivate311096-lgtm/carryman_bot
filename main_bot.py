@@ -52,7 +52,8 @@ def send_heartbeat():
 
 def start_bot():
     log.info("🚀 CarryMan Bot (Worker 1: Ingestion) is starting...")
-    
+    commands_handler.register_bot_commands(bot)
+
     # Heartbeat ကို background thread နဲ့ run ပါမယ်
     import threading, subprocess, json as _json
     def heartbeat_loop():

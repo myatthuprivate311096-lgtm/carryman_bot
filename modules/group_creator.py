@@ -11,6 +11,7 @@ sys.path.append(BASE_DIR)
 
 import db_manager
 from logger import log
+from telebot import util
 
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 API_ID = int(os.getenv('API_ID'))
@@ -206,11 +207,13 @@ def create_new_group(bot, message):
         conn.commit()
         conn.close()
 
+        esc_name = util.escape(group_name)
+        esc_link = util.escape(invite_link)
         bot.edit_message_text(
             chat_id=message.chat.id,
             message_id=msg.message_id,
-            text=f"✅ **{group_name}** ကို အောင်မြင်စွာ ဖန်တီးပြီး Database သို့ သိမ်းဆည်းပြီးပါပြီ။\n🔗 {invite_link}",
+            text=f"✅ **{esc_name}** ကို အောင်မြင်စွာ ဖန်တီးပြီး Database သို့ သိမ်းဆည်းပြီးပါပြီ။\n🔗 {esc_link}",
             parse_mode="Markdown",
         )
     except Exception as e:
-        bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text=f"❌ Error: {e}")
+        bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text=f"❌ Error: {util.escape(str(e))}", parse_mode="Markdown")

@@ -26,6 +26,30 @@ def is_ai_office_hours():
     """
     return True
 
+def _looks_like_delivery_support_question(text):
+    """Delivery/pricing/location service questions — reply only via manual /ai."""
+    if not text:
+        return False
+    t = text.strip().lower()
+
+    pickup_markers = (
+        'pick up', 'pickup', 'pick-up',
+        'လာယူ', 'လာကောက်', 'တင်ပေးပါ', 'ခေါ်ပေးပါ',
+        'လာခဲ့ပေးပါ', 'လာယူပေးပါ', 'လာကောက်ပေးပါ',
+    )
+    if any(marker in t for marker in pickup_markers):
+        return False
+
+    delivery_markers = (
+        'ပို့လား', 'ပို့လို့', 'ပို့ရ', 'ပို့နိုင်', 'ပို့ခ',
+        'တန်ဆာခ', 'cod',
+        'မြို့နယ်လဲ', 'ဘယ်မြို့နယ်', 'ဘယ်မြို့နယ်ထဲ',
+        'ပြန်ရလား', 'ပို့လား', 'ရောက်လား', 'ရောက်မလား',
+        'home delivery', 'gate drop',
+    )
+    return any(marker in t for marker in delivery_markers)
+
+
 def _normalize_ai_query(text):
     """/ai query မှ noise (quotes, command prefix) ဖယ်ရှားခြင်း。"""
     if not text:
@@ -306,6 +330,13 @@ def route_message(bot, message):
         if not text:
             return False
 
+        if getattr(message.from_user, 'is_bot', False):
+            return False
+
+        if text.strip().startswith('⏳ Auto Pickup') or 'Auto Pickup အချက်အလက်များ' in text[:120]:
+            log.info(f"🛡️ Skipping router: bot status card detected (msg {message.message_id})")
+            return False
+
         # 💡 Manual /ai must be handled before generic slash-command skip
         global_ai = db_manager.get_ai_global_status()
         is_sandbox = (chat_id == SANDBOX_CHAT_ID)
@@ -336,6 +367,10 @@ def route_message(bot, message):
             group_ai = 'ON'
             global_pickup = 'ON'
         
+        if _looks_like_delivery_support_question(text):
+            log.info(f"🔇 Delivery/support question — silent unless /ai: {text[:50]}...")
+            return False
+
         log.info(f"Routing message from {chat_id}: {text[:50]}...")
 
         # ၂။ AI Decision (Intent Detection)
@@ -357,7 +392,7 @@ def route_message(bot, message):
           DO NOT output 'none' for any of the above -- they ARE pickup requests even if they look like lists.
         - check_order: Use for checking order status, tracking numbers, or finding specific orders.
         - auditor: Use for complaints, questions about past/delayed pickups, or when the user is asking about an ALREADY PLACED pickup (e.g., "pick up မလာသေးဘူးလား", "ဘယ်အချိန်လာမှာလဲ").
-        - none: Use ONLY if the message is: a greeting, casual chit-chat, spam, or completely unrelated to logistics. If in doubt between auto_pickup and none, choose auto_pickup.
+        - none: Use for delivery/pricing/location/COD questions, greetings, casual chit-chat, spam, or general logistics questions that are NOT pickup requests. Examples: "မြဝတီကပြန်ရလားပို့လို့", "ပို့ခဘယ်လောက်လဲ", "COD ရလား".
 
         User Message: "{text}"
 
@@ -365,9 +400,9 @@ def route_message(bot, message):
         1. Output ONLY the module name in lowercase.
         2. Structured order data (OS Name + Date format) -> output 'auto_pickup'.
         3. "တင်ထားပါတယ်" or similar submission confirmations -> output 'auto_pickup'.
-        4. General question (office location, contact info) without /ai -> output 'none'.
+        4. Delivery/pricing/location/COD/office-info questions without /ai -> output 'none'.
         5. Casual chit-chat or greetings -> output 'none'.
-        6. If truly unsure, output 'auto_pickup' (better to check than miss a pickup).
+        6. If truly unsure about pickup vs none, choose 'auto_pickup' ONLY when pickup intent is plausible; otherwise choose 'none'.
         """
 
         intent = ai_utils.get_ai_completion(prompt, timeout=30.0)

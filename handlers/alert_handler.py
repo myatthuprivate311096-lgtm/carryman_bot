@@ -417,6 +417,14 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
                 if db_manager.has_active_pickup_flow(message_id, chat_id):
                     log.info(f"ℹ️ Message {message_id} has active pickup flow. Skipping auto-resolve on reaction.")
                     return
+
+                from modules.auto_pickup import is_unresolved_pickup_message
+                if is_unresolved_pickup_message(message_id, chat_id, orig_text):
+                    log.info(
+                        f"🛡️ Unresolved pickup request — blocking ❤ resolve for msg {message_id} in chat {chat_id}"
+                    )
+                    return
+
                 _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
 
             # 💡 Step 2: API Cleanup (OUTSIDE DB Scope)

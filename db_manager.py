@@ -574,7 +574,7 @@ def get_message_context(msg_id, chat_id):
         conn.close()
 
 def is_manual_alert(msg_id, chat_id):
-    """ Message သည် Manual Alert (/alert) ဖြစ်မဖြစ် စစ်ဆေးခြင်း """
+    """ Message သည် Manual Alert (/a) ဖြစ်မဖြစ် စစ်ဆေးခြင်း """
     conn = get_connection()
     try:
         res = conn.execute("SELECT is_manual FROM message_logs WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id)).fetchone()
