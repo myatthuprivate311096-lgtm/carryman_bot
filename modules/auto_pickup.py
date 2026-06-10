@@ -1,7 +1,9 @@
 import time
 import os
 import json
+import re
 import asyncio
+import threading
 from datetime import datetime, timedelta
 import pytz
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
@@ -9,7 +11,7 @@ from telebot import types, util
 import db_manager
 from logger import log
 import ai_utils
-from modules import location_service, auto_login, browser_manager, duplicate_checker
+from modules import auto_login, browser_manager, duplicate_checker
 
 _bot = None
 
@@ -33,10 +35,14 @@ def trigger_graceful_worker_restart():
 
 def get_best_shop_name(bot, chat_id):
     """
-    Centralized helper to get the most accurate shop name.
-    Checks DB first (with ID mismatch fix), then falls back to Chat Title.
+    Centralized helper to get the most accurate shop name for display & pickup.
+    Priority: shop_mappings (website OS name) → os_groups → Telegram chat title.
     """
     try:
+        mapped_name = db_manager.get_shop_mapping(chat_id)
+        if mapped_name:
+            return mapped_name
+
         _, _, shop_name = db_manager.get_topic_context(chat_id, 1)
         if shop_name and shop_name != "Unknown Shop":
             return shop_name
@@ -50,6 +56,80 @@ def get_best_shop_name(bot, chat_id):
     except Exception as e:
         log.error(f"❌ get_best_shop_name Error: {e}")
         return "Unknown Shop"
+
+_PICKUP_KEYWORD_PATTERNS = (
+    r'\bpk\b',
+    r'pick\s*up',
+    r'pickup',
+    r'\bdeli\b',
+    r'လာကောက်',
+    r'တင်ပေး',
+    r'ခေါ်ပေး',
+    r'လာယူ',
+    r'ကောက်ပေး',
+    r'လွှတ်ပေး',
+    r'လှတ်ပေး',
+)
+
+def is_bot_status_card(text):
+    """Bot-generated pickup status card (echo/forward must not re-trigger pickup)."""
+    if not text:
+        return False
+    stripped = text.strip()
+    return stripped.startswith('⏳ Auto Pickup') or 'Auto Pickup အချက်အလက်များ' in stripped[:120]
+
+def looks_like_pickup_request(text):
+    """Keyword heuristic when AI misclassifies obvious pickup messages."""
+    if not text or is_bot_status_card(text):
+        return False
+    normalized = text.lower()
+    for pat in _PICKUP_KEYWORD_PATTERNS:
+        if re.search(pat, normalized, re.IGNORECASE):
+            return True
+    return False
+
+def is_unresolved_pickup_message(msg_id, chat_id, text):
+    """Block staff resolve when pickup keywords present but queue never reached SUCCESS."""
+    if not looks_like_pickup_request(text):
+        return False
+    if db_manager.has_active_pickup_flow(msg_id, chat_id):
+        return True
+    order = db_manager.get_pickup_order_by_msg(msg_id, chat_id)
+    if order and order[7] == 'SUCCESS':
+        return False
+    return True
+
+def _keyword_pickup_extract(text, existing=None):
+    """Build PICKUP extracted_data from keyword heuristics when AI misses."""
+    data = dict(existing or {})
+    data['action'] = 'PICKUP'
+    data['is_pickup_request'] = True
+    data['is_new_request'] = True
+
+    lower = text.lower()
+    if not data.get('vehicle'):
+        if any(x in lower or x in text for x in ('car', 'deli', 'deliver', 'ကား')):
+            data['vehicle'] = 'Car'
+        elif any(x in lower or x in text for x in ('bicycle', 'bike', 'စက်ဘီး')):
+            data['vehicle'] = 'Bicycle'
+
+    if not data.get('date_type'):
+        if any(x in text for x in ('ဒီနေ့', 'today', 'ယနေ့')):
+            data['date_type'] = 'today'
+        elif any(x in text for x in ('မနက်ဖြန်', 'tomorrow')):
+            data['date_type'] = 'tomorrow'
+
+    if not data.get('clean_remark'):
+        remark = re.sub(
+            r'(ဒီနေ့|မနက်ဖြန်)\s*pk\s*[^\n]*|pick\s*up[^\n]*|car\s*deli[^\n]*',
+            '',
+            text,
+            flags=re.IGNORECASE,
+        ).strip()
+        if remark:
+            data['clean_remark'] = remark[:200]
+
+    return data
 
 async def send_pickup_notification(text, is_alert=False):
     """
@@ -592,6 +672,10 @@ def handle(bot, message, force_pickup=False):
         if not text:
             return
 
+        if is_bot_status_card(text):
+            log.info(f"🛡️ Skipping bot status card echo: msg {message.message_id}")
+            return
+
         log.info(f"🚚 Auto Pickup module handling message: {message.message_id}")
 
         # 💡 Ensure message is logged in DB before processing (Fix for Race Condition)
@@ -617,8 +701,30 @@ def handle(bot, message, force_pickup=False):
                     cleanup_pickup_intermediate_msgs(bot, chat_id, waiting_order[2])
                 else:
                     status = waiting_order[7]
+                    waiting_orig_msg_id = waiting_order[2]
+                    waiting_target_date = waiting_order[3]
                     log.info(f"🔒 Flow Locked: Found {status} order {waiting_order[0]} for chat {chat_id}")
-                    cleanup_pickup_intermediate_msgs(bot, chat_id, waiting_order[2])
+
+                    if waiting_orig_msg_id != message.message_id:
+                        is_system_off = db_manager.get_auto_pickup_global_status() == 'OFF'
+                        is_whitelisted = chat_id == -1003539520778
+                        if status == 'WAITING_SETUP':
+                            log.info(
+                                f"♻️ Re-showing setup for msg {waiting_orig_msg_id} "
+                                f"(new pickup msg {message.message_id})"
+                            )
+                            if not is_system_off or is_whitelisted:
+                                reshow_interactive_setup_for_order(bot, chat_id, waiting_order)
+                            return
+                        log.info(
+                            f"⚠️ Duplicate pickup blocked: active {status} for msg {waiting_orig_msg_id}, "
+                            f"new msg {message.message_id}"
+                        )
+                        if not is_system_off or is_whitelisted:
+                            show_duplicate_alert(bot, message, waiting_target_date, message.message_id)
+                        return
+
+                    cleanup_pickup_intermediate_msgs(bot, chat_id, waiting_orig_msg_id)
                     
                     if status == 'WAITING_SETUP':
                         # 💡 Phase 1: If in setup phase, show interactive setup again
@@ -629,7 +735,7 @@ def handle(bot, message, force_pickup=False):
                         today_str = now.strftime("%d-%m-%Y")
                         date_type = "today" if target_date_str == today_str else "tomorrow"
                         
-                        show_interactive_setup(bot, chat_id, waiting_order[2], date_type)
+                        show_interactive_setup(bot, chat_id, waiting_orig_msg_id, date_type)
                     else:
                         from handlers import pickup_handler
                         pickup_handler.show_pickup_reconfirmation(bot, chat_id, waiting_order[0])
@@ -673,13 +779,11 @@ def handle(bot, message, force_pickup=False):
         Decide the action:
         1. 'PICKUP': If the user is EXPLICITLY requesting a new pickup order OR inquiring about pickup availability (e.g., "pick up လာယူပေးပါ", "လာကောက်ပေးပါ", "မနက်ဖြန်အတွက် တင်ပေးပါ", "pick up ရဦးမလား", "ဒီနေ့ pickup ရှိလား").
            CRITICAL: If the message is just sharing a list (e.g., "စာရင်းလေးပါ", "pickup စာရင်း"), discussing a past order, or mentioning "pickup" without requesting a new one or inquiring about availability, set action to 'OTHER'.
-        2. 'LOOKUP_LOCATION': If the user is asking for the township of a specific location name (e.g., "Hledan က ဘယ်မြို့နယ်လဲ", "Junction City က ဘယ်မြို့နယ်ထဲမှာလဲ").
-        3. 'OTHER': If it's casual conversation, greetings, sharing a list, or unrelated to a new pickup request.
+        2. 'OTHER': Delivery/pricing/location/COD questions, casual conversation, greetings, sharing a list, or unrelated to a new pickup request.
 
         Output ONLY a JSON object with:
-        - action: "PICKUP", "LOOKUP_LOCATION", or "OTHER"
+        - action: "PICKUP" or "OTHER"
         - is_pickup_request: boolean (True if this is a request to place a NEW pickup order OR an inquiry about pickup availability. If it's just sharing a list or info, set to false)
-        - location_query: If action is 'LOOKUP_LOCATION', extract the location name they are asking about (e.g., "Hledan", "Junction City"). Otherwise null.
         - is_new_request: boolean (True if action is 'PICKUP' and it's a clear request to start a new order or an inquiry about availability)
         - vehicle: "Bicycle" or "Car" (Default to null if not mentioned)
         - date_type: "today" or "tomorrow" (If the user explicitly mentions "today" (ဒီနေ့) or "tomorrow" (မနက်ဖြန်), set accordingly. Otherwise, default to null)
@@ -714,25 +818,27 @@ def handle(bot, message, force_pickup=False):
         action = extracted_data.get("action", "OTHER")
 
         if action == 'LOOKUP_LOCATION':
-            location_query = extracted_data.get("location_query")
-            if location_query:
-                log.info(f"🔍 Location Lookup triggered for: {location_query}")
-                township, source = location_service.get_location_with_fallback(location_query)
-                
-                if township:
-                    reply_text = f"📍 {location_query} သည် {township} အတွင်း တည်ရှိပါသည်။ (Source: {source})"
-                else:
-                    reply_text = f"📍 {location_query} ၏ မြို့နယ်ကို ရှာမတွေ့ပါခင်ဗျာ။"
-                
-                markup = types.InlineKeyboardMarkup()
-                markup.add(types.InlineKeyboardButton("💬 Admin နှင့်ပြောမည်", callback_data=f"ap_admin_0_{message.message_id}"))
-                bot.reply_to(message, reply_text, reply_markup=markup)
-                return
+            log.info(f"🔇 Location lookup skipped (manual /ai only): msg {message.message_id}")
+            return
 
         if not force_pickup:
-            if action != 'PICKUP' or not extracted_data.get("is_new_request", True) or not extracted_data.get("is_pickup_request", True):
-                log.info(f"ℹ️ Message {message.message_id} is not a pickup request (Action: {action}). Skipping auto_pickup.")
-                return
+            is_pickup = (
+                action == 'PICKUP'
+                and extracted_data.get("is_new_request", True)
+                and extracted_data.get("is_pickup_request", True)
+            )
+            if not is_pickup:
+                if looks_like_pickup_request(text):
+                    log.info(
+                        f"🔑 Keyword fallback: treating msg {message.message_id} as PICKUP (AI said {action})"
+                    )
+                    extracted_data = _keyword_pickup_extract(text, extracted_data)
+                    action = 'PICKUP'
+                else:
+                    log.info(
+                        f"ℹ️ Message {message.message_id} is not a pickup request (Action: {action}). Skipping auto_pickup."
+                    )
+                    return
 
         # 🛡️ Anti-Spam/Duplicate Trigger Check (Prevent multiple alerts for rapid-fire messages)
         if not force_pickup and db_manager.check_active_pickup_session(chat_id, minutes=3):
@@ -772,10 +878,7 @@ def handle(bot, message, force_pickup=False):
             log.info(f"🕒 Time {current_time}: Auto-assigning TODAY (Strict)")
             # 🛡️ Morning Duplicate Check: Check if pickup already exists for today
             today_str = now.strftime("%d-%m-%Y")
-            if duplicate_checker.check_duplicate_pickup(chat_id, today_str):
-                log.info(f"⚠️ Morning duplicate pickup detected for {chat_id} on {today_str}.")
-                if not is_system_off or is_whitelisted:
-                    show_duplicate_alert(bot, message, today_str, message.message_id)
+            if handle_pickup_date_conflict(bot, message, chat_id, today_str, is_system_off, is_whitelisted):
                 return
             if not is_system_off or is_whitelisted:
                 ask_pickup_confirmation(bot, message, "today", message.message_id)
@@ -786,11 +889,7 @@ def handle(bot, message, force_pickup=False):
             # 🛡️ Evening: AI assigns tomorrow; only check tomorrow duplicate
             # 💡 Today's pickup does NOT block tomorrow's pickup request
             tomorrow_str = (now + timedelta(days=1)).strftime("%d-%m-%Y")
-            tomorrow_dup = duplicate_checker.check_duplicate_pickup(chat_id, tomorrow_str)
-            if tomorrow_dup:
-                log.info(f"⚠️ Evening duplicate pickup detected for {chat_id} on {tomorrow_str}.")
-                if not is_system_off or is_whitelisted:
-                    show_duplicate_alert(bot, message, tomorrow_str, message.message_id)
+            if handle_pickup_date_conflict(bot, message, chat_id, tomorrow_str, is_system_off, is_whitelisted):
                 return
             if not is_system_off or is_whitelisted:
                 ask_pickup_confirmation(bot, message, "tomorrow", message.message_id)
@@ -799,10 +898,17 @@ def handle(bot, message, force_pickup=False):
             # ၁၁ နာရီနဲ့ ၃ နာရီကြားမှာ Staff အတည်ပြုချက် အမြဲတောင်းပါမည် (ဒီနေ့ ရ/မရ သိရန်)
             log.info(f"🕒 Time {current_time}: Entering Mid-day Staff Decision Flow")
             today_str = now.strftime("%d-%m-%Y")
-            # 💡 and→or Logic: Check today OR tomorrow (if either exists, show duplicate)
-            is_dup, dup_date = duplicate_checker.check_any_duplicate(chat_id, 'today')
+            tomorrow_str = (now + timedelta(days=1)).strftime("%d-%m-%Y")
+            for check_date in (today_str, tomorrow_str):
+                setup_order = duplicate_checker.get_setup_in_progress_order(chat_id, check_date)
+                if setup_order:
+                    log.info(f"♻️ Re-showing setup form for msg {setup_order[2]} on {check_date} (Mid-day)")
+                    if not is_system_off or is_whitelisted:
+                        reshow_interactive_setup_for_order(bot, chat_id, setup_order)
+                    return
+            is_dup, dup_date = duplicate_checker.check_any_submitted_duplicate(chat_id, 'today')
             if is_dup:
-                log.info(f"⚠️ Duplicate pickup detected for {chat_id} on {dup_date} (Mid-day).")
+                log.info(f"⚠️ Submitted duplicate pickup detected for {chat_id} on {dup_date} (Mid-day).")
                 if not is_system_off or is_whitelisted:
                     show_duplicate_alert(bot, message, dup_date, message.message_id)
                 return
@@ -816,9 +922,16 @@ def handle(bot, message, force_pickup=False):
         target_date_str = (msg_dt if date_type == "today" else msg_dt + timedelta(days=1)).strftime("%d-%m-%Y")
         
         # 🛡️ Final Duplicate Check: Today OR Tomorrow (and→or logic)
-        is_dup, dup_date = duplicate_checker.check_any_duplicate(chat_id, date_type)
+        for check_date in ([target_date_str] if date_type == 'tomorrow' else [target_date_str, (now + timedelta(days=1)).strftime("%d-%m-%Y")]):
+            setup_order = duplicate_checker.get_setup_in_progress_order(chat_id, check_date)
+            if setup_order:
+                log.info(f"♻️ Re-showing setup form for msg {setup_order[2]} on {check_date}")
+                if not is_system_off or is_whitelisted:
+                    reshow_interactive_setup_for_order(bot, chat_id, setup_order)
+                return
+        is_dup, dup_date = duplicate_checker.check_any_submitted_duplicate(chat_id, date_type)
         if is_dup:
-            log.info(f"⚠️ Duplicate pickup detected for {chat_id} on {dup_date}. Skipping Pick Up alert.")
+            log.info(f"⚠️ Submitted duplicate pickup detected for {chat_id} on {dup_date}. Skipping Pick Up alert.")
             if not is_system_off or is_whitelisted:
                 show_duplicate_alert(bot, message, dup_date, message.message_id)
             return
@@ -853,6 +966,54 @@ def handle(bot, message, force_pickup=False):
     except Exception as e:
         log.error(f"❌ Auto Pickup Handle Error: {e}")
         bot.reply_to(message, "⚠️ Auto Pickup လုပ်ဆောင်စဉ် အမှားတစ်ခု ဖြစ်သွားပါသည်။")
+
+def _date_type_for_target(target_date_str):
+    tz = pytz.timezone('Asia/Yangon')
+    today_str = datetime.now(tz).strftime("%d-%m-%Y")
+    return "today" if target_date_str == today_str else "tomorrow"
+
+
+def reshow_interactive_setup_for_order(bot, chat_id, order):
+    """Re-display the open interactive pickup form (WAITING_SETUP, submit not pressed)."""
+    orig_msg_id = order[2]
+    target_date_str = order[3]
+    vehicle = order[6]
+    remark = order[5]
+    date_type = _date_type_for_target(target_date_str)
+    edit_msg_id = None
+    try:
+        full_order = db_manager.get_pickup_order(order[0])
+        if full_order and len(full_order) > 10 and full_order[10]:
+            edit_msg_id = full_order[10]
+    except Exception:
+        pass
+    show_interactive_setup(
+        bot, chat_id, orig_msg_id, date_type,
+        vehicle=vehicle, remark=remark, edit_msg_id=edit_msg_id,
+    )
+
+
+def handle_pickup_date_conflict(bot, message, chat_id, target_date_str, is_system_off, is_whitelisted):
+    """
+    Resolve same-date pickup conflict.
+    WAITING_SETUP → re-show form; submitted statuses → duplicate alert.
+    Returns True if handled (caller should stop).
+    """
+    setup_order = duplicate_checker.get_setup_in_progress_order(chat_id, target_date_str)
+    if setup_order:
+        log.info(f"♻️ Re-showing setup form for msg {setup_order[2]} on {target_date_str}")
+        if not is_system_off or is_whitelisted:
+            reshow_interactive_setup_for_order(bot, chat_id, setup_order)
+        return True
+
+    if duplicate_checker.check_submitted_duplicate(chat_id, target_date_str):
+        log.info(f"⚠️ Submitted duplicate pickup on {target_date_str} for chat {chat_id}")
+        if not is_system_off or is_whitelisted:
+            show_duplicate_alert(bot, message, target_date_str, message.message_id)
+        return True
+
+    return False
+
 
 def show_duplicate_alert(bot, message, target_date, orig_msg_id):
     """ Enhanced duplicate alert with dynamic date label, cancel button, and split today/tomorrow display """
@@ -910,8 +1071,15 @@ def ask_pickup_confirmation(bot, message, date_type, orig_msg_id):
             types.InlineKeyboardButton("❌ Pick Up မဟုတ်ပါ", callback_data=f"ap_cancel_{orig_msg_id}")
         )
         
+        chat_id = message.chat.id
+        shop_name = get_best_shop_name(bot, chat_id)
+        db_manager.upsert_pickup_queue(
+            chat_id, orig_msg_id, target_date_str, shop_name, None, None, status='WAITING_SETUP'
+        )
+
         msg = bot.reply_to(message, text, reply_markup=markup)
-        db_manager.add_pickup_intermediate_msg(message.chat.id, orig_msg_id, msg.message_id)
+        db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, msg.message_id)
+        log.info(f"📋 Pickup confirmation queued (WAITING_SETUP) for msg {orig_msg_id} on {target_date_str}")
     except Exception as e:
         log.error(f"❌ ask_pickup_confirmation Error: {e}")
 
@@ -1010,9 +1178,14 @@ def show_interactive_setup(bot, chat_id, orig_msg_id, date_type, vehicle=None, r
                 bot.edit_message_text(text, chat_id, edit_msg_id, reply_markup=markup, parse_mode="HTML")
             except Exception as ee:
                 if "message is not modified" not in str(ee): raise ee
+            form_msg_id = edit_msg_id
         else:
             sent_msg = bot.send_message(chat_id, text, reply_to_message_id=orig_msg_id, reply_markup=markup, parse_mode="HTML")
             db_manager.add_pickup_intermediate_msg(chat_id, orig_msg_id, sent_msg.message_id)
+            form_msg_id = sent_msg.message_id
+
+        if order:
+            db_manager.update_pickup_field(order[0], 'shop_msg_id', form_msg_id)
             
     except Exception as e:
         log.error(f"❌ show_interactive_setup Error: {e}")
@@ -1273,7 +1446,7 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
                         reply_markup=markup
                     )
             else:
-                # Try editing as caption first (if it was a photo)
+                # Photo alert (screenshot) → caption only; text alert → text edit only
                 try:
                     bot.edit_message_caption(
                         caption=new_caption,
@@ -1282,15 +1455,24 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
                         parse_mode="HTML",
                         reply_markup=markup
                     )
-                except Exception as e:
-                    # If it fails, it might be a text message
-                    bot.edit_message_text(
-                        text=new_caption,
-                        chat_id=alert_chat_id,
-                        message_id=alert_msg_id,
-                        parse_mode="HTML",
-                        reply_markup=markup
-                    )
+                except Exception as cap_e:
+                    cap_err = str(cap_e)
+                    if "message is not modified" in cap_err:
+                        pass
+                    elif "there is no caption" in cap_err.lower():
+                        try:
+                            bot.edit_message_text(
+                                text=new_caption,
+                                chat_id=alert_chat_id,
+                                message_id=alert_msg_id,
+                                parse_mode="HTML",
+                                reply_markup=markup
+                            )
+                        except Exception as text_e:
+                            if "message is not modified" not in str(text_e):
+                                raise text_e
+                    else:
+                        raise cap_e
         except Exception as edit_e:
             if "message is not modified" not in str(edit_e):
                 log.error(f"❌ Failed to edit central alert: {edit_e}")
@@ -1464,7 +1646,80 @@ def send_admin_pickup_alert(bot, chat_id, msg_id, os_name, target_date, vehicle,
         log.error(f"❌ Failed to send admin pickup notification: {e}")
         return None
 
+_SUBMIT_REMINDER_SECONDS = 60
+_submit_reminder_timers = {}
+_submit_reminder_sent = set()
+
+
+def cancel_submit_reminder(chat_id, orig_msg_id, clear_sent=False):
+    """Cancel pending submit reminder timer for this pickup setup session."""
+    key = (chat_id, orig_msg_id)
+    timer = _submit_reminder_timers.pop(key, None)
+    if timer:
+        timer.cancel()
+    if clear_sent:
+        _submit_reminder_sent.discard(key)
+
+
+def _fire_submit_reminder(bot, chat_id, orig_msg_id, date_type):
+    """Send one-time nudge when vehicle is chosen but submit was not pressed."""
+    key = (chat_id, orig_msg_id)
+    _submit_reminder_timers.pop(key, None)
+
+    if key in _submit_reminder_sent:
+        return
+
+    try:
+        order = db_manager.get_pickup_order_by_msg(orig_msg_id, chat_id)
+        if not order:
+            return
+
+        status = order[7]
+        vehicle = order[6]
+        if status != 'WAITING_SETUP':
+            return
+        if not vehicle or vehicle == 'none':
+            return
+
+        _submit_reminder_sent.add(key)
+        reminder_text = (
+            "💡 Pickup လေး auto တင်ပေးနိုင်ရန် "
+            "**🚀 Pickup တင်ရန် (နှိပ်ပါ)** ခလုတ်ကို နှိပ်ပေးပါနော်။"
+        )
+        bot.send_message(
+            chat_id,
+            reminder_text,
+            reply_to_message_id=orig_msg_id,
+            parse_mode="Markdown",
+        )
+        log.info(f"🔔 Submit reminder sent for msg {orig_msg_id} in chat {chat_id}")
+    except Exception as e:
+        log.error(f"❌ Submit reminder error: {e}")
+
+
+def schedule_submit_reminder(bot, chat_id, orig_msg_id, date_type):
+    """Schedule a one-minute reminder after vehicle selection (interactive setup)."""
+    cancel_submit_reminder(chat_id, orig_msg_id)
+    key = (chat_id, orig_msg_id)
+    if key in _submit_reminder_sent:
+        return
+
+    timer = threading.Timer(
+        _SUBMIT_REMINDER_SECONDS,
+        _fire_submit_reminder,
+        args=(bot, chat_id, orig_msg_id, date_type),
+    )
+    timer.daemon = True
+    _submit_reminder_timers[key] = timer
+    timer.start()
+    log.info(
+        f"⏰ Submit reminder scheduled in {_SUBMIT_REMINDER_SECONDS}s "
+        f"for msg {orig_msg_id} in chat {chat_id}"
+    )
+
+
 def cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id, exclude_msg_id=None):
+    cancel_submit_reminder(chat_id, orig_msg_id, clear_sent=True)
     try:
         msg_ids = db_manager.get_pickup_intermediate_msgs(chat_id, orig_msg_id)
         for mid in msg_ids:

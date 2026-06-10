@@ -223,6 +223,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             
             # Refresh Interactive Message
             auto_pickup.show_interactive_setup(bot, chat_id, orig_msg_id, date_type, vehicle=vehicle, edit_msg_id=call.message.message_id)
+            auto_pickup.schedule_submit_reminder(bot, chat_id, orig_msg_id, date_type)
             bot.answer_callback_query(call.id, f"✅ {vehicle} ကို ရွေးချယ်လိုက်ပါသည်")
         except Exception as e:
             log.error(f"❌ Interactive Vehicle Callback Error: {e}")
@@ -234,11 +235,13 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     def handle_interactive_remark_callback(call):
         """ Interactive Setup: Remark Request """
         try:
+            from modules import auto_pickup
             # format: ap_irm_{orig_msg_id}_{date_type}_write
             parts = call.data.split('_')
             orig_msg_id = int(parts[2])
             date_type = parts[3]
-            
+            auto_pickup.cancel_submit_reminder(call.message.chat.id, orig_msg_id)
+
             msg = bot.send_message(call.message.chat.id, "📝 ထည့်ချင်တဲ့ **မှတ်ချက်** ကို ရိုက်ထည့်ပေးပါခင်ဗျာ။", reply_markup=telebot.types.ForceReply())
             db_manager.add_pickup_intermediate_msg(call.message.chat.id, orig_msg_id, msg.message_id)
             bot.register_next_step_handler(msg, save_manual_remark_interactive, bot, orig_msg_id, date_type, call.message.message_id, msg.message_id)
@@ -267,6 +270,8 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             if not vehicle or vehicle == "none":
                 bot.answer_callback_query(call.id, "⚠️ စက်ဘီး/ကား ကိုတော့မဖြစ်မနေရွေးပေးပါနော်", show_alert=True)
                 return
+
+            auto_pickup.cancel_submit_reminder(chat_id, orig_msg_id)
 
             from modules.pickup_dates import get_target_date_str
             target_date = get_target_date_str(date_type, use_message_timestamp=False)
@@ -358,6 +363,8 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 log.info(f"🗑️ Deleted OS Group bot message {call.message.message_id} in chat {chat_id}")
             except Exception as del_e:
                 log.warning(f"⚠️ Failed to delete OS Group bot message {call.message.message_id}: {del_e}")
+
+            auto_pickup.cancel_submit_reminder(chat_id, orig_msg_id, clear_sent=True)
 
             # Clean up all intermediate bot messages
             auto_pickup.cleanup_pickup_intermediate_msgs(bot, chat_id, orig_msg_id)
@@ -540,26 +547,43 @@ def register_pickup_handlers(bot: telebot.TeleBot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_mantype_'))
     def handle_manual_type_mapping_callback(call):
         """ Pickup Alert ထဲက Manual Type ခလုတ်ကို နှိပ်လိုက်သည့်အခါ (Mapping Missing အတွက်) """
+        admin_topic_id = int(os.getenv('ADMIN_ALERT_TOPIC_ID', 878))
         try:
             # format: ap_mantype_{orig_msg_id}_{chat_id}_{queue_id}
             parts = call.data.split('_')
             orig_msg_id = int(parts[2])
             chat_id = int(parts[3])
             queue_id = int(parts[4]) if len(parts) > 4 and parts[4] != "0" else None
-            topic_id = call.message.message_thread_id  # 💡 Forum topic ထဲမှာ ရှိနေစေရန်
-            
+            topic_id = call.message.message_thread_id or admin_topic_id
+
+            bot.answer_callback_query(
+                call.id,
+                "⌨️ Bot စာကို Reply ပေးပြီး Website OS Name အတိအကျ ရိုက်ထည့်ပါ",
+                show_alert=True
+            )
+
+            log.info(f"⌨️ Manual Type clicked: chat={chat_id}, orig_msg={orig_msg_id}, queue={queue_id}")
+
             sent_msg = bot.send_message(
                 call.message.chat.id,
-                "📝 Website မှာရှိတဲ့ **OS Name အတိအကျ** ကို ရိုက်ထည့်ပေးပါခင်ဗျာ။",
-                reply_markup=telebot.types.ForceReply(),
-                message_thread_id=topic_id
+                "⌨️ <b>Manual Type</b>\n\n"
+                "Website မှာရှိတဲ့ <b>OS Name အတိအကျ</b> ကို "
+                "<b>ဤစာကို Reply</b> ပေးပြီး ရိုက်ထည့်ပေးပါခင်ဗျာ။\n\n"
+                "<i>ဥပမာ: Paradise Fashion</i>",
+                parse_mode="HTML",
+                message_thread_id=topic_id,
+                reply_to_message_id=call.message.message_id
             )
-            bot.register_next_step_handler(sent_msg, save_manual_type_mapping, bot, chat_id, orig_msg_id, queue_id, sent_msg.message_id, topic_id)
+            bot.register_next_step_handler(
+                sent_msg, save_manual_type_mapping, bot,
+                chat_id, orig_msg_id, queue_id, sent_msg.message_id, topic_id
+            )
         except Exception as e:
-            log.error(f"❌ Manual Type Mapping Callback Error: {e}")
-        finally:
-            try: bot.answer_callback_query(call.id)
-            except Exception: pass
+            log.error(f"❌ Manual Type Mapping Callback Error: {e}", exc_info=True)
+            try:
+                bot.answer_callback_query(call.id, "❌ အမှားဖြစ်သွားပါသည်။ ထပ်ကြိုးစားပါ", show_alert=True)
+            except Exception:
+                pass
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('ap_conf_'))
     def handle_pickup_confirm_callback(call):
@@ -761,7 +785,8 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             chat_id = call.message.chat.id
             
             log.info(f"🚨 Admin Support Request: queue_id={queue_id}, msg_id={orig_msg_id}, chat={chat_id}")
-            
+            auto_pickup.cancel_submit_reminder(chat_id, orig_msg_id, clear_sent=True)
+
             # 🛡️ Full Reset: Pickup နဲ့ ပတ်သက်သမျှ အကုန်ရှင်းမည် (Admin နှင့်ပြောမည် ဖြစ်သောကြောင့်)
             with db_manager.get_connection() as conn:
                 # ၁။ Pickup Queue ထဲက ဒီ message နဲ့ ပတ်သက်တာတွေ အကုန်ဖျက်မည်
@@ -1170,7 +1195,23 @@ def save_manual_type_mapping(message, bot, chat_id, orig_msg_id, queue_id, promp
                 bot, orig_msg_id, chat_id, "⏳ Processing",
                 queue_id=queue_id if queue_id else None
             )
-        
+
+        confirm_msg = bot.send_message(
+            message.chat.id,
+            f"✅ Mapping သိမ်းပြီး: <b>{util.escape(website_name)}</b>\n⏳ Pickup ပြန်တင်နေပါပြီ...",
+            parse_mode="HTML",
+            message_thread_id=thread_id
+        )
+        import threading
+        def _del_confirm():
+            import time
+            time.sleep(15)
+            try:
+                bot.delete_message(message.chat.id, confirm_msg.message_id)
+            except Exception:
+                pass
+        threading.Thread(target=_del_confirm, daemon=True).start()
+
         log.info(f"🎯 Manual Type: Mapped chat {chat_id} to '{website_name}', retrying failed pickups. OS: {website_name}")
     except Exception as e:
         log.error(f"❌ Save Manual Type Mapping Error: {e}")

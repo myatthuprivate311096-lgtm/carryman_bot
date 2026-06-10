@@ -3,7 +3,7 @@ import sqlite3
 import time
 import os
 import pytz
-from datetime import datetime
+from datetime import datetime, timedelta
 from contextlib import contextmanager
 from dotenv import load_dotenv
 from logger import log
@@ -28,9 +28,10 @@ def clean_shop_name(raw_name):
     # Unicode string အဖြစ် သေချာအောင်လုပ်ခြင်း
     raw_str = str(raw_name)
     
-    # 1. 🤝CarryMan (Emoji ပါသည်ဖြစ်စေ၊ မပါသည်ဖြစ်စေ) ကို ဖယ်ရှားခြင်း
-    # Case-insensitive replace
-    cleaned = re.sub(r'🤝?\s*CarryMan\s*', '', raw_str, flags=re.IGNORECASE)
+    # 1. 🤝 suffix နှင့် Carry Man / CarryMan branding ကို ဖယ်ရှားခြင်း
+    if '🤝' in raw_str:
+        raw_str = raw_str.split('🤝')[0]
+    cleaned = re.sub(r'\s*Carry\s*Man\s*', '', raw_str, flags=re.IGNORECASE)
     
     # 2. (***) ဖြင့် ရေးထားသည်များကို ဖယ်ရှားခြင်း
     cleaned = re.sub(r'\(.*?\)', '', cleaned)
@@ -1176,6 +1177,56 @@ def get_distinct_os_group_chats():
     finally:
         conn.close()
 
+def normalize_bot_chat_id(chat_id):
+    """Telethon/Bot API chat_id format ကို Telegram Bot API supergroup ID (-100...) သို့ ပြောင်းသည်."""
+    try:
+        cid = int(chat_id)
+    except (TypeError, ValueError):
+        return chat_id
+    s = str(cid)
+    if s.startswith("-100"):
+        return cid
+    if cid < 0:
+        return cid
+    return int(f"-100{cid}")
+
+def get_os_group_broadcast_targets():
+    """OS Group တစ်ခုလျှင် တစ်ကြိမ်သာ — General (1) အရင်၊ ပြီးမှ DB topic fallback."""
+    conn = get_connection()
+    try:
+        rows = conn.execute(
+            """
+            SELECT chat_id, shop_name, topic_id, target_topic_id
+            FROM os_groups
+            WHERE chat_id IS NOT NULL
+            ORDER BY shop_name, target_topic_id
+            """
+        ).fetchall()
+    finally:
+        conn.close()
+
+    grouped = {}
+    for chat_id, shop_name, topic_id, target_tid in rows:
+        norm = normalize_bot_chat_id(chat_id)
+        entry = grouped.setdefault(norm, {"shop_name": shop_name, "pickup_topic": None, "all_topics": []})
+        if topic_id not in entry["all_topics"]:
+            entry["all_topics"].append(topic_id)
+        if target_tid == 1 and entry["pickup_topic"] is None:
+            entry["pickup_topic"] = topic_id
+
+    result = []
+    for chat_id, data in sorted(grouped.items(), key=lambda item: item[1]["shop_name"] or ""):
+        topic_ids = [1]
+        if data["pickup_topic"] is not None and data["pickup_topic"] not in topic_ids:
+            topic_ids.append(data["pickup_topic"])
+        for topic_id in data["all_topics"]:
+            if topic_id not in topic_ids:
+                topic_ids.append(topic_id)
+        if 2 not in topic_ids:
+            topic_ids.append(2)
+        result.append((chat_id, data["shop_name"], topic_ids))
+    return result
+
 def delete_os_group_by_chat_id(chat_id):
     conn = get_connection()
     try:
@@ -1782,12 +1833,14 @@ def get_stale_pickup_orders():
     finally:
         conn.close()
 def check_existing_pickup(chat_id, target_date):
-    """ သတ်မှတ်ထားတဲ့ ရက်စွဲနဲ့ ဆိုင် (Chat ID) အတွက် PENDING, PROCESSING သို့မဟုတ် SUCCESS ဖြစ်နေသော Pickup ရှိမရှိ စစ်ဆေးခြင်း """
+    """ သတ်မှတ်ထားတဲ့ ရက်စွဲနဲ့ ဆိုင် (Chat ID) အတွက် submitted pickup ရှိမရှိ စစ်ဆေးခြင်း """
     conn = get_connection()
     try:
+        clean_id = int(str(chat_id).replace("-100", ""))
         res = conn.execute(
-            "SELECT 1 FROM pickup_queue WHERE chat_id = ? AND target_date = ? AND status IN ('PENDING', 'PROCESSING', 'SUCCESS')",
-            (chat_id, target_date)
+            "SELECT 1 FROM pickup_queue WHERE chat_id IN (?, ?) AND target_date = ? "
+            "AND status IN ('WAITING_CONFIRM', 'PENDING', 'PROCESSING', 'SUCCESS')",
+            (chat_id, clean_id, target_date)
         ).fetchone()
         return res is not None
     finally:
@@ -2251,11 +2304,12 @@ def get_waiting_confirm_order(chat_id):
     """ လက်ရှိ chat တွင် အတည်ပြုချက်စောင့်ဆိုင်းနေသော (WAITING_CONFIRM သို့မဟုတ် WAITING_SETUP) အော်ဒါရှိမရှိ စစ်ဆေးခြင်း """
     conn = get_connection()
     try:
+        clean_id = int(str(chat_id).replace("-100", ""))
         res = conn.execute(
             "SELECT id, chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status, created_at "
-            "FROM pickup_queue WHERE chat_id = ? AND status IN ('WAITING_CONFIRM', 'WAITING_SETUP') "
+            "FROM pickup_queue WHERE chat_id IN (?, ?) AND status IN ('WAITING_CONFIRM', 'WAITING_SETUP') "
             "ORDER BY created_at DESC LIMIT 1",
-            (chat_id,)
+            (chat_id, clean_id)
         ).fetchone()
         return res
     finally:
@@ -2383,27 +2437,27 @@ def reset_user_state(user_id):
 
 def reset_today_pickups(chat_id):
     """
-    သတ်မှတ်ထားသော chat_id အတွက် ယနေ့ရက်စွဲဖြင့် ရှိနေသော pickup များကို ဖျက်ခြင်းနှင့်
+    သတ်မှတ်ထားသော chat_id အတွက် ယနေ့ နှင့် မနက်ဖြန် ရက်စွဲဖြင့် ရှိနေသော pickup များကို ဖျက်ခြင်းနှင့်
     message_logs status ကို PENDING ပြန်ချခြင်း
     """
     conn = get_connection()
     try:
         tz = pytz.timezone('Asia/Yangon')
-        today_str = datetime.now(tz).strftime("%d-%m-%Y")
+        now = datetime.now(tz)
+        today_str = now.strftime("%d-%m-%Y")
+        tomorrow_str = (now + timedelta(days=1)).strftime("%d-%m-%Y")
         
-        # ၁။ pickup_queue မှ ယနေ့ record များကို ဖျက်ခြင်း
+        # ၁။ pickup_queue မှ ယနေ့ နှင့် မနက်ဖြန် record များကို ဖျက်ခြင်း
         # 💡 Chat ID Mismatch Fix
         clean_id = int(str(chat_id).replace("-100", ""))
         
         res_queue = conn.execute(
-            "DELETE FROM pickup_queue WHERE chat_id IN (?, ?) AND target_date = ?",
-            (chat_id, clean_id, today_str)
+            "DELETE FROM pickup_queue WHERE chat_id IN (?, ?) AND target_date IN (?, ?)",
+            (chat_id, clean_id, today_str, tomorrow_str)
         )
         queue_count = res_queue.rowcount
         
         # ၂။ message_logs မှ ယနေ့စာများကို PENDING ပြန်ချခြင်း (HANDLED_BY_AI သို့မဟုတ် SUCCESS ဖြစ်နေလျှင်)
-        # ယနေ့ timestamp range ကို တွက်ချက်ခြင်း
-        now = datetime.now(tz)
         start_of_day = int(now.replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
         
         res_logs = conn.execute(
@@ -2414,7 +2468,7 @@ def reset_today_pickups(chat_id):
         logs_count = res_logs.rowcount
         
         conn.commit()
-        log.info(f"♻️ Reset Today's Pickups for {chat_id}: {queue_count} queue items deleted, {logs_count} logs reset.")
+        log.info(f"♻️ Reset Pickups for {chat_id} ({today_str}, {tomorrow_str}): {queue_count} queue items deleted, {logs_count} logs reset.")
         return queue_count, logs_count
     except Exception as e:
         log.error(f"❌ reset_today_pickups Error: {e}")

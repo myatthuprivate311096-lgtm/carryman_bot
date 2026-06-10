@@ -9,11 +9,26 @@ import pytz
 import db_manager
 from logger import log
 
-# Default statuses that count as "existing" (blocks new pickup)
-DEFAULT_DUPLICATE_STATUSES = ['PENDING', 'PROCESSING', 'SUCCESS']
+# Submitted / in-flight pickups — show "already exists" alert
+SUBMITTED_DUPLICATE_STATUSES = ['WAITING_CONFIRM', 'PENDING', 'PROCESSING', 'SUCCESS']
+
+# OS still filling the form (Submit not pressed) — re-show form, no duplicate alert
+SETUP_IN_PROGRESS_STATUSES = ['WAITING_SETUP']
+
+# Default statuses for generic duplicate queries (submitted only)
+DEFAULT_DUPLICATE_STATUSES = SUBMITTED_DUPLICATE_STATUSES
 
 # Statuses that are "soft" — allow new pickup
-SOFT_STATUSES = ['WAITING_CONFIRM', 'FAILED', 'CANCELLED', 'WAITING_SETUP']
+SOFT_STATUSES = ['FAILED', 'CANCELLED']
+
+
+def _chat_id_variants(chat_id):
+    """Return (full_id, clean_id) for Telegram supergroup ID matching."""
+    try:
+        clean_id = int(str(chat_id).replace("-100", ""))
+    except (TypeError, ValueError):
+        clean_id = chat_id
+    return chat_id, clean_id
 
 
 def check_duplicate_pickup(chat_id, target_date_str, statuses=None):
@@ -23,7 +38,7 @@ def check_duplicate_pickup(chat_id, target_date_str, statuses=None):
     Args:
         chat_id: Telegram chat ID
         target_date_str: Date string in DD-MM-YYYY format
-        statuses: List of statuses to check against (default: PENDING, PROCESSING, SUCCESS)
+        statuses: List of statuses to check against (default: active pickup lifecycle statuses)
 
     Returns:
         True if duplicate exists, False otherwise.
@@ -32,11 +47,12 @@ def check_duplicate_pickup(chat_id, target_date_str, statuses=None):
         statuses = DEFAULT_DUPLICATE_STATUSES
 
     placeholders = ','.join(['?' for _ in statuses])
+    full_id, clean_id = _chat_id_variants(chat_id)
     conn = db_manager.get_connection()
     try:
         res = conn.execute(
-            f"SELECT 1 FROM pickup_queue WHERE chat_id = ? AND target_date = ? AND status IN ({placeholders})",
-            (chat_id, target_date_str, *statuses)
+            f"SELECT 1 FROM pickup_queue WHERE chat_id IN (?, ?) AND target_date = ? AND status IN ({placeholders})",
+            (full_id, clean_id, target_date_str, *statuses)
         ).fetchone()
         return res is not None
     except Exception as e:
@@ -44,6 +60,61 @@ def check_duplicate_pickup(chat_id, target_date_str, statuses=None):
         return False
     finally:
         conn.close()
+
+
+def _fetch_pickup_order(chat_id, target_date_str, statuses):
+    """Return the newest pickup_queue row for chat/date/statuses, or None."""
+    placeholders = ','.join(['?' for _ in statuses])
+    full_id, clean_id = _chat_id_variants(chat_id)
+    conn = db_manager.get_connection()
+    try:
+        return conn.execute(
+            f"SELECT id, chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status, created_at "
+            f"FROM pickup_queue WHERE chat_id IN (?, ?) AND target_date = ? AND status IN ({placeholders}) "
+            f"ORDER BY created_at DESC LIMIT 1",
+            (full_id, clean_id, target_date_str, *statuses),
+        ).fetchone()
+    except Exception as e:
+        log.error(f"❌ duplicate_checker._fetch_pickup_order Error: {e}")
+        return None
+    finally:
+        conn.close()
+
+
+def get_setup_in_progress_order(chat_id, target_date_str):
+    """Return WAITING_SETUP order (form open, submit not pressed) or None."""
+    return _fetch_pickup_order(chat_id, target_date_str, SETUP_IN_PROGRESS_STATUSES)
+
+
+def check_submitted_duplicate(chat_id, target_date_str):
+    """True if a submitted/in-flight pickup already exists for this date."""
+    return _fetch_pickup_order(chat_id, target_date_str, SUBMITTED_DUPLICATE_STATUSES) is not None
+
+
+def check_any_submitted_duplicate(chat_id, date_type='today'):
+    """
+    Check submitted duplicates for today and (when date_type is today) tomorrow.
+
+    Returns:
+        (is_duplicate: bool, existing_date_str or None)
+    """
+    tz = pytz.timezone('Asia/Yangon')
+    now = datetime.now(tz)
+    today_str = now.strftime("%d-%m-%Y")
+    tomorrow_str = (now + timedelta(days=1)).strftime("%d-%m-%Y")
+
+    target_date = today_str if date_type == 'today' else tomorrow_str
+
+    if check_submitted_duplicate(chat_id, target_date):
+        return True, target_date
+
+    if date_type == 'tomorrow':
+        return False, None
+
+    if check_submitted_duplicate(chat_id, tomorrow_str):
+        return True, tomorrow_str
+
+    return False, None
 
 
 def check_anti_spam(chat_id, minutes=3):
@@ -87,12 +158,14 @@ def get_existing_dates(chat_id):
         'tomorrow_exists': False,
     }
 
+    full_id, clean_id = _chat_id_variants(chat_id)
+    placeholders = ','.join(['?' for _ in SUBMITTED_DUPLICATE_STATUSES])
     conn = db_manager.get_connection()
     try:
         for date_str, key in [(today_str, 'today'), (tomorrow_str, 'tomorrow')]:
             exists = conn.execute(
-                "SELECT 1 FROM pickup_queue WHERE chat_id = ? AND target_date = ? AND status IN ('PENDING', 'PROCESSING', 'SUCCESS')",
-                (chat_id, date_str)
+                f"SELECT 1 FROM pickup_queue WHERE chat_id IN (?, ?) AND target_date = ? AND status IN ({placeholders})",
+                (full_id, clean_id, date_str, *SUBMITTED_DUPLICATE_STATUSES)
             ).fetchone()
             if exists:
                 result[f'{key}_exists'] = True
@@ -124,7 +197,7 @@ def check_any_duplicate(chat_id, date_type='today'):
     target_date = today_str if date_type == 'today' else tomorrow_str
 
     # Check the primary date first
-    if check_duplicate_pickup(chat_id, target_date):
+    if check_submitted_duplicate(chat_id, target_date):
         return True, target_date
 
     # 💡 For 'tomorrow', only check tomorrow — today's pickup does NOT block tomorrow's request
@@ -133,7 +206,7 @@ def check_any_duplicate(chat_id, date_type='today'):
 
     # For 'today', also check tomorrow (and→or logic, used in Mid-day Staff Decision Flow)
     other_date = tomorrow_str
-    if check_duplicate_pickup(chat_id, other_date):
+    if check_submitted_duplicate(chat_id, other_date):
         return True, other_date
 
     return False, None
