@@ -101,6 +101,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 shop_name = auto_pickup.get_best_shop_name(bot, chat_id)
                 if msg_data:
                     orig_text, clean_remark = msg_data
+                    clean_remark = auto_pickup.sanitize_pickup_remark(clean_remark)
                     # Admin alert မရှိသေးရင် ပို့မည်
                     if not db_manager.get_alert_tracking(orig_msg_id, chat_id):
                         auto_pickup.send_admin_pickup_alert(bot, chat_id, orig_msg_id, shop_name, target_date_str, None, clean_remark, orig_text)
@@ -171,6 +172,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             shop_name = auto_pickup.get_best_shop_name(bot, chat_id)
             if msg_data:
                 orig_text, clean_remark = msg_data
+                clean_remark = auto_pickup.sanitize_pickup_remark(clean_remark)
                 
                 # 🛡️ Duplicate Alert Check: Mid-day flow မှာ Alert ပို့ထားပြီးသားဆိုရင် ထပ်မပို့တော့ပါ
                 if not db_manager.get_alert_tracking(orig_msg_id, chat_id):
@@ -279,7 +281,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
             with db_manager.connection_scope() as conn:
                 msg_data = conn.execute("SELECT summary FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_msg_id, chat_id)).fetchone()
             ai_summary = msg_data[0] if msg_data else None
-            final_remark = remark if remark else (ai_summary if ai_summary else "-")
+            final_remark = auto_pickup.resolve_pickup_remark(remark, ai_summary)
             
             shop_name = auto_pickup.get_best_shop_name(bot, chat_id)
             
@@ -1042,10 +1044,8 @@ def finalize_pickup_queue(bot, chat_id, orig_msg_id, date_type, vehicle, manual_
         orig_text = msg_data[0] if msg_data else "Auto Pickup Request"
         ai_summary = msg_data[1] if msg_data and msg_data[1] else None
         
-        # Priority: Manual Remark > AI Summary (Clean Remark)
-        # If no specific remark, use "-" instead of falling back to original text (which might be just "Pick up")
-        final_remark = manual_remark if manual_remark else (ai_summary if ai_summary else "-")
         from modules import auto_pickup
+        final_remark = auto_pickup.resolve_pickup_remark(manual_remark, ai_summary)
         shop_name = auto_pickup.get_best_shop_name(bot, chat_id)
         
         # Strict Validation: No vehicle = No queue

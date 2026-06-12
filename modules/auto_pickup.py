@@ -193,9 +193,32 @@ async def _sync_shops_task(page):
 
 REMARK_MAX_LENGTH = 200
 
+ADMIN_REQUEST_REMARK_TAGS = frozenset({
+    "rider requested admin support",
+    "customer requested admin",
+})
+
+def sanitize_pickup_remark(remark, default="-"):
+    """System admin-request tags are not pickup remarks."""
+    if remark is None:
+        return default
+    text = str(remark).strip()
+    if not text or text.lower() in ADMIN_REQUEST_REMARK_TAGS:
+        return default
+    return text
+
+def resolve_pickup_remark(manual_remark=None, summary=None, default="-"):
+    """Manual remark first, then AI summary; skip admin-support system tags."""
+    if manual_remark is not None and str(manual_remark).strip():
+        return sanitize_pickup_remark(manual_remark, default=default)
+    if summary is not None and str(summary).strip():
+        return sanitize_pickup_remark(summary, default=default)
+    return default
+
 def prepare_remark_for_website(remark):
     """Website remark field — server-side limit ~200 chars; trim while keeping pickup essentials."""
-    if not remark:
+    remark = sanitize_pickup_remark(remark, default="-")
+    if not remark or remark == "-":
         return "-"
     text = str(remark).strip()
     if len(text) <= REMARK_MAX_LENGTH:
@@ -1265,8 +1288,9 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
     """ Admin Group နှင့် ဆိုင် Group ရှိ Alert Message များကို Update လုပ်ခြင်း """
     log.info(f"🔄 Updating central alert for msg {orig_msg_id} in chat {chat_id} (Status: {status_text}, Has Custom Markup: {custom_markup is not None})")
     try:
-        # --- 1. Update Shop Group Message (Always try this first) ---
+        # --- 1. Update Shop Group Message (skip while interactive form is open) ---
         order = None
+        order_status = None
         with db_manager.connection_scope() as conn:
             if queue_id:
                 order = conn.execute("SELECT os_name, target_date, remark, vehicle, status, shop_msg_id, error_msg FROM pickup_queue WHERE id = ?", (queue_id,)).fetchone()
@@ -1296,12 +1320,13 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
                     os_name = "Unknown Shop"
             
             target_date = "-"
-            remark = ctx[1] if ctx and ctx[1] else "-"
+            remark = sanitize_pickup_remark(ctx[1] if ctx and ctx[1] else None)
             vehicle = "-"
             shop_msg_id = None
             error_reason = None
         else:
-            os_name, target_date, remark, vehicle, _, shop_msg_id, error_reason = order
+            os_name, target_date, remark, vehicle, order_status, shop_msg_id, error_reason = order
+            remark = sanitize_pickup_remark(remark)
 
         # 💡 Fallback: If shop_msg_id is missing, try to find it in the database
         if not shop_msg_id:
@@ -1311,7 +1336,15 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
                     shop_msg_id = res[0]
                     log.info(f"🔍 Found fallback shop_msg_id: {shop_msg_id}")
 
-        if shop_msg_id:
+        # WAITING_SETUP = OS is still on interactive form (vehicle/remark/submit); do not overwrite buttons
+        skip_shop_update = order_status == 'WAITING_SETUP' and not update_shop
+        if skip_shop_update:
+            log.info(
+                f"⏭️ Skipping shop group update for msg {orig_msg_id} "
+                f"(WAITING_SETUP interactive form active)"
+            )
+
+        if shop_msg_id and not skip_shop_update:
             # Phase 1: Shop Group UI Logic
             display_status = status_text
             footer = ""
@@ -1323,7 +1356,7 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
             elif "Failed" in status_str or "❌" in status_str:
                 display_status = "⏳ Processing" # Do not show Failed to shop
                 footer = "\nဝန်ထမ်းမှ တိုက်ရိုက် ဝင်ရောက်စီစဉ်ပေးနေပါတယ်နော်"
-            elif "Success" in status_str or "✅" in status_str:
+            elif "Success" in status_str:
                 display_status = "✅ Success"
                 footer = "\nPickup လေးတင်ပြီးပါပြီနော်။ ပျော်ရွှင်စရာနေ့လေး ဖြစ်ပါစေ။ 🍀🚚"
 
@@ -1537,6 +1570,7 @@ def send_success_report(bot, orig_msg_id, chat_id, handled_by="System"):
         
         if order:
             os_name, target_date, remark, vehicle = order
+            remark = sanitize_pickup_remark(remark)
         else:
             # 💡 Fallback: pickup_queue ထဲမှာ order မတွေ့ရင် message_logs, os_groups တွေကနေ ဆွဲထုတ်မည်
             log.info(f"ℹ️ pickup_queue entry not found for msg {orig_msg_id}, using fallback context for success report.")
@@ -1549,7 +1583,7 @@ def send_success_report(bot, orig_msg_id, chat_id, handled_by="System"):
             ctx = db_manager.get_message_context(orig_msg_id, chat_id)
             if ctx:
                 if ctx[1]:  # summary
-                    remark = ctx[1]
+                    remark = sanitize_pickup_remark(ctx[1])
                 # Derive target_date from message timestamp
                 if ctx[4]:  # timestamp
                     tz = pytz.timezone('Asia/Yangon')
