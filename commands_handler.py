@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import json
 import http.client
@@ -741,22 +742,56 @@ def register_handlers(bot):
         'delivery': (6621, 'DE'),
     }
 
+    _ALERT_DEPT_KEYS = tuple(_ALERT_DEPT_TARGETS.keys())
+    _DEPT_PREFIX_RE = re.compile(
+        r'^(fin|finance|cs|pickup|error|err|de|delivery)(?:[,\s]|$)',
+        re.IGNORECASE,
+    )
+
     def _parse_a_command(message_text):
         """ /a command မှ ဌာန (fin/cs/error/de) နှင့် inline စာသား ခွဲထုတ်ခြင်း """
         if not message_text:
             return '', ''
-        parts = message_text.strip().split(maxsplit=1)
-        if len(parts) < 2:
+        args = (util.extract_arguments(message_text) or '').strip()
+        if not args:
             return '', ''
-        rest = parts[1].strip()
-        if not rest:
-            return '', ''
-        tokens = rest.split(maxsplit=1)
+
+        match = _DEPT_PREFIX_RE.match(args)
+        if match:
+            dept_key = match.group(1).lower()
+            inline = args[match.end():].strip().lstrip(',').strip()
+            return dept_key, inline
+
+        tokens = args.split(maxsplit=1)
         first = tokens[0].lower().rstrip(',')
         if first in _ALERT_DEPT_TARGETS:
             inline = tokens[1].strip() if len(tokens) > 1 else ''
             return first, inline
-        return '', rest
+
+        # fin + မြန်မာစာ space မပါဘဲ ဆက်ရိုက်ခြင်း — /a finဂိတ်ဘောင်ချ...
+        low = args.lower()
+        for dept_key in sorted(_ALERT_DEPT_KEYS, key=len, reverse=True):
+            if low.startswith(dept_key) and len(args) > len(dept_key):
+                nxt = args[len(dept_key)]
+                if nxt not in ' \t\n,./\\':
+                    return dept_key, args[len(dept_key):].strip()
+
+        return '', args
+
+    def _infer_dept_from_chat(chat):
+        """ Staff internal group title မှ default ဌာန ခန့်မှန်းခြင်း (OS Group မဟုတ်ချိန် fallback) """
+        title = (getattr(chat, 'title', None) or '').lower()
+        if not title:
+            return ''
+        if any(k in title for k in ('finance', 'fin &', 'fin/voc', 'accounting', 'voucher')):
+            return 'fin'
+        if any(k in title for k in ('customer service', 'pick up', 'pickup', ' cs ')):
+            return 'cs'
+        if 'error' in title:
+            return 'error'
+        if any(k in title for k in ('data entry', 'delivery', 'de team')):
+            return 'de'
+        return ''
 
     def _allowed_manual_alert(message):
         """OS Group (အားလုံး) | Central/Alert Group | Staff/Manager (ဘယ် Group မဆို)"""
@@ -788,6 +823,11 @@ def register_handlers(bot):
 
         command_text = message.text or message.caption or ''
         dept_arg, inline_text = _parse_a_command(command_text)
+        if not dept_arg and not is_os_group:
+            inferred = _infer_dept_from_chat(message.chat)
+            if inferred:
+                dept_arg = inferred
+                log.info(f"📌 /a dept inferred from chat '{message.chat.title}': {dept_arg}")
         media_id = None
         media_type = 'photo'
 
@@ -828,8 +868,10 @@ def register_handlers(bot):
         if not is_os_group and not dept_arg:
             bot.reply_to(
                 message,
-                "⚠️ OS Group မဟုတ်သော Group များတွင် ဌာနရိုက်ပေးပါဗျာ။\n"
-                "`/a fin` — Finance | `/a cs` — CS | `/a error` — Error | `/a de` — DE",
+                "⚠️ OS Group မဟုတ်သော Group များတွင် `/a fin` လို **ဌာန keyword** ပါရပါမည်။\n"
+                "(`fin` နဲ့ စာသား **အကြား space** ထည့်ပါ)\n\n"
+                "`/a fin` — Finance | `/a cs` — CS | `/a error` — Error | `/a de` — DE\n\n"
+                "💡 Customer message ကို reply ဆွဲပြီး `/a fin` (သို့ `/a cs`) ရိုက်လို့ရပါတယ်။",
                 parse_mode="Markdown"
             )
             return

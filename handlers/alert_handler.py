@@ -162,6 +162,58 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
                 bot.delete_message(call.message.chat.id, call.message.message_id)
             except: pass
 
+    @bot.callback_query_handler(func=lambda call: call.data.startswith('wip_'))
+    def handle_wip_button(call):
+        """ Alert Message ရှိ 'ဖြေရှင်းနေပါသည်' Button — ဖြေရှင်းနေသူ နာမည်သာ ပြမည် (DB/Status မထိ) """
+        try:
+            user_id = call.from_user.id
+            if not (db_manager.check_if_staff(user_id) or is_manager_func(user_id)):
+                bot.answer_callback_query(call.id, "⚠️ ဝန်ထမ်းများသာ နှိပ်ခွင့်ရှိပါသည်။", show_alert=True)
+                return
+
+            parts = call.data.split('_')
+            original_msg_id = int(parts[1])
+            chat_id = int(parts[2])
+
+            staff_data = db_manager.get_staff_info(user_id)
+            staff_name = staff_data[1] if staff_data else call.from_user.first_name
+
+            current_text = call.message.text or call.message.caption or ""
+            new_text = auditor.inject_wip_handler_line(current_text, staff_name)
+            markup = auditor.build_sla_alert_markup(original_msg_id, chat_id)
+
+            alert_chat_id = call.message.chat.id
+            alert_msg_id = call.message.message_id
+            has_media = bool(call.message.photo or call.message.video or call.message.document or call.message.voice)
+
+            if has_media:
+                bot.edit_message_caption(
+                    new_text,
+                    alert_chat_id,
+                    alert_msg_id,
+                    reply_markup=markup
+                )
+            else:
+                bot.edit_message_text(
+                    new_text,
+                    alert_chat_id,
+                    alert_msg_id,
+                    reply_markup=markup
+                )
+            bot.answer_callback_query(call.id, f"✅ {staff_name} — ဖြေရှင်းနေပါသည်")
+        except Exception as e:
+            if "message is not modified" in str(e).lower():
+                try:
+                    bot.answer_callback_query(call.id, "✅ စာရင်းသွင်းပြီးပါပြီ")
+                except Exception:
+                    pass
+            else:
+                log.error(f"❌ WIP Button Error: {e}")
+                try:
+                    bot.answer_callback_query(call.id, "❌ Error updating alert.", show_alert=True)
+                except Exception:
+                    pass
+
     @bot.callback_query_handler(func=lambda call: call.data.startswith('done_'))
     def handle_done_button(call):
         """ Alert Message ရှိ Done Button ကို နှိပ်လိုက်လျှင် ဖြေရှင်းပြီးအဖြစ် သတ်မှတ်ခြင်း """
@@ -229,15 +281,7 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
             parts = call.data.split('_')
             orig_id = parts[2]
             chat_id = parts[3]
-            clean_chat_id = str(chat_id).replace("-100", "")
-            msg_link = f"tg://privatepost?channel={clean_chat_id}&post={orig_id}"
-            
-            markup = telebot.types.InlineKeyboardMarkup(row_width=2)
-            markup.add(
-                telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
-                telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_id}_{chat_id}"),
-                telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{orig_id}_{chat_id}")
-            )
+            markup = auditor.build_sla_alert_markup(orig_id, chat_id)
             bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
             bot.answer_callback_query(call.id)
         except Exception as e:
@@ -374,14 +418,7 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
                         f"━━━━━━━━━━━━━━━━━━"
                     )
                     
-                    clean_chat_id = str(chat_id).replace("-100", "")
-                    msg_link = f"tg://privatepost?channel={clean_chat_id}&post={orig_id}"
-                    markup = telebot.types.InlineKeyboardMarkup(row_width=2)
-                    markup.add(
-                        telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
-                        telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{orig_id}_{chat_id}"),
-                        telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{orig_id}_{chat_id}")
-                    )
+                    markup = auditor.build_sla_alert_markup(orig_id, chat_id)
 
                     if media_id:
                         msg = bot.send_photo(target_chat, media_id, caption=alert_text, message_thread_id=target_topic, parse_mode="HTML", reply_markup=markup)

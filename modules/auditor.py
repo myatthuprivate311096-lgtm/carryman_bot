@@ -1,5 +1,6 @@
 # Version: 2.2 (Module Standardized)
 import os
+import re
 import time
 import json
 import html
@@ -245,6 +246,29 @@ def notify_manager_missing_route(chat_id, topic_id, shop_name, trigger_text, ori
 
 ALERT_CAPTION_MAX_LEN = 1024
 
+def build_sla_alert_markup(original_msg_id, chat_id):
+    """15m / 30m / Manual SLA alert buttons (View, WIP, Done, Wrong)."""
+    clean_chat_id = str(chat_id).replace("-100", "")
+    msg_link = f"tg://privatepost?channel={clean_chat_id}&post={original_msg_id}"
+    markup = telebot.types.InlineKeyboardMarkup(row_width=2)
+    markup.add(
+        telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
+        telebot.types.InlineKeyboardButton("⏳ ဖြေရှင်းနေပါသည်", callback_data=f"wip_{original_msg_id}_{chat_id}"),
+        telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{original_msg_id}_{chat_id}"),
+        telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{original_msg_id}_{chat_id}")
+    )
+    return markup
+
+def inject_wip_handler_line(text_content, staff_name):
+    """Alert text/caption ထဲ 'ဖြေရှင်းနေသူ' လိုင်းထည့်/အစားထိုး (DB မထိ)。"""
+    wip_line = f"👤 ဖြေရှင်းနေသူ: {staff_name}\n"
+    text_content = re.sub(r'👤 ဖြေရှင်းနေသူ:.*?\n', '', text_content)
+    time_match = re.search(r'(⏰[^\n]*\n)', text_content)
+    if time_match:
+        insert_at = time_match.end()
+        return text_content[:insert_at] + wip_line + text_content[insert_at:]
+    return text_content.rstrip() + '\n' + wip_line
+
 def _send_alert_with_media(bot, target_chat, alert_text, markup, media_id=None, media_type='photo', message_thread_id=None):
     """Alert GP သို့ media ပါ/မပါ ပို့ခြင်း (caption limit + fallback)"""
     thread_kw = {}
@@ -338,16 +362,8 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
         f"━━━━━━━━━━━━━━━━━━"
     )
     
-    clean_chat_id = str(chat_id).replace("-100", "")
-    msg_link = f"tg://privatepost?channel={clean_chat_id}&post={original_msg_id}"
     safe_target_topic = target_topic if target_topic != 0 else None
-    
-    markup = telebot.types.InlineKeyboardMarkup(row_width=2)
-    markup.add(
-        telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
-        telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{original_msg_id}_{chat_id}"),
-        telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{original_msg_id}_{chat_id}")
-    )
+    markup = build_sla_alert_markup(original_msg_id, chat_id)
     
     try:
         msg = _send_alert_with_media(
@@ -524,15 +540,7 @@ def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_i
         if len(text_content) > 4000:
             text_content = text_content[:3990] + "...\n(စာသားရှည်လွန်း၍ ဖြတ်ချလိုက်ပါသည်)"
 
-        # Markup ပြန်လည်တည်ဆောက်ခြင်း
-        clean_chat_id = str(chat_id).replace("-100", "")
-        msg_link = f"tg://privatepost?channel={clean_chat_id}&post={original_msg_id}"
-        markup = telebot.types.InlineKeyboardMarkup(row_width=2)
-        markup.add(
-            telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
-            telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{original_msg_id}_{chat_id}"),
-            telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{original_msg_id}_{chat_id}")
-        )
+        markup = build_sla_alert_markup(original_msg_id, chat_id)
 
         # Edit Message
         bot = get_bot()
@@ -747,14 +755,7 @@ def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
                     f"━━━━━━━━━━━━━━━━━━"
                 )
                 
-                clean_chat_id = str(chat_id).replace("-100", "")
-                msg_link = f"tg://privatepost?channel={clean_chat_id}&post={msg_id}"
-                markup = telebot.types.InlineKeyboardMarkup(row_width=2)
-                markup.add(
-                    telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link),
-                    telebot.types.InlineKeyboardButton("✅ Done", callback_data=f"done_{msg_id}_{chat_id}"),
-                    telebot.types.InlineKeyboardButton("❌ Wrong Alert", callback_data=f"wrong_{msg_id}_{chat_id}")
-                )
+                markup = build_sla_alert_markup(msg_id, chat_id)
 
                 bot = get_bot()
                 if bot:
