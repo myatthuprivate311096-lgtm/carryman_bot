@@ -165,6 +165,8 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
     @bot.callback_query_handler(func=lambda call: call.data.startswith('done_'))
     def handle_done_button(call):
         """ Alert Message ရှိ Done Button ကို နှိပ်လိုက်လျှင် ဖြေရှင်းပြီးအဖြစ် သတ်မှတ်ခြင်း """
+        resolved = False
+        should_delete = False
         try:
             user_id = call.from_user.id
             parts = call.data.split('_')
@@ -186,17 +188,39 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
                 _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
 
             # 💡 Step 2: API Cleanup (OUTSIDE DB Scope)
-            auditor.resolve_and_cleanup(original_msg_id, chat_id, shop_name, orig_text, f"{staff_name} (Done Button)", manual_resolve=True)
+            auditor.resolve_and_cleanup(
+                original_msg_id, chat_id, shop_name, orig_text,
+                f"{staff_name} (Done Button)",
+                manual_resolve=True,
+                allow_manual_resolve=True
+            )
             
             # 💡 Step 3: Final DB Update (Short Scope)
             db_manager.resolve_message(original_msg_id, chat_id, staff_name, method='Done Button', topic_id=topic_id)
-            
+            resolved = True
+            should_delete = True
             bot.answer_callback_query(call.id, "✅ Resolved and Recorded!")
-            try:
-                bot.delete_message(call.message.chat.id, call.message.message_id)
-            except: pass
         except Exception as e:
-            log.error(f"❌ Done Button Error: {e}")
+            log.error(f"❌ Done Button Error: {e}", exc_info=True)
+            try:
+                bot.answer_callback_query(call.id, "❌ Error resolving alert.", show_alert=True)
+            except Exception:
+                pass
+        finally:
+            if should_delete:
+                try:
+                    bot.delete_message(call.message.chat.id, call.message.message_id)
+                except Exception as e:
+                    log.warning(f"⚠️ Failed to delete alert message after Done: {e}")
+                if resolved:
+                    try:
+                        orig_id = db_manager.get_original_msg_id_by_alert(call.message.message_id, call.message.chat.id)
+                        if orig_id:
+                            parts = call.data.split('_')
+                            chat_id = int(parts[2])
+                            db_manager.delete_alert_tracking(orig_id, chat_id)
+                    except Exception as e:
+                        log.warning(f"⚠️ Failed to cleanup alert tracking after Done: {e}")
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('wrong_back_'))
     def handle_wrong_back(call):
@@ -409,6 +433,7 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
                 topic_id = db_manager.get_message_topic(message_id, chat_id)
 
                 if db_manager.is_manual_alert(message_id, chat_id):
+                    log.info(f"🛡️ Manual alert {message_id} — reaction resolve skipped.")
                     return
 
                 msg_data = conn.execute("SELECT text FROM message_logs WHERE msg_id = ? AND chat_id = ?", (message_id, chat_id)).fetchone()

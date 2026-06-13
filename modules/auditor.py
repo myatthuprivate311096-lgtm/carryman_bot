@@ -243,7 +243,45 @@ def notify_manager_missing_route(chat_id, topic_id, shop_name, trigger_text, ori
     except Exception as e:
         log.error(f"❌ Failed to notify Escalation Group for {shop_name} ({chat_id}): {e}")
 
-def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name, original_ts, category="အခြား", intent=None, media_id=None, title="⚠️ **15-Minute SLA Alert!**", force=False, target_topic_override=None):
+ALERT_CAPTION_MAX_LEN = 1024
+
+def _send_alert_with_media(bot, target_chat, alert_text, markup, media_id=None, media_type='photo', message_thread_id=None):
+    """Alert GP သို့ media ပါ/မပါ ပို့ခြင်း (caption limit + fallback)"""
+    thread_kw = {}
+    if message_thread_id is not None:
+        thread_kw['message_thread_id'] = message_thread_id
+
+    def _send_text():
+        return bot.send_message(
+            target_chat, alert_text, parse_mode="HTML", reply_markup=markup, **thread_kw
+        )
+
+    if not media_id:
+        return _send_text()
+
+    send_methods = {
+        'photo': bot.send_photo,
+        'video': bot.send_video,
+        'voice': bot.send_voice,
+        'document': bot.send_document,
+    }
+    send_fn = send_methods.get(media_type, bot.send_photo)
+
+    try:
+        if len(alert_text) <= ALERT_CAPTION_MAX_LEN:
+            return send_fn(
+                target_chat, media_id,
+                caption=alert_text, parse_mode="HTML", reply_markup=markup, **thread_kw
+            )
+        send_fn(target_chat, media_id, **thread_kw)
+        return bot.send_message(
+            target_chat, alert_text, parse_mode="HTML", reply_markup=markup, **thread_kw
+        )
+    except Exception as e:
+        log.warning(f"⚠️ Alert media send failed ({media_type}), fallback to text: {e}")
+        return _send_text()
+
+def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name, original_ts, category="အခြား", intent=None, media_id=None, media_type='photo', title="⚠️ **15-Minute SLA Alert!**", force=False, target_topic_override=None, alert_by=None):
     chat_id = int(chat_id)
     topic_id = int(topic_id)
     original_msg_id = int(original_msg_id)
@@ -285,12 +323,16 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
     safe_text = html.escape(text)
     safe_category = html.escape(category)
     safe_intent = html.escape(intent if intent else 'အထွေထွေ')
+    alert_by_line = ""
+    if alert_by:
+        alert_by_line = f"👤 Alert လုပ်သူ: <b>{html.escape(alert_by)}</b>\n"
 
     alert_text = (
         f"<b>{title}</b>\n"
         + ("" if force else f"Customer စာပို့ထားသည်မှာ မိနစ် ၁၅ ပြည့်သွားပါပြီ။\n") +
         f"━━━━━━━━━━━━━━━━━━\n"
         f"🏪 ဆိုင်: <b>{safe_shop}</b>\n"
+        f"{alert_by_line}"
         f"💬 စာသား: {safe_text}\n"
         f"⏰ အချိန်: {orig_time}\n"
         f"━━━━━━━━━━━━━━━━━━"
@@ -308,23 +350,11 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
     )
     
     try:
-        if media_id:
-            msg = bot.send_photo(
-                target_chat,
-                media_id,
-                caption=alert_text,
-                message_thread_id=safe_target_topic,
-                parse_mode="HTML",
-                reply_markup=markup
-            )
-        else:
-            msg = bot.send_message(
-                target_chat,
-                alert_text,
-                message_thread_id=safe_target_topic,
-                parse_mode="HTML",
-                reply_markup=markup
-            )
+        msg = _send_alert_with_media(
+            bot, target_chat, alert_text, markup,
+            media_id=media_id, media_type=media_type,
+            message_thread_id=safe_target_topic
+        )
         db_manager.save_alert_tracking(original_msg_id, chat_id, msg.message_id, target_chat)
         db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id, category=category, intent=intent, summary=summary)
         log.info(f"📢 Alert sent for {original_msg_id} in {shop_name} to Central Group")
@@ -333,19 +363,38 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
         if "message thread not found" in str(e).lower() and safe_target_topic is not None:
             log.warning(f"⚠️ Topic {safe_target_topic} not found in Central Group. Falling back to General.")
             try:
-                if media_id:
-                    msg = bot.send_photo(target_chat, media_id, caption=alert_text, parse_mode="HTML", reply_markup=markup)
-                else:
-                    msg = bot.send_message(target_chat, alert_text, parse_mode="HTML", reply_markup=markup)
+                msg = _send_alert_with_media(
+                    bot, target_chat, alert_text, markup,
+                    media_id=media_id, media_type=media_type
+                )
                 db_manager.save_alert_tracking(original_msg_id, chat_id, msg.message_id, target_chat)
                 db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id, category=category, intent=intent, summary=summary)
                 return msg.message_id
             except Exception as e2:
                 log.error(f"❌ Final Fallback Failed: {e2}")
-                return None
+                try:
+                    msg = bot.send_message(target_chat, alert_text, parse_mode="HTML", reply_markup=markup)
+                    db_manager.save_alert_tracking(original_msg_id, chat_id, msg.message_id, target_chat)
+                    db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id, category=category, intent=intent, summary=summary)
+                    return msg.message_id
+                except Exception as e3:
+                    log.error(f"❌ Text-only fallback failed: {e3}")
+                    return None
         
         log.error(f"❌ Failed to send alert: {e}")
-        return None
+        try:
+            msg = bot.send_message(
+                target_chat, alert_text,
+                message_thread_id=safe_target_topic,
+                parse_mode="HTML", reply_markup=markup
+            )
+            db_manager.save_alert_tracking(original_msg_id, chat_id, msg.message_id, target_chat)
+            db_manager.update_message_status(original_msg_id, chat_id, 'ALERTED', topic_id=topic_id, category=category, intent=intent, summary=summary)
+            log.info(f"📢 Alert sent (text fallback) for {original_msg_id} in {shop_name}")
+            return msg.message_id
+        except Exception as e2:
+            log.error(f"❌ Failed to send text fallback alert: {e2}")
+            return None
 
 def send_complaint_mirror_alert(chat_id, topic_id, original_msg_id, text, shop_name):
     """
@@ -517,7 +566,11 @@ def append_to_alert(target_alert_id, target_alert_chat, new_text, original_msg_i
     except Exception as e:
         log.error(f"❌ Failed to append to alert: {e}")
 
-def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff", manual_resolve=False):
+def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff", manual_resolve=False, allow_manual_resolve=False):
+    if db_manager.is_manual_alert(msg_id, chat_id) and not allow_manual_resolve:
+        log.info(f"🛡️ Manual alert {msg_id} in {chat_id} — cleanup blocked for {staff_name}. Done button only.")
+        return
+
     is_office = is_office_hours(chat_id) or manual_resolve
     conn = db_manager.get_connection()
     msg_data = conn.execute("SELECT timestamp, topic_id FROM message_logs WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id)).fetchone()
@@ -578,7 +631,7 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
         parent_id = db_manager.get_parent_msg_id(msg_id, chat_id)
         if parent_id != msg_id:
             log.info(f"🔗 Found parent {parent_id} for message {msg_id}. Retrying cleanup...")
-            return resolve_and_cleanup(parent_id, chat_id, shop_name, text, staff_name, manual_resolve)
+            return resolve_and_cleanup(parent_id, chat_id, shop_name, text, staff_name, manual_resolve, allow_manual_resolve)
         
         log.info(f"ℹ️ No active alert tracking found for {msg_id} in {chat_id}.")
 

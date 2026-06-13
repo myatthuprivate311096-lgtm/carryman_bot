@@ -80,6 +80,49 @@ def _send_broadcast_payload(bot, chat_id, photo_id, body, topic_ids=None):
     if last_error:
         raise last_error
 
+def _extract_message_media(msg):
+    """Telegram message မှ text/caption နှင့် media file_id/type ထုတ်ယူခြင်း"""
+    text = msg.text or msg.caption
+    media_id = None
+    media_type = None
+
+    if msg.photo:
+        media_id = msg.photo[-1].file_id
+        media_type = 'photo'
+        if not text:
+            text = "🖼️ Photo"
+    elif msg.video:
+        media_id = msg.video.file_id
+        media_type = 'video'
+        if not text:
+            text = "📹 Video"
+    elif msg.voice:
+        media_id = msg.voice.file_id
+        media_type = 'voice'
+        if not text:
+            text = "🎙️ Voice Message"
+    elif msg.document:
+        media_id = msg.document.file_id
+        media_type = 'document'
+        if not text:
+            text = f"📄 Document: {msg.document.file_name or 'File'}"
+    elif not text:
+        text = "📦 Media Content"
+
+    return text, media_id, media_type
+
+def _extract_command_media(msg):
+    """ /a command message (photo caption etc.) မှ media ထုတ်ယူခြင်း """
+    if msg.photo:
+        return msg.photo[-1].file_id, 'photo'
+    if msg.video:
+        return msg.video.file_id, 'video'
+    if msg.voice:
+        return msg.voice.file_id, 'voice'
+    if msg.document:
+        return msg.document.file_id, 'document'
+    return None, None
+
 # --- [ အစ်ကို့ရဲ့ မူရင်း စာရင်းများ ] ---
 BRANCHES = ["Yangon", "Insein", "Htauk Kyant", "Mandalay"]
 DEPARTMENTS = [
@@ -694,10 +737,12 @@ def register_handlers(bot):
         'pickup': (1, 'CS'),
         'error': (37, 'Error'),
         'err': (37, 'Error'),
+        'de': (6621, 'DE'),
+        'delivery': (6621, 'DE'),
     }
 
     def _parse_a_command(message_text):
-        """ /a command မှ ဌာန (fin/cs/error) နှင့် inline စာသား ခွဲထုတ်ခြင်း """
+        """ /a command မှ ဌာန (fin/cs/error/de) နှင့် inline စာသား ခွဲထုတ်ခြင်း """
         if not message_text:
             return '', ''
         parts = message_text.strip().split(maxsplit=1)
@@ -727,7 +772,7 @@ def register_handlers(bot):
             return True, False
         return False, False
 
-    @bot.message_handler(commands=['a'])
+    @bot.message_handler(commands=['a'], content_types=['text', 'photo', 'video', 'document', 'voice'])
     def handle_manual_alert(message):
         """ Reply ဆွဲ (သို့) စာသားတွဲရိုက် — Office Hours မကြည့်ဘဲ ချက်ချင်း Alert ထုတ်ပေးခြင်း """
         chat_id = message.chat.id
@@ -741,40 +786,40 @@ def register_handlers(bot):
             )
             return
 
-        dept_arg, inline_text = _parse_a_command(message.text)
+        command_text = message.text or message.caption or ''
+        dept_arg, inline_text = _parse_a_command(command_text)
         media_id = None
+        media_type = 'photo'
 
         if message.reply_to_message:
             orig_msg = message.reply_to_message
             topic_id = orig_msg.message_thread_id if orig_msg.is_topic_message else 0
             orig_msg_id = orig_msg.message_id
             orig_ts = orig_msg.date
-            text = orig_msg.text or orig_msg.caption
-            if not text:
-                if orig_msg.photo:
-                    text = "🖼️ Photo"
-                    media_id = orig_msg.photo[-1].file_id
-                elif orig_msg.voice:
-                    text = "🎙️ Voice Message"
-                    media_id = orig_msg.voice.file_id
-                elif orig_msg.video:
-                    text = "📹 Video"
-                    media_id = orig_msg.video.file_id
-                else:
-                    text = "📦 Media Content"
+            text, media_id, media_type = _extract_message_media(orig_msg)
             if inline_text:
                 text = f"{text}\n\n📝 {inline_text}" if text else inline_text
-        elif inline_text:
+        elif dept_arg or inline_text or _extract_command_media(message)[0]:
             topic_id = message.message_thread_id if (message.is_topic_message and message.message_thread_id) else 1
             orig_msg_id = message.message_id
             orig_ts = message.date
-            text = inline_text
+            cmd_media_id, cmd_media_type = _extract_command_media(message)
+            media_id = cmd_media_id
+            if cmd_media_type:
+                media_type = cmd_media_type
+            if inline_text:
+                text = inline_text
+            elif cmd_media_id:
+                text = "🖼️ Photo" if cmd_media_type == 'photo' else "📦 Media Content"
+            else:
+                text = inline_text or "Manual Alert"
         else:
             bot.reply_to(
                 message,
-                "⚠️ အောက်ပါ နည်းလမ်း ၂ မျိုးထဲ တစ်ခု သုံးပေးပါဗျာ။\n"
+                "⚠️ အောက်ပါ နည်းလမ်း ၃ မျိုးထဲ တစ်ခု သုံးပေးပါဗျာ။\n"
                 "① Reply ဆွဲပြီး `/a fin` ရိုက်\n"
-                "② `/a fin စာသား...` ဟု တိုက်ရိုက်ရိုက်",
+                "② `/a fin စာသား...` ဟု တိုက်ရိုက်ရိုက်\n"
+                "③ ပုံတင်ပြီး caption မှာ `/a de စာသား...` ရိုက်",
                 parse_mode="Markdown"
             )
             return
@@ -784,7 +829,7 @@ def register_handlers(bot):
             bot.reply_to(
                 message,
                 "⚠️ OS Group မဟုတ်သော Group များတွင် ဌာနရိုက်ပေးပါဗျာ။\n"
-                "`/a fin` — Finance | `/a cs` — CS | `/a error` — Error",
+                "`/a fin` — Finance | `/a cs` — CS | `/a error` — Error | `/a de` — DE",
                 parse_mode="Markdown"
             )
             return
@@ -801,7 +846,8 @@ def register_handlers(bot):
                     "⚠️ မှန်ကန်သော ဌာနကို ရိုက်ပေးပါဗျာ။\n"
                     "`/a fin` — Finance\n"
                     "`/a cs` — CS/Pickup\n"
-                    "`/a error` — Error",
+                    "`/a error` — Error\n"
+                    "`/a de` — DE",
                     parse_mode="Markdown"
                 )
                 return
@@ -816,8 +862,16 @@ def register_handlers(bot):
         else:
             target_topic_override = 1
 
-        # 💡 DB တွင် Manual Alert အဖြစ် မှတ်သားခြင်း (Strict Resolution အတွက်)
-        db_manager.set_manual_alert(orig_msg_id, chat_id)
+        # 💡 DB တွင် Manual Alert အဖြစ် မှတ်သားခြင်း (Strict Resolution — Done button only)
+        user = message.from_user
+        db_manager.set_manual_alert(
+            orig_msg_id, chat_id,
+            topic_id=topic_id,
+            user_id=user.id if user else 0,
+            text=text,
+            timestamp=orig_ts,
+            media_id=media_id
+        )
 
         _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
         if not is_os_group:
@@ -825,14 +879,20 @@ def register_handlers(bot):
             if shop_name in ("Unknown Shop", "", None):
                 shop_name = "Staff Alert"
 
+        # Alert လုပ်သူ နာမည် (Staff DB → Telegram first_name)
+        staff_data = db_manager.get_staff_info(user.id) if user else None
+        alert_by = staff_data[1] if staff_data else (user.first_name if user else "Unknown")
+
         # ချက်ချင်း Alert ပို့ခြင်း
         alert_id = auditor.send_new_alert(
             chat_id, topic_id, orig_msg_id,
             text, "Manual Alert", shop_name, orig_ts,
             media_id=media_id,
+            media_type=media_type or 'photo',
             title=alert_title,
             force=force_route,
-            target_topic_override=target_topic_override
+            target_topic_override=target_topic_override,
+            alert_by=alert_by
         )
         
         # 💡 အစ်ကို့တောင်းဆိုချက်အရ Silent ဖြစ်စေရန် Confirmation Message ကို ပိတ်ထားပြီး Command ကို ပြန်ဖျက်ပေးမည်

@@ -84,6 +84,7 @@ def register_message_handlers(bot: telebot.TeleBot, is_manager_func):
                         
                         # 💡 Manual Alert ဖြစ်နေပါက Reply ဖြင့် Resolve လုပ်ခွင့်မပေးပါ
                         if db_manager.is_manual_alert(original_id, chat_id):
+                            log.info(f"🛡️ Manual alert {original_id} — reply resolve skipped.")
                             return
 
                         # မူရင်းစာသားကို db ကနေ ပြန်ယူရန်

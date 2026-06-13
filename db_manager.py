@@ -574,19 +574,28 @@ def get_message_context(msg_id, chat_id):
         conn.close()
 
 def is_manual_alert(msg_id, chat_id):
-    """ Message သည် Manual Alert (/a) ဖြစ်မဖြစ် စစ်ဆေးခြင်း """
+    """ Message သည် Manual Alert (/a) ဖြစ်မဖြစ် စစ်ဆေးခြင်း (linked parent ပါစစ်) """
     conn = get_connection()
     try:
-        res = conn.execute("SELECT is_manual FROM message_logs WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id)).fetchone()
+        check_id = get_parent_msg_id(msg_id, chat_id)
+        res = conn.execute("SELECT is_manual FROM message_logs WHERE msg_id = ? AND chat_id = ?", (check_id, chat_id)).fetchone()
         return (res[0] == 1) if res else False
     finally:
         conn.close()
 
-def set_manual_alert(msg_id, chat_id):
+def set_manual_alert(msg_id, chat_id, topic_id=None, user_id=0, text=None, timestamp=None, media_id=None):
     """ Message ကို Manual Alert အဖြစ် သတ်မှတ်ခြင်း """
     conn = get_connection()
     try:
-        conn.execute("UPDATE message_logs SET is_manual = 1 WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id))
+        cur = conn.execute("UPDATE message_logs SET is_manual = 1 WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id))
+        if cur.rowcount == 0 and text is not None:
+            safe_topic_id = topic_id if topic_id and topic_id != 0 else 1
+            ts = timestamp if timestamp is not None else int(time.time())
+            conn.execute(
+                "INSERT OR IGNORE INTO message_logs (msg_id, chat_id, topic_id, user_id, text, timestamp, status, media_id, is_manual) VALUES (?, ?, ?, ?, ?, ?, 'ALERTED', ?, 1)",
+                (msg_id, chat_id, safe_topic_id, user_id, text, ts, media_id)
+            )
+            conn.execute("UPDATE message_logs SET is_manual = 1 WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id))
         conn.commit()
     finally:
         conn.close()
@@ -646,6 +655,10 @@ def resolve_message(msg_id, chat_id, staff_name, method='Reply', topic_id=None, 
     Message တစ်ခု သို့မဟုတ် Topic တစ်ခုလုံးကို Resolved အဖြစ် သတ်မှတ်ခြင်း။
     topic_id ပါလာလျှင် ထို topic ထဲက pending များကိုသာ resolve လုပ်မည်။
     """
+    if msg_id != 0 and method != 'Done Button' and is_manual_alert(msg_id, chat_id):
+        log.info(f"🛡️ Manual alert {msg_id} in {chat_id} — resolve blocked (method={method}). Done button only.")
+        return
+
     conn = get_connection()
     now = int(time.time())
     full_staff_info = f"{staff_name} ({method})" if method else staff_name
@@ -724,7 +737,7 @@ def auto_resolve_stale_alerts(hours=30):
     
     try:
         # ALERTED သို့မဟုတ် ESCALATED ဖြစ်နေပြီး threshold ထက်ဟောင်းနေသောစာများကို ရှာမည်
-        query = "UPDATE message_logs SET status='RESOLVED', resolved_by='System (Auto-Expired)', resolve_time=? WHERE status IN ('ALERTED', 'ESCALATED') AND timestamp < ?"
+        query = "UPDATE message_logs SET status='RESOLVED', resolved_by='System (Auto-Expired)', resolve_time=? WHERE status IN ('ALERTED', 'ESCALATED') AND timestamp < ? AND (is_manual IS NULL OR is_manual = 0)"
         res = conn.execute(query, (now, threshold))
         count = res.rowcount
         conn.commit()
