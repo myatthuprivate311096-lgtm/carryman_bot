@@ -1203,6 +1203,101 @@ def normalize_bot_chat_id(chat_id):
         return cid
     return int(f"-100{cid}")
 
+def dedupe_shop_mapping_chat_ids():
+    """Short-format chat_id များကို -100... format သို့ merge/cleanup လုပ်ခြင်း"""
+    conn = get_connection()
+    try:
+        rows = conn.execute("SELECT chat_id FROM shop_mappings").fetchall()
+        deleted = 0
+        migrated = 0
+        for (cid,) in rows:
+            full_id = normalize_bot_chat_id(cid)
+            if full_id == cid:
+                continue
+            existing = conn.execute("SELECT 1 FROM shop_mappings WHERE chat_id = ?", (full_id,)).fetchone()
+            if existing:
+                conn.execute("DELETE FROM shop_mappings WHERE chat_id = ?", (cid,))
+                deleted += 1
+            else:
+                conn.execute("UPDATE shop_mappings SET chat_id = ? WHERE chat_id = ?", (full_id, cid))
+                migrated += 1
+
+        for (cid,) in conn.execute("SELECT DISTINCT chat_id FROM os_groups").fetchall():
+            full_id = normalize_bot_chat_id(cid)
+            if full_id == cid:
+                continue
+            if conn.execute("SELECT 1 FROM os_groups WHERE chat_id = ? LIMIT 1", (full_id,)).fetchone():
+                conn.execute("DELETE FROM os_groups WHERE chat_id = ?", (cid,))
+            else:
+                conn.execute(
+                    "UPDATE os_groups SET chat_id = ?, group_id = ? WHERE chat_id = ?",
+                    (full_id, full_id, cid)
+                )
+
+        conn.commit()
+        if deleted or migrated:
+            log.info(f"🧹 dedupe_shop_mapping_chat_ids: deleted={deleted}, migrated={migrated}")
+        return deleted + migrated
+    except Exception as e:
+        conn.rollback()
+        log.error(f"❌ dedupe_shop_mapping_chat_ids Error: {e}")
+        return 0
+    finally:
+        conn.close()
+
+def get_os_group_topic_count(chat_id):
+    """OS group routing row အရေအတွက် (dedupe scoring အတွက်)"""
+    conn = get_connection()
+    try:
+        norm = normalize_bot_chat_id(chat_id)
+        row = conn.execute("SELECT COUNT(*) FROM os_groups WHERE chat_id = ?", (norm,)).fetchone()
+        return int(row[0]) if row else 0
+    finally:
+        conn.close()
+
+def dedupe_shop_mapping_by_website_name():
+    """Website name တူညီသော mapping များထဲမှ os_groups ရှိ/နောက်ဆုံး row ကိုသာ ထားခြင်း"""
+    conn = get_connection()
+    try:
+        rows = conn.execute(
+            "SELECT chat_id, website_os_name, updated_at FROM shop_mappings WHERE TRIM(COALESCE(website_os_name, '')) != ''"
+        ).fetchall()
+        winners = {}
+        for cid, name, updated_at in rows:
+            key = name.strip().lower()
+            og_count = conn.execute("SELECT COUNT(*) FROM os_groups WHERE chat_id = ?", (cid,)).fetchone()[0]
+            score = (og_count * 1_000_000) + (updated_at or 0)
+            prev = winners.get(key)
+            if not prev or score > prev[0]:
+                winners[key] = (score, cid)
+
+        deleted = 0
+        for cid, name, _ in rows:
+            key = name.strip().lower()
+            winner_id = winners[key][1]
+            if cid == winner_id:
+                continue
+            conn.execute("DELETE FROM shop_mappings WHERE chat_id = ?", (cid,))
+            conn.execute("DELETE FROM os_groups WHERE chat_id = ?", (cid,))
+            deleted += 1
+
+        conn.commit()
+        if deleted:
+            log.info(f"🧹 dedupe_shop_mapping_by_website_name: deleted={deleted}")
+        return deleted
+    except Exception as e:
+        conn.rollback()
+        log.error(f"❌ dedupe_shop_mapping_by_website_name Error: {e}")
+        return 0
+    finally:
+        conn.close()
+
+def dedupe_shop_mappings():
+    """Chat ID format + website name duplicate cleanup"""
+    total = dedupe_shop_mapping_chat_ids()
+    total += dedupe_shop_mapping_by_website_name()
+    return total
+
 def get_os_group_broadcast_targets():
     """OS Group တစ်ခုလျှင် တစ်ကြိမ်သာ — General (1) အရင်၊ ပြီးမှ DB topic fallback."""
     conn = get_connection()
@@ -1910,7 +2005,11 @@ def get_unified_shop_data():
         
         # ၂။ Mapping ရှိပြီးသားဆိုင်များကိုပါ ထည့်သွင်းစဉ်းစားမည် (os_groups မှာ မရှိသေးတာမျိုး ဖြစ်နိုင်၍)
         mapping_ids = conn.execute("SELECT chat_id FROM shop_mappings").fetchall()
-        all_ids = set([s[0] for s in shops] + [m[0] for m in mapping_ids])
+        all_ids = set()
+        for cid, _ in shops:
+            all_ids.add(normalize_bot_chat_id(cid))
+        for (cid,) in mapping_ids:
+            all_ids.add(normalize_bot_chat_id(cid))
         
         results = []
         for cid in all_ids:
@@ -1918,8 +2017,12 @@ def get_unified_shop_data():
             name_row = conn.execute("SELECT shop_name FROM os_groups WHERE chat_id = ? LIMIT 1", (cid,)).fetchone()
             tg_name = name_row[0] if name_row else "Unknown Shop"
             
-            # Website Mapping ယူခြင်း
-            map_row = conn.execute("SELECT website_os_name, updated_at FROM shop_mappings WHERE chat_id = ?", (cid,)).fetchone()
+            # Website Mapping ယူခြင်း (short/full format နှစ်မျိုးလုံး ရှာမည်)
+            short_id = int(str(cid).replace("-100", "")) if str(cid).startswith("-100") else cid
+            map_row = conn.execute(
+                "SELECT website_os_name, updated_at FROM shop_mappings WHERE chat_id IN (?, ?) ORDER BY updated_at DESC LIMIT 1",
+                (cid, short_id)
+            ).fetchone()
             web_name = map_row[0] if map_row else ""
             updated_at = map_row[1] if map_row else 0
             
@@ -1956,12 +2059,7 @@ def upsert_shop_mappings_batch(data_list):
         for chat_id, website_name in data_list:
             if not chat_id or not website_name: continue
             
-            # Ensure -100 prefix
-            full_id = chat_id
-            if not str(chat_id).startswith("-100"):
-                try: full_id = int(f"-100{chat_id}")
-                except: pass
-            
+            full_id = normalize_bot_chat_id(chat_id)
             formatted_data.append((full_id, website_name.strip(), now))
             
         if formatted_data:
@@ -1970,6 +2068,7 @@ def upsert_shop_mappings_batch(data_list):
                 formatted_data
             )
             conn.commit()
+            dedupe_shop_mappings()
             return True
         return False
     finally:
@@ -1987,9 +2086,25 @@ def update_unified_shop_data(data_list):
         now = int(time.time())
         c = conn.cursor()
         c.execute("BEGIN TRANSACTION")
+
+        # Normalize + dedupe incoming rows by canonical chat_id
+        deduped_rows = {}
+        for row in data_list:
+            if not row[0]:
+                continue
+            chat_id = normalize_bot_chat_id(int(row[0]))
+            mapping_id = row[1] if len(row) > 1 and row[1] else None
+            map_id = normalize_bot_chat_id(int(mapping_id)) if mapping_id else chat_id
+            tg_name = row[2] if len(row) > 2 else ""
+            web_name = row[3] if len(row) > 3 else ""
+            p_tid = row[4] if len(row) > 4 else "0"
+            e_tid = row[5] if len(row) > 5 else "0"
+            f_tid = row[6] if len(row) > 6 else "0"
+            deduped_rows[chat_id] = (chat_id, map_id, tg_name, web_name, p_tid, e_tid, f_tid)
+        data_list = list(deduped_rows.values())
         
         # ၁။ Sheet ထဲမှာ ပါလာတဲ့ Chat ID စာရင်းကို ယူထားမည်
-        incoming_chat_ids = [int(row[0]) for row in data_list if row[0]]
+        incoming_chat_ids = [row[0] for row in data_list]
         
         # ၂။ Sheet ထဲမှာ မပါတော့တဲ့ ဆိုင်တွေကို ဖျက်မည် (Manual Register မဟုတ်တာတွေကိုပဲ ဖျက်မည်)
         if incoming_chat_ids:
@@ -2007,18 +2122,9 @@ def update_unified_shop_data(data_list):
 
         # ၃။ Sheet ထဲမှ data များဖြင့် Update/Insert လုပ်ခြင်း
         for row in data_list:
-            chat_id_str = row[0]
-            mapping_id = row[1] if len(row) > 1 and row[1] else None
-            tg_name = row[2] if len(row) > 2 else ""
-            web_name = row[3] if len(row) > 3 else ""
-            p_tid = row[4] if len(row) > 4 else "0"
-            e_tid = row[5] if len(row) > 5 else "0"
-            f_tid = row[6] if len(row) > 6 else "0"
-            if not chat_id_str: continue
-            chat_id = int(chat_id_str)
-            
-            # Use mapping_id for shop_mappings table (defaults to chat_id)
-            map_id = int(mapping_id) if mapping_id else chat_id
+            chat_id, map_id, tg_name, web_name, p_tid, e_tid, f_tid = row
+            if not chat_id:
+                continue
             
             # Website Mapping Update (use mapping_id from Column B for shop_mappings table)
             if not web_name or web_name.strip() == "":
@@ -2049,6 +2155,7 @@ def update_unified_shop_data(data_list):
                 c.execute("DELETE FROM os_groups WHERE chat_id = ? AND target_topic_id = 35", (chat_id,))
 
         conn.commit()
+        dedupe_shop_mappings()
         return True
     except Exception as e:
         conn.rollback()
@@ -2250,19 +2357,28 @@ def get_unified_shop_data_filtered(invite_link=None):
             shops = conn.execute(query).fetchall()
             
         results = []
+        seen = set()
         for cid, tg_name in shops:
+            norm_cid = normalize_bot_chat_id(cid)
+            if norm_cid in seen:
+                continue
+            seen.add(norm_cid)
             # Website Mapping
-            map_row = conn.execute("SELECT website_os_name, updated_at FROM shop_mappings WHERE chat_id = ?", (cid,)).fetchone()
+            short_id = int(str(norm_cid).replace("-100", "")) if str(norm_cid).startswith("-100") else norm_cid
+            map_row = conn.execute(
+                "SELECT website_os_name, updated_at FROM shop_mappings WHERE chat_id IN (?, ?) ORDER BY updated_at DESC LIMIT 1",
+                (norm_cid, short_id)
+            ).fetchone()
             web_name = map_row[0] if map_row else ""
             updated_at = map_row[1] if map_row else 0
             
             # Topics
-            pickup_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id = ? AND target_topic_id = 1", (cid,)).fetchone()
-            finance_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id = ? AND target_topic_id = 35", (cid,)).fetchone()
-            error_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id = ? AND target_topic_id = 37", (cid,)).fetchone()
+            pickup_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id IN (?, ?) AND target_topic_id = 1 LIMIT 1", (norm_cid, cid)).fetchone()
+            finance_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id IN (?, ?) AND target_topic_id = 35 LIMIT 1", (norm_cid, cid)).fetchone()
+            error_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id IN (?, ?) AND target_topic_id = 37 LIMIT 1", (norm_cid, cid)).fetchone()
             
             results.append((
-                cid, tg_name, web_name,
+                norm_cid, tg_name, web_name,
                 pickup_tid[0] if pickup_tid else 0,
                 error_tid[0] if error_tid else 0,
                 finance_tid[0] if finance_tid else 0,

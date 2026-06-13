@@ -706,6 +706,10 @@ def resolve_and_cleanup(msg_id, chat_id, shop_name, text, staff_name="AI/Staff",
         log.info(f"ℹ️ Message {msg_id} was not an active alert. Skipping record.")
 
 def handle_escalation(msg_id, chat_id, shop_name, text, topic_id):
+    # 💡 Manual Alert (/a) များကို Management GP (Tier 2) သို့ escalation မပို့
+    if db_manager.is_manual_alert(msg_id, chat_id):
+        return
+
     # 💡 Pick up (Topic 1) အတွက် Escalation Alert မပို့စေရန်
     if topic_id == 1:
         return

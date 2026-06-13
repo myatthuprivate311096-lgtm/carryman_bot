@@ -263,6 +263,8 @@ class GSheetSync:
             except gspread.exceptions.WorksheetNotFound:
                 return False, "⚠️ 'Shop Mappings' tab ကို ရှာမတွေ့ပါ။"
 
+            self._dedupe_sheet_mapping_rows(sheet)
+
             all_records = sheet.get_all_values()
             if len(all_records) <= 1:
                 return False, "⚠️ 'Shop Mappings' tab တွင် ဒေတာမရှိသေးပါ (header only)။"
@@ -300,7 +302,8 @@ class GSheetSync:
                     mapping_id = None
                 
                 try:
-                    chat_id = int(chat_id_str)
+                    chat_id = db_manager.normalize_bot_chat_id(int(chat_id_str))
+                    mapping_id = db_manager.normalize_bot_chat_id(int(mapping_id_str)) if mapping_id_str else None
                     data_to_db.append((chat_id, mapping_id, tg_name, web_name, p_tid, e_tid, f_tid))
                 except ValueError:
                     log.warning(f"⚠️ Skipping row with invalid chat_id: '{chat_id_str}' (tg_name: {tg_name})")
@@ -325,22 +328,138 @@ class GSheetSync:
             return False, f"အမှားတစ်ခုရှိနေပါတယ်: {str(e)}"
 
     def _get_existing_sheet_chat_ids(self, sheet):
-        """ Sheet ထဲမှာ ရှိပြီးသား chat_id များကို စုစည်းခြင်း (duplicate ကာကွယ်ရန်) """
+        """ Sheet ထဲမှာ ရှိပြီးသား chat_id များကို canonical (-100...) format ဖြင့် စုစည်းခြင်း """
         try:
             all_values = sheet.get_all_values()
             if len(all_values) <= 1:
                 return set()
+            header = all_values[0]
+            col_map = _detect_columns(header)
             existing_ids = set()
             for row in all_values[1:]:  # skip header
-                if row and row[0].strip():
-                    try:
-                        existing_ids.add(int(row[0].strip()))
-                    except ValueError:
-                        pass
+                for key in ('chat_id', 'mapping_id'):
+                    idx = col_map.get(key, 0 if key == 'chat_id' else 1)
+                    if idx < len(row) and row[idx].strip():
+                        try:
+                            existing_ids.add(db_manager.normalize_bot_chat_id(int(row[idx].strip())))
+                        except ValueError:
+                            pass
             return existing_ids
         except Exception as e:
             log.warning(f"⚠️ Could not read existing chat_ids from Sheet: {e}")
             return set()
+
+    def _get_existing_sheet_web_names(self, sheet):
+        """Sheet ထဲမှာ ရှိပြီးသား website name များ (case-insensitive)"""
+        try:
+            all_values = sheet.get_all_values()
+            if len(all_values) <= 1:
+                return set()
+            col_map = _detect_columns(all_values[0])
+            names = set()
+            for row in all_values[1:]:
+                web_name = _safe_get(row, col_map['web_name']).strip()
+                if web_name:
+                    names.add(web_name.lower())
+            return names
+        except Exception as e:
+            log.warning(f"⚠️ Could not read existing website names from Sheet: {e}")
+            return set()
+
+    def _score_mapping_row(self, row, col_map, chat_id=None):
+        """Duplicate row များထဲမှ ထိန်းချင်သော row ကို ရွေးရန် score"""
+        score = 0
+        chat_raw = _safe_get(row, col_map['chat_id']).strip()
+        if chat_raw.startswith('-100'):
+            score += 10
+        web_name = _safe_get(row, col_map['web_name']).strip()
+        if web_name:
+            score += 5
+        for key in ('pickup_tid', 'error_tid', 'finance_tid'):
+            val = _safe_get(row, col_map[key]).strip()
+            if val and val not in ('0', '-'):
+                score += 3
+        filled = sum(1 for i in range(min(len(row), 7)) if row[i].strip())
+        score += filled
+        if chat_id is not None:
+            score += db_manager.get_os_group_topic_count(chat_id) * 20
+        return score
+
+    def _dedupe_sheet_mapping_rows(self, sheet):
+        """Sheet duplicate row များကို chat_id + website name အလိုက် ရှင်းလင်းခြင်း"""
+        try:
+            all_values = sheet.get_all_values()
+            if len(all_values) <= 1:
+                return 0
+
+            header = all_values[0]
+            col_map = _detect_columns(header)
+            keep_by_id = {}
+            delete_rows = set()
+
+            for i, row in enumerate(all_values[1:], start=2):
+                chat_raw = _safe_get(row, col_map['chat_id']).strip()
+                if not chat_raw:
+                    continue
+                try:
+                    norm_id = db_manager.normalize_bot_chat_id(int(chat_raw))
+                except ValueError:
+                    continue
+
+                score = self._score_mapping_row(row, col_map, norm_id)
+                prev = keep_by_id.get(norm_id)
+                if not prev or score > prev[0]:
+                    if prev:
+                        delete_rows.add(prev[1])
+                    keep_by_id[norm_id] = (score, i, row)
+                else:
+                    delete_rows.add(i)
+
+            # Website name တူညီသော row များထဲမှ score အမြင့်ဆုံးကို ထားမည်
+            keep_by_web = {}
+            for norm_id, (score, row_num, row) in list(keep_by_id.items()):
+                web_name = _safe_get(row, col_map['web_name']).strip()
+                if not web_name:
+                    continue
+                key = web_name.lower()
+                prev = keep_by_web.get(key)
+                if not prev or score > prev[0]:
+                    if prev:
+                        delete_rows.add(prev[2])
+                        keep_by_id.pop(prev[1], None)
+                    keep_by_web[key] = (score, norm_id, row_num)
+                else:
+                    delete_rows.add(row_num)
+                    keep_by_id.pop(norm_id, None)
+
+            removed = 0
+            for row_num in sorted(delete_rows, reverse=True):
+                try:
+                    sheet.delete_rows(row_num)
+                    removed += 1
+                except Exception as e:
+                    log.warning(f"⚠️ Failed to delete duplicate sheet row {row_num}: {e}")
+
+            updates = []
+            for norm_id, (_, row_num, row) in keep_by_id.items():
+                chat_raw = _safe_get(row, col_map['chat_id']).strip()
+                map_raw = _safe_get(row, col_map['mapping_id']).strip() or str(norm_id)
+                if chat_raw != str(norm_id) or map_raw != str(norm_id):
+                    updates.append({
+                        'range': f'A{row_num}:B{row_num}',
+                        'values': [[str(norm_id), str(norm_id)]]
+                    })
+
+            if updates:
+                sheet.batch_update(updates)
+                log.info(f"🔧 Normalized {len(updates)} sheet row(s) to canonical chat_id format.")
+
+            if removed:
+                log.info(f"🧹 Removed {removed} duplicate Shop Mapping row(s) from Sheet.")
+            return removed
+        except Exception as e:
+            log.error(f"❌ _dedupe_sheet_mapping_rows Error: {e}")
+            return 0
 
     def _fix_existing_unknown_shops_in_sheet(self, sheet):
         """ Sheet ထဲမှာ ရှိပြီးသား 'Unknown Shop' row များကို Telegram API မှ resolve လုပ်ပြီး Sheet cell update လုပ်ခြင်း """
@@ -398,9 +517,13 @@ class GSheetSync:
 
         try:
             sheet = workbook.worksheet("Shop Mappings")
+
+            # ၀။ Sheet duplicate row များကို ရှင်းမည် + canonical chat_id format
+            deduped = self._dedupe_sheet_mapping_rows(sheet)
             
             # ၁။ Sheet ထဲမှာ ရှိပြီးသား chat_id များကို စုစည်းမည် (duplicate ကာကွယ်ရန်)
             existing_ids = self._get_existing_sheet_chat_ids(sheet)
+            existing_web_names = self._get_existing_sheet_web_names(sheet)
             log.info(f"📋 Found {len(existing_ids)} existing chat_ids in Sheet.")
             
             # ၂။ Manual Register data ယူမည်
@@ -418,16 +541,16 @@ class GSheetSync:
             merged = []
             # Manual Register ကို အရင်ထည့် (ဒေတာပိုပြည့်စုံ)
             for m in manual_data:
-                cid = m[0]
+                cid = db_manager.normalize_bot_chat_id(m[0])
                 if cid not in seen_ids:
                     seen_ids.add(cid)
-                    merged.append(m)
+                    merged.append((cid,) + m[1:])
             # Unmapped ကို ထပ်ထည့် (Manual Register မှာမပါတဲ့ ဟာတွေပဲ)
             for m in unmapped_data:
-                cid = m[0]
+                cid = db_manager.normalize_bot_chat_id(m[0])
                 if cid not in seen_ids:
                     seen_ids.add(cid)
-                    merged.append(m)
+                    merged.append((cid,) + m[1:])
             
             # ၄.၅။ "Unknown Shop" များကို Telegram API မှ resolve လုပ်မည်
             merged = self._resolve_unknown_shops(merged)
@@ -440,11 +563,16 @@ class GSheetSync:
             chat_ids = []
             skipped = 0
             for m in merged:
-                chat_id = m[0]
+                chat_id = db_manager.normalize_bot_chat_id(m[0])
+                tg_name, web_name, p_tid, e_tid, f_tid, updated_at = m[1], m[2], m[3], m[4], m[5], m[6]
+                web_key = (web_name or '').strip().lower()
                 if chat_id in existing_ids:
                     skipped += 1
                     continue
-                tg_name, web_name, p_tid, e_tid, f_tid, updated_at = m[1], m[2], m[3], m[4], m[5], m[6]
+                if web_key and web_key in existing_web_names:
+                    log.info(f"⏭️ Skip append {chat_id}: website name '{web_name}' already in Sheet.")
+                    skipped += 1
+                    continue
                 updated_str = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(updated_at)) if updated_at else "-"
                 # 8-col format: OS Group ID | Mapping ID | Telegram Name | Website Name | Pickup TID | Error TID | Finance TID | Last Updated
                 rows.append([str(chat_id), str(chat_id), tg_name, web_name, str(p_tid), str(e_tid), str(f_tid), updated_str])
@@ -464,7 +592,7 @@ class GSheetSync:
             
             if total_changes == 0:
                 log.info("ℹ️ No new groups to append, no Unknown Shop names to fix.")
-            return total_changes
+            return total_changes + deduped
         except Exception as e:
             log.error(f"❌ Append Mappings Error: {e}")
             return 0
