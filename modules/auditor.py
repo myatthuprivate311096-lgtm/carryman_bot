@@ -238,6 +238,7 @@ def notify_manager_missing_route(chat_id, topic_id, shop_name, trigger_text, ori
         markup.add(telebot.types.InlineKeyboardButton("🚚 Pickup (Topic 1)", callback_data=f"setrt_{chat_id}_{topic_id}_1_{original_msg_id}"))
         markup.add(telebot.types.InlineKeyboardButton("💰 Finance (Topic 35)", callback_data=f"setrt_{chat_id}_{topic_id}_35_{original_msg_id}"))
         markup.add(telebot.types.InlineKeyboardButton("⚠️ Error (Topic 37)", callback_data=f"setrt_{chat_id}_{topic_id}_37_{original_msg_id}"))
+        markup.add(telebot.types.InlineKeyboardButton("📝 Data Entry (Topic 6621)", callback_data=f"setrt_{chat_id}_{topic_id}_6621_{original_msg_id}"))
         
         bot.send_message(ESCALATION_GROUP_ID, text, message_thread_id=ESCALATION_TOPIC_ID, reply_markup=markup, parse_mode="HTML")
         log.info(f"📲 Missing route notification sent to Escalation Group for {shop_name}")

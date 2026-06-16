@@ -4,6 +4,7 @@ import db_manager
 import time
 from logger import log
 import os
+import config
 
 def _detect_columns(header):
     """
@@ -57,6 +58,29 @@ def _safe_get(row, index):
     if index < len(row):
         return row[index] or ''
     return ''
+
+def _detect_staff_columns(header):
+    """Staff Info tab column indices from header row."""
+    mapping = {
+        'name': 1,
+        'telegram_id': 6,
+        'township': 9,
+        'dept': 10,
+        'round1': 12,
+    }
+    for i, col in enumerate(header):
+        col_lower = str(col or "").lower().strip()
+        if any(kw in col_lower for kw in ['staff name', 'name']) and 'telegram' not in col_lower:
+            mapping['name'] = i
+        elif any(kw in col_lower for kw in ['telegram id', 'telegram', 'user id', 'tg id']):
+            mapping['telegram_id'] = i
+        elif 'township' in col_lower:
+            mapping['township'] = i
+        elif 'department' in col_lower or col_lower == 'dept':
+            mapping['dept'] = i
+        elif 'round 1' in col_lower or col_lower == 'round1':
+            mapping['round1'] = i
+    return mapping
 
 class GSheetSync:
     def __init__(self, credentials_file='credentials.json', bot=None):
@@ -205,7 +229,7 @@ class GSheetSync:
                     level = 3
                 elif "inquire" in name_lower or "customer" in name_lower:
                     level = 1
-                elif "os" in name_lower:
+                elif any(kw in name_lower for kw in config.SHEET_LEVEL_OS_KEYWORDS):
                     level = 2
                 else:
                     # သတ်မှတ်ထားသော Keyword မပါလျှင် ကျော်သွားမည် (ဥပမာ - Sheet4 လိုမျိုး)
@@ -230,6 +254,9 @@ class GSheetSync:
                     question = row[1].strip()
                     answer = row[2].strip()
                     tags = row[3].strip() if len(row) > 3 else ""
+                    if any(kw in name_lower for kw in config.SHEET_TONE_KEYWORDS):
+                        tag_extra = "tone|example"
+                        tags = f"{tags}|{tag_extra}" if tags else tag_extra
                     
                     if question and answer:
                         data_to_db.append((category, question, answer, tags, level, timestamp))
@@ -247,6 +274,65 @@ class GSheetSync:
 
         except Exception as e:
             log.error(f"❌ Dynamic Sync Error: {e}")
+            return False, f"အမှားတစ်ခုရှိနေပါတယ်: {str(e)}"
+
+    def sync_staff_info(self, sheet_url):
+        """Staff Info tab → staff table (HR data, not knowledge_base)."""
+        log.info("🔄 Syncing Staff Info from GSheet...")
+        workbook = self.connect(sheet_url)
+        if not workbook:
+            return False, "Google Sheet ချိတ်ဆက်မှု မအောင်မြင်ပါ။"
+
+        try:
+            sheet = None
+            for ws in workbook.worksheets():
+                title_lower = ws.title.lower()
+                if "staff" in title_lower and "info" in title_lower:
+                    sheet = ws
+                    break
+            if not sheet:
+                return False, "⚠️ 'Staff Info' tab ကို ရှာမတွေ့ပါ။"
+
+            all_values = sheet.get_all_values()
+            if len(all_values) <= 1:
+                return False, "⚠️ 'Staff Info' tab တွင် ဒေတာမရှိသေးပါ။"
+
+            col_map = _detect_staff_columns(all_values[0])
+            rows = []
+            skipped = 0
+            for row in all_values[1:]:
+                if not any(str(cell or "").strip() for cell in row):
+                    continue
+                name = _safe_get(row, col_map['name']).strip()
+                tg_raw = _safe_get(row, col_map['telegram_id']).strip()
+                if not name or not tg_raw:
+                    skipped += 1
+                    continue
+                try:
+                    user_id = int(tg_raw)
+                except ValueError:
+                    log.warning(f"⚠️ Skipping staff row — invalid Telegram ID: '{tg_raw}' ({name})")
+                    skipped += 1
+                    continue
+                round1 = _safe_get(row, col_map['round1']).strip()
+                township = _safe_get(row, col_map['township']).strip()
+                branch = round1 or township or "General"
+                dept = _safe_get(row, col_map['dept']).strip() or "General"
+                rows.append((user_id, name, branch, dept))
+
+            if not rows:
+                return False, "⚠️ Staff Info tab တွင် မှန်ကန်သော Telegram ID ပါဝင်သည့် row မရှိပါ။"
+
+            success, count = db_manager.upsert_staff_batch(rows)
+            if success:
+                msg = f"✅ Staff Info {count} ယောက် Sync လုပ်ပြီးပါပြီ။"
+                if skipped > 0:
+                    msg += f"\n⚠️ Telegram ID/အမည် မပြည့်စုံသော row {skipped} ခု ကျော်သွားပါသည်။"
+                return True, msg
+            return False, "⚠️ Staff table သို့ သိမ်းဆည်းမှု မအောင်မြင်ပါ။"
+
+        except Exception as e:
+            log.error(f"❌ Staff Info Sync Error: {e}")
             return False, f"အမှားတစ်ခုရှိနေပါတယ်: {str(e)}"
 
     def sync_shop_mappings(self, sheet_url):

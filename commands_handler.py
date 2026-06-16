@@ -206,11 +206,15 @@ def register_handlers(bot):
                 # ၁။ Knowledge Base Sync
                 success_kb, result_kb = syncer.sync_knowledge(sheet_url)
                 
-                # ၂။ Shop Mappings Sync (import only)
+                # ၂။ Staff Info Sync
+                success_staff, result_staff = syncer.sync_staff_info(sheet_url)
+                
+                # ၃။ Shop Mappings Sync (import only)
                 success_map, result_map = syncer.sync_shop_mappings(sheet_url)
                 
                 final_msg = f"📊 **Sync Results:**\n\n"
                 final_msg += f"🧠 Knowledge: {result_kb}\n"
+                final_msg += f"👥 Staff: {result_staff}\n"
                 final_msg += f"🏪 Mappings: {result_map}"
                 
                 bot.edit_message_text(final_msg, msg.chat.id, msg.message_id)
@@ -270,6 +274,57 @@ def register_handlers(bot):
                 bot.reply_to(message, '✅ **AI Auto-Reply has been turned OFF**\nAI မှ စာပြန်ခြင်းစနစ်ကို ပိတ်လိုက်ပါပြီ အစ်ကို။', parse_mode="Markdown")
         else:
             bot.reply_to(message, "🚫 **Access Denied**\nဤ Command ကို အသုံးပြုရန် ခွင့်ပြုချက်မရှိပါ အစ်ကို။")
+
+    @bot.message_handler(commands=['aifeedback'])
+    def handle_ai_feedback_summary(message):
+        """Sandbox AI rating summary (last 24h)."""
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) >= 4:
+            total, rows = db_manager.get_ai_feedback_summary(hours=24)
+            issues = db_manager.get_recent_ai_feedback_issues(hours=24, limit=5)
+            if not total:
+                bot.reply_to(message, "📊 နောက်ဆုံး ၂၄ နာရီအတွင်း AI rating မရှိသေးပါ။")
+                return
+            lines = [f"📊 **AI Feedback (၂၄ နာရီ)** — စုစုပေါင်း {total} ခု", ""]
+            for rating, reason, count in rows:
+                if rating == "up":
+                    lines.append(f"👍 မှန်: {count}")
+                else:
+                    label = db_manager.AI_FEEDBACK_REASON_LABELS.get(reason, reason or "မှား")
+                    lines.append(f"👎 {label}: {count}")
+            if issues:
+                lines.append("")
+                lines.append("**နောက်ဆုံး 👎 များ (ကိုးကားနေရာ):**")
+                for query, reason, source_ref in issues:
+                    q_short = (query or "")[:40]
+                    label = db_manager.AI_FEEDBACK_REASON_LABELS.get(reason, reason)
+                    lines.append(f"• `{source_ref or '—'}` — {label}")
+                    lines.append(f"  _{q_short}_")
+            bot.reply_to(message, "\n".join(lines), parse_mode="Markdown")
+        else:
+            bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
+
+    @bot.message_handler(commands=['aiauto'])
+    def handle_ai_auto_delivery_toggle(message):
+        """Private chat: auto-reply delivery/tracking without /ai (default OFF)."""
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) == 4:
+            if 'on' in message.text.lower():
+                db_manager.set_ai_auto_delivery_status('ON')
+                bot.reply_to(
+                    message,
+                    '✅ **AI Auto Delivery Reply ON**\n'
+                    'Private chat မှာ delivery/tracking မေးမှသာ (context ရှိမှ) အလိုအလျောက် ဖြေပါမယ်။',
+                    parse_mode="Markdown",
+                )
+            else:
+                db_manager.set_ai_auto_delivery_status('OFF')
+                bot.reply_to(
+                    message,
+                    '✅ **AI Auto Delivery Reply OFF**\n'
+                    'Manual `/ai` သာ အလုပ်လုပ်ပါမယ်။',
+                    parse_mode="Markdown",
+                )
+        else:
+            bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
 
     @bot.message_handler(commands=['pickupon', 'pickupoff', 'pickup_on', 'pickup_off'])
     def handle_pickup_global_toggle(message):

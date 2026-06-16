@@ -121,6 +121,22 @@ def get_rag_instructions(user_level):
         - Natural Tone: Keep the response short and natural in Burmese, but strictly factual.
         """
 
+def get_topic_ai_instructions(topic):
+    """Topic-scoped system instructions for manual /ai (delivery vs status)."""
+    if topic == "status_arrival":
+        return """
+        [TOPIC: STATUS_ARRIVAL]
+        Live tracking is handled outside this prompt. If you still receive this topic tag, reply briefly that tracking is checked via the website.
+        """
+    return """
+        [TOPIC: DELIVERY_INFO]
+        - Use ONLY Retrieved Knowledge Base Data (Google Sheet sync) and Core Policies.
+        - NEVER invent delivery fees, townships, COD rules, or delivery days.
+        - If data is insufficient, say you do not know exactly — do not guess.
+        - Match OS Tone & Example snippets: short, direct, natural Burmese (OS admin voice).
+        - One concise paragraph unless user asked multiple distinct questions.
+        """
+
 def send_manager_notification(text):
     """Sends a notification to the manager via Telegram"""
     if not TELEGRAM_BOT_TOKEN or not MANAGER_ID:
@@ -401,6 +417,29 @@ def get_ai_tools(user_level):
         })
     
     return tools
+
+def format_human_like_answer(answer, tone_block=None):
+    """Light post-processing to keep /ai replies concise and natural."""
+    if not answer:
+        return answer
+
+    text = str(answer).strip()
+    fluff_markers = (
+        "As an AI",
+        "I'm an AI",
+        "ကျွန်တော်က AI",
+        "အကူအညီပေးရတာ ဝမ်းသာပါတယ်",
+    )
+    for marker in fluff_markers:
+        if marker in text:
+            text = text.replace(marker, "").strip()
+
+    if tone_block and "short" in tone_block.lower():
+        lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+        if len(lines) > 6:
+            text = "\n".join(lines[:6])
+
+    return text
 
 def execute_tool_call(tool_call, user_level):
     """Executes a single tool call and returns the result as a string."""

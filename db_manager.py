@@ -1,7 +1,8 @@
-# Version: 4.0 (2-Worker Architecture Ready)
+# Version: 4.1 (Shop mapping lookup + AI feedback/context)
 import sqlite3
 import time
 import os
+import re
 import pytz
 from datetime import datetime, timedelta
 from contextlib import contextmanager
@@ -251,7 +252,10 @@ def init_db():
             "master_rules": ["chat_id INTEGER", "topic_id INTEGER", "rule_content TEXT"],
             "knowledge_base": ["category TEXT", "question TEXT", "answer TEXT", "tags TEXT", "level INTEGER DEFAULT 1", "last_updated INTEGER"],
             "pickup_queue": ["shop_msg_id INTEGER"],
-            "fb_tasks": ["fb_user_name TEXT"]
+            "fb_tasks": ["fb_user_name TEXT"],
+            "user_states": ["last_ai_query TEXT", "last_location_id TEXT"],
+            "ai_feedback_pending": ["source_ref TEXT"],
+            "ai_feedback_logs": ["source_ref TEXT"],
         }
         
         for table, columns in migrations.items():
@@ -267,6 +271,7 @@ def init_db():
         c.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('global_ai_answer', 'ON')")
         c.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('global_auto_pickup', 'ON')")
         c.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('global_alert_system', 'ON')")
+        c.execute("INSERT OR IGNORE INTO settings (key, value) VALUES ('ai_auto_delivery_reply', 'OFF')")
 
         # ၄။ New Tables (Version 4.0)
         c.execute('''CREATE TABLE IF NOT EXISTS group_settings (
@@ -281,6 +286,43 @@ def init_db():
                      human_intervention_needed INTEGER DEFAULT 0,
                      last_updated INTEGER
                    )''')
+
+        # ၅.၁ AI conversation context (per user + chat, ~1 hour / 3 turns)
+        c.execute('''CREATE TABLE IF NOT EXISTS ai_chat_context (
+                     user_id INTEGER NOT NULL,
+                     chat_id INTEGER NOT NULL,
+                     turns_json TEXT NOT NULL DEFAULT '[]',
+                     updated_at INTEGER,
+                     PRIMARY KEY (user_id, chat_id)
+                   )''')
+
+        c.execute('''CREATE TABLE IF NOT EXISTS ai_feedback_pending (
+                     token TEXT PRIMARY KEY,
+                     user_id INTEGER NOT NULL,
+                     chat_id INTEGER NOT NULL,
+                     query TEXT,
+                     reply TEXT,
+                     topic TEXT,
+                     location_id TEXT,
+                     source_ref TEXT,
+                     created_at INTEGER,
+                     completed INTEGER DEFAULT 0
+                   )''')
+
+        c.execute('''CREATE TABLE IF NOT EXISTS ai_feedback_logs (
+                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     user_id INTEGER,
+                     chat_id INTEGER,
+                     query TEXT,
+                     reply TEXT,
+                     topic TEXT,
+                     location_id TEXT,
+                     source_ref TEXT,
+                     rating TEXT,
+                     reason TEXT,
+                     created_at INTEGER
+                   )''')
+        c.execute("CREATE INDEX IF NOT EXISTS idx_ai_feedback_logs_time ON ai_feedback_logs(created_at)")
 
         # ၆။ Performance Indexes
         c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_status_time ON message_logs(status, timestamp)")
@@ -367,6 +409,24 @@ def add_staff(user_id, name, branch="General", dept="General"):
         conn.execute("INSERT OR REPLACE INTO staff VALUES (?, ?, ?, ?)", (int(user_id), name, branch, dept))
         conn.commit()
     finally: conn.close()
+
+def upsert_staff_batch(rows):
+    """rows: list of (user_id, name, branch, dept)"""
+    if not rows:
+        return False, 0
+    conn = get_connection()
+    try:
+        conn.executemany(
+            "INSERT OR REPLACE INTO staff VALUES (?, ?, ?, ?)",
+            [(int(uid), name, branch or "General", dept or "General") for uid, name, branch, dept in rows],
+        )
+        conn.commit()
+        return True, len(rows)
+    except Exception as e:
+        log.error(f"❌ upsert_staff_batch Error: {e}")
+        return False, 0
+    finally:
+        conn.close()
 
 def remove_staff(user_id):
     conn = get_connection()
@@ -1571,6 +1631,87 @@ _LOCATION_ALIASES = {
     "မော်လမြိုင်": ["Mawlamyine", "mawlamyine"],
 }
 
+_ISLAND_MARKERS = ("ကျွန်း", "gyun", "island", "mawlamyinegyun")
+
+
+def _extract_location_exclusions(query):
+    """Query ထဲမှ မလိုချင်တဲ့ နေရာသင်္ကေတများ ထုတ်ယူခြင်း。"""
+    import re
+    q = str(query or "")
+    q_lower = q.lower()
+    exclusions = set()
+
+    if re.search(r"မော်လမြိုင်ကျွ\s*န်း?\s*မဟုတ်", q) or re.search(r"ကျွ\s*န်း?\s*မဟုတ်", q):
+        exclusions.update(_ISLAND_MARKERS)
+    if re.search(r"not\s+(an?\s+)?island", q_lower):
+        exclusions.update(_ISLAND_MARKERS)
+
+    for match in re.finditer(r"([\u1000-\u109Fa-zA-Z0-9\s]+?)\s*မဟုတ်", q):
+        phrase = match.group(1).strip()
+        if len(phrase) >= 2:
+            exclusions.add(phrase.lower())
+            for part in re.findall(r"[\u1000-\u109F]+|[a-zA-Z]{3,}", phrase):
+                exclusions.add(part.lower())
+
+    return list(exclusions)
+
+
+def _query_wants_island(query):
+    q = str(query or "").lower()
+    if any(x in q for x in ("မဟုတ်", "not ", "wrong")):
+        return False
+    return any(x in q for x in ("ကျွန်း", "gyun", "island"))
+
+
+def _score_location_row(query, terms, exclusions, question, answer, tags):
+    """Location row တစ်ခုအတွက် relevance score。"""
+    haystack = f"{question} {answer} {tags}"
+    haystack_lower = haystack.lower()
+    score = sum(2 for t in terms if t.lower() in haystack_lower)
+
+    if "delivery fee:" in answer.lower():
+        score += 10
+
+    for ex in exclusions:
+        ex_lower = str(ex).lower()
+        if ex_lower and ex_lower in haystack_lower:
+            score -= 80
+
+    mm_match = re.search(r"\(([^)]+)\)", answer)
+    mm_name = mm_match.group(1).strip() if mm_match else ""
+    township_match = re.search(r"Township:\s*([^|]+)", answer, re.IGNORECASE)
+    township = township_match.group(1).strip() if township_match else ""
+
+    for term in terms:
+        term_lower = term.lower()
+        if mm_name and (term == mm_name or term_lower == mm_name.lower()):
+            score += 25
+        if township and term_lower == township.lower():
+            score += 20
+
+    term_set = {t.lower() for t in terms}
+    if "မော်လမြိုင်" in term_set or "mawlamyine" in term_set:
+        if _query_wants_island(query):
+            if any(m in haystack_lower for m in _ISLAND_MARKERS):
+                score += 45
+            elif township and township.lower() == "mawlamyine" and "gyun" not in township.lower():
+                score -= 25
+        else:
+            if any(m in haystack_lower for m in _ISLAND_MARKERS):
+                score -= 45
+            if township.lower() == "mawlamyine" and "gyun" not in township.lower():
+                score += 30
+            if mm_name == "မော်လမြိုင်":
+                score += 20
+
+    if township and "gyun" in township.lower():
+        for term in terms:
+            if term.lower() == "mawlamyine" and "mawlamyinegyun" not in str(query).lower():
+                if "မော်လမြိုင်" in str(query) and "ကျွန်း" not in str(query):
+                    score -= 15
+
+    return score
+
 
 def search_location_delivery(query, user_level):
     """Location table (numeric category ID) မှ delivery fee/COD/days ရှာခြင်း。"""
@@ -1580,6 +1721,8 @@ def search_location_delivery(query, user_level):
     terms = _extract_search_tokens(query)
     if not terms:
         return None
+
+    exclusions = _extract_location_exclusions(query)
 
     conn = get_connection()
     try:
@@ -1594,17 +1737,24 @@ def search_location_delivery(query, user_level):
                  ORDER BY length(answer) DESC
                  LIMIT 8'''
 
+        seen_cats = set()
+        candidates = []
+
         for term in terms:
             pattern = f"%{term}%"
             c.execute(sql, (pattern, pattern, pattern, user_level))
             for cat, question, answer, tags in c.fetchall():
-                haystack = f"{question} {answer} {tags}".lower()
-                score = sum(2 for t in terms if t.lower() in haystack)
-                if "delivery fee:" in answer.lower() or "ပို့ခ:" in answer:
-                    score += 10
-                if score > best_score:
-                    best_score = score
-                    best_row = (cat, question, answer, tags)
+                if cat in seen_cats:
+                    continue
+                seen_cats.add(cat)
+                score = _score_location_row(query, terms, exclusions, question, answer, tags)
+                if score > 0:
+                    candidates.append((score, cat, question, answer, tags))
+
+        if candidates:
+            candidates.sort(key=lambda x: x[0], reverse=True)
+            best_score, cat, question, answer, tags = candidates[0]
+            best_row = (cat, question, answer, tags)
 
         if not best_row or best_score < 2:
             return None
@@ -1805,6 +1955,114 @@ def get_core_policies():
     finally:
         conn.close()
 
+
+def search_delivery_knowledge(query, user_level):
+    """
+    Delivery-info topic only: location fee rows + general KB snippets (additive).
+    Does not replace search_knowledge — combines best matches for /ai grounding.
+    """
+    if not query or not str(query).strip():
+        return None
+    parts = []
+    try:
+        loc = search_location_delivery(query, user_level)
+        if loc:
+            parts.append(loc)
+        kb = search_knowledge(query, user_level)
+        if kb and kb not in parts:
+            parts.append(kb)
+    except Exception as e:
+        log.error(f"❌ search_delivery_knowledge error: {e}")
+        return None
+    if not parts:
+        return None
+    return "\n---\n".join(parts)
+
+
+def load_tone_examples(user_level, limit=6):
+    """Google Sheet synced OS tone/example snippets for human-like /ai replies."""
+    conn = get_connection()
+    try:
+        c = conn.cursor()
+        c.execute(
+            '''SELECT category, question, answer FROM knowledge_base
+               WHERE (
+                   category LIKE '%Tone%'
+                   OR category LIKE '%Example%'
+                   OR tags LIKE '%tone%'
+                   OR tags LIKE '%example%'
+               )
+               AND level <= ?
+               ORDER BY category ASC
+               LIMIT ?''',
+            (user_level, limit),
+        )
+        rows = c.fetchall()
+        if not rows:
+            return ""
+
+        tone_text = "[OS TONE & EXAMPLE SNIPPETS]\n"
+        for cat, q, a in rows:
+            tone_text += f"Category: {cat}\nExample Q: {q}\nExample A: {a}\n---\n"
+        return tone_text
+    except Exception as e:
+        log.error(f"❌ load_tone_examples error: {e}")
+        return ""
+    finally:
+        conn.close()
+
+
+def get_status_meaning_map():
+    """Customer Inquire 3 > Status Mean — synced knowledge_base lookup."""
+    conn = get_connection()
+    try:
+        c = conn.cursor()
+        rows = c.execute(
+            """SELECT question, answer FROM knowledge_base
+               WHERE (
+                   category LIKE '%Status Mean%'
+                   OR tags LIKE '%status_mean%'
+               )
+               AND TRIM(COALESCE(question, '')) != ''
+               AND TRIM(COALESCE(answer, '')) != ''"""
+        ).fetchall()
+        result = {}
+        for question, answer in rows:
+            key = str(question).strip().upper()
+            result[key] = str(answer).strip()
+        return result
+    except Exception as e:
+        log.error(f"❌ get_status_meaning_map error: {e}")
+        return {}
+    finally:
+        conn.close()
+
+
+def get_remark_meaning_map():
+    """Customer Inquire 3 > Remark Mean — synced knowledge_base lookup."""
+    conn = get_connection()
+    try:
+        c = conn.cursor()
+        rows = c.execute(
+            """SELECT question, answer FROM knowledge_base
+               WHERE (
+                   category LIKE '%Remark Mean%'
+                   OR tags LIKE '%remark_mean%'
+               )
+               AND TRIM(COALESCE(question, '')) != ''
+               AND TRIM(COALESCE(answer, '')) != ''"""
+        ).fetchall()
+        result = {}
+        for question, answer in rows:
+            key = str(question).strip().upper()
+            result[key] = str(answer).strip()
+        return result
+    except Exception as e:
+        log.error(f"❌ get_remark_meaning_map error: {e}")
+        return {}
+    finally:
+        conn.close()
+
 # --- [ Pickup Queue Helpers ] ---
 def add_to_pickup_queue(chat_id, orig_msg_id, target_date, os_name, remark, vehicle, status='PENDING'):
     conn = get_connection()
@@ -1955,15 +2213,40 @@ def check_existing_pickup(chat_id, target_date):
         conn.close()
 
 # --- [ Shop Mapping Helpers ] ---
-def get_shop_mapping(chat_id):
-    conn = get_connection()
+def _shop_mapping_chat_id_variants(chat_id):
+    """All common Telegram supergroup ID formats for shop_mappings lookup."""
     try:
-        # 💡 Chat ID Mismatch Fix
-        clean_id = int(str(chat_id).replace("-100", ""))
-        res = conn.execute("SELECT website_os_name FROM shop_mappings WHERE chat_id IN (?, ?)", (chat_id, clean_id)).fetchone()
-        return res[0] if res else None
-    finally:
-        conn.close()
+        norm = normalize_bot_chat_id(chat_id)
+    except (TypeError, ValueError):
+        return (chat_id,)
+    short = int(str(norm).replace("-100", "")) if str(norm).startswith("-100") else norm
+    variants = []
+    for cid in (chat_id, norm, short):
+        if cid not in variants:
+            variants.append(cid)
+    return tuple(variants)
+
+
+def get_shop_mapping(chat_id):
+  conn = get_connection()
+  try:
+    variants = _shop_mapping_chat_id_variants(chat_id)
+    placeholders = ", ".join(["?"] * len(variants))
+    res = conn.execute(
+      f"""SELECT website_os_name FROM shop_mappings
+          WHERE chat_id IN ({placeholders})
+            AND TRIM(COALESCE(website_os_name, '')) != ''
+          ORDER BY updated_at DESC LIMIT 1""",
+      variants,
+    ).fetchone()
+    return res[0].strip() if res and res[0] else None
+  finally:
+    conn.close()
+
+
+def get_group_website_os_name(chat_id):
+    """Website OS name for tracking scope — shop_mappings only (not Telegram title)."""
+    return get_shop_mapping(chat_id)
 
 def set_shop_mapping(chat_id, website_os_name):
     conn = get_connection()
@@ -2126,14 +2409,18 @@ def update_unified_shop_data(data_list):
             if not chat_id:
                 continue
             
-            # Website Mapping Update (use mapping_id from Column B for shop_mappings table)
+            # Website Mapping Update (Column B mapping_id + Column A telegram group id)
+            store_ids = {map_id, chat_id}
             if not web_name or web_name.strip() == "":
-                c.execute("DELETE FROM shop_mappings WHERE chat_id = ?", (map_id,))
+                for sid in store_ids:
+                    c.execute("DELETE FROM shop_mappings WHERE chat_id = ?", (sid,))
             else:
-                c.execute(
-                    "INSERT OR REPLACE INTO shop_mappings (chat_id, website_os_name, updated_at) VALUES (?, ?, ?)",
-                    (map_id, web_name.strip(), now)
-                )
+                web_clean = web_name.strip()
+                for sid in store_ids:
+                    c.execute(
+                        "INSERT OR REPLACE INTO shop_mappings (chat_id, website_os_name, updated_at) VALUES (?, ?, ?)",
+                        (sid, web_clean, now),
+                    )
             
             # Topics Update (os_groups)
             # Pickup (Target 1)
@@ -2495,6 +2782,232 @@ def set_alert_system_global_status(status):
     """ Alert System Global Status ကို settings table တွင် update လုပ်ခြင်း ('ON' or 'OFF') """
     set_setting('global_alert_system', status)
 
+AI_CONTEXT_TTL_SEC = 3600
+AI_CONTEXT_MAX_TURNS = 3
+
+
+def get_ai_auto_delivery_status():
+    """Private chat auto delivery/tracking reply (default OFF — enable after testing)."""
+    return get_setting('ai_auto_delivery_reply', 'OFF')
+
+
+def set_ai_auto_delivery_status(status):
+    set_setting('ai_auto_delivery_reply', status)
+
+
+def append_ai_conversation_turn(
+    user_id,
+    chat_id,
+    query,
+    reply_summary,
+    topic=None,
+    location_id=None,
+    location_label=None,
+    waybill=None,
+):
+    """Per (user_id, chat_id) နောက်ဆုံး ၃ turn သိမ်းခြင်း。"""
+    import json
+    if not user_id or not chat_id:
+        return
+    now = int(time.time())
+    turns = get_ai_conversation_turns(user_id, chat_id, max_age_sec=AI_CONTEXT_TTL_SEC, max_turns=AI_CONTEXT_MAX_TURNS)
+    turns.append({
+        "query": str(query or "")[:300],
+        "reply_summary": str(reply_summary or "")[:400],
+        "topic": str(topic or ""),
+        "location_id": str(location_id or ""),
+        "location_label": str(location_label or ""),
+        "waybill": str(waybill or ""),
+        "ts": now,
+    })
+    turns = turns[-AI_CONTEXT_MAX_TURNS:]
+    conn = get_connection()
+    try:
+        conn.execute(
+            "INSERT OR REPLACE INTO ai_chat_context (user_id, chat_id, turns_json, updated_at) VALUES (?, ?, ?, ?)",
+            (int(user_id), int(chat_id), json.dumps(turns, ensure_ascii=False), now),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_ai_conversation_turns(user_id, chat_id, max_age_sec=AI_CONTEXT_TTL_SEC, max_turns=AI_CONTEXT_MAX_TURNS):
+    """၁ နာရီအတွင်း နောက်ဆုံး turn များ。"""
+    import json
+    conn = get_connection()
+    try:
+        res = conn.execute(
+            "SELECT turns_json, updated_at FROM ai_chat_context WHERE user_id = ? AND chat_id = ?",
+            (int(user_id), int(chat_id)),
+        ).fetchone()
+        if not res or not res[0]:
+            return []
+        if max_age_sec and res[1] and (int(time.time()) - int(res[1])) > max_age_sec:
+            return []
+        try:
+            turns = json.loads(res[0])
+        except (json.JSONDecodeError, TypeError):
+            return []
+        if not isinstance(turns, list):
+            return []
+        cutoff = int(time.time()) - max_age_sec if max_age_sec else 0
+        fresh = [t for t in turns if isinstance(t, dict) and int(t.get("ts") or 0) >= cutoff]
+        return fresh[-max_turns:]
+    finally:
+        conn.close()
+
+
+def get_last_ai_conversation_turn(user_id, chat_id, max_age_sec=AI_CONTEXT_TTL_SEC):
+    turns = get_ai_conversation_turns(user_id, chat_id, max_age_sec=max_age_sec, max_turns=AI_CONTEXT_MAX_TURNS)
+    return turns[-1] if turns else None
+
+
+AI_FEEDBACK_REASON_LABELS = {
+    "data": "အချက်အလက်မှား",
+    "topic": "အကြောင်းအရာလွဲ",
+    "tone": "အပြင်လိုတာ",
+}
+
+
+def create_ai_feedback_pending(
+    user_id, chat_id, query, reply, topic=None, location_id=None, source_ref=None,
+):
+    """Sandbox rating — short-lived token for inline keyboard callbacks."""
+    import secrets
+    conn = get_connection()
+    try:
+        now = int(time.time())
+        conn.execute(
+            "DELETE FROM ai_feedback_pending WHERE created_at < ?",
+            (now - 86400,),
+        )
+        token = secrets.token_hex(6)
+        conn.execute(
+            """INSERT INTO ai_feedback_pending
+               (token, user_id, chat_id, query, reply, topic, location_id, source_ref, created_at, completed)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)""",
+            (
+                token,
+                int(user_id),
+                int(chat_id),
+                str(query or "")[:500],
+                str(reply or "")[:1500],
+                str(topic or ""),
+                str(location_id or ""),
+                str(source_ref or "")[:300],
+                now,
+            ),
+        )
+        conn.commit()
+        return token
+    finally:
+        conn.close()
+
+
+def get_ai_feedback_pending(token):
+    conn = get_connection()
+    try:
+        res = conn.execute(
+            "SELECT token, user_id, chat_id, query, reply, topic, location_id, source_ref, completed "
+            "FROM ai_feedback_pending WHERE token = ?",
+            (str(token),),
+        ).fetchone()
+        if not res:
+            return None
+        return {
+            "token": res[0],
+            "user_id": res[1],
+            "chat_id": res[2],
+            "query": res[3],
+            "reply": res[4],
+            "topic": res[5],
+            "location_id": res[6],
+            "source_ref": res[7],
+            "completed": res[8],
+        }
+    finally:
+        conn.close()
+
+
+def save_ai_feedback_rating(token, user_id, rating, reason=None):
+    pending = get_ai_feedback_pending(token)
+    if not pending:
+        return False, "expired"
+    if pending["completed"]:
+        return False, "already_rated"
+    if int(pending["user_id"]) != int(user_id):
+        return False, "not_owner"
+    if rating == "down" and reason not in AI_FEEDBACK_REASON_LABELS:
+        return False, "need_reason"
+
+    conn = get_connection()
+    try:
+        now = int(time.time())
+        conn.execute(
+            """INSERT INTO ai_feedback_logs
+               (user_id, chat_id, query, reply, topic, location_id, source_ref, rating, reason, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                pending["user_id"],
+                pending["chat_id"],
+                pending["query"],
+                pending["reply"],
+                pending["topic"],
+                pending["location_id"],
+                pending.get("source_ref") or "",
+                rating,
+                reason or "",
+                now,
+            ),
+        )
+        conn.execute(
+            "UPDATE ai_feedback_pending SET completed = 1 WHERE token = ?",
+            (str(token),),
+        )
+        conn.commit()
+        log.info(
+            f"📊 AI feedback saved: {rating} reason={reason or '-'} "
+            f"topic={pending['topic']} user={user_id}"
+        )
+        return True, "ok"
+    finally:
+        conn.close()
+
+
+def get_ai_feedback_summary(hours=24):
+    """Sandbox QA — recent rating counts."""
+    conn = get_connection()
+    try:
+        since = int(time.time()) - int(hours) * 3600
+        rows = conn.execute(
+            """SELECT rating, reason, COUNT(*) FROM ai_feedback_logs
+               WHERE created_at >= ? GROUP BY rating, reason""",
+            (since,),
+        ).fetchall()
+        total = conn.execute(
+            "SELECT COUNT(*) FROM ai_feedback_logs WHERE created_at >= ?",
+            (since,),
+        ).fetchone()[0]
+        return total, rows
+    finally:
+        conn.close()
+
+
+def get_recent_ai_feedback_issues(hours=24, limit=5):
+    """နောက်ဆုံး 👎 များ — Sheet ကိုးကားနေရာပါ。"""
+    conn = get_connection()
+    try:
+        since = int(time.time()) - int(hours) * 3600
+        return conn.execute(
+            """SELECT query, reason, source_ref FROM ai_feedback_logs
+               WHERE created_at >= ? AND rating = 'down'
+               ORDER BY created_at DESC LIMIT ?""",
+            (since, int(limit)),
+        ).fetchall()
+    finally:
+        conn.close()
+
 # --- [ User State Helpers ] ---
 def get_user_state(user_id):
     """ User ၏ out_of_scope_count နှင့် human_intervention_needed status ကို ယူခြင်း """
@@ -2557,12 +3070,35 @@ def reset_user_state(user_id):
     conn = get_connection()
     try:
         conn.execute(
-            "UPDATE user_states SET out_of_scope_count = 0, human_intervention_needed = 0, last_updated = ? WHERE user_id = ?",
+            "UPDATE user_states SET out_of_scope_count = 0, human_intervention_needed = 0, "
+            "last_ai_query = NULL, last_location_id = NULL, last_updated = ? WHERE user_id = ?",
             (int(time.time()), user_id)
         )
         conn.commit()
     finally:
         conn.close()
+
+
+def save_ai_location_context(user_id, query, location_id=None, chat_id=None):
+    """Backward-compatible wrapper — use append_ai_conversation_turn instead."""
+    if chat_id is None:
+        return
+    append_ai_conversation_turn(
+        user_id, chat_id, query,
+        reply_summary=f"location:{location_id or ''}",
+        topic="delivery_info",
+        location_id=location_id,
+    )
+
+
+def get_ai_location_context(user_id, max_age_sec=3600, chat_id=None):
+    """Backward-compatible wrapper."""
+    if chat_id is None:
+        return None, None
+    turn = get_last_ai_conversation_turn(user_id, chat_id, max_age_sec=max_age_sec)
+    if not turn:
+        return None, None
+    return turn.get("query"), turn.get("location_id") or None
 
 def reset_today_pickups(chat_id):
     """

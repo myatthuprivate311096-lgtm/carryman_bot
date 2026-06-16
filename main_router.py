@@ -1,23 +1,45 @@
-# Version: 1.1 (Manual AI Trigger Update)
+# Version: 1.3 (OS group /ai + forum topic replies + OS scope)
 import os
+import re
 import json
 import importlib
 import db_manager
 from dotenv import load_dotenv
 from logger import log
 import ai_utils
+import config
 
 # 💡 Absolute Path Fix
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
-SANDBOX_CHAT_ID = -1003539520778
+SANDBOX_CHAT_ID = config.SANDBOX_CHAT_ID
+
+_DELIVERY_TOPIC_MARKERS = config.DELIVERY_TOPIC_MARKERS
+_STATUS_TOPIC_MARKERS = config.STATUS_TOPIC_MARKERS
+
+
+def _is_ai_globally_enabled(chat_id):
+    """global_ai OFF ဖြစ်ရင် Sandbox group တစ်ခုတည်းသာ ခွင့်ပြု。"""
+    if chat_id == SANDBOX_CHAT_ID:
+        return True
+    return db_manager.get_ai_global_status() == 'ON'
+
 
 def register_ai_handler(bot):
     """Register /ai BEFORE catch-all message handlers (telebot first-match wins)."""
     @bot.message_handler(commands=['ai'])
     def handle_ai_command(message):
+        log.info(
+            f"🤖 /ai command in chat {message.chat.id} "
+            f"topic {getattr(message, 'message_thread_id', None)} from {message.from_user.id}"
+        )
         handle_ai_query(bot, message, is_automatic=False)
+
+    register_ai_feedback_handlers(bot)
+
+
+AI_FEEDBACK_REASON_LABELS = db_manager.AI_FEEDBACK_REASON_LABELS
 
 def is_ai_office_hours():
     """
@@ -58,6 +80,284 @@ def _normalize_ai_query(text):
     return cleaned.strip('"').strip("'").strip()
 
 
+_AMBIGUOUS_FOLLOWUP_MARKERS = (
+    "ဘယ်လောက်", "ကြာမှ", "ရလား", "ရမလား", "ပို့ခ", "တန်ဆာခ",
+    "cod", "ရဲ့", "သူ", "ဒီ", "အဲ့", "ဟို", "နဲ့လဲ", "ဘာလဲ",
+    "how much", "how long", "fee",
+)
+
+
+def _is_correction_followup(query):
+    """Customer က အရင်အဖြေကို ပြင်ပြောနေခြင်း သို့မဟုတ် မဟုတ်ဘူးလို့ ပြောခြင်း。"""
+    if not query:
+        return False
+    q = str(query)
+    markers = (
+        "မဟုတ်", "မဟုတ်ပါ", "မဟုတ်ဘူး", "မှားတယ်", "မှားပါတယ်",
+        "သင့်မတော်", "wrong", "not that", "ပြန်စစ်", "နောက်တစ်ခု",
+    )
+    return any(m in q.lower() if m.isascii() else m in q for m in markers)
+
+
+def _query_has_explicit_tracking_target(query):
+    """ဖုန်း (09) သို့မဟုတ် waybill ပါဝင်သော tracking မေးခွန်း。"""
+    from modules import check_order
+    if check_order.extract_waybill(query):
+        return True
+    if check_order.extract_phone(query):
+        return True
+    return False
+
+
+def _query_has_explicit_location(query, user_level=1):
+    """မေးခွန်းထဲမှာ မြို့နယ်/နေရာ ရှင်းရှင်းပါဝင်မှု。"""
+    if not query:
+        return False
+    if _query_has_explicit_tracking_target(query):
+        return True
+    if db_manager.search_location_delivery(query, user_level):
+        return True
+    return False
+
+
+def _is_ambiguous_followup(query, user_level=1):
+    """နေရာ/ဝေး မပါဘဲ ဆက်မေးတဲ့ အတိုမေးခွန်း。"""
+    if not query:
+        return False
+    q = str(query).strip()
+    if len(q) > 100:
+        return False
+    if _query_has_explicit_tracking_target(q):
+        return False
+    if db_manager.search_location_delivery(q, user_level):
+        return False
+    lowered = q.lower()
+    return any(m in lowered if m.isascii() else m in q for m in _AMBIGUOUS_FOLLOWUP_MARKERS)
+
+
+def _looks_like_status_question(text):
+    if not text:
+        return False
+    lowered = str(text).lower()
+    if any(marker in lowered for marker in _STATUS_TOPIC_MARKERS):
+        return True
+    if re.search(r"\b\d{8,12}\b", text) or re.search(r"09\d{7,11}", text):
+        return True
+    return False
+
+
+def _resolve_ai_search_query(user_id, chat_id, query, user_level=1):
+    """
+    Context-aware query expansion (per user_id + chat_id, 1 hour).
+    Returns: (search_query, is_correction, needs_clarification)
+    """
+    if not query:
+        return query, False, False
+
+    turns = db_manager.get_ai_conversation_turns(user_id, chat_id)
+    last_turn = turns[-1] if turns else None
+    is_correction = _is_correction_followup(query)
+
+    # အသက် phone/waybill ပါရင် အဟောင်း context မပေါင်းဘဲ လက်ရှိ query သာ သုံး
+    if _query_has_explicit_tracking_target(query):
+        from modules import check_order
+        new_phone = check_order.extract_phone(query)
+        new_wb = check_order.extract_waybill(query)
+        if last_turn:
+            last_q = last_turn.get("query") or ""
+            last_phone = check_order.extract_phone(last_q)
+            last_wb = last_turn.get("waybill") or check_order.extract_waybill(last_q)
+            if (new_phone and last_phone and new_phone != last_phone) or (
+                new_wb and last_wb and str(new_wb) != str(last_wb)
+            ):
+                log.info(f"🔀 New tracking target — skip context merge (user {user_id})")
+        return query, False, False
+
+    if db_manager.search_location_delivery(query, user_level) and last_turn:
+        new_loc = db_manager.search_location_delivery(query, user_level)
+        new_id = _extract_location_id(new_loc)
+        old_id = (last_turn or {}).get("location_id") or ""
+        if new_id and old_id and new_id != old_id:
+            log.info(f"🔀 Topic change detected: location {old_id} → {new_id}")
+            return query, False, False
+
+    if is_correction and last_turn:
+        prev_q = last_turn.get("query") or ""
+        for turn in reversed(turns):
+            if turn.get("location_id") or turn.get("location_label"):
+                prev_q = turn.get("query") or prev_q
+                break
+        if prev_q and prev_q.strip() not in query:
+            merged = f"{prev_q} — {query}"
+            log.info(f"🔗 Merged AI correction context for user {user_id} chat {chat_id}")
+            return merged, True, False
+        return query, True, False
+
+    if _is_ambiguous_followup(query, user_level):
+        if not last_turn:
+            return query, False, True
+        prev_q = last_turn.get("query") or ""
+        for turn in reversed(turns):
+            if turn.get("location_id") or turn.get("location_label"):
+                prev_q = turn.get("query") or prev_q
+                break
+        if prev_q:
+            merged = f"{prev_q} — follow-up: {query}"
+            log.info(f"🔗 Merged ambiguous follow-up for user {user_id} chat {chat_id}")
+            return merged, False, False
+        return query, False, True
+
+    return query, False, False
+
+
+def _extract_location_id(location_context):
+    if not location_context:
+        return None
+    match = re.search(r"Location ID:\s*(\S+)", str(location_context))
+    return match.group(1) if match else None
+
+
+def _extract_location_label(location_context):
+    if not location_context:
+        return ""
+    mm_match = re.search(r"\(([^)]+)\)", str(location_context))
+    if mm_match:
+        return mm_match.group(1).strip()
+    township = re.search(r"Township:\s*([^|]+)", str(location_context), re.IGNORECASE)
+    return township.group(1).strip() if township else ""
+
+
+def _build_conversation_block(turns):
+    if not turns:
+        return ""
+    lines = ["[Recent Conversation (same customer, last 1 hour)]:"]
+    for idx, turn in enumerate(turns, start=1):
+        lines.append(f"{idx}. Customer asked: {turn.get('query', '')}")
+        if turn.get("reply_summary"):
+            lines.append(f"   Bot answered: {turn.get('reply_summary', '')}")
+        if turn.get("location_label"):
+            lines.append(f"   Location context: {turn.get('location_label')}")
+    lines.append(
+        "Use this when the latest message is a short follow-up or correction. "
+        "If the customer clearly changes location/topic, ignore old context."
+    )
+    return "\n".join(lines)
+
+
+def _summarize_reply_for_context(answer, max_len=220):
+    if not answer:
+        return ""
+    text = re.sub(r"\s+", " ", str(answer).strip())
+    return text[:max_len]
+
+
+def _record_ai_turn(user_id, chat_id, query, answer, topic, location_context=None, waybill=None):
+    db_manager.append_ai_conversation_turn(
+        user_id,
+        chat_id,
+        query,
+        _summarize_reply_for_context(answer),
+        topic=topic,
+        location_id=_extract_location_id(location_context),
+        location_label=_extract_location_label(location_context),
+        waybill=waybill,
+    )
+
+
+def _classify_ai_topic(query):
+    """
+    Topic gate for manual /ai only.
+    - status_arrival_topic: live website tracking + OS filter
+    - delivery_info_topic: Google Sheet grounded delivery Q&A
+    """
+    if not query:
+        return "delivery_info"
+
+    lowered = str(query).lower()
+    has_delivery = any(marker in lowered for marker in _DELIVERY_TOPIC_MARKERS)
+    has_status = any(marker in lowered for marker in _STATUS_TOPIC_MARKERS)
+
+    if re.search(r"\b\d{4,}\b", query) or re.search(r"09\d{7,11}", query):
+        has_status = True
+    if re.search(r"\bP\d{6,}\b", query, re.IGNORECASE):
+        has_status = True
+
+    if has_status and not has_delivery:
+        return "status_arrival"
+    return "delivery_info"
+
+
+def _is_allowed_private_customer_query(query, user_level):
+    """
+    Private non-staff users may only ask:
+    - delivery / Google Sheet knowledge questions
+    - waybill / order-id / phone based tracking (ဝေးလမ်းကြောင်း)
+  """
+    if not query or not str(query).strip():
+        return False
+
+    topic = _classify_ai_topic(query)
+    if topic == "status_arrival":
+        return True
+
+    lowered = str(query).lower()
+    if any(marker in lowered for marker in _DELIVERY_TOPIC_MARKERS):
+        return True
+
+    if re.search(r"\bP\d{6,}\b", query, re.IGNORECASE):
+        return True
+
+    try:
+        if db_manager.search_location_delivery(query, user_level):
+            return True
+        if db_manager.search_knowledge(query, user_level):
+            return True
+    except Exception as e:
+        log.warning(f"⚠️ Sheet pre-check failed for private /ai gate: {e}")
+
+    return False
+
+
+def _handle_private_scope_violation(bot, message, user_id):
+    """Three-strike rule for private non-staff out-of-scope /ai usage."""
+    count = db_manager.increment_out_of_scope(user_id)
+
+    if count < 3:
+        bot.reply_to(
+            message,
+            "တောင်းပန်ပါတယ်ခင်ဗျာ။ CarryMan delivery၊ waybill/tracking၊ "
+            "နှင့် Google Sheet ထဲရှိ ဝန်ဆောင်မှုဆိုင်ရာ မေးခွန်းများကိုသာ ဖြေပေးနိုင်ပါတယ်။ "
+            "အခြားအကြောင်းအရာများကို မဖြေကြားနိုင်ပါဘူးခင်ဗျာ။"
+        )
+        return
+
+    bot.reply_to(
+        message,
+        "admin ဆီကိုအကြောင်းကြားပေးထားတာမို့ ရုံးချိန်အတွင်းအမြန်ဆုံးဆက်သွယ်ပေးပါလိမ့်မယ်နော်"
+    )
+
+    admin_chat = -1003601049225
+    topic_id = 920
+    username = f"@{message.from_user.username}" if message.from_user.username else f"ID: {user_id}"
+    alert_text = (
+        f"⚠️ **Human Support Needed!**\nA user ({username}) has asked out-of-scope "
+        f"/ai questions 3 times in Private Chat. AI reply is now paused for them."
+    )
+
+    from telebot import types
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("🔓 Unmute AI", callback_data=f"unmute_user:{user_id}"))
+
+    try:
+        bot.send_message(admin_chat, alert_text, message_thread_id=topic_id, reply_markup=markup)
+    except Exception as ae:
+        log.error(f"❌ Failed to send Strike 3 alert to admin: {ae}")
+        bot.send_message(admin_chat, alert_text)
+
+    db_manager.set_human_intervention(user_id, 1)
+    log.info(f"🚫 User {user_id} muted after 3 private /ai scope strikes.")
+
+
 def _format_rag_fallback_answer(rag_context):
     """AI API မအောင်မြင်ရင် Sheet data ကနေ တိုက်ရိုက်ဖြေကြားခြင်း。"""
     if not rag_context:
@@ -78,18 +378,219 @@ def _format_rag_fallback_answer(rag_context):
     return "\n\n".join(answers)
 
 
-def _send_ai_reply(bot, message, answer):
-    """Telegram reply with 4096 char split。"""
+def _make_feedback_meta(query, topic, location_context=None, waybill=None, rag_context=None):
+    source_ref = _build_source_ref(topic, location_context, rag_context, waybill)
+    return {
+        "query": query,
+        "topic": topic,
+        "location_id": _extract_location_id(location_context),
+        "waybill": waybill,
+        "source_ref": source_ref,
+    }
+
+
+def _build_source_ref(topic, location_context=None, rag_context=None, waybill=None):
+    """Sandbox — bot က Sheet/website ဘယ်ကနေ အဖြေယူခဲ့လဲ ရိုးရှင်းပြခြင်း。"""
+    if waybill:
+        return f"Website tracking | ဝေး {waybill}"
+
+    loc_id = _extract_location_id(location_context) if location_context else None
+    if loc_id:
+        label = _extract_location_label(location_context)
+        return f"Customer Inquire | #{loc_id} | {label or 'location row'}"
+
+    if rag_context:
+        loc_ids = re.findall(r"Location ID:\s*(\S+)", str(rag_context))
+        if loc_ids:
+            return f"Customer Inquire | #{loc_ids[0]} | AI ဖွင့်ပြ"
+        if "status mean" in str(rag_context).lower() or "remark mean" in str(rag_context).lower():
+            return "Customer Inquire 3 | Status/Remark | AI ဖွင့်ပြ"
+        return "Sheet FAQ/Knowledge | AI ဖွင့်ပြ"
+
+    if topic == "status_arrival":
+        return "Website tracking | live API"
+    return "AI — Sheet row တိုက်ရိုက်မမှီ"
+
+
+def _build_ai_rating_markup(token):
+    from telebot import types
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    markup.add(
+        types.InlineKeyboardButton("👍 မှန်", callback_data=f"aifb:u:{token}"),
+        types.InlineKeyboardButton("👎 မှား", callback_data=f"aifb:d:{token}"),
+    )
+    return markup
+
+
+def _build_ai_reason_markup(token):
+    from telebot import types
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    markup.add(
+        types.InlineKeyboardButton(
+            AI_FEEDBACK_REASON_LABELS["data"],
+            callback_data=f"aifb:r:{token}:data",
+        ),
+        types.InlineKeyboardButton(
+            AI_FEEDBACK_REASON_LABELS["topic"],
+            callback_data=f"aifb:r:{token}:topic",
+        ),
+        types.InlineKeyboardButton(
+            AI_FEEDBACK_REASON_LABELS["tone"],
+            callback_data=f"aifb:r:{token}:tone",
+        ),
+    )
+    return markup
+
+
+def register_ai_feedback_handlers(bot):
+    """Sandbox-only inline rating for /ai replies."""
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("aifb:"))
+    def handle_ai_feedback_callback(call):
+        try:
+            parts = call.data.split(":")
+            if len(parts) < 3:
+                bot.answer_callback_query(call.id, "မမှန်ကန်ပါ")
+                return
+
+            action, token = parts[1], parts[2]
+            if call.message.chat.id != SANDBOX_CHAT_ID:
+                bot.answer_callback_query(call.id, "Sandbox မှာသာ သုံးနိုင်ပါတယ်")
+                return
+
+            pending = db_manager.get_ai_feedback_pending(token)
+            if not pending:
+                bot.answer_callback_query(call.id, "အချိန်ကုန်သွားပါပြီ — ပြန် /ai မေးပါ")
+                return
+            if pending["completed"]:
+                bot.answer_callback_query(call.id, "အဖြေကို မှတ်ပြီးပါပြီ")
+                return
+            if int(pending["user_id"]) != int(call.from_user.id):
+                bot.answer_callback_query(call.id, "မိမိအဖြေကိုသာ မှတ်နိုင်ပါတယ်")
+                return
+
+            base_text = call.message.text or call.message.caption or ""
+
+            if action == "d":
+                bot.answer_callback_query(call.id, "ဘာကြောင့်မှားသလဲ ရွေးပေးပါ")
+                prompt = "\n\n📝 **ဘာကြောင့်လဲ?** ရွေးပေးပါ အစ်ကို။"
+                bot.edit_message_text(
+                    base_text + prompt,
+                    call.message.chat.id,
+                    call.message.message_id,
+                    reply_markup=_build_ai_reason_markup(token),
+                    parse_mode="Markdown",
+                )
+                return
+
+            if action == "u":
+                ok, status = db_manager.save_ai_feedback_rating(token, call.from_user.id, "up")
+                if not ok:
+                    bot.answer_callback_query(call.id, "မှတ်မရပါ")
+                    return
+                bot.answer_callback_query(call.id, "👍 ကျေးဇူးတင်ပါတယ်")
+                bot.edit_message_text(
+                    base_text + "\n\n✅ _မှတ်ချက်: 👍 မှန်_",
+                    call.message.chat.id,
+                    call.message.message_id,
+                    reply_markup=None,
+                    parse_mode="Markdown",
+                )
+                return
+
+            if action == "r" and len(parts) >= 4:
+                reason = parts[3]
+                ok, status = db_manager.save_ai_feedback_rating(
+                    token, call.from_user.id, "down", reason=reason
+                )
+                if not ok:
+                    bot.answer_callback_query(call.id, "မှတ်မရပါ")
+                    return
+                reason_label = AI_FEEDBACK_REASON_LABELS.get(reason, reason)
+                bot.answer_callback_query(call.id, "မှတ်ပြီးပါပြီ")
+                src = pending.get("source_ref") or "—"
+                hint = (
+                    f"\n\n✅ _မှတ်ချက်: 👎 {reason_label}_"
+                    f"\n📎 **ကိုးကား:** `{src}`"
+                    f"\n→ Sheet မှန်ရင် **bot** ပြင်ရန် | Sheet မမှန်ရင် **ထိုကိုးကား** ပြင်"
+                )
+                bot.edit_message_text(
+                    base_text + hint,
+                    call.message.chat.id,
+                    call.message.message_id,
+                    reply_markup=None,
+                    parse_mode="Markdown",
+                )
+                return
+
+            bot.answer_callback_query(call.id, "မမှန်ကန်ပါ")
+        except Exception as e:
+            log.error(f"❌ AI feedback callback error: {e}")
+            try:
+                bot.answer_callback_query(call.id, "အမှားရှိပါတယ်")
+            except Exception:
+                pass
+
+
+def _get_message_thread_id(message):
+    if getattr(message, "is_topic_message", False) and message.message_thread_id:
+        return message.message_thread_id
+    return None
+
+
+def _reply_in_topic(bot, message, text, **kwargs):
+    """Reply inside forum topic threads (OS group Pick Up / Inquire topics)."""
+    thread_id = _get_message_thread_id(message)
+    if thread_id:
+        kwargs["message_thread_id"] = thread_id
+    try:
+        return bot.reply_to(message, text, **kwargs)
+    except Exception as e:
+        if "parse" in str(e).lower() or "can't parse" in str(e).lower():
+            kwargs.pop("parse_mode", None)
+            return bot.reply_to(message, text, **kwargs)
+        log.warning(f"⚠️ reply_to failed ({e}); retry send_message with thread_id={thread_id}")
+        if thread_id:
+            kwargs["message_thread_id"] = thread_id
+            kwargs["reply_to_message_id"] = message.message_id
+            return bot.send_message(message.chat.id, text, **kwargs)
+        raise
+
+
+def _send_ai_reply(bot, message, answer, feedback_meta=None):
+    """Telegram reply with 4096 char split. Sandbox: attach 👍👎 rating."""
     full_response = f"🤖 **CarryMan AI Agent**\n\n{answer}"
+    rating_markup = None
+    if message.chat.id == SANDBOX_CHAT_ID and feedback_meta:
+        source_ref = feedback_meta.get("source_ref") or ""
+        token = db_manager.create_ai_feedback_pending(
+            message.from_user.id,
+            message.chat.id,
+            feedback_meta.get("query"),
+            answer,
+            topic=feedback_meta.get("topic"),
+            location_id=feedback_meta.get("location_id"),
+            source_ref=source_ref,
+        )
+        rating_markup = _build_ai_rating_markup(token)
+        full_response += f"\n\n📎 **ကိုးကား:** `{source_ref}`"
+        full_response += "\n\n⭐ _Sandbox — အဖြေကို မှန်း ပေးပါ_"
+
     if len(full_response) > 4000:
         parts = [full_response[i:i + 4000] for i in range(0, len(full_response), 4000)]
         for idx, part in enumerate(parts):
+            is_last = idx == len(parts) - 1
+            markup = rating_markup if is_last else None
             if idx == 0:
-                bot.reply_to(message, part)
+                _reply_in_topic(bot, message, part, reply_markup=markup, parse_mode="Markdown")
             else:
-                bot.send_message(message.chat.id, part)
+                send_kwargs = {"reply_markup": markup, "parse_mode": "Markdown"}
+                thread_id = _get_message_thread_id(message)
+                if thread_id:
+                    send_kwargs["message_thread_id"] = thread_id
+                bot.send_message(message.chat.id, part, **send_kwargs)
     else:
-        bot.reply_to(message, full_response)
+        _reply_in_topic(bot, message, full_response, reply_markup=rating_markup, parse_mode="Markdown")
 
 
 def handle_ai_query(bot, message, is_automatic=False):
@@ -101,6 +602,15 @@ def handle_ai_query(bot, message, is_automatic=False):
         chat_id = message.chat.id
         is_private = chat_id > 0
         is_sandbox = (chat_id == SANDBOX_CHAT_ID)
+
+        if not _is_ai_globally_enabled(chat_id):
+            log.info(f"🔇 /ai blocked — global_ai_answer is OFF (chat {chat_id})")
+            _reply_in_topic(
+                bot,
+                message,
+                "🔇 AI Support ကို ယာယီပိတ်ထားပါတယ်ခင်ဗျာ။ Admin က `/aion` ဖြင့် ပြန်ဖွင့်ပေးနိုင်ပါတယ်။",
+            )
+            return
 
         # 🛑 Group Chat Restriction: AI Auto-Answer is DISABLED in Groups for automatic replies.
         # Manual /ai queries are allowed.
@@ -138,23 +648,100 @@ def handle_ai_query(bot, message, is_automatic=False):
             query = _normalize_ai_query(message.reply_to_message.text or message.reply_to_message.caption)
             
         if not query:
-            bot.reply_to(message, "💡 **ဘယ်လိုကူညီပေးရမလဲခင်ဗျာ?**\n\nမေးခွန်းကို တွဲရိုက်ပါ (သို့) မေးလိုသောစာကို Reply ပြန်ပြီး `/ai` လို့ ရိုက်ပါ။")
+            _reply_in_topic(
+                bot,
+                message,
+                "💡 **ဘယ်လိုကူညီပေးရမလဲခင်ဗျာ?**\n\nမေးခွန်းကို တွဲရိုက်ပါ (သို့) မေးလိုသောစာကို Reply ပြန်ပြီး `/ai` လို့ ရိုက်ပါ။",
+            )
             return
 
         log.info(f"🤖 AI Query from {user_id}: {query[:50]}...")
 
+        search_query, is_correction, needs_clarification = _resolve_ai_search_query(
+            user_id, chat_id, query, user_level
+        )
+        if search_query != query:
+            log.info(f"🔍 AI search query expanded: {search_query[:80]}...")
+
+        if needs_clarification:
+            clarify = (
+                "နောက်ဆုံး မေးခွန်းကို နားလည်ဖို့ နေရာနာမည် (သို့) ဝေးနံပါတ် "
+                "ထပ်ပြောပေးပါနော်ခင်ဗျ။"
+            )
+            if is_automatic:
+                log.info(f"🔇 Auto AI skipped — ambiguous follow-up without context (user {user_id})")
+                return
+            _reply_in_topic(bot, message, clarify)
+            return
+
+        if is_private and user_level < 3:
+            if not _is_allowed_private_customer_query(search_query, user_level):
+                log.info(f"🛡️ Private /ai scope gate blocked user {user_id}: {query[:80]}")
+                _handle_private_scope_violation(bot, message, user_id)
+                return
+
+        ai_topic = _classify_ai_topic(search_query)
+        log.info(f"🎯 AI Topic: {ai_topic}")
+
+        if ai_topic == "status_arrival":
+            from modules import check_order
+            waybill = check_order.extract_waybill(search_query)
+
+            if is_private and user_level < 3 and not waybill:
+                bot.reply_to(
+                    message,
+                    "အခြေအနေလေးပြောပြပေးနိုင်ရန် Way Bill လေးပို့ပေးပါနော်"
+                )
+                db_manager.update_message_status(message.message_id, chat_id, 'HANDLED_BY_AI')
+                return
+
+            _reply_in_topic(bot, message, "⏳ website tracking ထဲကနေ စစ်ဆေးနေပါတယ်ခင်ဗျ...")
+            success, tracking_answer = check_order.query_live_tracking(chat_id, search_query)
+            if not success:
+                tracking_answer = (
+                    "တောင်းပန်ပါတယ်ခင်ဗျ။ live tracking စစ်ဆေးမရသေးပါ။ "
+                    "နောက်မှ `/ai` နဲ့ ပြန်မေးပေးပါ (သို့) Admin ကို ဆက်သွယ်ပေးပါ။"
+                )
+            _send_ai_reply(
+                bot, message, tracking_answer,
+                _make_feedback_meta(
+                    query, "status_arrival",
+                    waybill=check_order.extract_waybill(search_query),
+                ),
+            )
+            _record_ai_turn(
+                user_id, chat_id, query, tracking_answer, "status_arrival",
+                waybill=check_order.extract_waybill(search_query),
+            )
+            db_manager.update_message_status(message.message_id, chat_id, 'HANDLED_BY_AI')
+            return
+
         # 📍 Location/Delivery table (full fee row) — direct reply when Sheet data is complete
-        location_context = db_manager.search_location_delivery(query, user_level)
+        location_context = db_manager.search_location_delivery(search_query, user_level)
         direct_location_answer = db_manager.format_location_delivery_reply(location_context)
         if direct_location_answer:
+            if is_correction:
+                direct_location_answer = (
+                    "ဟုတ်ကဲ့ ခင်ဗျ၊ ပြန်စစ်ပေးလိုက်ပါတယ်။\n"
+                    + direct_location_answer
+                )
             log.info("📍 Direct location delivery reply from synced Sheet data.")
-            _send_ai_reply(bot, message, direct_location_answer)
+            _send_ai_reply(
+                bot, message, direct_location_answer,
+                _make_feedback_meta(query, "delivery_info", location_context=location_context),
+            )
+            _record_ai_turn(
+                user_id, chat_id, query, direct_location_answer, "delivery_info",
+                location_context=location_context,
+            )
             db_manager.update_message_status(message.message_id, chat_id, 'HANDLED_BY_AI')
             return
 
         # ၃။ Google Sheet → DB synced knowledge (pre-fetch for all AI providers)
         is_staff = user_level >= 3
-        rag_context = db_manager.search_knowledge(query, user_level)
+        conversation_turns = db_manager.get_ai_conversation_turns(user_id, chat_id)
+        conversation_block = _build_conversation_block(conversation_turns)
+        rag_context = db_manager.search_delivery_knowledge(search_query, user_level)
         if location_context:
             rag_context = (location_context + "\n---\n" + rag_context) if rag_context else location_context
         if rag_context:
@@ -181,6 +768,8 @@ Use Core Policies and Base Company Info only. If still insufficient, reply with 
             """
 
         rag_instructions = ai_utils.get_rag_instructions(user_level)
+        topic_instructions = ai_utils.get_topic_ai_instructions(ai_topic)
+        tone_block = db_manager.load_tone_examples(user_level)
 
         # Permanent Base Context (Company Info)
         base_company_info = """
@@ -199,11 +788,17 @@ Use Core Policies and Base Company Info only. If still insufficient, reply with 
 
         {rag_instructions}
 
+        {topic_instructions}
+
+        {tone_block}
+
         {scope_check_prompt}
 
         {base_company_info}
 
         {core_policies}
+
+        {conversation_block}
 
         {rag_block}
 
@@ -224,7 +819,7 @@ Use Core Policies and Base Company Info only. If still insufficient, reply with 
 
         Format Constraint: 'Combine these details into a single, concise, human-like paragraph in Burmese.'
 
-        User Query: "{query}"
+        User Query: "{search_query}"
         """
         
         # Get tools based on user level (Binary Access Control)
@@ -237,10 +832,16 @@ Use Core Policies and Base Company Info only. If still insufficient, reply with 
             fallback_answer = _format_rag_fallback_answer(rag_context)
             if fallback_answer:
                 log.warning("⚠️ AI API unavailable — replying from synced Sheet data (RAG fallback).")
-                _send_ai_reply(bot, message, fallback_answer)
+                _send_ai_reply(
+                    bot, message, fallback_answer,
+                    _make_feedback_meta(
+                        query, ai_topic, location_context=location_context, rag_context=rag_context,
+                    ),
+                )
+                _record_ai_turn(user_id, chat_id, query, fallback_answer, ai_topic)
                 db_manager.update_message_status(message.message_id, chat_id, 'HANDLED_BY_AI')
                 return
-            bot.reply_to(message, "⚠️ တောင်းပန်ပါတယ်ခင်ဗျာ။ အဖြေရှာနေစဉ် အမှားတစ်ခု ဖြစ်သွားလို့ပါ။")
+            _reply_in_topic(bot, message, "⚠️ တောင်းပန်ပါတယ်ခင်ဗျာ။ အဖြေရှာနေစဉ် အမှားတစ်ခု ဖြစ်သွားလို့ပါ။")
             return
 
         # Handle Tool Calls (if any)
@@ -258,52 +859,30 @@ Use Core Policies and Base Company Info only. If still insufficient, reply with 
         # to keep main_router clean.
         answer = response
 
-        # --- Three-Strike Rule Implementation ---
+        # --- Three-Strike Rule Implementation (AI secondary scope check) ---
         if is_private and not is_staff and answer and "OUT_OF_SCOPE" in answer:
-            count = db_manager.increment_out_of_scope(user_id)
-            
-            if count < 3:
-                strike_msg = "တောင်းပန်ပါတယ်ခင်ဗျာ။ ကျွန်တော်က CarryMan Logistics နှင့် သက်ဆိုင်သော ဝန်ဆောင်မှုများကိုသာ ဖြေကြားပေးနိုင်ပါတယ်။ အခြားအကြောင်းအရာများကို မဖြေကြားနိုင်ပါဘူးခင်ဗျာ။"
-                bot.reply_to(message, strike_msg)
-                return
-            else:
-                # Strike 3
-                # To User
-                bot.reply_to(message, "admin ဆီကိုအကြောင်းကြားပေးထားတာမို့ ရုံးချိန်အတွင်းအမြန်ဆုံးဆက်သွယ်ပေးပါလိမ့်မယ်နော်")
-                
-                # To Admin Topic 920
-                admin_chat = -1003601049225
-                topic_id = 920
-                username = f"@{message.from_user.username}" if message.from_user.username else f"ID: {user_id}"
-                alert_text = f"⚠️ **Human Support Needed!**\nA user ({username}) has asked out-of-scope questions 3 times in Private Chat. AI auto-reply is now paused for them."
-                
-                from telebot import types
-                markup = types.InlineKeyboardMarkup()
-                markup.add(types.InlineKeyboardButton("🔓 Unmute AI", callback_data=f"unmute_user:{user_id}"))
-
-                try:
-                    bot.send_message(admin_chat, alert_text, message_thread_id=topic_id, reply_markup=markup)
-                except Exception as ae:
-                    log.error(f"❌ Failed to send Strike 3 alert to admin: {ae}")
-                    # Fallback to general if topic fails
-                    bot.send_message(admin_chat, alert_text)
-
-                # Mute Action
-                db_manager.set_human_intervention(user_id, 1)
-                log.info(f"🚫 User {user_id} muted after 3 strikes.")
-                return
-        if not answer:
-            bot.reply_to(message, "⚠️ တောင်းပန်ပါတယ်ခင်ဗျာ။ အဖြေရှာနေစဉ် အမှားတစ်ခု ဖြစ်သွားလို့ပါ။")
+            log.info(f"🛡️ AI OUT_OF_SCOPE flagged for private user {user_id}")
+            _handle_private_scope_violation(bot, message, user_id)
             return
-        
-        _send_ai_reply(bot, message, answer)
+        if not answer:
+            _reply_in_topic(bot, message, "⚠️ တောင်းပန်ပါတယ်ခင်ဗျာ။ အဖြေရှာနေစဉ် အမှားတစ်ခု ဖြစ်သွားလို့ပါ။")
+            return
+
+        answer = ai_utils.format_human_like_answer(answer, tone_block=tone_block)
+        _send_ai_reply(
+            bot, message, answer,
+            _make_feedback_meta(
+                query, ai_topic, location_context=location_context, rag_context=rag_context,
+            ),
+        )
+        _record_ai_turn(user_id, chat_id, query, answer, ai_topic)
             
         # Mark as Handled by AI to suppress escalations
         db_manager.update_message_status(message.message_id, chat_id, 'HANDLED_BY_AI')
 
     except Exception as e:
         log.error(f"❌ AI Query Error: {e}")
-        bot.reply_to(message, "⚠️ တောင်းပန်ပါတယ်ခင်ဗျာ။ အဖြေရှာနေစဉ် အမှားတစ်ခု ဖြစ်သွားလို့ပါ။")
+        _reply_in_topic(bot, message, "⚠️ တောင်းပန်ပါတယ်ခင်ဗျာ။ အဖြေရှာနေစဉ် အမှားတစ်ခု ဖြစ်သွားလို့ပါ။")
 
 def route_message(bot, message):
     """
@@ -314,9 +893,23 @@ def route_message(bot, message):
     try:
         chat_id = message.chat.id
         user_id = message.from_user.id
-        
-        # 🛑 Strict Staff Exclusion: Group Chat တွင် ဝန်ထမ်းဖြစ်ပါက AI ဆီသို့ လုံးဝမပို့ဘဲ ချက်ချင်းရပ်မည်
-        # Private Chat တွင်မူ Staff များ AI မေးခွန်းမေးမြန်းနိုင်ရန် ခွင့်ပြုမည် (Rule #2)
+        text = message.text or message.caption
+
+        # Manual /ai — always allow in OS groups (incl. staff testing in sandbox)
+        stripped = (text or "").strip()
+        if stripped.startswith("/ai") or (stripped.split()[:1] == ["/ai"]):
+            if _is_ai_globally_enabled(chat_id):
+                handle_ai_query(bot, message, is_automatic=False)
+            else:
+                log.info("🔇 AI Command (/ai) ignored because global_ai_answer is OFF")
+                _reply_in_topic(
+                    bot,
+                    message,
+                    "🔇 AI Support ကို ယာယီပိတ်ထားပါတယ်ခင်ဗျာ။ Admin က `/aion` ဖြင့် ပြန်ဖွင့်ပေးနိုင်ပါတယ်။",
+                )
+            return True
+
+        # 🛑 Staff auto-route exclusion (manual /ai handled above)
         user_level = db_manager.get_user_level(user_id, chat_id)
         is_staff = user_level >= 3
         is_private = chat_id > 0
@@ -325,8 +918,6 @@ def route_message(bot, message):
             log.info(f"🛡️ Staff Exclusion (Group): Skipping AI routing for staff {user_id}")
             return False
 
-        text = message.text or message.caption
-        
         if not text:
             return False
 
@@ -337,22 +928,8 @@ def route_message(bot, message):
             log.info(f"🛡️ Skipping router: bot status card detected (msg {message.message_id})")
             return False
 
-        # 💡 Manual /ai must be handled before generic slash-command skip
         global_ai = db_manager.get_ai_global_status()
         is_sandbox = (chat_id == SANDBOX_CHAT_ID)
-        stripped = text.strip()
-        if stripped.startswith('/ai') or stripped.split()[0] == '/ai':
-            if global_ai == 'ON' or is_sandbox or is_private:
-                handle_ai_query(bot, message, is_automatic=False)
-            else:
-                log.info(f"🔇 AI Command (/ai) ignored because global_ai_answer is {global_ai}")
-                bot.reply_to(
-                    message,
-                    "🔇 AI Support ကို ယာယီပိတ်ထားပါတယ်ခင်ဗျာ။ Admin က `/aion` ဖြင့် ပြန်ဖွင့်ပေးနိုင်ပါတယ်။"
-                )
-            return True
-
-        # 🛡️ Skip other slash commands — handled by commands_handler.py
         if text.startswith('/'):
             return False
 
@@ -367,7 +944,18 @@ def route_message(bot, message):
             group_ai = 'ON'
             global_pickup = 'ON'
         
-        if _looks_like_delivery_support_question(text):
+        if _looks_like_delivery_support_question(text) or _looks_like_status_question(text):
+            auto_delivery = db_manager.get_ai_auto_delivery_status() == 'ON'
+            if (
+                is_private
+                and not is_staff
+                and auto_delivery
+                and _is_ai_globally_enabled(chat_id)
+                and global_ai == 'ON'
+            ):
+                log.info(f"🤖 Auto delivery reply triggered (private): {text[:50]}...")
+                handle_ai_query(bot, message, is_automatic=True)
+                return True
             log.info(f"🔇 Delivery/support question — silent unless /ai: {text[:50]}...")
             return False
 
@@ -376,7 +964,7 @@ def route_message(bot, message):
         # ၂။ AI Decision (Intent Detection)
         # လက်ရှိ modules folder ထဲမှာ ရှိတဲ့ module list ကို ယူမယ်
         # 💡 support module ကို automatic routing မှ ဖယ်ထုတ်ထားပါသည် (Manual /ai သာ သုံးမည်)
-        available_modules = ["auto_pickup", "check_order", "auditor"]
+        available_modules = ["auto_pickup", "auditor"]
         
         prompt = f"""
         Role: Central AI Router for a Logistics Bot.
@@ -413,6 +1001,10 @@ def route_message(bot, message):
         log.info(f"🎯 AI Decision: {intent}")
 
         if intent == "none":
+            return False
+
+        if intent == "check_order":
+            log.info("🔇 check_order intent ignored — use manual /ai for live tracking.")
             return False
 
         # 🛑 Group Chat Restriction: ONLY allow auto_pickup and auditor.
@@ -465,10 +1057,6 @@ def route_message(bot, message):
                     return False
 
         # ၄။ Dynamic Loader (importlib)
-        if intent == 'auditor' and is_private and is_staff:
-            handle_ai_query(bot, message, is_automatic=True)
-            return True
-
         if intent in available_modules:
             try:
                 # modules.intent ပုံစံဖြင့် import လုပ်မည်

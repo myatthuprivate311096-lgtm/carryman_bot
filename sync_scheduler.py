@@ -21,7 +21,7 @@ GSHEET_URL = os.getenv('GSHEET_URL', '')
 SYNC_INTERVAL = 6 * 3600  # 6 hours
 
 def run_sync_cycle(syncer):
-    """Sheet → DB import: Knowledge Base + Shop Mappings."""
+    """Sheet → DB import: Knowledge Base + Staff Info + Shop Mappings."""
     if not GSHEET_URL:
         log.warning("⚠️ GSHEET_URL not set in .env. Skipping sync cycle.")
         return
@@ -30,6 +30,9 @@ def run_sync_cycle(syncer):
 
     success_kb, result_kb = syncer.sync_knowledge(GSHEET_URL)
     log.info(f"🧠 Knowledge: {result_kb}" if success_kb else f"⚠️ Knowledge: {result_kb}")
+
+    success_staff, result_staff = syncer.sync_staff_info(GSHEET_URL)
+    log.info(f"👥 Staff: {result_staff}" if success_staff else f"⚠️ Staff: {result_staff}")
 
     success_map, result_map = syncer.sync_shop_mappings(GSHEET_URL)
     log.info(f"📥 Mappings: {result_map}" if success_map else f"⚠️ Mappings: {result_map}")

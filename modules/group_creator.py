@@ -22,6 +22,10 @@ BOT_USERNAME = os.getenv('BOT_USERNAME')
 STAFF_USERNAMES = ['@cmsod1', '@cmmarketing1', '@cmfinance1', '@dataentrycm1', 8548232517]
 
 
+class GroupCreatorAuthError(Exception):
+    """Telethon session auth invalid/expired for newgroup flow."""
+
+
 def telethon_channel_to_chat_id(channel):
     """Telethon channel.id → Bot API supergroup chat_id (-100...)."""
     cid = channel.id
@@ -90,9 +94,23 @@ async def create_topic_safe(client, channel, title):
         log.error(f"❌ All CreateTopic attempts failed: {e}")
         raise Exception(f"Failed to create topic: {e}")
 
-async def create_group_task(group_name):
+async def _connect_authorized_client():
+    """Connect without auto-start() to avoid EOF from interactive phone prompt."""
     session_path = os.path.join(BASE_DIR, 'carryman')
-    async with TelegramClient(session_path, int(API_ID), API_HASH) as client:
+    client = TelegramClient(session_path, int(API_ID), API_HASH)
+    await client.connect()
+    if not await client.is_user_authorized():
+        await client.disconnect()
+        raise GroupCreatorAuthError(
+            "Telethon session is not authorized. "
+            "Run telethon_login.py on VPS to refresh carryman.session."
+        )
+    return client
+
+
+async def create_group_task(group_name):
+    client = await _connect_authorized_client()
+    try:
         print(f"🚀 Creating Group: {group_name}")
 
         created_chat = await client(functions.channels.CreateChannelRequest(
@@ -171,6 +189,8 @@ async def create_group_task(group_name):
             log.error(f"❌ Failed to invite/promote bot: {e}")
 
         return db_records, invite_link
+    finally:
+        await client.disconnect()
 
 def create_new_group(bot, message):
     group_name = message.text.replace('/newgroup ', '').strip()
@@ -215,5 +235,31 @@ def create_new_group(bot, message):
             text=f"✅ **{esc_name}** ကို အောင်မြင်စွာ ဖန်တီးပြီး Database သို့ သိမ်းဆည်းပြီးပါပြီ။\n🔗 {esc_link}",
             parse_mode="Markdown",
         )
+    except (GroupCreatorAuthError, EOFError) as e:
+        log.error(f"❌ /newgroup auth/session error: {e}")
+        bot.edit_message_text(
+            chat_id=message.chat.id,
+            message_id=msg.message_id,
+            text=(
+                "❌ Telegram session (`carryman.session`) expired.\n\n"
+                "VPS SSH မှာ run ပေးပါ:\n"
+                "`python3 telethon_login.py`\n\n"
+                "Phone + OTP ထည့်ပြီးရင် `/newgroup` ပြန်စမ်းပါ။"
+            ),
+            parse_mode="Markdown",
+        )
     except Exception as e:
+        err_text = str(e).lower()
+        if any(x in err_text for x in ("auth", "session", "unauthorized", "sign in", "login required")):
+            log.error(f"❌ /newgroup auth-like failure: {e}")
+            bot.edit_message_text(
+                chat_id=message.chat.id,
+                message_id=msg.message_id,
+                text=(
+                    "❌ Telethon auth issue detected.\n"
+                    "VPS မှာ `python3 telethon_login.py` run ပြီး session refresh လုပ်ပါ။"
+                ),
+                parse_mode="Markdown",
+            )
+            return
         bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text=f"❌ Error: {util.escape(str(e))}", parse_mode="Markdown")

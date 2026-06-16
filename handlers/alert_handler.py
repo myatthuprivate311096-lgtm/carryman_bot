@@ -338,7 +338,8 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
                 markup.add(
                     telebot.types.InlineKeyboardButton("🚚 Pickup (Topic 1)", callback_data=f"route_1_{orig_id}_{chat_id}"),
                     telebot.types.InlineKeyboardButton("💰 Finance (Topic 35)", callback_data=f"route_35_{orig_id}_{chat_id}"),
-                    telebot.types.InlineKeyboardButton("⚠️ Error (Topic 37)", callback_data=f"route_37_{orig_id}_{chat_id}")
+                    telebot.types.InlineKeyboardButton("⚠️ Error (Topic 37)", callback_data=f"route_37_{orig_id}_{chat_id}"),
+                    telebot.types.InlineKeyboardButton("📝 Data Entry (Topic 6621)", callback_data=f"route_6621_{orig_id}_{chat_id}")
                 )
                 try:
                     bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
@@ -375,73 +376,119 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
         except Exception as e:
             log.error(f"❌ Feedback Callback Error: {e}")
 
+    _WRONG_TOPIC_TARGETS = (1, 35, 37, 6621)
+
     @bot.callback_query_handler(func=lambda call: call.data.startswith('route_'))
     def handle_rerouting(call):
         """ Wrong Topic အတွက် Re-routing လုပ်ဆောင်ခြင်း """
         try:
-            # 💡 Immediate answer to stop the loading spinner
+            user_id = call.from_user.id
+            if not (db_manager.check_if_staff(user_id) or is_manager_func(user_id)):
+                bot.answer_callback_query(call.id, "⚠️ ဝန်ထမ်းများသာ နှိပ်ခွင့်ရှိပါသည်။", show_alert=True)
+                return
+
             try:
                 bot.answer_callback_query(call.id, "⏳ Re-routing Alert...")
-            except: pass
+            except Exception:
+                pass
 
             parts = call.data.split('_')
+            if len(parts) < 4:
+                bot.answer_callback_query(call.id, "❌ Invalid route data.", show_alert=True)
+                return
+
             target_topic = int(parts[1])
             orig_id = int(parts[2])
             chat_id = int(parts[3])
-            
+
+            if target_topic not in _WRONG_TOPIC_TARGETS:
+                bot.answer_callback_query(call.id, "❌ Unknown target topic.", show_alert=True)
+                return
+
             with db_manager.connection_scope() as conn:
                 topic_id = db_manager.get_message_topic(orig_id, chat_id)
                 _, _, shop_name = db_manager.get_topic_context(chat_id, topic_id)
-                
-                msg_data = conn.execute("SELECT text, timestamp, media_id FROM message_logs WHERE msg_id = ? AND chat_id = ?", (orig_id, chat_id)).fetchone()
-            
-                if msg_data:
-                    text, ts, media_id = msg_data
-                    tracking = db_manager.get_alert_tracking(orig_id, chat_id)
-                    if tracking:
-                        try: bot.delete_message(tracking[1], tracking[0])
-                        except: pass
-                        db_manager.delete_alert_tracking(orig_id, chat_id)
+                msg_data = conn.execute(
+                    "SELECT text, timestamp, media_id FROM message_logs WHERE msg_id = ? AND chat_id = ?",
+                    (orig_id, chat_id)
+                ).fetchone()
 
-                    target_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
-                    tz = pytz.timezone('Asia/Yangon')
-                    orig_time = datetime.fromtimestamp(ts, tz).strftime('%Y-%m-%d %I:%M %p')
-                    safe_shop = html.escape(shop_name)
-                    safe_text = html.escape(text)
+            if not msg_data:
+                bot.answer_callback_query(call.id, "❌ Original message not found.", show_alert=True)
+                return
 
-                    alert_text = (
-                        f"🔄 <b>RE-ROUTED ALERT</b>\n"
-                        f"━━━━━━━━━━━━━━━━━━\n"
-                        f"🏪 ဆိုင်: <b>{safe_shop}</b>\n"
-                        f"💬 စာသား: {safe_text}\n"
-                        f"⏰ အချိန်: {orig_time}\n"
-                        f"━━━━━━━━━━━━━━━━━━"
-                    )
-                    
-                    markup = auditor.build_sla_alert_markup(orig_id, chat_id)
-
-                    if media_id:
-                        msg = bot.send_photo(target_chat, media_id, caption=alert_text, message_thread_id=target_topic, parse_mode="HTML", reply_markup=markup)
-                    else:
-                        msg = bot.send_message(target_chat, alert_text, message_thread_id=target_topic, parse_mode="HTML", reply_markup=markup)
-
-                    # 💡 Delete the routing menu message to avoid "stuck" UI
-                    try:
-                        bot.delete_message(call.message.chat.id, call.message.message_id)
-                    except: pass
-                    
-                    db_manager.save_alert_tracking(orig_id, chat_id, msg.message_id, target_chat)
-                    db_manager.update_message_status(orig_id, chat_id, 'ALERTED', topic_id=topic_id)
-                
+            text, ts, media_id = msg_data
+            tracking = db_manager.get_alert_tracking(orig_id, chat_id)
+            if tracking:
                 try:
-                    bot.answer_callback_query(call.id, f"✅ Re-routed to Topic {target_topic}")
-                except: pass
+                    bot.delete_message(tracking[1], tracking[0])
+                except Exception:
+                    pass
+                db_manager.delete_alert_tracking(orig_id, chat_id)
+
+            target_chat = int(os.getenv('ALERT_CHAT_ID', -1003601049225))
+            tz = pytz.timezone('Asia/Yangon')
+            orig_time = datetime.fromtimestamp(ts, tz).strftime('%Y-%m-%d %I:%M %p')
+            safe_shop = html.escape(shop_name)
+            safe_text = html.escape(text)
+
+            alert_text = (
+                f"🔄 <b>RE-ROUTED ALERT</b>\n"
+                f"━━━━━━━━━━━━━━━━━━\n"
+                f"🏪 ဆိုင်: <b>{safe_shop}</b>\n"
+                f"💬 စာသား: {safe_text}\n"
+                f"⏰ အချိန်: {orig_time}\n"
+                f"━━━━━━━━━━━━━━━━━━"
+            )
+
+            markup = auditor.build_sla_alert_markup(orig_id, chat_id)
+            thread_kw = {'message_thread_id': target_topic} if target_topic else {}
+
+            try:
+                if media_id:
+                    msg = bot.send_photo(
+                        target_chat, media_id,
+                        caption=alert_text, parse_mode="HTML", reply_markup=markup, **thread_kw
+                    )
+                else:
+                    msg = bot.send_message(
+                        target_chat, alert_text, parse_mode="HTML", reply_markup=markup, **thread_kw
+                    )
+            except Exception as send_err:
+                if "message thread not found" in str(send_err).lower() and thread_kw:
+                    log.warning(f"⚠️ Topic {target_topic} not found. Re-routing to General.")
+                    if media_id:
+                        msg = bot.send_photo(
+                            target_chat, media_id,
+                            caption=alert_text, parse_mode="HTML", reply_markup=markup
+                        )
+                    else:
+                        msg = bot.send_message(
+                            target_chat, alert_text, parse_mode="HTML", reply_markup=markup
+                        )
+                else:
+                    raise
+
+            try:
+                bot.delete_message(call.message.chat.id, call.message.message_id)
+            except Exception:
+                pass
+
+            db_manager.save_alert_tracking(orig_id, chat_id, msg.message_id, target_chat)
+            db_manager.update_message_status(orig_id, chat_id, 'ALERTED', topic_id=topic_id)
+            log.info(f"✅ Re-routed alert {orig_id} from chat {chat_id} to topic {target_topic}")
+
+            try:
+                bot.answer_callback_query(call.id, f"✅ Re-routed to Topic {target_topic}")
+            except Exception:
+                pass
         except Exception as e:
             log.error(f"❌ Re-routing Error: {e}")
             try:
                 bot.answer_callback_query(call.id, f"❌ Error: {str(e)}", show_alert=True)
                 bot.delete_message(call.message.chat.id, call.message.message_id)
-            except: pass
+            except Exception:
+                pass
 
     @bot.message_reaction_handler(func=lambda message: True)
     def handle_reaction(message):
