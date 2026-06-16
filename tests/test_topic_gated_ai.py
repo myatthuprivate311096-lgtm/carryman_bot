@@ -110,11 +110,38 @@ class TestTrackingHelpers(unittest.TestCase):
     def test_remark_shown_only_when_present(self):
         orders = [{
             "waybill": "260615001", "status": "ASSIGNED", "receiver": "A", "township": "Mandalay",
-            "pickup_date": "16-06-2026", "received_date": "16-06-2026", "remark": "Fragile",
+            "pickup_date": "16-06-2026", "received_date": "16-06-2026", "status_date": "16-06-2026",
+            "remark": "Fragile",
             "customer_get": 0,
         }]
         reply = check_order.format_tracking_reply(orders)
         self.assertIn("မှတ်ချက်: Fragile", reply)
+
+    def test_finished_pickup_and_delivered_dates(self):
+        sample = [{
+            "itemDto": {
+                "voucherCode": "260607582",
+                "status": "FINISHED",
+                "customerName": "Lu Dee",
+                "receivedDate": "11-06-2026",
+                "deliveredDate": "10-06-2026",
+                "remark": "ccos9/10d",
+                "townshipDto": {"townshipName": "Insein"},
+                "orderDto": {"receivedDate": "07-06-2026", "osAccountDto": {"profileName": "Os"}},
+            },
+            "customerGet": 35500,
+            "customerPaid": 35500,
+        }]
+        orders = check_order._parse_api_tracking_results(sample)
+        reply = check_order.format_tracking_reply(orders)
+        self.assertIn("Pickup Date: 07-06-2026", reply)
+        self.assertIn("10-06-2026 ရက်နေ့လေးမှာ ရောက်ပြီးပါတယ်ခင်ဗျ။", reply)
+        self.assertNotIn("11-06-2026", reply)
+        self.assertIn("ဆက်သွယ်မရကြောင်း (9-Jun-2026)", reply)
+        self.assertNotIn("10ရက်နေ့ကို deli", reply)
+
+    def test_pickup_date_from_waybill(self):
+        self.assertEqual(check_order._pickup_date_from_waybill("260607582"), "07-06-2026")
 
     def test_waybill_os_mismatch_message(self):
         orders = [{

@@ -1,4 +1,4 @@
-# Version: 2.1 (Live tracking OS scope + conversational status replies)
+# Version: 2.2 (Pickup/delivered date resolution + terminal remark handling)
 import os
 import re
 import sys
@@ -303,18 +303,14 @@ def _parse_api_tracking_results(data):
         assign = item.get("assignRiderAccountDto") or {}
         collector = rider.get("profileName") or ""
         deliverer = assign.get("profileName") or ""
-        pickup_date = (
-            item.get("pickupDate")
-            or order_dto.get("pickupDate")
-            or item.get("tbfPickupDate")
-            or order_dto.get("tbfPickupDate")
-            or item.get("receivedDate")
-            or order_dto.get("receivedDate")
-            or ""
-        )
+        status = item.get("status", "")
+        pickup_date = _resolve_pickup_date(item, order_dto)
+        received_date = _normalize_api_date(item.get("receivedDate") or order_dto.get("receivedDate") or "")
+        delivered_date = _normalize_api_date(item.get("deliveredDate") or item.get("tbfDeliveredDate") or "")
+        status_date = _resolve_status_date(item, order_dto, status)
         orders.append({
             "waybill": item.get("voucherCode", ""),
-            "status": item.get("status", ""),
+            "status": status,
             "phone": item.get("phone", ""),
             "township": ts.get("townshipName", ""),
             "os_name": os_dto.get("profileName", ""),
@@ -323,7 +319,9 @@ def _parse_api_tracking_results(data):
             "deliverer": deliverer,
             "order_id": str(item.get("itemId", "")),
             "pickup_date": pickup_date,
-            "received_date": item.get("receivedDate") or order_dto.get("receivedDate") or "",
+            "received_date": received_date,
+            "delivered_date": delivered_date,
+            "status_date": status_date,
             "remark": item.get("remark") or order_dto.get("remark") or "",
             "customer_get": entry.get("customerGet", 0) or 0,
             "customer_paid": entry.get("customerPaid", 0) or 0,
@@ -368,6 +366,123 @@ _DEFAULT_STATUS_MEANINGS = {
     "RETURN": "ပြန်ပို့ရန်အဆင့်မှာ ရှိနေပါတယ်",
 }
 
+_TERMINAL_STATUSES = frozenset({
+    "DELIVERED", "COMPLETED", "FINISHED", "RETURNFINISHED",
+})
+
+_REMARK_CODE_RE = re.compile(r"cc|uh|po|os\d+|\d+d|\d+c", re.IGNORECASE)
+
+_MONTH_ABBR = {
+    1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "Jun",
+    7: "Jul", 8: "Aug", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dec",
+}
+
+
+def _normalize_api_date(val):
+    if not val:
+        return ""
+    s = str(val).strip()
+    m = re.match(r"(\d{2})-(\d{2})-(\d{4})", s)
+    if m:
+        return f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
+    m = re.match(r"(\d{2})/(\d{2})/(\d{4})", s)
+    if m:
+        month, day, year = m.group(1), m.group(2), m.group(3)
+        return f"{day}-{month}-{year}"
+    return s
+
+
+def _pickup_date_from_waybill(waybill):
+    """Waybill YYMMDDxxx → dd-mm-yyyy pickup hint."""
+    wb = str(waybill or "").strip()
+    m = re.match(r"(\d{2})(\d{2})(\d{2})", wb)
+    if not m:
+        return ""
+    yy, mm, dd = int(m.group(1)), int(m.group(2)), int(m.group(3))
+    return f"{dd:02d}-{mm:02d}-{2000 + yy}"
+
+
+def _resolve_pickup_date(item, order_dto):
+    waybill = item.get("voucherCode") or ""
+    for src in (
+        item.get("pickupDate"),
+        order_dto.get("pickupDate"),
+        item.get("tbfPickupDate"),
+        order_dto.get("tbfPickupDate"),
+        order_dto.get("receivedDate"),
+        _pickup_date_from_waybill(waybill),
+    ):
+        normalized = _normalize_api_date(src)
+        if normalized:
+            return normalized
+    return ""
+
+
+def _resolve_status_date(item, order_dto, status):
+    """Date paired with conversational status line."""
+    key = str(status or "").strip().upper()
+    if key in _TERMINAL_STATUSES:
+        for src in (item.get("deliveredDate"), item.get("tbfDeliveredDate")):
+            normalized = _normalize_api_date(src)
+            if normalized:
+                return normalized
+    if key == "ONWAY":
+        for src in (item.get("assignedDate"), item.get("receivedDate")):
+            normalized = _normalize_api_date(src)
+            if normalized:
+                return normalized
+    for src in (item.get("receivedDate"), order_dto.get("receivedDate")):
+        normalized = _normalize_api_date(src)
+        if normalized:
+            return normalized
+    return ""
+
+
+def _extract_remark_codes(raw):
+    if not raw:
+        return []
+    return [c.lower() for c in _REMARK_CODE_RE.findall(str(raw))]
+
+
+def _os_code_display_date(os_code, ref_date_ddmmyyyy):
+    m = re.match(r"os(\d+)", str(os_code or "").lower())
+    if not m:
+        return ""
+    day = int(m.group(1))
+    dm = re.match(r"(\d{2})-(\d{2})-(\d{4})", str(ref_date_ddmmyyyy or "").strip())
+    if not dm:
+        return ""
+    _, month, year = int(dm.group(1)), int(dm.group(2)), int(dm.group(3))
+    abbr = _MONTH_ABBR.get(month, str(month))
+    return f"{day}-{abbr}-{year}"
+
+
+def _build_remark_line(raw, remark_map, status, pickup_date, status_date):
+    """Terminal statuses: only friendly coded remarks (e.g. ccos9), never raw text."""
+    if not raw or not str(raw).strip():
+        return ""
+
+    codes = _extract_remark_codes(raw)
+    codes_upper = [c.upper() for c in codes]
+    ref_date = pickup_date or status_date
+
+    has_cc = "CC" in codes_upper
+    os_code = next((c for c in codes_upper if re.match(r"OS\d+", c)), None)
+
+    if has_cc and os_code:
+        os_date = _os_code_display_date(os_code, ref_date)
+        if os_date:
+            return (
+                f"ဆက်သွယ်မရကြောင်း ({os_date}) မှာ OS သို့ "
+                "အကြောင်းကြားထားတာလေးရှိပါတယ်နော်"
+            )
+
+    if str(status or "").strip().upper() in _TERMINAL_STATUSES:
+        return ""
+
+    expanded = _expand_remark_text(raw, remark_map)
+    return f"မှတ်ချက်: {expanded}" if expanded else ""
+
 
 def _lookup_status_meaning(status, status_map):
     key = str(status or "").strip().upper()
@@ -388,14 +503,18 @@ def _expand_remark_text(remark, remark_map):
         return raw
 
     expanded = []
+    for token in _extract_remark_codes(raw):
+        meaning = remark_map.get(token.upper())
+        if meaning:
+            expanded.append(meaning)
     for token in re.split(r"[,;/\s]+", raw):
         token = token.strip()
-        if not token:
+        if not token or _REMARK_CODE_RE.fullmatch(token):
             continue
         meaning = remark_map.get(token.upper()) or remark_map.get(token)
         expanded.append(meaning or token)
 
-    if expanded and expanded != re.split(r"[,;/\s]+", raw):
+    if expanded:
         return "၊ ".join(expanded)
     return raw
 
@@ -482,8 +601,10 @@ def format_tracking_reply(orders, os_name=None, search_terms=None):
     status = str(order.get("status") or "").strip().upper()
     status_meaning = _lookup_status_meaning(status, status_map)
     pickup_date = order.get("pickup_date") or "-"
-    received_date = order.get("received_date") or "-"
-    remark_text = _expand_remark_text(order.get("remark"), remark_map)
+    status_date = order.get("status_date") or order.get("received_date") or "-"
+    remark_line = _build_remark_line(
+        order.get("remark"), remark_map, status, pickup_date, status_date,
+    )
     os_label = order.get("os_name") or ""
 
     lines = [
@@ -493,10 +614,10 @@ def format_tracking_reply(orders, os_name=None, search_terms=None):
     if os_label:
         lines.append(f"OS: {os_label}")
 
-    lines.append(_format_status_conversational(status, status_meaning, received_date))
+    lines.append(_format_status_conversational(status, status_meaning, status_date))
 
-    if remark_text:
-        lines.append(f"မှတ်ချက်: {remark_text}")
+    if remark_line:
+        lines.append(remark_line)
 
     lines.extend(_build_payment_lines(order))
 
