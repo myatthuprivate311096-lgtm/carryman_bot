@@ -11,8 +11,6 @@ services:
       - .env
     volumes:
       - ./carryman.db:/app/carryman.db
-      - ./carryman.db-shm:/app/carryman.db-shm
-      - ./carryman.db-wal:/app/carryman.db-wal
       - ./carryman.session:/app/carryman.session
       - ./credentials.json:/app/credentials.json
       - ./logs:/app/logs
@@ -28,8 +26,6 @@ services:
       - .env
     volumes:
       - ./carryman.db:/app/carryman.db
-      - ./carryman.db-shm:/app/carryman.db-shm
-      - ./carryman.db-wal:/app/carryman.db-wal
       - ./credentials.json:/app/credentials.json
       - ./logs:/app/logs
 
@@ -43,8 +39,6 @@ services:
       - .env
     volumes:
       - ./carryman.db:/app/carryman.db
-      - ./carryman.db-shm:/app/carryman.db-shm
-      - ./carryman.db-wal:/app/carryman.db-wal
       - ./carryman.session:/app/carryman.session
       - ./credentials.json:/app/credentials.json
       - ./logs:/app/logs
