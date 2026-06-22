@@ -358,6 +358,172 @@ async def _detect_save_result(page, os_name):
 
     return is_success, error_message
 
+OS_DROPDOWN_OPTION_SELECTOR = (
+    ".ant-select-dropdown:not(.ant-select-dropdown-hidden) "
+    ".ant-select-item-option-content, "
+    ".ant-select-item-option-content, .select-option, [role='option']"
+)
+
+def _build_os_name_search_variants(os_name):
+    """Website dropdown အတွက် alternate search strings ထုတ်ပေးခြင်း."""
+    base = (os_name or "").strip()
+    if not base:
+        return []
+
+    variants = [base]
+    seen = {base.lower()}
+
+    for suffix in ("(New Os)", "(New OS)", "(new os)"):
+        if suffix.lower() in base.lower():
+            stripped = re.sub(re.escape(suffix), "", base, flags=re.IGNORECASE).strip()
+            if stripped and stripped.lower() not in seen:
+                variants.append(stripped)
+                seen.add(stripped.lower())
+
+    core = re.sub(r"\s*\(New\s*Os\)\s*$", "", base, flags=re.IGNORECASE).strip() or base
+    for candidate in (f"{core}(New Os)", f"{core} (New Os)", f"{core}(New OS)"):
+        if candidate.lower() not in seen:
+            variants.append(candidate)
+            seen.add(candidate.lower())
+
+    return variants
+
+def _website_os_not_found_message(os_name):
+    return (
+        f"Website dropdown တွင် ဆိုင်နာမည် ({os_name}) ကို ရွေးချယ် မရပါ။ "
+        "Manual Type သို့မဟုတ် Website exact name ကို GSheet နှင့် စစ်ပါ။"
+    )
+
+def _is_website_dropdown_error(msg):
+    text = str(msg or "")
+    return "Website dropdown" in text or "dropdown တွင်" in text
+
+def _is_mapping_missing_error(msg):
+    return "Shop Mapping Missing" in str(msg or "")
+
+def _pickup_failure_status(msg):
+    if _is_mapping_missing_error(msg):
+        return "❌ Failed (Mapping Missing)"
+    if _is_website_dropdown_error(msg):
+        return "❌ Failed (Website Dropdown)"
+    return "❌ Failed (Check Admin)"
+
+async def _try_match_os_options(options_locator, search_name):
+    """Visible dropdown options ထဲမှ exact/partial match ရှာပြီး click."""
+    count = await options_locator.count()
+    search_lower = search_name.lower()
+
+    for i in range(count):
+        opt_text = (await options_locator.nth(i).inner_text()).strip()
+        if search_lower == opt_text.lower():
+            await options_locator.nth(i).click()
+            return True, opt_text, "exact"
+
+    for i in range(count):
+        opt_text = (await options_locator.nth(i).inner_text()).strip()
+        opt_lower = opt_text.lower()
+        if search_lower in opt_lower or opt_lower in search_lower:
+            await options_locator.nth(i).click()
+            return True, opt_text, "partial"
+
+    return False, None, None
+
+async def _collect_os_dropdown_option_texts(page, scroll_passes=8):
+    """Virtual scroll dropdown ထဲက option texts များကို scroll လုပ်ပြီး စုဆောင်းခြင်း."""
+    options_locator = page.locator(OS_DROPDOWN_OPTION_SELECTOR)
+    collected = []
+    seen = set()
+
+    for _ in range(scroll_passes):
+        count = await options_locator.count()
+        for i in range(count):
+            try:
+                text = (await options_locator.nth(i).inner_text()).strip()
+            except Exception:
+                continue
+            if text and text.lower() not in seen:
+                collected.append(text)
+                seen.add(text.lower())
+
+        scrolled = await page.evaluate("""() => {
+            const holder = document.querySelector(
+                '.ant-select-dropdown:not(.ant-select-dropdown-hidden) .rc-virtual-list-holder'
+            );
+            if (!holder) return false;
+            const before = holder.scrollTop;
+            holder.scrollTop += Math.max(holder.clientHeight, 200);
+            return holder.scrollTop > before;
+        }""")
+        if not scrolled:
+            break
+        await asyncio.sleep(0.35)
+
+    return collected
+
+async def _click_os_option_by_text(page, opt_text):
+    visible = page.locator(
+        ".ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option-content"
+    )
+    target = visible.filter(has_text=opt_text).first
+    if await target.count() == 0:
+        target = page.locator(OS_DROPDOWN_OPTION_SELECTOR).filter(has_text=opt_text).first
+    await target.click()
+
+async def _select_os_name_on_page(page, os_input, os_name, handle_popups):
+    """Website OS Name dropdown — typed search, name variants, scroll fallback."""
+    search_variants = _build_os_name_search_variants(os_name)
+
+    async def _open_and_type(search_term):
+        await handle_popups(page)
+        await os_input.click()
+        await asyncio.sleep(0.5)
+        await os_input.fill("")
+        if search_term:
+            await os_input.press_sequentially(search_term, delay=100)
+        await asyncio.sleep(1.5)
+
+    for search_term in search_variants:
+        for attempt in range(3):
+            log.info(f"   ⏳ OS Name '{search_term}' ရှာဖွေနေပါသည် (Attempt {attempt+1}/3)...")
+            await _open_and_type(search_term)
+            await asyncio.sleep(2 if attempt else 1)
+
+            options = page.locator(OS_DROPDOWN_OPTION_SELECTOR)
+            if await options.count() > 0:
+                found, matched, mode = await _try_match_os_options(options, search_term)
+                if found:
+                    if mode == "exact":
+                        log.info(f"   ✅ OS Name အတိအကျတူသည်ကို တွေ့ရှိ၍ ရွေးချယ်လိုက်ပါသည် ({matched})")
+                    else:
+                        log.warning(f"   ⚠️ OS Name အတိအကျမတူသော်လည်း ဆင်တူသည်ကို တွေ့ရှိ၍ ရွေးချယ်လိုက်ပါသည် ({matched})")
+                    return True, matched
+
+            if attempt < 2:
+                await asyncio.sleep(1)
+
+    log.info(f"   ⏳ Typed search failed — dropdown scroll fallback for '{os_name}'...")
+    await _open_and_type("")
+    await asyncio.sleep(2)
+
+    collected = await _collect_os_dropdown_option_texts(page)
+    search_lowers = [v.lower() for v in search_variants]
+
+    for opt_text in collected:
+        if opt_text.lower() in search_lowers:
+            await _click_os_option_by_text(page, opt_text)
+            log.info(f"   ✅ OS Name scroll fallback exact match ({opt_text})")
+            return True, opt_text
+
+    for opt_text in collected:
+        opt_lower = opt_text.lower()
+        for search_lower in search_lowers:
+            if search_lower in opt_lower or opt_lower in search_lower:
+                await _click_os_option_by_text(page, opt_text)
+                log.warning(f"   ⚠️ OS Name scroll fallback partial match ({opt_text})")
+                return True, opt_text
+
+    return False, None
+
 async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
     """Async task for pickup submission logic"""
     # --- ၁။ Order Page သို့ သွားခြင်း ---
@@ -451,51 +617,12 @@ async def _submit_pickup_task(page, target_date, os_name, remark, vehicle):
 
     # (ခ) OS Name
     os_input = page.locator("(//label[contains(text(), 'Os Name')]/following::input)[1]")
-    
-    # Ensure no popup is blocking the click
-    await handle_popups(page)
-    
-    await os_input.click()
-    await asyncio.sleep(1)
-    await os_input.fill("")
-    await os_input.press_sequentially(os_name, delay=100)
-    
-    # Wait for dropdown options to appear with retries
-    found = False
-    for attempt in range(3):
-        log.info(f"   ⏳ OS Name options ရှာဖွေနေပါသည် (Attempt {attempt+1}/3)...")
-        await asyncio.sleep(2)
-        options = page.locator(".ant-select-item-option-content, .select-option, [role='option']")
-        count = await options.count()
-        
-        if count > 0:
-            # 1. Try Exact Match first
-            for i in range(count):
-                opt_text = (await options.nth(i).inner_text()).strip()
-                if os_name.lower() == opt_text.lower():
-                    await options.nth(i).click()
-                    found = True
-                    log.info(f"   ✅ OS Name အတိအကျတူသည်ကို တွေ့ရှိ၍ ရွေးချယ်လိုက်ပါသည် ({opt_text})")
-                    break
-            
-            if found: break
-
-            # 2. Try Partial Match if exact fails
-            for i in range(count):
-                opt_text = (await options.nth(i).inner_text()).strip()
-                if os_name.lower() in opt_text.lower() or opt_text.lower() in os_name.lower():
-                    log.warning(f"   ⚠️ OS Name အတိအကျမတူသော်လည်း ဆင်တူသည်ကို တွေ့ရှိ၍ ရွေးချယ်လိုက်ပါသည် ({opt_text})")
-                    await options.nth(i).click()
-                    found = True
-                    break
-            
-            if found: break
-        
+    found, matched_os = await _select_os_name_on_page(page, os_input, os_name, handle_popups)
     if not found:
-        log.error(f"   ❌ OS Name ({os_name}) ကို Website ထဲတွင် ရှာမတွေ့ပါ။")
-        # 💡 FAIL immediately — do NOT fallback to first option (would submit under wrong shop name)
-        # Admin should fix the shop_mappings to match the correct website name
-        return False, f"Website ထဲတွင် ဆိုင်နာမည် ({os_name}) ကို ရှာမတွေ့ပါ။ Mapping ပြင်ဆင်ရန် လိုအပ်ပါသည်။"
+        log.error(f"   ❌ OS Name ({os_name}) ကို Website dropdown တွင် ရွေးချယ် မရပါ။")
+        return False, _website_os_not_found_message(os_name)
+    if matched_os and matched_os != os_name:
+        log.info(f"   ℹ️ OS Name resolved via fallback: {os_name!r} → {matched_os!r}")
 
     log.info(f"   ✅ OS Name ရွေးပြီးပါပြီ")
     
@@ -823,7 +950,8 @@ def handle(bot, message, force_pickup=False):
         ai_res_content = ai_utils.get_ai_completion(
             prompt=extract_prompt,
             response_format={ "type": "json_object" },
-            timeout=30.0
+            timeout=30.0,
+            source='auto_pickup_extract',
         )
         
         if not ai_res_content:
@@ -1263,7 +1391,7 @@ def handle_pickup_error(bot, chat_id, orig_msg_id, os_name, target_date, error_m
         
         # 💡 Logic: Mapping မရှိသေးရင် Fix Mapping ပြမည်။ Mapping ရှိပြီးသားဆိုရင် Done ပြမည်။
         mapped_name = db_manager.get_shop_mapping(chat_id)
-        if not mapped_name or "Mapping" in error_msg:
+        if not mapped_name or _is_mapping_missing_error(error_msg):
             markup.add(types.InlineKeyboardButton("� Fix Shop Mapping", callback_data=f"ap_fix_{chat_id}"))
             instruction = "ဆိုင်နာမည် Mapping လွဲနေပါက အောက်ကခလုတ်ကိုနှိပ်၍ ပြင်ပေးပါရန်။"
         else:
@@ -1451,10 +1579,14 @@ def update_central_pickup_alert(bot, orig_msg_id, chat_id, status_text, show_don
                 # Error တက်ချိန် logic
                 mapped_name = db_manager.get_shop_mapping(chat_id)
                 # Mapping မရှိလျှင် သို့မဟုတ် status_text ထဲမှာ Mapping/ဆိုင်နာမည်/OS Name ပါနေလျှင် Manual Type ပြမည်
-                is_mapping_issue = not mapped_name or any(x in str(status_text) for x in ["Mapping", "ဆိုင်နာမည်", "OS Name"])
+                is_mapping_issue = (
+                    not mapped_name
+                    or "Mapping Missing" in str(status_text)
+                )
+                is_dropdown_issue = "Website Dropdown" in str(status_text)
                 
-                if is_mapping_issue:
-                    # ၂။ စက်ရုပ် ပထမအကြိမ် Error တက်ချိန် (သို့မဟုတ် Mapping လိုအပ်ချိန်): View Message နှင့် Manual Type ခလုတ်များကို ပြမည်။
+                if is_mapping_issue or is_dropdown_issue:
+                    # ၂။ Mapping မရှိ / Website dropdown fail: Manual Type ခလုတ်ပြမည်
                     _qid = queue_id if queue_id else 0
                     markup.add(types.InlineKeyboardButton("⌨️ Manual Type", callback_data=f"ap_mantype_{orig_msg_id}_{chat_id}_{_qid}"))
                 else:
@@ -1964,7 +2096,7 @@ def run_queue_worker(bot):
                 
                 # Update central alert status (Keep as Processing in Shop Group, but show error in Admin)
                 # Error ဖြစ်ပါက update_central_pickup_alert မှ ခလုတ်များကို အလိုအလျောက် စီမံပေးပါမည်
-                status_msg = "❌ Failed (Mapping Missing)" if ("ဆိုင်နာမည်" in str(msg) or "OS Name" in str(msg)) else "❌ Failed (Check Admin)"
+                status_msg = _pickup_failure_status(msg)
                 
                 update_central_pickup_alert(
                     bot, orig_msg_id, chat_id,

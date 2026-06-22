@@ -30,6 +30,39 @@ OPENROUTER_COOLDOWN = 900  # 15 minutes in seconds
 MAX_OPENROUTER_FAILS = 3   # Number of consecutive fails before cooldown
 CRITICAL_ALERT_COOLDOWN = 1800 # 30 minutes between critical alerts
 
+def _usage_from_openai_response(response):
+    usage = getattr(response, 'usage', None)
+    if not usage:
+        return None
+    prompt = int(getattr(usage, 'prompt_tokens', 0) or 0)
+    completion = int(getattr(usage, 'completion_tokens', 0) or 0)
+    total = int(getattr(usage, 'total_tokens', 0) or 0) or (prompt + completion)
+    if not total:
+        return None
+    return {
+        'prompt_tokens': prompt,
+        'completion_tokens': completion,
+        'total_tokens': total,
+    }
+
+def _record_ai_usage(provider, model, usage, source='general'):
+    if not usage:
+        return
+    prompt = int(usage.get('prompt_tokens', 0) or 0)
+    completion = int(usage.get('completion_tokens', 0) or 0)
+    total = int(usage.get('total_tokens', 0) or 0) or (prompt + completion)
+    if not total:
+        return
+    try:
+        import db_manager
+        db_manager.log_ai_usage(provider, model, prompt, completion, total, source=source)
+    except Exception as e:
+        log.debug(f"AI usage log skipped: {e}")
+    log.info(
+        f"📊 AI usage [{source}] {provider}/{model}: "
+        f"in={prompt:,} out={completion:,} total={total:,}"
+    )
+
 def is_groq_key_configured():
     """Skip Groq fallback when .env still has a placeholder or empty key."""
     key = (GROQ_API_KEY or "").strip()
@@ -171,7 +204,7 @@ def send_manager_photo(photo_path, caption):
     except Exception as e:
         log.error(f"❌ Failed to send manager photo: {e}")
 
-def call_gemini_direct(prompt, model=None, response_format=None):
+def call_gemini_direct(prompt, model=None, response_format=None, source='general'):
     """Direct Gemini API call (Cheap & Fast)"""
     selected_model = model or FALLBACK_GEMINI_MODEL
     # Use v1beta for newer models
@@ -189,7 +222,19 @@ def call_gemini_direct(prompt, model=None, response_format=None):
     try:
         response = requests.post(url, headers=headers, json=data, timeout=30)
         if response.status_code == 200:
-            return response.json()['candidates'][0]['content']['parts'][0]['text']
+            payload = response.json()
+            meta = payload.get('usageMetadata') or {}
+            _record_ai_usage(
+                'gemini',
+                selected_model,
+                {
+                    'prompt_tokens': meta.get('promptTokenCount', 0),
+                    'completion_tokens': meta.get('candidatesTokenCount', 0),
+                    'total_tokens': meta.get('totalTokenCount', 0),
+                },
+                source=source,
+            )
+            return payload['candidates'][0]['content']['parts'][0]['text']
         else:
             log.error(f"❌ Gemini Direct Error: {response.status_code} - {response.text}")
             return None
@@ -197,7 +242,7 @@ def call_gemini_direct(prompt, model=None, response_format=None):
         log.error(f"❌ Gemini Direct Exception: {e}")
         return None
 
-def call_groq_direct(prompt, model=None, response_format=None):
+def call_groq_direct(prompt, model=None, response_format=None, source='general'):
     """Direct Groq API call (Ultra Fast Fallback)"""
     if not is_groq_key_configured():
         return None
@@ -219,7 +264,19 @@ def call_groq_direct(prompt, model=None, response_format=None):
     try:
         response = requests.post(url, headers=headers, json=data, timeout=20)
         if response.status_code == 200:
-            return response.json()['choices'][0]['message']['content'].strip()
+            payload = response.json()
+            usage = payload.get('usage') or {}
+            _record_ai_usage(
+                'groq',
+                selected_model,
+                {
+                    'prompt_tokens': usage.get('prompt_tokens', 0),
+                    'completion_tokens': usage.get('completion_tokens', 0),
+                    'total_tokens': usage.get('total_tokens', 0),
+                },
+                source=source,
+            )
+            return payload['choices'][0]['message']['content'].strip()
         else:
             log.error(f"❌ Groq Direct Error: {response.status_code} - {response.text}")
             return None
@@ -227,7 +284,7 @@ def call_groq_direct(prompt, model=None, response_format=None):
         log.error(f"❌ Groq Direct Exception: {e}")
         return None
 
-def get_ai_completion(prompt, model=None, response_format=None, timeout=30.0, tools=None, tool_choice=None, user_level=1):
+def get_ai_completion(prompt, model=None, response_format=None, timeout=30.0, tools=None, tool_choice=None, user_level=1, source='general'):
     """
     Centralized AI call with Auto-Recovery and Manager Notifications.
     Primary provider and models are configured from .env.
@@ -242,11 +299,11 @@ def get_ai_completion(prompt, model=None, response_format=None, timeout=30.0, to
 
     # Respect PRIMARY_AI_PROVIDER from .env before using default failover chain.
     if selected_provider == "gemini" and FALLBACK_GEMINI_API_KEY:
-        primary_content = call_gemini_direct(prompt, response_format=response_format)
+        primary_content = call_gemini_direct(prompt, response_format=response_format, source=source)
         if primary_content:
             return primary_content
     elif selected_provider == "groq" and is_groq_key_configured():
-        primary_content = call_groq_direct(prompt, response_format=response_format)
+        primary_content = call_groq_direct(prompt, response_format=response_format, source=source)
         if primary_content:
             return primary_content
 
@@ -286,6 +343,7 @@ def get_ai_completion(prompt, model=None, response_format=None, timeout=30.0, to
                 kwargs["tool_choice"] = tool_choice
 
             response = client.chat.completions.create(**kwargs)
+            _record_ai_usage('openrouter', openrouter_model, _usage_from_openai_response(response), source=source)
             message_obj = response.choices[0].message
             content = message_obj.content
             
@@ -308,6 +366,12 @@ def get_ai_completion(prompt, model=None, response_format=None, timeout=30.0, to
                     model=openrouter_model,
                     messages=messages,
                     timeout=timeout
+                )
+                _record_ai_usage(
+                    'openrouter',
+                    openrouter_model,
+                    _usage_from_openai_response(final_response),
+                    source=f"{source}:tool",
                 )
                 content = final_response.choices[0].message.content
                 if not content:
@@ -348,13 +412,13 @@ def get_ai_completion(prompt, model=None, response_format=None, timeout=30.0, to
 
     # 2. Try Gemini Direct fallback
     if selected_provider != "gemini" and FALLBACK_GEMINI_API_KEY:
-        fallback_content = call_gemini_direct(prompt, response_format=response_format)
+        fallback_content = call_gemini_direct(prompt, response_format=response_format, source=source)
         if fallback_content:
             return fallback_content
 
     # 3. Try Groq fallback
     if selected_provider != "groq" and is_groq_key_configured():
-        groq_content = call_groq_direct(prompt, response_format=response_format)
+        groq_content = call_groq_direct(prompt, response_format=response_format, source=source)
         if groq_content:
             log.info("⚡ Groq Fallback used successfully.")
             return groq_content

@@ -1,4 +1,4 @@
-# Version: 6.0 (Worker Process - Background Tasks Only)
+# Version: 6.1 (Worker Process - Background Tasks Only)
 import os
 import time
 import telebot

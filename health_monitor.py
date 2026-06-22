@@ -73,7 +73,7 @@ def analyze_error_and_alert(process_name, status, logs):
     Suggested-Action: [aioff/pickupoff/none]
     """
     
-    analysis = ai_utils.get_ai_completion(prompt)
+    analysis = ai_utils.get_ai_completion(prompt, source='health_monitor')
     if not analysis:
         analysis = "Explanation: AI Analysis failed.\nFix-Prompt: Please check logs manually.\nSuggested-Action: none"
 

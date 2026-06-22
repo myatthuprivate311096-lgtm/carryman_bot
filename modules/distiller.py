@@ -59,7 +59,12 @@ def distill_feedback():
             ["Ignore greetings", "Do not alert on 'Ok' only messages"]
             """
 
-            content = ai_utils.get_ai_completion(prompt, response_format={"type": "json_object"}, timeout=60.0)
+            content = ai_utils.get_ai_completion(
+                prompt,
+                response_format={"type": "json_object"},
+                timeout=60.0,
+                source='distiller',
+            )
             if not content:
                 continue
 

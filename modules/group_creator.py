@@ -10,6 +10,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
 import db_manager
+import config
 from logger import log
 from telebot import util
 
@@ -17,9 +18,6 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 API_ID = int(os.getenv('API_ID'))
 API_HASH = os.getenv('API_HASH')
 BOT_USERNAME = os.getenv('BOT_USERNAME')
-
-# အရင်က သုံးခဲ့တဲ့ staff @username များ (အလုပ်လုပ်နေခဲ့)
-STAFF_USERNAMES = ['@cmsod1', '@cmmarketing1', '@cmfinance1', '@dataentrycm1', 8548232517]
 
 
 class GroupCreatorAuthError(Exception):
@@ -35,20 +33,8 @@ def telethon_channel_to_chat_id(channel):
 
 
 def _staff_add_targets_for_new_group():
-    """အရင်က STAFF_USERNAMES + staff DB (group ဖွင့်တိုင်း တိုက်ရိုက် add)."""
-    targets = []
-    seen = set()
-    for ref in STAFF_USERNAMES:
-        key = ref if isinstance(ref, str) else ref
-        if key not in seen:
-            targets.append(ref)
-            seen.add(key)
-    for row in db_manager.get_all_staff():
-        uid = int(row[0])
-        if uid not in seen:
-            targets.append(uid)
-            seen.add(uid)
-    return targets
+    """staff_manual သာ — GSheet Staff Info sync မပါ"""
+    return db_manager.get_newgroup_staff_targets()
 
 
 async def toggle_forum_safe(client, channel):
@@ -168,8 +154,10 @@ async def create_group_task(group_name):
             except Exception as e:
                 log.error(f"❌ Failed to create topic {t_name}: {e}")
 
-        # Staff အားလုံး group ထဲ တိုက်ရိုက် add (အရင်က loop အတိုင်း + staff DB)
-        for user in _staff_add_targets_for_new_group():
+        # Staff (office/core) group ထဲ တိုက်ရိုက် add
+        staff_targets = _staff_add_targets_for_new_group()
+        log.info(f"👥 /newgroup inviting {len(staff_targets)} office staff target(s)")
+        for user in staff_targets:
             try:
                 await client(functions.channels.InviteToChannelRequest(channel=channel, users=[user]))
             except Exception as e:
@@ -209,15 +197,15 @@ def create_new_group(bot, message):
         for record in db_records:
             t_name = record[3]
             target_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
-            target_topic = 1
+            target_topic = config.ALERT_TOPIC_CS
             t_name_l = t_name.lower()
 
             if any(x in t_name_l for x in ["error", "ပို့မရ"]):
-                target_topic = 37
+                target_topic = config.ALERT_TOPIC_ERROR
             elif any(x in t_name_l for x in ["fin", "voc", "ငွေစာရင်း", "ဘောင်ချာ"]):
-                target_topic = 35
+                target_topic = config.ALERT_TOPIC_FIN
             elif any(x in t_name_l for x in ["pick up", "urgent", "စုံစမ်းရန်"]):
-                target_topic = 1
+                target_topic = config.ALERT_TOPIC_CS
 
             full_record = (record[1], record[0], record[1], record[0], "Manual Register", record[3], record[4], target_chat, target_topic)
             c.execute(

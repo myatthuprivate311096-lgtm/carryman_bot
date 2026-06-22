@@ -10,6 +10,12 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 SANDBOX_CHAT_ID = int(os.getenv("SANDBOX_CHAT_ID", "-1003539520778"))
 
+# Alert Central Group target topics (0 = General — omit message_thread_id)
+ALERT_TOPIC_CS = int(os.getenv("ALERT_TOPIC_CS", "0"))
+ALERT_TOPIC_FIN = int(os.getenv("ALERT_TOPIC_FIN", "35"))
+ALERT_TOPIC_ERROR = int(os.getenv("ALERT_TOPIC_ERROR", "37"))
+ALERT_TOPIC_DE = int(os.getenv("ALERT_TOPIC_DE", "6621"))
+
 TRACKING_LIST_URL = os.getenv(
     "TRACKING_LIST_URL",
     "https://www.carrymanexpress.com/trackinglist",

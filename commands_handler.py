@@ -7,7 +7,9 @@ import subprocess
 import telebot
 import psutil
 import html
+from datetime import datetime, timedelta
 from modules import auditor
+import config
 import gsheet_sync
 from telebot import types, util
 from logger import log
@@ -303,6 +305,67 @@ def register_handlers(bot):
         else:
             bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
 
+    @bot.message_handler(commands=['aiusage', 'ai_usage'])
+    def handle_ai_usage_summary(message):
+        """AI token usage summary (daily or rolling window)."""
+        if db_manager.get_user_level(message.from_user.id, message.chat.id) < 4:
+            bot.reply_to(message, "⚠️ ဤ Command ကို Manager သာ အသုံးပြုခွင့်ရှိပါသည်။")
+            return
+
+        parts = (message.text or '').split()
+        date_arg = parts[1].strip() if len(parts) > 1 else None
+
+        def _fmt_block(title, summary):
+            if not summary or summary.get('calls', 0) == 0:
+                return f"**{title}**\n— ဒေတာ မရှိသေးပါ (tracking စเริ်่ပြီး)"
+            lines = [
+                f"**{title}**",
+                f"📞 API Calls: {summary['calls']:,}",
+                f"📥 Input Tokens: {summary['prompt_tokens']:,}",
+                f"📤 Output Tokens: {summary['completion_tokens']:,}",
+                f"🔢 Total Tokens: {summary['total_tokens']:,}",
+            ]
+            if summary.get('by_source'):
+                lines.append("")
+                lines.append("**By Source:**")
+                for src, calls, pin, pout, tot in summary['by_source'][:8]:
+                    lines.append(f"• `{src}` — {calls} calls, {tot:,} tokens")
+            if summary.get('by_provider'):
+                lines.append("")
+                lines.append("**By Provider:**")
+                for provider, model, calls, pin, pout, tot in summary['by_provider'][:5]:
+                    model_label = model or '-'
+                    lines.append(f"• `{provider}/{model_label}` — {calls} calls, {tot:,} tokens")
+            return "\n".join(lines)
+
+        try:
+            if date_arg:
+                if not re.match(r'^\d{4}-\d{2}-\d{2}$', date_arg):
+                    bot.reply_to(message, "⚠️ Format: `/aiusage 2026-06-19`", parse_mode="Markdown")
+                    return
+                day_summary = db_manager.get_ai_usage_summary(date_str=date_arg)
+                bot.reply_to(message, _fmt_block(f"AI Usage ({date_arg})", day_summary), parse_mode="Markdown")
+                return
+
+            import pytz
+            tz = pytz.timezone('Asia/Yangon')
+            today = datetime.now(tz).strftime('%Y-%m-%d')
+            yesterday = (datetime.now(tz) - timedelta(days=1)).strftime('%Y-%m-%d')
+            today_summary = db_manager.get_ai_usage_summary(date_str=today)
+            yesterday_summary = db_manager.get_ai_usage_summary(date_str=yesterday)
+            last24 = db_manager.get_ai_usage_summary(hours=24)
+
+            text = "\n\n".join([
+                _fmt_block(f"Today ({today})", today_summary),
+                _fmt_block(f"Yesterday ({yesterday})", yesterday_summary),
+                _fmt_block("Rolling 24h", last24),
+                "_Specific date: `/aiusage 2026-06-19`_",
+            ])
+            bot.reply_to(message, text, parse_mode="Markdown")
+        except Exception as e:
+            log.error(f"❌ handle_ai_usage_summary Error: {e}")
+            bot.reply_to(message, f"⚠️ Usage summary failed: {e}")
+
     @bot.message_handler(commands=['aiauto'])
     def handle_ai_auto_delivery_toggle(message):
         """Private chat: auto-reply delivery/tracking without /ai (default OFF)."""
@@ -429,7 +492,7 @@ def register_handlers(bot):
             unhealthy_list = "\n".join([f"  ⚠️ {p}" for p in unhealthy_processes]) if unhealthy_processes else "  ✅ All systems healthy"
 
             status_text = (
-                "🤖 **CarryMan System v5.0 Diagnostics**\n"
+                "🤖 **CarryMan System v6.1 Diagnostics**\n"
                 "━━━━━━━━━━━━━━━━━━\n"
                 "⚙️ **Global Toggles:**\n"
                 f"🧠 AI Answer: **{ai_global}**\n"
@@ -787,14 +850,14 @@ def register_handlers(bot):
 
     # --- [ Section ၆: Instant Alert ] ---
     _ALERT_DEPT_TARGETS = {
-        'fin': (35, 'Finance'),
-        'finance': (35, 'Finance'),
-        'cs': (1, 'CS'),
-        'pickup': (1, 'CS'),
-        'error': (37, 'Error'),
-        'err': (37, 'Error'),
-        'de': (6621, 'DE'),
-        'delivery': (6621, 'DE'),
+        'fin': (config.ALERT_TOPIC_FIN, 'Finance'),
+        'finance': (config.ALERT_TOPIC_FIN, 'Finance'),
+        'cs': (config.ALERT_TOPIC_CS, 'CS'),
+        'pickup': (config.ALERT_TOPIC_CS, 'CS'),
+        'error': (config.ALERT_TOPIC_ERROR, 'Error'),
+        'err': (config.ALERT_TOPIC_ERROR, 'Error'),
+        'de': (config.ALERT_TOPIC_DE, 'DE'),
+        'delivery': (config.ALERT_TOPIC_DE, 'DE'),
     }
 
     _ALERT_DEPT_KEYS = tuple(_ALERT_DEPT_TARGETS.keys())
@@ -852,7 +915,7 @@ def register_handlers(bot):
         """OS Group (အားလုံး) | Central/Alert Group | Staff/Manager (ဘယ် Group မဆို)"""
         chat_id = int(message.chat.id)
         user_id = message.from_user.id if message.from_user else 0
-        if db_manager.check_if_os_group(chat_id):
+        if db_manager.check_if_known_os_chat(chat_id):
             return True, True
         central = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
         alert_chat = int(os.getenv('ALERT_CHAT_ID', -1003601049225))
@@ -876,8 +939,17 @@ def register_handlers(bot):
             )
             return
 
+        try:
+            _handle_manual_alert_inner(message, is_os_group)
+        except Exception as e:
+            log.error(f"❌ handle_manual_alert Error in chat {chat_id}: {e}")
+            bot.reply_to(message, "⚠️ Alert ပို့၍မရပါ။ `/a fin` (သို့ `/a cs`) ပြန်စမ်းပေးပါ။")
+
+    def _handle_manual_alert_inner(message, is_os_group):
+        chat_id = message.chat.id
         command_text = message.text or message.caption or ''
         dept_arg, inline_text = _parse_a_command(command_text)
+        log.info(f"📣 /a triggered: chat={chat_id}, user={getattr(message.from_user, 'id', 0)}, dept={dept_arg or 'default'}")
         if not dept_arg and not is_os_group:
             inferred = _infer_dept_from_chat(message.chat)
             if inferred:
@@ -935,6 +1007,7 @@ def register_handlers(bot):
         target_topic_override = None
         force_route = True
         alert_title = "🚨 **Urgent Alert (Manual)**"
+        dept_label = 'CS'
         if dept_arg:
             dept_route = _ALERT_DEPT_TARGETS.get(dept_arg)
             if not dept_route:
@@ -955,9 +1028,9 @@ def register_handlers(bot):
             if route and route[1] is not None:
                 target_topic_override = int(route[1])
             else:
-                target_topic_override = 1
+                target_topic_override = config.ALERT_TOPIC_CS
         else:
-            target_topic_override = 1
+            target_topic_override = config.ALERT_TOPIC_CS
 
         # 💡 DB တွင် Manual Alert အဖြစ် မှတ်သားခြင်း (Strict Resolution — Done button only)
         user = message.from_user
@@ -991,17 +1064,33 @@ def register_handlers(bot):
             target_topic_override=target_topic_override,
             alert_by=alert_by
         )
-        
-        # 💡 အစ်ကို့တောင်းဆိုချက်အရ Silent ဖြစ်စေရန် Confirmation Message ကို ပိတ်ထားပြီး Command ကို ပြန်ဖျက်ပေးမည်
+
+        if not alert_id or isinstance(alert_id, str):
+            log.error(f"Manual Alert failed for chat_id: {chat_id}, topic: {topic_id}, dept: {dept_arg or 'default'}, result: {alert_id}")
+            bot.reply_to(
+                message,
+                "⚠️ Alert ပို့၍မရပါ။ Admin GP routing ကို `/register` (သို့) Admin ကို ဆက်သွယ်ပေးပါ။",
+            )
+            return
+
+        log.info(f"✅ Manual Alert sent: chat={chat_id}, msg={orig_msg_id}, dept={dept_arg or 'default'}, alert_id={alert_id}")
+
+        _OS_ALERT_ACK = (
+            "သက်ဆိုင်ရာ ဌာနကို အကြောင်းကြားပေးထားပါတယ်နော်။ "
+            "အမြန်ဆုံး စစ်ဆေးဆောင်ရွက်ပေးပါ့မယ်ရှင့်။"
+        )
         try:
             bot.delete_message(chat_id, message.message_id)
         except Exception as e:
             log.error(f"Error deleting /a command: {e}")
 
-        if not alert_id or isinstance(alert_id, str):
-            log.error(f"Manual Alert failed for chat_id: {chat_id}, topic: {topic_id}, dept: {dept_arg or 'default'}, result: {alert_id}")
-        else:
-            log.info(f"✅ Manual Alert sent: chat={chat_id}, msg={orig_msg_id}, dept={dept_arg or 'default'}, alert_id={alert_id}")
+        if is_os_group:
+            ack_kwargs = {'chat_id': chat_id, 'text': _OS_ALERT_ACK}
+            if message.is_topic_message and message.message_thread_id:
+                ack_kwargs['message_thread_id'] = message.message_thread_id
+            if message.reply_to_message:
+                ack_kwargs['reply_to_message_id'] = message.reply_to_message.message_id
+            bot.send_message(**ack_kwargs)
 
     # --- [ Section ၇: OS Group စာရင်းနှင့် Register စနစ် ] ---
     @bot.message_handler(commands=['oslist'])
@@ -1354,7 +1443,7 @@ def register_handlers(bot):
         
         # OS Group ဟုတ်မဟုတ် စစ်ဆေးခြင်း
         if not db_manager.check_if_os_group(chat_id):
-            bot.reply_to(message, "⚠️ ဤ Command ကို OS Group များအတွင်းသာ အသုံးပြုနိုင်ပါသည်။")
+            bot.reply_to(message, "⚠️ ဤ Command ကို OS Group များအတွင်းသာ အသုံးပြုနိုင်ပါသည်။\n`/gsupdate map` ဖြင့် GSheet mapping sync လုပ်ပါ။")
             return
 
         try:
@@ -1388,7 +1477,11 @@ def register_handlers(bot):
 
             # ၁။ OS Group ဟုတ်မဟုတ် စစ်ဆေးခြင်း (Sandbox ကို bypass)
             if not is_sandbox and not db_manager.check_if_os_group(chat_id):
-                bot.reply_to(message, "⚠️ ဤ Command ကို OS Group များအတွင်းသာ အသုံးပြုနိုင်ပါသည်။")
+                bot.reply_to(
+                    message,
+                    "⚠️ ဤ Command ကို OS Group များအတွင်းသာ အသုံးပြုနိုင်ပါသည်။\n"
+                    "`/gsupdate map` ဖြင့် GSheet mapping sync လုပ်ပါ။",
+                )
                 return
 
             # ၂။ Date Type Parse (today / tom / tomorrow / 2moro)

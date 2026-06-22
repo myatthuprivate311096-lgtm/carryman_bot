@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from contextlib import contextmanager
 from dotenv import load_dotenv
 from logger import log
+import config
 
 # 💡 Absolute Path Fix - Locked to script directory
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -110,6 +111,12 @@ def init_db():
         
         # ၁။ Core Tables
         c.execute('CREATE TABLE IF NOT EXISTS staff (user_id INTEGER PRIMARY KEY, name TEXT, branch TEXT, dept TEXT)')
+        c.execute('''CREATE TABLE IF NOT EXISTS staff_manual (
+                     user_id INTEGER PRIMARY KEY,
+                     name TEXT,
+                     branch TEXT,
+                     dept TEXT
+                   )''')
         c.execute('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT)')
         c.execute('''CREATE TABLE IF NOT EXISTS functions_registry (
                      id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -324,6 +331,19 @@ def init_db():
                    )''')
         c.execute("CREATE INDEX IF NOT EXISTS idx_ai_feedback_logs_time ON ai_feedback_logs(created_at)")
 
+        c.execute('''CREATE TABLE IF NOT EXISTS ai_usage_logs (
+                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                     provider TEXT NOT NULL,
+                     model TEXT,
+                     source TEXT DEFAULT 'general',
+                     prompt_tokens INTEGER DEFAULT 0,
+                     completion_tokens INTEGER DEFAULT 0,
+                     total_tokens INTEGER DEFAULT 0,
+                     created_at INTEGER NOT NULL
+                   )''')
+        c.execute("CREATE INDEX IF NOT EXISTS idx_ai_usage_logs_time ON ai_usage_logs(created_at)")
+        c.execute("CREATE INDEX IF NOT EXISTS idx_ai_usage_logs_source ON ai_usage_logs(source, created_at)")
+
         # ၆။ Performance Indexes
         c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_status_time ON message_logs(status, timestamp)")
         c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_chat_topic_status ON message_logs(chat_id, topic_id, status)")
@@ -331,6 +351,64 @@ def init_db():
         c.execute("CREATE INDEX IF NOT EXISTS idx_feedback_logs_chat_topic ON feedback_logs(chat_id, topic_id)")
         c.execute("CREATE INDEX IF NOT EXISTS idx_master_rules_chat_topic ON master_rules(chat_id, topic_id)")
         c.execute("CREATE INDEX IF NOT EXISTS idx_message_logs_chat_time ON message_logs(chat_id, timestamp)")
+
+        # CS/Pickup alerts → Alert GP General topic (0), not legacy thread id 1
+        cs_migrated = c.execute(
+            "SELECT value FROM settings WHERE key = 'alert_topic_cs_migrated_v1'"
+        ).fetchone()
+        if not cs_migrated:
+            updated = c.execute(
+                "UPDATE os_groups SET target_topic_id = 0 WHERE target_topic_id = 1"
+            ).rowcount
+            c.execute(
+                "INSERT OR REPLACE INTO settings (key, value) VALUES ('alert_topic_cs_migrated_v1', '1')"
+            )
+            if updated:
+                log.info(
+                    f"✅ Migrated {updated} os_groups routes: CS target topic 1 → 0 (General)"
+                )
+
+        # shop_mappings ရှိပြီး os_groups မရှိ — command (/a, /pickup) အတွက် bootstrap
+        map_boot = c.execute(
+            """SELECT sm.chat_id, sm.website_os_name FROM shop_mappings sm
+               WHERE NOT EXISTS (
+                   SELECT 1 FROM os_groups og
+                   WHERE og.chat_id = sm.chat_id
+                      OR og.chat_id = CAST(REPLACE(CAST(sm.chat_id AS TEXT), '-100', '') AS INTEGER)
+               )"""
+        ).fetchall()
+        boot_count = 0
+        for cid, web_name in map_boot:
+            if ensure_os_group_bootstrap(cid, web_name, source="GSheet Sync"):
+                boot_count += 1
+        if boot_count:
+            log.info(f"✅ Bootstrapped {boot_count} os_groups row(s) from shop_mappings")
+
+        # /addstaff ဖြင့် ထည့်ထားသော staff — GSheet Staff Info sync နှင့် ခွဲထားခြင်း (/newgroup invite)
+        manual_seeded = c.execute(
+            "SELECT value FROM settings WHERE key = 'staff_manual_seeded_v1'"
+        ).fetchone()
+        if not manual_seeded:
+            addstaff_branches = ('Yangon', 'Insein', 'Htauk Kyant', 'Mandalay')
+            addstaff_depts = (
+                'OS Service', 'Rider Service', 'Rider Finance', 'OS Finance',
+                'Accountant', 'Data Entry', 'Marketing', 'HR', 'Admin',
+                'Rider', 'Agent', 'Other',
+            )
+            seeded = c.execute(
+                """INSERT OR IGNORE INTO staff_manual (user_id, name, branch, dept)
+                   SELECT user_id, name, branch, dept FROM staff
+                   WHERE branch IN (?, ?, ?, ?)
+                     AND dept IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     AND LOWER(dept) != 'rider'"""
+                ,
+                addstaff_branches + addstaff_depts,
+            ).rowcount
+            c.execute(
+                "INSERT OR REPLACE INTO settings (key, value) VALUES ('staff_manual_seeded_v1', '1')"
+            )
+            if seeded:
+                log.info(f"✅ Seeded {seeded} /addstaff row(s) into staff_manual")
 
         conn.commit()
         
@@ -403,10 +481,60 @@ def get_setting(key, default='True'):
     return res[0] if res else default
 
 # --- [ Staff Management ] ---
-def add_staff(user_id, name, branch="General", dept="General"):
+_ADDSTAFF_BRANCHES = ('Yangon', 'Insein', 'Htauk Kyant', 'Mandalay')
+_ADDSTAFF_DEPTS = (
+    'OS Service', 'Rider Service', 'Rider Finance', 'OS Finance',
+    'Accountant', 'Data Entry', 'Marketing', 'HR', 'Admin',
+    'Rider', 'Agent', 'Other',
+)
+
+def ensure_staff_manual_schema():
+    """staff_manual table + one-time seed (init_db lock ဖြစ်ရင် lazy migrate)"""
     conn = get_connection()
     try:
-        conn.execute("INSERT OR REPLACE INTO staff VALUES (?, ?, ?, ?)", (int(user_id), name, branch, dept))
+        conn.execute('''CREATE TABLE IF NOT EXISTS staff_manual (
+            user_id INTEGER PRIMARY KEY,
+            name TEXT,
+            branch TEXT,
+            dept TEXT
+        )''')
+        seeded = conn.execute(
+            "SELECT value FROM settings WHERE key = 'staff_manual_seeded_v1'"
+        ).fetchone()
+        if not seeded:
+            count = conn.execute(
+                """INSERT OR IGNORE INTO staff_manual (user_id, name, branch, dept)
+                   SELECT user_id, name, branch, dept FROM staff
+                   WHERE branch IN (?, ?, ?, ?)
+                     AND dept IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     AND LOWER(dept) != 'rider'""",
+                _ADDSTAFF_BRANCHES + _ADDSTAFF_DEPTS,
+            ).rowcount
+            conn.execute(
+                "INSERT OR REPLACE INTO settings (key, value) VALUES ('staff_manual_seeded_v1', '1')"
+            )
+            if count:
+                log.info(f"✅ Seeded {count} /addstaff row(s) into staff_manual")
+        conn.commit()
+    except sqlite3.OperationalError as e:
+        if "database is locked" not in str(e):
+            log.error(f"❌ ensure_staff_manual_schema Error: {e}")
+    finally:
+        conn.close()
+
+def add_staff(user_id, name, branch="General", dept="General"):
+    ensure_staff_manual_schema()
+    conn = get_connection()
+    try:
+        uid = int(user_id)
+        conn.execute(
+            "INSERT OR REPLACE INTO staff VALUES (?, ?, ?, ?)",
+            (uid, name, branch, dept),
+        )
+        conn.execute(
+            "INSERT OR REPLACE INTO staff_manual VALUES (?, ?, ?, ?)",
+            (uid, name, branch, dept),
+        )
         conn.commit()
     finally: conn.close()
 
@@ -430,9 +558,19 @@ def upsert_staff_batch(rows):
 
 def remove_staff(user_id):
     conn = get_connection()
-    conn.execute("DELETE FROM staff WHERE user_id=?", (int(user_id),))
+    uid = int(user_id)
+    conn.execute("DELETE FROM staff WHERE user_id=?", (uid,))
+    conn.execute("DELETE FROM staff_manual WHERE user_id=?", (uid,))
     conn.commit()
     conn.close()
+
+def get_manual_staff():
+    """/addstaff ဖြင့် ထည့်ထားသော staff — /newgroup invite list အတွက်"""
+    ensure_staff_manual_schema()
+    conn = get_connection()
+    rows = conn.execute("SELECT user_id, name, branch, dept FROM staff_manual ORDER BY name").fetchall()
+    conn.close()
+    return rows
 
 def get_all_staff():
     conn = get_connection()
@@ -647,7 +785,10 @@ def set_manual_alert(msg_id, chat_id, topic_id=None, user_id=0, text=None, times
     """ Message ကို Manual Alert အဖြစ် သတ်မှတ်ခြင်း """
     conn = get_connection()
     try:
-        cur = conn.execute("UPDATE message_logs SET is_manual = 1 WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id))
+        cur = conn.execute(
+            "UPDATE message_logs SET is_manual = 1, status = 'ALERTED' WHERE msg_id = ? AND chat_id = ?",
+            (msg_id, chat_id)
+        )
         if cur.rowcount == 0 and text is not None:
             safe_topic_id = topic_id if topic_id and topic_id != 0 else 1
             ts = timestamp if timestamp is not None else int(time.time())
@@ -655,7 +796,10 @@ def set_manual_alert(msg_id, chat_id, topic_id=None, user_id=0, text=None, times
                 "INSERT OR IGNORE INTO message_logs (msg_id, chat_id, topic_id, user_id, text, timestamp, status, media_id, is_manual) VALUES (?, ?, ?, ?, ?, ?, 'ALERTED', ?, 1)",
                 (msg_id, chat_id, safe_topic_id, user_id, text, ts, media_id)
             )
-            conn.execute("UPDATE message_logs SET is_manual = 1 WHERE msg_id = ? AND chat_id = ?", (msg_id, chat_id))
+            conn.execute(
+                "UPDATE message_logs SET is_manual = 1, status = 'ALERTED' WHERE msg_id = ? AND chat_id = ?",
+                (msg_id, chat_id)
+            )
         conn.commit()
     finally:
         conn.close()
@@ -821,7 +965,9 @@ def get_pending_topics(minutes=15, max_hours=48):
     res = conn.execute(
         """SELECT DISTINCT chat_id, topic_id
            FROM message_logs
-           WHERE status='PENDING' AND status != 'HANDLED_BY_AI' AND timestamp < ? AND timestamp > ?""",
+           WHERE status='PENDING' AND status != 'HANDLED_BY_AI'
+             AND (is_manual IS NULL OR is_manual = 0)
+             AND timestamp < ? AND timestamp > ?""",
         (threshold, lookback_limit)
     ).fetchall()
     conn.close()
@@ -837,11 +983,12 @@ def get_pending_messages(minutes=15, limit=10, max_hours=48, chat_id=None, topic
     threshold = now - (minutes * 60)
     lookback_limit = now - (max_hours * 3600)
     
+    manual_filter = " AND (is_manual IS NULL OR is_manual = 0)"
     if all_pending:
-        query = "SELECT msg_id, chat_id, topic_id, text, timestamp, media_id FROM message_logs WHERE status='PENDING' AND status != 'HANDLED_BY_AI' AND timestamp > ?"
+        query = "SELECT msg_id, chat_id, topic_id, text, timestamp, media_id FROM message_logs WHERE status='PENDING' AND status != 'HANDLED_BY_AI'" + manual_filter + " AND timestamp > ?"
         params = [lookback_limit]
     else:
-        query = "SELECT msg_id, chat_id, topic_id, text, timestamp, media_id FROM message_logs WHERE status='PENDING' AND status != 'HANDLED_BY_AI' AND timestamp < ? AND timestamp > ?"
+        query = "SELECT msg_id, chat_id, topic_id, text, timestamp, media_id FROM message_logs WHERE status='PENDING' AND status != 'HANDLED_BY_AI'" + manual_filter + " AND timestamp < ? AND timestamp > ?"
         params = [threshold, lookback_limit]
     
     if chat_id is not None:
@@ -1176,19 +1323,70 @@ def update_routing_entry(chat_id, topic_id, target_chat_id, target_topic_id):
 
 # --- [ OS Group & Analytics ] ---
 def check_if_os_group(chat_id):
+    """os_groups သို့မဟုတ် shop_mappings (GSheet) တွင် မှတ်ထားသော OS chat"""
     conn = get_connection()
-    # 💡 Chat ID Mismatch Fix
     clean_id = int(str(chat_id).replace("-100", ""))
-    res = conn.execute("SELECT 1 FROM os_groups WHERE chat_id IN (?, ?) LIMIT 1", (chat_id, clean_id)).fetchone()
-    conn.close()
-    return res is not None
+    try:
+        res = conn.execute(
+            "SELECT 1 FROM os_groups WHERE chat_id IN (?, ?) LIMIT 1",
+            (chat_id, clean_id),
+        ).fetchone()
+        if res:
+            return True
+        res = conn.execute(
+            "SELECT 1 FROM shop_mappings WHERE chat_id IN (?, ?) LIMIT 1",
+            (chat_id, clean_id),
+        ).fetchone()
+        return bool(res)
+    finally:
+        conn.close()
+
+def check_if_known_os_chat(chat_id):
+    """Alias — OS group သို့ known mapped shop chat"""
+    return check_if_os_group(chat_id)
+
+def ensure_os_group_bootstrap(chat_id, shop_name, source="GSheet Sync"):
+    """shop_mappings/Ssheet row ရှိပြီး os_groups မရှိသေးပါက General topic baseline ထည့်ခြင်း"""
+    try:
+        chat_id = normalize_bot_chat_id(int(chat_id))
+    except (TypeError, ValueError):
+        return False
+    conn = get_connection()
+    try:
+        clean_id = int(str(chat_id).replace("-100", ""))
+        exists = conn.execute(
+            "SELECT 1 FROM os_groups WHERE chat_id IN (?, ?) LIMIT 1",
+            (chat_id, clean_id),
+        ).fetchone()
+        if exists:
+            return False
+        clean_name = clean_shop_name(shop_name or "Unknown Shop")
+        target_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
+        conn.execute(
+            """INSERT INTO os_groups
+               (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id, target_chat_id, target_topic_id)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (
+                chat_id, clean_name, chat_id, clean_name, source,
+                "General", 1, target_chat, config.ALERT_TOPIC_CS,
+            ),
+        )
+        conn.commit()
+        log.info(f"🆕 Bootstrapped os_groups for {chat_id} ({clean_name})")
+        return True
+    finally:
+        conn.close()
+
+def get_newgroup_staff_targets():
+    """/addstaff (staff_manual) သာ — GSheet Staff Info / legacy ခွဲမထားတော့"""
+    return [int(row[0]) for row in get_manual_staff()]
 
 def add_os_group(chat_id, shop_name):
     clean_name = clean_shop_name(shop_name)
     conn = get_connection()
     conn.execute(
         "INSERT INTO os_groups (chat_id, shop_name, group_id, group_name, invite_link, topic_name, topic_id, target_chat_id, target_topic_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (chat_id, clean_name, chat_id, clean_name, "Legacy", "Legacy", 0, -1003601049225, 1)
+        (chat_id, clean_name, chat_id, clean_name, "Legacy", "Legacy", 0, -1003601049225, config.ALERT_TOPIC_CS)
     )
     conn.commit()
     conn.close()
@@ -1211,16 +1409,16 @@ def save_manual_register(chat_id, shop_name, topic_entries):
 
             # Default routing based on name if not provided
             target_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
-            target_topic = 1
+            target_topic = config.ALERT_TOPIC_CS
             t_name_lower = t_name.lower()
             
             # Logic: နာမည်အလိုက် Target Topic သတ်မှတ်ခြင်း
             if any(x in t_name_lower for x in ["error", "ပို့မရ"]):
-                target_topic = 37
+                target_topic = config.ALERT_TOPIC_ERROR
             elif any(x in t_name_lower for x in ["fin", "voc", "ငွေစာရင်း", "ဘောင်ချာ"]):
-                target_topic = 35
+                target_topic = config.ALERT_TOPIC_FIN
             elif any(x in t_name_lower for x in ["pick up", "urgent", "စုံစမ်းရန်"]):
-                target_topic = 1
+                target_topic = config.ALERT_TOPIC_CS
 
             c.execute(
                 """INSERT INTO os_groups
@@ -2311,7 +2509,7 @@ def get_unified_shop_data():
             
             # Topics ယူခြင်း (Logic: target_topic_id အပေါ်မူတည်၍ ခွဲခြားမည်)
             # Pickup (1), Finance (35), Error (37)
-            pickup_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id = ? AND target_topic_id = 1", (cid,)).fetchone()
+            pickup_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id = ? AND target_topic_id = ?", (cid, config.ALERT_TOPIC_CS)).fetchone()
             finance_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id = ? AND target_topic_id = 35", (cid,)).fetchone()
             error_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id = ? AND target_topic_id = 37", (cid,)).fetchone()
             
@@ -2423,11 +2621,11 @@ def update_unified_shop_data(data_list):
                     )
             
             # Topics Update (os_groups)
-            # Pickup (Target 1)
+            # Pickup (Target General / CS)
             if p_tid and int(p_tid) != 0:
-                update_or_insert_os_topic(c, chat_id, tg_name, "Pick Up", int(p_tid), 1)
+                update_or_insert_os_topic(c, chat_id, tg_name, "Pick Up", int(p_tid), config.ALERT_TOPIC_CS)
             else:
-                c.execute("DELETE FROM os_groups WHERE chat_id = ? AND target_topic_id = 1", (chat_id,))
+                c.execute("DELETE FROM os_groups WHERE chat_id = ? AND target_topic_id = ?", (chat_id, config.ALERT_TOPIC_CS))
             
             # Error (Target 37)
             if e_tid and int(e_tid) != 0:
@@ -2439,7 +2637,12 @@ def update_unified_shop_data(data_list):
             if f_tid and int(f_tid) != 0:
                 update_or_insert_os_topic(c, chat_id, tg_name, "Fin & Voc", int(f_tid), 35)
             else:
-                c.execute("DELETE FROM os_groups WHERE chat_id = ? AND target_topic_id = 35", (chat_id,))
+                c.execute("DELETE FROM os_groups WHERE chat_id = ? AND target_topic_id = ?", (chat_id, 35))
+
+            # Topic ID မဖြည့်ထားသေးလည်း OS group အဖြစ် register (command များ အလုပ်လုပ်ရန်)
+            label = (tg_name or web_name or "").strip()
+            if label or web_name:
+                ensure_os_group_bootstrap(chat_id, label or web_name, source="GSheet Sync")
 
         conn.commit()
         dedupe_shop_mappings()
@@ -2660,7 +2863,7 @@ def get_unified_shop_data_filtered(invite_link=None):
             updated_at = map_row[1] if map_row else 0
             
             # Topics
-            pickup_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id IN (?, ?) AND target_topic_id = 1 LIMIT 1", (norm_cid, cid)).fetchone()
+            pickup_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id IN (?, ?) AND target_topic_id = ? LIMIT 1", (norm_cid, cid, config.ALERT_TOPIC_CS)).fetchone()
             finance_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id IN (?, ?) AND target_topic_id = 35 LIMIT 1", (norm_cid, cid)).fetchone()
             error_tid = conn.execute("SELECT topic_id FROM os_groups WHERE chat_id IN (?, ?) AND target_topic_id = 37 LIMIT 1", (norm_cid, cid)).fetchone()
             
@@ -3005,6 +3208,108 @@ def get_recent_ai_feedback_issues(hours=24, limit=5):
                ORDER BY created_at DESC LIMIT ?""",
             (since, int(limit)),
         ).fetchall()
+    finally:
+        conn.close()
+
+
+def log_ai_usage(provider, model, prompt_tokens, completion_tokens, total_tokens, source='general'):
+    """Record one AI API call token usage."""
+    conn = get_connection()
+    try:
+        now = int(time.time())
+        conn.execute(
+            """INSERT INTO ai_usage_logs
+               (provider, model, source, prompt_tokens, completion_tokens, total_tokens, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (
+                str(provider or 'unknown'),
+                str(model or ''),
+                str(source or 'general'),
+                int(prompt_tokens or 0),
+                int(completion_tokens or 0),
+                int(total_tokens or 0),
+                now,
+            ),
+        )
+        conn.commit()
+    except Exception as e:
+        log.error(f"❌ log_ai_usage Error: {e}")
+    finally:
+        conn.close()
+
+
+def _ai_usage_day_bounds(date_str=None):
+    """Asia/Yangon calendar day → (start_ts, end_ts, label)."""
+    tz = pytz.timezone('Asia/Yangon')
+    if date_str:
+        day = datetime.strptime(date_str, '%Y-%m-%d').date()
+    else:
+        day = datetime.now(tz).date()
+    start = tz.localize(datetime.combine(day, datetime.min.time()))
+    end = start + timedelta(days=1)
+    return int(start.timestamp()), int(end.timestamp()), day.strftime('%Y-%m-%d')
+
+
+def get_ai_usage_summary(hours=24, date_str=None):
+    """
+    Token usage summary.
+    - hours: rolling window (ignored when date_str is set)
+    - date_str: 'YYYY-MM-DD' in Asia/Yangon
+    Returns dict with totals and breakdowns.
+    """
+    conn = get_connection()
+    try:
+        if date_str:
+            since, until, label = _ai_usage_day_bounds(date_str)
+            window_clause = "created_at >= ? AND created_at < ?"
+            params = (since, until)
+        else:
+            since = int(time.time()) - int(hours) * 3600
+            until = None
+            label = f"last_{int(hours)}h"
+            window_clause = "created_at >= ?"
+            params = (since,)
+
+        totals = conn.execute(
+            f"""SELECT COUNT(*),
+                       COALESCE(SUM(prompt_tokens), 0),
+                       COALESCE(SUM(completion_tokens), 0),
+                       COALESCE(SUM(total_tokens), 0)
+                FROM ai_usage_logs WHERE {window_clause}""",
+            params,
+        ).fetchone()
+
+        by_provider = conn.execute(
+            f"""SELECT provider, model, COUNT(*),
+                       COALESCE(SUM(prompt_tokens), 0),
+                       COALESCE(SUM(completion_tokens), 0),
+                       COALESCE(SUM(total_tokens), 0)
+                FROM ai_usage_logs WHERE {window_clause}
+                GROUP BY provider, model ORDER BY SUM(total_tokens) DESC""",
+            params,
+        ).fetchall()
+
+        by_source = conn.execute(
+            f"""SELECT source, COUNT(*),
+                       COALESCE(SUM(prompt_tokens), 0),
+                       COALESCE(SUM(completion_tokens), 0),
+                       COALESCE(SUM(total_tokens), 0)
+                FROM ai_usage_logs WHERE {window_clause}
+                GROUP BY source ORDER BY SUM(total_tokens) DESC""",
+            params,
+        ).fetchall()
+
+        return {
+            'label': label,
+            'since': since,
+            'until': until,
+            'calls': int(totals[0] or 0),
+            'prompt_tokens': int(totals[1] or 0),
+            'completion_tokens': int(totals[2] or 0),
+            'total_tokens': int(totals[3] or 0),
+            'by_provider': by_provider,
+            'by_source': by_source,
+        }
     finally:
         conn.close()
 

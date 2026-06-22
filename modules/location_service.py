@@ -106,7 +106,7 @@ def get_location_with_fallback(query):
     Township:"""
     
     try:
-        ai_response = ai_utils.get_ai_completion(prompt)
+        ai_response = ai_utils.get_ai_completion(prompt, source='location_service')
         if ai_response and ai_response.lower() != "unknown":
             # Clean up response (remove extra words like "Township")
             clean_response = ai_response.strip().split('\n')[0].replace("Township", "").strip()

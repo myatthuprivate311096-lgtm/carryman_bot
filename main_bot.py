@@ -1,4 +1,4 @@
-# Version: 6.0 (Receiver Process - Polling Only)
+# Version: 6.1 (Receiver Process - Polling Only)
 import os
 import time
 import telebot

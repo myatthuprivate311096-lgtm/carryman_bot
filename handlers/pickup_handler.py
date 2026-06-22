@@ -5,6 +5,7 @@ import os
 from datetime import datetime, timedelta
 from logger import log
 import db_manager
+import config
 from modules import auditor
 
 def register_pickup_handlers(bot: telebot.TeleBot):
@@ -831,7 +832,7 @@ def register_pickup_handlers(bot: telebot.TeleBot):
                 res = auditor.send_new_alert(
                     chat_id, 1, orig_msg_id, text, "Rider requested Admin support", shop_name, ts,
                     media_id=media_id, title="💬 Admin နှင့်ပြောမည် (OS Request)", force=True,
-                    target_topic_override=1 # Force to Topic 1 (General/Urgent)
+                    target_topic_override=config.ALERT_TOPIC_CS  # Alert GP General topic
                 )
                 log.info(f"✅ send_new_alert result: {res}")
     

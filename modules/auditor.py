@@ -4,6 +4,7 @@ import re
 import time
 import json
 import html
+import config
 import telebot
 import pytz
 import requests
@@ -148,7 +149,12 @@ def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs
         }}
         """
 
-        content = ai_utils.get_ai_completion(prompt, response_format={"type": "json_object"}, timeout=25.0)
+        content = ai_utils.get_ai_completion(
+            prompt,
+            response_format={"type": "json_object"},
+            timeout=25.0,
+            source='auditor',
+        )
         if not content:
             return "NEW_ALERT", {"summary": "AI System Failure - Defaulting to New Alert"}
         res_data = json.loads(content)
@@ -204,8 +210,11 @@ def evaluate_with_ai(group_name, target_msgs_list, active_alerts, preceding_msgs
 def get_routing_data(chat_id, topic_id, category="", intent=""):
     route = db_manager.get_routing_entry(chat_id, topic_id)
     if route and route[0] is not None and route[1] is not None:
-        log.info(f"🎯 Explicit Route Found: {chat_id}/{topic_id} -> {route[0]}/{route[1]}")
-        return route[0], route[1]
+        target_chat, target_topic = route[0], route[1]
+        if target_topic == 1:
+            target_topic = config.ALERT_TOPIC_CS
+        log.info(f"🎯 Explicit Route Found: {chat_id}/{topic_id} -> {target_chat}/{target_topic}")
+        return target_chat, target_topic
 
     log.warning(f"⚠️ No Explicit Route for {chat_id}/{topic_id}. Notifying Manager...")
     return None, None
@@ -235,10 +244,10 @@ def notify_manager_missing_route(chat_id, topic_id, shop_name, trigger_text, ori
             msg_link = f"https://t.me/c/{clean_chat_id}/{original_msg_id}"
             markup.add(telebot.types.InlineKeyboardButton("🔗 View Message", url=msg_link))
 
-        markup.add(telebot.types.InlineKeyboardButton("🚚 Pickup (Topic 1)", callback_data=f"setrt_{chat_id}_{topic_id}_1_{original_msg_id}"))
-        markup.add(telebot.types.InlineKeyboardButton("💰 Finance (Topic 35)", callback_data=f"setrt_{chat_id}_{topic_id}_35_{original_msg_id}"))
-        markup.add(telebot.types.InlineKeyboardButton("⚠️ Error (Topic 37)", callback_data=f"setrt_{chat_id}_{topic_id}_37_{original_msg_id}"))
-        markup.add(telebot.types.InlineKeyboardButton("📝 Data Entry (Topic 6621)", callback_data=f"setrt_{chat_id}_{topic_id}_6621_{original_msg_id}"))
+        markup.add(telebot.types.InlineKeyboardButton("🚚 Pickup (General)", callback_data=f"setrt_{chat_id}_{topic_id}_{config.ALERT_TOPIC_CS}_{original_msg_id}"))
+        markup.add(telebot.types.InlineKeyboardButton("💰 Finance (Topic 35)", callback_data=f"setrt_{chat_id}_{topic_id}_{config.ALERT_TOPIC_FIN}_{original_msg_id}"))
+        markup.add(telebot.types.InlineKeyboardButton("⚠️ Error (Topic 37)", callback_data=f"setrt_{chat_id}_{topic_id}_{config.ALERT_TOPIC_ERROR}_{original_msg_id}"))
+        markup.add(telebot.types.InlineKeyboardButton("📝 Data Entry (Topic 6621)", callback_data=f"setrt_{chat_id}_{topic_id}_{config.ALERT_TOPIC_DE}_{original_msg_id}"))
         
         bot.send_message(ESCALATION_GROUP_ID, text, message_thread_id=ESCALATION_TOPIC_ID, reply_markup=markup, parse_mode="HTML")
         log.info(f"📲 Missing route notification sent to Escalation Group for {shop_name}")
@@ -313,6 +322,10 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
 
     log.info(f"📢 send_new_alert triggered: chat={chat_id}, topic={topic_id}, msg={original_msg_id}, force={force}")
 
+    if not force and db_manager.is_manual_alert(original_msg_id, chat_id):
+        log.info(f"🛡️ Skipping 15-min SLA alert for manual alert msg {original_msg_id} in {chat_id}")
+        return None
+
     bot = get_bot()
     if bot is None:
         log.error("❌ send_new_alert: Bot instance not available.")
@@ -321,14 +334,19 @@ def send_new_alert(chat_id, topic_id, original_msg_id, text, summary, shop_name,
     # 💡 Force=True ဆိုရင် (ဥပမာ - Admin နှင့်ပြောမည် နှိပ်ထားရင်) routing ကိုကျော်ပြီး Admin Group ကို တိုက်ရိုက်ပို့မည်
     if force:
         target_chat = int(os.getenv('ALERT_CHAT_ID', -1003601049225))
-        target_topic = target_topic_override if target_topic_override is not None else 1
-        log.info(f"🛡️ Force routing: Sending directly to Admin Group {target_chat}, Topic {target_topic}")
+        target_topic = target_topic_override if target_topic_override is not None else config.ALERT_TOPIC_CS
+        if target_topic == 1:
+            target_topic = config.ALERT_TOPIC_CS
+        log.info(f"🛡️ Force routing: Sending directly to Admin Group {target_chat}, Topic {target_topic or 'General'}")
     else:
         target_chat, target_topic = get_routing_data(chat_id, topic_id, category=category, intent=intent)
         
         # 💡 Manual Override for Topic (e.g., forcing to Topic 1 when "Talk to Admin" is clicked)
         if target_topic_override is not None:
             target_topic = target_topic_override
+        
+        if target_topic == 1:
+            target_topic = config.ALERT_TOPIC_CS
         
         if target_chat is None or target_topic is None:
             log.warning(f"⚠️ No route found for {shop_name} ({chat_id}/{topic_id}). Notifying Manager.")
@@ -946,32 +964,37 @@ def process_audits(bot_instance=None):
                         for mid in msgs: db_manager.update_message_status(mid, chat_id, 'PENDING', topic_id=topic_id)
 
                 elif action == "NEW_ALERT":
-                    combined_text = "\n".join([m[3] for m in msgs if m[0] in grouped_ids])
-                    alert_id = send_new_alert(
-                        chat_id, topic_id, trigger_msg_id, combined_text,
-                        ai_res.get("summary", "New Grouped Issue"),
-                        shop_name, trigger_ts,
-                        category=ai_res.get("category", "အခြား"),
-                        intent=ai_res.get("intent", "အထွေထွေစုံစမ်းမှု"),
-                        media_id=trigger_media_id
-                    )
-                    if alert_id and str(ai_res.get("severity", "")).upper() == "COMPLAINT":
-                        send_complaint_mirror_alert(
-                            chat_id=chat_id,
-                            topic_id=topic_id,
-                            original_msg_id=trigger_msg_id,
-                            text=combined_text,
-                            shop_name=shop_name
-                        )
+                    if db_manager.is_manual_alert(trigger_msg_id, chat_id):
+                        log.info(f"🛡️ Skipping NEW_ALERT audit for manual alert msg {trigger_msg_id} in {chat_id}")
                         for mid in grouped_ids:
-                            if mid != trigger_msg_id:
-                                db_manager.add_linked_customer_id(trigger_msg_id, chat_id, mid)
-                                db_manager.update_message_status(mid, chat_id, 'ALERTED', topic_id=topic_id)
+                            db_manager.update_message_status(mid, chat_id, 'ALERTED', topic_id=topic_id)
                     else:
-                        for m in msgs:
-                            mid = m[0]
-                            if mid != trigger_msg_id:
-                                db_manager.update_message_status(mid, chat_id, 'WAITING_ROUTE', topic_id=topic_id)
+                        combined_text = "\n".join([m[3] for m in msgs if m[0] in grouped_ids])
+                        alert_id = send_new_alert(
+                            chat_id, topic_id, trigger_msg_id, combined_text,
+                            ai_res.get("summary", "New Grouped Issue"),
+                            shop_name, trigger_ts,
+                            category=ai_res.get("category", "အခြား"),
+                            intent=ai_res.get("intent", "အထွေထွေစုံစမ်းမှု"),
+                            media_id=trigger_media_id
+                        )
+                        if alert_id and str(ai_res.get("severity", "")).upper() == "COMPLAINT":
+                            send_complaint_mirror_alert(
+                                chat_id=chat_id,
+                                topic_id=topic_id,
+                                original_msg_id=trigger_msg_id,
+                                text=combined_text,
+                                shop_name=shop_name
+                            )
+                            for mid in grouped_ids:
+                                if mid != trigger_msg_id:
+                                    db_manager.add_linked_customer_id(trigger_msg_id, chat_id, mid)
+                                    db_manager.update_message_status(mid, chat_id, 'ALERTED', topic_id=topic_id)
+                        else:
+                            for m in msgs:
+                                mid = m[0]
+                                if mid != trigger_msg_id:
+                                    db_manager.update_message_status(mid, chat_id, 'WAITING_ROUTE', topic_id=topic_id)
 
                 for m in msgs:
                     mid = m[0]

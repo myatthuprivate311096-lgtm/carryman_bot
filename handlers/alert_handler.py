@@ -7,6 +7,7 @@ import json
 from datetime import datetime
 from logger import log
 import db_manager
+import config
 from modules import auditor
 import gsheet_sync
 
@@ -120,6 +121,8 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
             chat_id = int(parts[1])
             topic_id = int(parts[2])
             target_topic = int(parts[3])
+            if target_topic == 1:
+                target_topic = config.ALERT_TOPIC_CS
             original_msg_id = int(parts[4]) if len(parts) > 4 else 0
             target_chat = int(os.getenv('CENTRAL_GROUP_ID', -1003601049225))
 
@@ -336,10 +339,10 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
             if action == "topic":
                 markup = telebot.types.InlineKeyboardMarkup(row_width=1)
                 markup.add(
-                    telebot.types.InlineKeyboardButton("🚚 Pickup (Topic 1)", callback_data=f"route_1_{orig_id}_{chat_id}"),
-                    telebot.types.InlineKeyboardButton("💰 Finance (Topic 35)", callback_data=f"route_35_{orig_id}_{chat_id}"),
-                    telebot.types.InlineKeyboardButton("⚠️ Error (Topic 37)", callback_data=f"route_37_{orig_id}_{chat_id}"),
-                    telebot.types.InlineKeyboardButton("📝 Data Entry (Topic 6621)", callback_data=f"route_6621_{orig_id}_{chat_id}")
+                    telebot.types.InlineKeyboardButton("🚚 Pickup (General)", callback_data=f"route_{config.ALERT_TOPIC_CS}_{orig_id}_{chat_id}"),
+                    telebot.types.InlineKeyboardButton("💰 Finance (Topic 35)", callback_data=f"route_{config.ALERT_TOPIC_FIN}_{orig_id}_{chat_id}"),
+                    telebot.types.InlineKeyboardButton("⚠️ Error (Topic 37)", callback_data=f"route_{config.ALERT_TOPIC_ERROR}_{orig_id}_{chat_id}"),
+                    telebot.types.InlineKeyboardButton("📝 Data Entry (Topic 6621)", callback_data=f"route_{config.ALERT_TOPIC_DE}_{orig_id}_{chat_id}")
                 )
                 try:
                     bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=markup)
@@ -376,7 +379,7 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
         except Exception as e:
             log.error(f"❌ Feedback Callback Error: {e}")
 
-    _WRONG_TOPIC_TARGETS = (1, 35, 37, 6621)
+    _WRONG_TOPIC_TARGETS = (0, 1, config.ALERT_TOPIC_CS, config.ALERT_TOPIC_FIN, config.ALERT_TOPIC_ERROR, config.ALERT_TOPIC_DE)
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith('route_'))
     def handle_rerouting(call):
@@ -398,6 +401,8 @@ def register_alert_handlers(bot: telebot.TeleBot, is_manager_func):
                 return
 
             target_topic = int(parts[1])
+            if target_topic == 1:
+                target_topic = config.ALERT_TOPIC_CS
             orig_id = int(parts[2])
             chat_id = int(parts[3])
 

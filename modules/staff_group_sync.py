@@ -36,11 +36,6 @@ MAX_ACTIONS_PER_RUN = int(os.getenv('STAFF_SYNC_MAX_ACTIONS', '80'))
 BATCH_PAUSE_SEC = int(os.getenv('STAFF_SYNC_BATCH_PAUSE', '90'))
 MAX_BATCHES_RUNALL = int(os.getenv('STAFF_SYNC_MAX_BATCHES', '25'))
 
-# အရင်က /newgroup မှာ သုံးခဲ့တဲ့ @username များ (staff DB ထဲ မပါသေးရင် backup)
-LEGACY_STAFF_USERNAMES = [
-    '@cmsod1', '@cmmarketing1', '@cmfinance1', '@dataentrycm1',
-]
-
 
 def _load_sync_state():
     try:
@@ -87,23 +82,15 @@ def _collect_target_groups():
 
 
 def build_staff_invite_targets():
-    """staff DB user_id + legacy @username စာရင်း (group ထဲ တိုက်ရိုက် add အတွက်)"""
+    """staff_manual user_id စာရင်း (/addstaff + manual register)"""
     targets = []
     seen_ids = set()
-
-    for row in db_manager.get_all_staff():
+    for row in db_manager.get_manual_staff():
         uid = int(row[0])
         name = row[1] or str(uid)
-        targets.append((uid, name))
-        seen_ids.add(uid)
-
-    for legacy in LEGACY_STAFF_USERNAMES:
-        if isinstance(legacy, str) and legacy.startswith('@'):
-            targets.append((legacy, legacy.lstrip('@')))
-        elif isinstance(legacy, int) and legacy not in seen_ids:
-            targets.append((legacy, str(legacy)))
-            seen_ids.add(legacy)
-
+        if uid not in seen_ids:
+            targets.append((uid, name))
+            seen_ids.add(uid)
     return targets
 
 
@@ -166,7 +153,7 @@ async def invite_all_staff_to_channel(client, channel, group_name, invite_link=N
     }
 
     if not staff_list:
-        stats['errors'].append('staff table မှာ ဝန်ထမ်းစာရင်း မရှိပါ — /addstaff ဖြင့် ထည့်ပါ')
+        stats['errors'].append('staff_manual မှာ ဝန်ထမ်းစာရင်း မရှိပါ — /addstaff ဖြင့် ထည့်ပါ')
         return stats
 
     if invite_link is None:
@@ -263,11 +250,9 @@ def send_invite_dms(bot, pending_dms):
 
 
 async def _sync_staff_async(dry_run=False, resume=True, max_actions=None, start_index=None):
-    staff_rows = db_manager.get_all_staff()
-    if not staff_rows:
-        return {'error': 'staff table မှာ ဝန်ထမ်းစာရင်း မရှိပါ။ /addstaff ဖြင့် ထည့်ပါ။'}
-
     staff_list = build_staff_invite_targets()
+    if not staff_list:
+        return {'error': 'staff_manual မှာ ဝန်ထမ်းစာရင်း မရှိပါ — /addstaff ဖြင့် ထည့်ပါ။'}
     groups = _collect_target_groups()
     if not groups:
         return {'error': 'os_groups table မှာ Group စာရင်း မရှိပါ။'}

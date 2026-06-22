@@ -826,7 +826,9 @@ Use Core Policies and Base Company Info only. If still insufficient, reply with 
         tools = ai_utils.get_ai_tools(user_level)
         
         # Initial AI Call
-        response = ai_utils.get_ai_completion(ai_prompt, timeout=45.0, tools=tools, user_level=user_level)
+        response = ai_utils.get_ai_completion(
+            ai_prompt, timeout=45.0, tools=tools, user_level=user_level, source='ai_query'
+        )
         
         if not response:
             fallback_answer = _format_rag_fallback_answer(rag_context)
@@ -993,7 +995,7 @@ def route_message(bot, message):
         6. If truly unsure about pickup vs none, choose 'auto_pickup' ONLY when pickup intent is plausible; otherwise choose 'none'.
         """
 
-        intent = ai_utils.get_ai_completion(prompt, timeout=30.0)
+        intent = ai_utils.get_ai_completion(prompt, timeout=30.0, source='router_intent')
         if not intent:
             log.error("❌ Both OpenRouter and Gemini Fallback failed.")
             return False
