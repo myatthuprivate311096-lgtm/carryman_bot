@@ -1,0 +1,13 @@
+/newgroup General topic ပုံ ၂ ပုံ — VPS folder ထဲ file အစားထိုးရုံ (restart မလို)
+
+  1.jpg   → Price List (caption: "Price List လေးပါခင်ဗျာ")
+  2.jpg   → Terms & Conditions + "နားလည်သဘောတူပါသည်" button
+
+Button နှိပ်ပြီးရင် feedback link စာကို General topic မှာ pin လုပ်ပါမည်။
+(jpeg/png/webp လည်း OK)
+
+Upload:
+  scp photo1.jpg root@VPS:/root/carryman_bot/assets/newgroup_general/1.jpg
+  scp photo2.jpg root@VPS:/root/carryman_bot/assets/newgroup_general/2.jpg
+
+စာသား/ link ပြင်ချင်ရင် config.py → NEWGROUP_* constants

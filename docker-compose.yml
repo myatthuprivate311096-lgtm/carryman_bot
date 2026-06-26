@@ -14,6 +14,7 @@ services:
       - ./carryman.session:/app/carryman.session
       - ./credentials.json:/app/credentials.json
       - ./logs:/app/logs
+      - ./assets/newgroup_general:/app/assets/newgroup_general
       - /var/run/docker.sock:/var/run/docker.sock
 
   # Service 2: The Sync Scheduler
@@ -41,5 +42,18 @@ services:
       - ./carryman.db:/app/carryman.db
       - ./carryman.session:/app/carryman.session
       - ./credentials.json:/app/credentials.json
+      - ./logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  # Service 4: Proactive Health Monitor (Docker + webhook + ingestion watchdog)
+  health:
+    build: .
+    container_name: carryman-health
+    command: python health_monitor.py
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./carryman.db:/app/carryman.db
       - ./logs:/app/logs
       - /var/run/docker.sock:/var/run/docker.sock

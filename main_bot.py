@@ -9,6 +9,8 @@ import commands_handler
 import main_router
 from modules import auditor
 from handlers import alert_handler, pickup_handler, message_handler, fb_handler
+from modules import newgroup_onboarding
+from telegram_polling import ensure_polling_mode
 
 # 💡 Absolute Path Fix for .env
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -36,6 +38,7 @@ alert_handler.register_alert_handlers(bot, is_manager)
 pickup_handler.register_pickup_handlers(bot)
 message_handler.register_message_handlers(bot, is_manager)
 fb_handler.register_fb_handlers(bot)
+newgroup_onboarding.register_handlers(bot)
 
 # 🚀 Stability & Auto-Recovery Polling
 # ==========================================
@@ -52,6 +55,7 @@ def send_heartbeat():
 
 def start_bot():
     log.info("🚀 CarryMan Bot (Worker 1: Ingestion) is starting...")
+    ensure_polling_mode(BOT_TOKEN)
     commands_handler.register_bot_commands(bot)
 
     # Heartbeat ကို background thread နဲ့ run ပါမယ်
@@ -59,6 +63,7 @@ def start_bot():
     def heartbeat_loop():
         while True:
             send_heartbeat()
+            ensure_polling_mode(BOT_TOKEN, notify_on_hijack=True)
             time.sleep(300) # ၅ မိနစ်တစ်ခါ
     
     threading.Thread(target=heartbeat_loop, daemon=True).start()
@@ -76,10 +81,13 @@ def start_bot():
             bot.infinity_polling(timeout=60, long_polling_timeout=60, skip_pending=False, allowed_updates=telebot.util.update_types)
         except Exception as e:
             log.error(f"⚠️ Bot Polling Error: {e}")
-            # If it's a conflict, wait a bit longer
-            if "409" in str(e):
-                log.warning("🔄 Conflict detected, waiting 20 seconds before retry...")
-                # အဟောင်း သေချာသေသွားစေရန် ၂၀ စက္ကန့် စောင့်ပါမည်
+            err = str(e).lower()
+            if "409" in err:
+                if "webhook" in err:
+                    log.warning("🔄 Webhook conflict — clearing webhook and retrying polling...")
+                    ensure_polling_mode(BOT_TOKEN)
+                else:
+                    log.warning("🔄 Polling conflict (409) — waiting 20 seconds before retry...")
                 time.sleep(20)
             else:
                 time.sleep(5)

@@ -13,6 +13,7 @@ import db_manager
 import config
 from logger import log
 from telebot import util
+from modules.newgroup_onboarding import send_general_onboarding
 
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 API_ID = int(os.getenv('API_ID'))
@@ -214,6 +215,11 @@ def create_new_group(bot, message):
             )
         conn.commit()
         conn.close()
+
+        try:
+            send_general_onboarding(bot, db_records[0][1])
+        except Exception as e:
+            log.warning(f"⚠️ Newgroup onboarding images failed: {e}")
 
         esc_name = util.escape(group_name)
         esc_link = util.escape(invite_link)
